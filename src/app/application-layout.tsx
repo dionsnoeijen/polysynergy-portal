@@ -1,0 +1,100 @@
+'use client'
+
+import { Avatar } from '@/components/avatar'
+import {
+    Dropdown,
+    DropdownButton,
+} from '@/components/dropdown'
+import { Navbar, NavbarItem, NavbarSection, NavbarSpacer } from '@/components/navbar'
+import {
+    Sidebar,
+    SidebarBody,
+    SidebarItem,
+    SidebarLabel,
+    SidebarSection,
+    SidebarSpacer,
+} from '@/components/sidebar'
+import { SidebarLayout } from '@/components/sidebar-layout'
+import {
+    ChartBarIcon,
+    TrashIcon,
+} from '@heroicons/react/16/solid'
+import {
+    Cog6ToothIcon,
+    HomeIcon,
+    QuestionMarkCircleIcon,
+    SparklesIcon
+} from '@heroicons/react/20/solid'
+import { usePathname } from 'next/navigation'
+import AccountDropdownMenu from "@/components/sidebar/account-dropdown-menu";
+import SidebarTenantHeader from "@/components/sidebar/sidebar-tenant-header";
+import SidebarUserFooter from "@/components/sidebar/sidebar-user-footer";
+
+export function ApplicationLayout({
+    children,
+}: {
+    children: React.ReactNode
+}) {
+    const pathname = usePathname()
+
+    return (
+        <SidebarLayout
+            navbar={
+                <Navbar>
+                    <NavbarSpacer />
+                    <NavbarSection>
+                        <Dropdown>
+                            <DropdownButton as={NavbarItem}>
+                                <Avatar src="/users/erica.jpg" square />
+                            </DropdownButton>
+                            <AccountDropdownMenu anchor="bottom end" />
+                        </Dropdown>
+                    </NavbarSection>
+                </Navbar>
+            }
+            sidebar={
+                <Sidebar>
+                    <SidebarTenantHeader />
+
+                    <SidebarBody>
+                        <SidebarSection>
+                            <SidebarItem href="/" current={pathname === '/'}>
+                                <HomeIcon />
+                                <SidebarLabel>Projects</SidebarLabel>
+                            </SidebarItem>
+                            <SidebarItem href="/events" current={pathname.startsWith('/events')}>
+                                <TrashIcon />
+                                <SidebarLabel>Trashed</SidebarLabel>
+                            </SidebarItem>
+                            <SidebarItem href="/stats" current={pathname.startsWith('/orders')}>
+                                <ChartBarIcon />
+                                <SidebarLabel>Stats</SidebarLabel>
+                            </SidebarItem>
+                            <SidebarItem href="/settings" current={pathname.startsWith('/settings')}>
+                                <Cog6ToothIcon />
+                                <SidebarLabel>Settings</SidebarLabel>
+                            </SidebarItem>
+                        </SidebarSection>
+
+                        <SidebarSpacer />
+
+                        <SidebarSection>
+                            <SidebarItem href="#">
+                                <QuestionMarkCircleIcon />
+                                <SidebarLabel>Support</SidebarLabel>
+                            </SidebarItem>
+                            <SidebarItem href="#">
+                                <SparklesIcon />
+                                <SidebarLabel>Changelog</SidebarLabel>
+                            </SidebarItem>
+                        </SidebarSection>
+                    </SidebarBody>
+
+                    <SidebarUserFooter />
+                </Sidebar>
+            }
+        >
+            {children}
+        </SidebarLayout>
+    )
+}

@@ -3,8 +3,18 @@ import ItemManager from "@/components/editor/sidebars/item-manager";
 import Dock from "@/components/editor/sidebars/dock";
 import {ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon} from "@heroicons/react/16/solid";
 import Editor from "@/components/editor/editor";
+import {useEditorStore} from "@/stores/editorStore";
+import Form from "@/components/editor/form";
+import SelectionsMenu from "@/components/editor/editormenus/selections-menu";
 
-export function EditorLayout() {
+export function EditorLayout({
+    projectUuid = null,
+    routeUuid = null
+}: {
+    projectUuid?: null|string,
+    routeUuid?: null|string
+}) {
+
     enum ResizeWhat {
         ItemManager = 'itemManager',
         Dock = 'dock',
@@ -20,10 +30,15 @@ export function EditorLayout() {
     const [dockClosed, setDockClosed] = useState(false);
     const [outputClosed, setOutputClosed] = useState(false);
 
-    useEffect(() => {
-        setHeight({ horizontalEditorLayout: window.innerHeight * 0.7 });
-        setWindowHeight(window.innerHeight);
+    const { showForm, setActiveProjectId, setActiveRouteId, closeFormMessage } = useEditorStore();
 
+    useEffect(() => {
+        setHeight({ horizontalEditorLayout: window.innerHeight * 0.85 });
+        setWindowHeight(window.innerHeight);
+        setActiveProjectId(projectUuid as string);
+        if (routeUuid) {
+            setActiveRouteId(routeUuid as string);
+        }
         const handleResize = () => {
             setWindowHeight(window.innerHeight);
         };
@@ -32,7 +47,7 @@ export function EditorLayout() {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, []);
+    }, [projectUuid, routeUuid, setActiveProjectId, setActiveRouteId]);
 
     const startResizing = useCallback((resizeWhat: ResizeWhat) => {
         setResizing(resizeWhat);
@@ -96,11 +111,22 @@ export function EditorLayout() {
 
     return (
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-950">
-            <div className="absolute top-0 right-0 left-0" style={{ height: outputClosed ? windowHeight-10 : height.horizontalEditorLayout }}>
-                {!itemManagerClosed && (
+
+            {closeFormMessage && (
+                <>
+                    <div className="z-20 fixed top-0 left-0 right-0 h-[1px] bg-green-500 animate-progress"></div>
+                    <div
+                        className="z-20 fixed top-2 left-1/2 sm:max-w-md bg-green-100 text-green-800 p-4 rounded-md shadow-lg animate-fade-in-out">
+                        {closeFormMessage}
+                    </div>
+                </>
+            )}
+            <div className="absolute top-0 right-0 left-0"
+                 style={{height: outputClosed ? windowHeight - 10 : height.horizontalEditorLayout}}>
+            {!itemManagerClosed && (
                     <div style={{ width: width.itemManager }} className="absolute top-0 left-0 bottom-0 max-lg:hidden">
                         <div className="absolute inset-[10px]">
-                            <ItemManager toggleClose={toggleCloseItemManager} />
+                            <ItemManager projectUuid={projectUuid} routeUuid={routeUuid} toggleClose={toggleCloseItemManager} />
                         </div>
                         <button
                             onMouseDown={() => startResizing(ResizeWhat.ItemManager)}
@@ -121,15 +147,29 @@ export function EditorLayout() {
                     right: dockClosed ? 10 : width.dock
                 }}>
                     <div
-                        className="absolute top-[10px] left-0 right-0 bottom-0 default-editor-container">
-                        <Editor />
+                        className="absolute top-[10px] left-0 right-0 bottom-0 default-editor-container overflow-scroll"
+                    >
+                        {showForm ? (
+                            <Form />
+                        ) : (
+                            projectUuid && routeUuid ? (
+                                <>
+                                <Editor projectUuid={projectUuid} routeUuid={routeUuid} />
+                                <SelectionsMenu />
+                                </>
+                            ) : (
+                                <div className="flex justify-center items-center ">
+                                    <p className="text-white">Select a route to start editing nodes</p>
+                                </div>
+                            )
+                        )}
                     </div>
                 </main>
 
                 {!dockClosed && (
-                    <div style={{ width: width.dock }} className="absolute top-0 right-0 bottom-0">
+                    <div style={{width: width.dock}} className="absolute top-0 right-0 bottom-0">
                         <div className="absolute inset-[10px]">
-                            <Dock toggleClose={toggleCloseDock} />
+                            <Dock toggleClose={toggleCloseDock}/>
                         </div>
                         <button
                             onMouseDown={() => startResizing(ResizeWhat.Dock)}

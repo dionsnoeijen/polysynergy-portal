@@ -1,13 +1,11 @@
-import { getEvents } from '@/data'
 import '@/styles/tailwind.css'
 import type { Metadata } from 'next'
 import type React from 'react'
-import { ApplicationLayout } from './application-layout'
 
 export const metadata: Metadata = {
   title: {
-    template: '%s - Catalyst',
-    default: 'Catalyst',
+    template: '%s - Octopus',
+    default: 'Octopus',
   },
   description: '',
 }

@@ -6,7 +6,7 @@ import { Link } from './link'
 const styles = {
   base: [
     // Base
-    'relative isolate inline-flex items-center justify-center gap-x-2 rounded-lg border text-base/6 font-semibold',
+    'relative isolate inline-flex items-center justify-center gap-x-2 rounded-md border text-base/6 font-semibold',
     // Sizing
     'px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)] sm:text-sm/6',
     // Focus
@@ -168,25 +168,25 @@ type ButtonProps = (
   )
 
 export const Button = forwardRef(function Button(
-  { color, outline, plain, className, children, ...props }: ButtonProps,
-  ref: React.ForwardedRef<HTMLElement>
+    { color, outline, plain, className, children, ...props }: ButtonProps & { fullWidth?: boolean },
+    ref: React.ForwardedRef<HTMLElement>
 ) {
-  let classes = clsx(
-    className,
-    styles.base,
-    outline ? styles.outline : plain ? styles.plain : clsx(styles.solid, styles.colors[color ?? 'dark/zinc'])
-  )
+  const classes = clsx(
+      className,
+      styles.base,
+      outline ? styles.outline : plain ? styles.plain : clsx(styles.solid, styles.colors[color ?? 'dark/zinc'])
+  );
 
   return 'href' in props ? (
-    <Link {...props} className={classes} ref={ref as React.ForwardedRef<HTMLAnchorElement>}>
-      <TouchTarget>{children}</TouchTarget>
-    </Link>
+      <Link {...props} className={classes} ref={ref as React.ForwardedRef<HTMLAnchorElement>}>
+        <TouchTarget>{children}</TouchTarget>
+      </Link>
   ) : (
-    <Headless.Button {...props} className={clsx(classes, 'cursor-default')} ref={ref}>
-      <TouchTarget>{children}</TouchTarget>
-    </Headless.Button>
-  )
-})
+      <Headless.Button {...props} className={clsx(classes, 'cursor-default')} ref={ref}>
+        <TouchTarget>{children}</TouchTarget>
+      </Headless.Button>
+  );
+});
 
 /**
  * Expand the hit area to at least 44×44px on touch devices

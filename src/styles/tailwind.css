@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 .default-editor-container {
-    @apply rounded-lg shadow-sm ring-1 bg-zinc-900 ring-white/10;
+    @apply rounded-md shadow-sm ring-1 bg-zinc-900 ring-white/10;
 }
 
 .grid-background {
@@ -13,4 +13,33 @@
         linear-gradient(90deg, rgba(150, 150, 150, 0.2) 2px, transparent 1px 100px),
         linear-gradient(0deg, rgba(150, 150, 150, 0.2) 2px, transparent 1px 100px);
     background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px) translateX(-50%);
+    }
+    10%,
+    90% {
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px) translateX(-50%);
+    }
+}
+
+@keyframes progress {
+    0% { width: 0; }
+    100% { width: 100%; }
+}
+
+.animate-progress {
+    animation: progress 5s linear forwards;
+}
+
+.animate-fade-in-out {
+    animation: fadeInOut 5s forwards;
 }

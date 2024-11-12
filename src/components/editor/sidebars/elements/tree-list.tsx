@@ -1,0 +1,73 @@
+import React, { useState } from "react";
+import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/16/solid";
+
+type ListItemWithId = {
+    id: string;
+};
+
+type ListProps<T extends ListItemWithId> = {
+    items: T[];
+    activeItem?: null | string;
+    formEditingItem?: null | string;
+    renderItem: (item: T) => React.ReactNode;
+    addButton?: React.ReactNode;
+    title?: string;
+};
+
+export default function TreeList<T extends ListItemWithId>({
+    items,
+    activeItem = null,
+    formEditingItem = null,
+    renderItem,
+    addButton,
+    title = "List",
+}: ListProps<T>): React.JSX.Element {
+    const [isOpen, setIsOpen] = useState(true);
+
+    return (
+        <div className="default-editor-container mt-[10px]">
+            <div
+                className={`flex items-center justify-between ring-1 ring-white/20 p-2 bg-zinc-800 rounded-md${
+                    isOpen ? " rounded-bl-none rounded-br-none" : ""
+                }`}
+            >
+                <h3 className="text-lg font-semibold">{title}</h3>
+                <button type="button" onClick={() => setIsOpen(!isOpen)}>
+                    {isOpen ? (
+                        <ChevronDownIcon className="w-5 h-5" />
+                    ) : (
+                        <ChevronLeftIcon className="w-5 h-5" />
+                    )}
+                </button>
+            </div>
+
+            <ul
+                className={`overflow-hidden transition-all duration-300 ${
+                    isOpen ? "max-h-screen" : "max-h-0"
+                }`}
+            >
+                {items.map((item, index) => (
+                    <li
+                        className={`flex items-center border-l border-r border-white/20 justify-between pl-2 hover:bg-slate-950 ${
+                            activeItem === item.id
+                                ? "bg-slate-800"
+                                : "odd:bg-zinc-950/25"
+                        } ${
+                            formEditingItem === item.id
+                                ? "bg-slate-950"
+                                : ""
+                        } transition-colors duration-200 group`}
+                        key={index}
+                    >
+                        {renderItem(item)}
+                    </li>
+                ))}
+                {addButton && (
+                    <li className="odd:bg-zinc-950/25 flex items-center justify-between">
+                        {addButton}
+                    </li>
+                )}
+            </ul>
+        </div>
+    );
+}

@@ -2,19 +2,20 @@ import clsx from 'clsx'
 
 export function Divider({
   soft = false,
+  bleed = false,
   className,
   ...props
-}: { soft?: boolean } & React.ComponentPropsWithoutRef<'hr'>) {
+}: { soft?: boolean; bleed?: boolean } & React.ComponentPropsWithoutRef<'hr'>) {
   return (
-    <hr
-      role="presentation"
-      {...props}
-      className={clsx(
-        className,
-        'w-full border-t',
-        soft && 'border-zinc-950/5 dark:border-white/5',
-        !soft && 'border-zinc-950/10 dark:border-white/10'
-      )}
-    />
-  )
+      <hr
+          role="presentation"
+          {...props}
+          className={clsx(
+              className,
+              'border-t',
+              bleed ? '-mr-10 -ml-10' : 'w-full',
+              soft ? 'border-zinc-950/5 dark:border-white/5' : 'border-zinc-950/10 dark:border-white/10'
+          )}
+      />
+  );
 }

@@ -22,9 +22,9 @@ export default function SidebarTenantHeader()
                 </DropdownButton>
                 <DropdownMenu className="min-w-80 lg:min-w-64" anchor="bottom start">
                     <DropdownDivider />
-                    <DropdownItem href="#">
+                    <DropdownItem href="/">
                         <Avatar slot="icon" src="/teams/catalyst.svg" />
-                        <DropdownLabel>Catalyst</DropdownLabel>
+                        <DropdownLabel>Projects</DropdownLabel>
                     </DropdownItem>
                     <DropdownItem href="#">
                         <Avatar slot="icon" initials="BE" className="bg-purple-500 text-white" />

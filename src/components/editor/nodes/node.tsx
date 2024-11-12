@@ -19,17 +19,24 @@ type NodeProps = {
 
 const Node: React.FC<NodeProps> = ({ node }) => {
     const { onDragMouseDown } = useDraggable();
-    const { size, handleResizeMouseDown } = useResizable(200, 150);
+    const { size, handleResizeMouseDown } = useResizable(node);
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
     const { selectedNodes, setSelectedNodes } = useEditorStore();
 
     const handleNodeMouseDown = (e: React.MouseEvent) => {
         e.preventDefault();
-        setSelectedNodes([node.uuid]);
-        onDragMouseDown();
+        if (!selectedNodes.includes(node.uuid)) {
+            setSelectedNodes([node.uuid]);
+            setTimeout(() => {
+                onDragMouseDown();
+            }, 0);
+        } else {
+            onDragMouseDown();
+        }
     };
 
-    const handleToggle = (handle: string) => {
+    const handleToggle = (handle: string) => (e: React.MouseEvent) => {
+        e.preventDefault();
         setIsOpenMap((prev) => ({
             ...prev,
             [handle]: !prev[handle],
@@ -83,7 +90,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                 {variable.type === NodeVariableType.Array && (
                                     <button
                                         type="button"
-                                        onClick={() => handleToggle(variable.handle)}
+                                        onClick={handleToggle(variable.handle)}
                                     >
                                         {isOpenMap[variable.handle] ? (
                                             <ChevronDownIcon className="w-5 h-5" />

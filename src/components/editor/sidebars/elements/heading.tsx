@@ -1,4 +1,5 @@
 import { ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon } from "@heroicons/react/16/solid";
+import React from "react";
 
 export default function Heading({
     arrowToLeft = true,

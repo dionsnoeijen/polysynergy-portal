@@ -8,7 +8,7 @@ import {Button} from "@/components/button";
 import {useEditorStore} from "@/stores/editorStore";
 import {FormType} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
-import useDynamicRoutesStore, {Route, RouteSegment, RouteSegmentType} from "@/stores/dynamicRoutesStore";
+import useDynamicRoutesStore, { Route, RouteSegment, RouteSegmentType } from "@/stores/dynamicRoutesStore";
 import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon} from "@heroicons/react/16/solid";
 import {Select} from "@/components/select";
 import {Checkbox, CheckboxField} from "@/components/checkbox";
@@ -16,7 +16,7 @@ import {formatSegments} from "@/utils/formatters";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from '@/components/alert';
 
 const DynamicRouteForm: React.FC = () => {
-    const { closeForm, formType, formEditRecordId, activeProjectId } = useEditorStore();
+    const { closeForm, formType, formEditRecordId } = useEditorStore();
     const { getDynamicRoute, storeDynamicRoute, updateDynamicRoute } = useDynamicRoutesStore();
 
     const [description, setDescription] = useState('');
@@ -104,7 +104,7 @@ const DynamicRouteForm: React.FC = () => {
                 segments,
                 method,
             };
-            storeDynamicRoute(activeProjectId as string, newRoute);
+            storeDynamicRoute(newRoute);
             closeForm('Route created successfully');
         }
 
@@ -122,7 +122,7 @@ const DynamicRouteForm: React.FC = () => {
 
     const handleDelete = () => {
         closeForm('Route deleted successfully');
-        setShowDeleteAlert(false); // Close the alert after deletion
+        setShowDeleteAlert(false);
     };
 
     return (

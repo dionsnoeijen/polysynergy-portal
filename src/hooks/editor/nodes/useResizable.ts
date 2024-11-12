@@ -1,37 +1,67 @@
-import { useState } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useEditorStore } from '@/stores/editorStore';
+import useNodesStore from '@/stores/nodesStore';
+import { useConnectionsStore } from '@/stores/connectionsStore';
+import { Node } from '@/stores/nodesStore';
 
 type Size = {
     width: number;
     height: number;
 };
 
-const useResizable = (initialWidth: number, initialHeight: number) => {
-    const [size, setSize] = useState<Size>({ width: initialWidth, height: initialHeight });
+const useResizable = (node: Node) => {
+    const [size, setSize] = useState<Size>({ width: node.width || 100, height: node.height || 100 }); // Zorgt voor initiële waarde
     const [isResizing, setIsResizing] = useState(false);
-    const zoomFactor = useEditorStore((state) => state.zoomFactor);
+    const { zoomFactor } = useEditorStore();
+    const { updateNodeWidth } = useNodesStore();
+    const { findOutConnectionsByNodeId, updateConnection } = useConnectionsStore();
 
-    const handleResizeMouseDown = (e: React.MouseEvent) => {
+    const sizeRef = useRef(size);
+    sizeRef.current = size;
+
+    const initialMouseX = useRef(0);
+
+    useEffect(() => {
+        sizeRef.current = size;
+    }, [size]);
+
+    const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
         setIsResizing(true);
+        initialMouseX.current = e.clientX;
 
         const handleMouseMove = (moveEvent: MouseEvent) => {
-            setSize((prevSize) => ({
-                width: Math.max(100, prevSize.width + moveEvent.movementX / zoomFactor),
-                height: Math.max(100, prevSize.height + moveEvent.movementY / zoomFactor),
-            }));
+            const deltaX = moveEvent.movementX / zoomFactor;
+            const newWidth = Math.max(100, sizeRef.current.width + deltaX);
+
+            setSize((prevSize) => ({ ...prevSize, width: newWidth }));
+
+            const outConnections = findOutConnectionsByNodeId(node.uuid);
+            outConnections.forEach((connection) => {
+                updateConnection({
+                    ...connection,
+                    startX: connection.startX + deltaX,
+                });
+            });
         };
 
         const handleMouseUp = () => {
             setIsResizing(false);
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
+            updateNodeWidth(node.uuid, sizeRef.current.width);
         };
 
         window.addEventListener("mousemove", handleMouseMove);
         window.addEventListener("mouseup", handleMouseUp);
-    };
+    }, [
+        zoomFactor,
+        node.uuid,
+        updateNodeWidth,
+        findOutConnectionsByNodeId,
+        updateConnection
+    ]);
 
     return {
         size,

@@ -22,8 +22,6 @@ const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: 
         zoomFactor,
         panPosition,
         editorPosition,
-        activeProjectId,
-        activeRouteId
     } = useEditorStore();
     const { updateConnections } = useNodesStore();
 
@@ -74,8 +72,6 @@ const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: 
                 const connection = getConnection(id);
                 if (connection) {
                     updateConnections({
-                        projectUuid: activeProjectId as string,
-                        routeUuid: activeRouteId as string,
                         connectionId: id,
                         sourceNodeUuid: connection.sourceNodeUuid,
                         sourceHandle: connection.sourceHandle,

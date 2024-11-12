@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import { useConnectionsStore, Connection } from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
@@ -15,10 +15,16 @@ const useDraggable = () => {
         [nodeId: string]: { inConnections: Connection[]; outConnections: Connection[] };
     }>({});
 
+    const selectedNodesRef = useRef<string[]>(selectedNodes);
+
+    useEffect(() => {
+        selectedNodesRef.current = selectedNodes;
+    }, [selectedNodes]);
+
     const onDragMouseDown = useCallback(() => {
         setIsDragging(true);
 
-        const connections = selectedNodes.reduce((acc, nodeId) => {
+        const connections = selectedNodesRef.current.reduce((acc, nodeId) => {
             acc[nodeId] = {
                 inConnections: findInConnectionsByNodeId(nodeId),
                 outConnections: findOutConnectionsByNodeId(nodeId),
@@ -37,9 +43,8 @@ const useDraggable = () => {
                 y: prevDelta.y + deltaY,
             }));
 
-            // Update the position of each selected node
-            selectedNodes.forEach((nodeId) => {
-                updateNodePosition(nodeId, deltaX, deltaY, activeProjectId as string, activeRouteId as string);
+            selectedNodesRef.current.forEach((nodeId) => {
+                updateNodePosition(nodeId, deltaX, deltaY);
             });
         };
 
@@ -47,8 +52,8 @@ const useDraggable = () => {
             setIsDragging(false);
             setDragDelta({ x: 0, y: 0 });
 
-            selectedNodes.forEach((nodeId) => {
-                updateNodePosition(nodeId, dragDelta.x, dragDelta.y, activeProjectId as string, activeRouteId as string);
+            selectedNodesRef.current.forEach((nodeId) => {
+                updateNodePosition(nodeId, dragDelta.x, dragDelta.y);
             });
 
             document.removeEventListener("mousemove", handleDraggableMouseMove);
@@ -57,31 +62,42 @@ const useDraggable = () => {
 
         document.addEventListener("mousemove", handleDraggableMouseMove);
         document.addEventListener("mouseup", handleDraggableMouseUp);
-    }, [setIsDragging, selectedNodes, findInConnectionsByNodeId, findOutConnectionsByNodeId, zoomFactor, updateNodePosition, activeProjectId, activeRouteId, dragDelta.x, dragDelta.y]);
+    }, [setIsDragging, findInConnectionsByNodeId, findOutConnectionsByNodeId, zoomFactor, updateNodePosition, activeProjectId, activeRouteId, dragDelta.x, dragDelta.y]);
 
     useEffect(() => {
         if (!isDragging) return;
 
-        selectedNodes.forEach((nodeId) => {
+        selectedNodesRef.current.forEach((nodeId) => {
             const { inConnections, outConnections } = initialConnections[nodeId] || { inConnections: [], outConnections: [] };
 
             inConnections.forEach((connection) => {
+                const isSourceNodeSelected = selectedNodesRef.current.includes(connection.sourceNodeUuid);
                 updateConnection({
                     ...connection,
                     endX: connection.endX + dragDelta.x,
                     endY: connection.endY + dragDelta.y,
+                    ...(isSourceNodeSelected && {
+                        startX: connection.startX + dragDelta.x,
+                        startY: connection.startY + dragDelta.y,
+                    }),
                 });
             });
 
             outConnections.forEach((connection) => {
+                const isTargetNodeSelected = selectedNodesRef.current.includes(connection.targetNodeUuid || "");
+
                 updateConnection({
                     ...connection,
                     startX: connection.startX + dragDelta.x,
                     startY: connection.startY + dragDelta.y,
+                    ...(isTargetNodeSelected && {
+                        endX: connection.endX + dragDelta.x,
+                        endY: connection.endY + dragDelta.y,
+                    }),
                 });
             });
         });
-    }, [dragDelta, isDragging, initialConnections, selectedNodes, updateConnection]);
+    }, [dragDelta, isDragging, initialConnections, updateConnection]);
 
     return { onDragMouseDown };
 };

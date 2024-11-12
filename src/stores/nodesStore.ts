@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useEditorStore } from '@/stores/editorStore';
 
 export enum NodeVariableType {
     String = 'string',
@@ -34,17 +35,17 @@ type NodesStore = {
     nodes: Record<string, Record<string, Node[]>>;
     updateConnections: (payload: {
         connectionId: string;
-        projectUuid: string;
-        routeUuid: string;
         sourceNodeUuid: string;
         sourceHandle: string;
         targetNodeUuid: string;
         targetHandle: string;
     }) => void;
-    updateNodePosition: (nodeId: string, deltaX: number, deltaY: number, projectUuid: string, routeUuid: string) => void;
-    addNode: (projectUuid: string, routeUuid: string, node: Node) => void;
-    removeNode: (projectUuid: string, routeUuid: string, nodeUuid: string) => void;
-    getNodes: (projectUuid: string, routeUuid: string) => Node[];
+    updateNodePosition: (nodeId: string, deltaX: number, deltaY: number) => void;
+    updateNodeWidth: (nodeId: string, width: number) => void;
+    addNode: (node: Node) => void;
+    removeNode: (nodeUuid: string) => void;
+    getNode: (nodeUuid: string) => Node | undefined;
+    getNodes: () => Node[];
 };
 
 const useNodesStore = create<NodesStore>((set) => ({
@@ -201,10 +202,11 @@ const useNodesStore = create<NodesStore>((set) => ({
         }
     },
 
-    updateConnections: ({connectionId, projectUuid, routeUuid, sourceNodeUuid, sourceHandle, targetNodeUuid, targetHandle}) => {
+    updateConnections: ({connectionId, sourceNodeUuid, sourceHandle, targetNodeUuid, targetHandle}) => {
+        const { activeProjectId, activeRouteId } = useEditorStore.getState();
         set((state) => {
-            const projectNodes = state.nodes[projectUuid];
-            const routeNodes = projectNodes[routeUuid];
+            const projectNodes = state.nodes[activeProjectId];
+            const routeNodes = projectNodes[activeRouteId];
 
             const updatedRouteNodes = routeNodes.map((node) => {
                 if (node.uuid === sourceNodeUuid) {
@@ -239,47 +241,74 @@ const useNodesStore = create<NodesStore>((set) => ({
             return {
                 nodes: {
                     ...state.nodes,
-                    [projectUuid]: {
+                    [activeProjectId]: {
                         ...projectNodes,
-                        [routeUuid]: updatedRouteNodes,
+                        [activeRouteId]: updatedRouteNodes,
                     },
                 },
             };
         });
     },
 
-    addNode: (projectUuid, routeUuid, node) => {
+    addNode: (node) => {
+        const { activeProjectId, activeRouteId } = useEditorStore.getState();
         set((state) => ({
             nodes: {
                 ...state.nodes,
-                [projectUuid]: {
-                    ...state.nodes[projectUuid],
-                    [routeUuid]: [...(state.nodes[projectUuid]?.[routeUuid] || []), node],
+                [activeProjectId]: {
+                    ...state.nodes[activeProjectId],
+                    [activeRouteId]: [...(state.nodes[activeProjectId]?.[activeRouteId] || []), node],
                 },
             },
         }));
     },
 
-    removeNode: (projectUuid, routeUuid, nodeUuid) => {
+    removeNode: (nodeUuid) => {
+        const { activeProjectId, activeRouteId } = useEditorStore.getState();
         set((state: NodesStore) => {
-            const projectNodes = state.nodes[projectUuid] || {};
-            const routeNodes = projectNodes[routeUuid]?.filter((node) => node.uuid !== nodeUuid) || [];
+            const projectNodes = state.nodes[activeProjectId] || {};
+            const routeNodes = projectNodes[activeRouteId]?.filter((node) => node.uuid !== nodeUuid) || [];
             return {
                 nodes: {
                     ...state.nodes,
-                    [projectUuid]: {
+                    [activeProjectId]: {
                         ...projectNodes,
-                        [routeUuid]: routeNodes,
+                        [activeRouteId]: routeNodes,
                     },
                 },
             };
         });
     },
 
-    updateNodePosition: (nodeId, deltaX, deltaY, projectUuid, routeUuid) => {
+    updateNodeWidth: (nodeId, width) => {
+        const { activeRouteId, activeProjectId } = useEditorStore.getState();
+
         set((state) => {
-            const projectNodes = state.nodes[projectUuid];
-            const routeNodes = projectNodes[routeUuid].map((node) =>
+            const projectNodes = state.nodes[activeProjectId];
+            const routeNodes = projectNodes[activeRouteId].map((node) =>
+                node.uuid === nodeId
+                    ? { ...node, width }
+                    : node
+            );
+
+            return {
+                nodes: {
+                    ...state.nodes,
+                    [activeProjectId]: {
+                        ...projectNodes,
+                        [activeRouteId]: routeNodes,
+                    },
+                },
+            };
+        });
+    },
+
+    updateNodePosition: (nodeId, deltaX, deltaY) => {
+        const { activeProjectId, activeRouteId } = useEditorStore.getState();
+
+        set((state) => {
+            const projectNodes = state.nodes[activeProjectId];
+            const routeNodes = projectNodes[activeRouteId].map((node) =>
                 node.uuid === nodeId
                     ? { ...node, x: node.x + deltaX, y: node.y + deltaY }
                     : node
@@ -288,17 +317,25 @@ const useNodesStore = create<NodesStore>((set) => ({
             return {
                 nodes: {
                     ...state.nodes,
-                    [projectUuid]: {
+                    [activeProjectId]: {
                         ...projectNodes,
-                        [routeUuid]: routeNodes,
+                        [activeRouteId]: routeNodes,
                     },
                 },
             };
         });
     },
 
-    getNodes: (projectUuid, routeUuid): Node[] => {
-        return (useNodesStore.getState().nodes[projectUuid]?.[routeUuid] || []);
+    getNode: (nodeUuid): Node | undefined => {
+        const { activeProjectId, activeRouteId } = useEditorStore.getState();
+        return (useNodesStore.getState()
+            .nodes[activeProjectId]?.[activeRouteId] || [])
+            .find((node) => node.uuid === nodeUuid);
+    },
+
+    getNodes: (): Node[] => {
+        const { activeProjectId, activeRouteId } = useEditorStore.getState();
+        return (useNodesStore.getState().nodes[activeProjectId]?.[activeRouteId] || []);
     }
 }));
 

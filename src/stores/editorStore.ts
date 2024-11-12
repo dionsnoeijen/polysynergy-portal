@@ -13,9 +13,9 @@ type EditorState = {
     showForm: boolean;
     formType: FormType | null;
     formEditRecordId: string | null;
-    activeProjectId: string | null;
+    activeProjectId: string;
     setActiveProjectId: (projectId: string) => void;
-    activeRouteId: string | null;
+    activeRouteId: string;
     setActiveRouteId: (routeId: string) => void;
     openForm: (type: FormType, formEditRecordId?: null | string) => void;
     closeForm: (closeFormMessage?: string | null) => void;
@@ -34,8 +34,6 @@ type EditorState = {
     setControlDeselectOne: (controlDeselectOne: boolean) => void;
     boxSelect: boolean;
     setBoxSelect: (boxSelect: boolean) => void;
-    boxSelectPosition: { lx: number; ly: number; rx: number; ry: number };
-    setBoxSelectPosition: (position: { lx: number; ly: number; rx: number; ry: number }) => void;
 };
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -48,9 +46,9 @@ export const useEditorStore = create<EditorState>((set) => ({
     showForm: false,
     formType: null,
     formEditRecordId: null,
-    activeProjectId: null,
+    activeProjectId: '',
     setActiveProjectId: (projectId: string) => set({ activeProjectId: projectId }),
-    activeRouteId: null,
+    activeRouteId: '',
     setActiveRouteId: (routeId: string) => set({ activeRouteId: routeId }),
     openForm: (type: FormType, formEditRecordId: null | string = null) => set({
         showForm: true,
@@ -83,6 +81,4 @@ export const useEditorStore = create<EditorState>((set) => ({
     setControlDeselectOne: (controlDeselectOne) => set({ controlDeselectOne: controlDeselectOne }),
     boxSelect: false,
     setBoxSelect: (boxSelect) => set({ boxSelect: boxSelect }),
-    boxSelectPosition: { lx: 0, ly: 0, rx: 0, ry: 0 },
-    setBoxSelectPosition: (position) => set({ boxSelectPosition: position }),
 }));

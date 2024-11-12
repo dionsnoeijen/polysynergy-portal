@@ -10,13 +10,7 @@ import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useDeselectOnClickOutside } from "@/hooks/editor/nodes/useDeselectOnClickOutside";
 import BoxSelect from "@/components/editor/box-select";
 
-export default function Editor({
-   projectUuid = null,
-   routeUuid = null
-}: {
-    projectUuid?: null | string,
-    routeUuid?: null | string
-}) {
+export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
 
     const {
@@ -26,7 +20,6 @@ export default function Editor({
         panPosition,
         isDrawingConnection,
         mousePosition,
-        boxSelectPosition
     } = useEditorStore();
     const { getNodes } = useNodesStore();
     const { getConnections } = useConnectionsStore();
@@ -67,24 +60,13 @@ export default function Editor({
             ref={contentRef}
         >
             <Grid zoomFactor={zoomFactor} position={panPosition} />
-            <BoxSelect projectUuid={projectUuid as string} routeUuid={routeUuid as string} />
+            <BoxSelect />
 
             <div
                 style={{ transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomFactor})` }}
                 className="absolute top-0 left-0 w-0 h-0 overflow-visible"
             >
-                {boxSelectPosition.lx !== 0 && boxSelectPosition.ly !== 0 && boxSelectPosition.rx !== 0 && boxSelectPosition.ry !== 0 && (
-                <div style={
-                    {
-                        left: boxSelectPosition.lx,
-                        top: boxSelectPosition.ly,
-                        width: boxSelectPosition.rx - boxSelectPosition.lx,
-                        height: boxSelectPosition.ry - boxSelectPosition.ly
-                    }
-                } className="-z-10 absolute bg-slate-800/20 ring-1 ring-red-500 rounded-md select-none" />
-                )}
-
-                {getNodes(projectUuid as string, routeUuid as string).map((node) => (
+                {getNodes().map((node) => (
                     <Node
                         key={node.uuid}
                         node={node}
@@ -100,7 +82,6 @@ export default function Editor({
                         endY={isDrawingConnection === connection.id ? mousePosition.y : connection.endY}
                     />
                 ))}
-
             </div>
         </div>
     );

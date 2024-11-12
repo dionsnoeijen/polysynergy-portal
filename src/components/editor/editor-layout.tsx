@@ -126,7 +126,7 @@ export function EditorLayout({
             {!itemManagerClosed && (
                     <div style={{ width: width.itemManager }} className="absolute top-0 left-0 bottom-0 max-lg:hidden">
                         <div className="absolute inset-[10px]">
-                            <ItemManager projectUuid={projectUuid} routeUuid={routeUuid} toggleClose={toggleCloseItemManager} />
+                            <ItemManager toggleClose={toggleCloseItemManager} />
                         </div>
                         <button
                             onMouseDown={() => startResizing(ResizeWhat.ItemManager)}
@@ -154,7 +154,7 @@ export function EditorLayout({
                         ) : (
                             projectUuid && routeUuid ? (
                                 <>
-                                <Editor projectUuid={projectUuid} routeUuid={routeUuid} />
+                                <Editor />
                                 <SelectionsMenu />
                                 </>
                             ) : (

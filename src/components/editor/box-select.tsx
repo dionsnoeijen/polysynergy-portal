@@ -2,15 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 
-type BoxSelectProps = {
-    projectUuid?: null | string;
-    routeUuid?: null | string;
-};
-
-const BoxSelect: React.FC<BoxSelectProps> = ({
-    projectUuid = null,
-    routeUuid = null
-}): React.ReactElement => {
+const BoxSelect: React.FC = (): React.ReactElement => {
     const {
         setSelectedNodes,
         boxSelect,
@@ -18,8 +10,7 @@ const BoxSelect: React.FC<BoxSelectProps> = ({
         setClickSelect,
         editorPosition,
         panPosition,
-        zoomFactor,
-        setBoxSelectPosition
+        zoomFactor
     } = useEditorStore();
     const { getNodes } = useNodesStore();
     const [isSelecting, setIsSelecting] = useState(false);
@@ -44,7 +35,7 @@ const BoxSelect: React.FC<BoxSelectProps> = ({
             const boxRight = Math.max(boxStart.x, boxEnd.x);
             const boxBottom = Math.max(boxStart.y, boxEnd.y);
 
-            const selectedNodes = getNodes(projectUuid as string, routeUuid as string).filter((node) => {
+            const selectedNodes = getNodes().filter((node) => {
                 const nodeLeft = node.x;
                 const nodeTop = node.y;
                 const nodeRight = nodeLeft + node.width;
@@ -58,7 +49,6 @@ const BoxSelect: React.FC<BoxSelectProps> = ({
                 );
             });
 
-            setBoxSelectPosition({lx: boxLeft, ly: boxTop, rx: boxRight, ry: boxBottom});
             setSelectedNodes(selectedNodes.map((node) => node.uuid));
             setBoxStart(null);
             setBoxEnd(null);
@@ -79,8 +69,6 @@ const BoxSelect: React.FC<BoxSelectProps> = ({
         isSelecting,
         boxStart,
         boxEnd,
-        projectUuid,
-        routeUuid,
         setBoxSelect,
         setSelectedNodes,
         getNodes,

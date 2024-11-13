@@ -19,7 +19,7 @@ const SelectionsMenu: React.FC = () => {
     }, [setClickSelect, setBoxSelect]);
 
     return (
-        <div className="absolute left-5 top-5 flex flex-col items-center justify-center">
+        <div className="absolute left-5 top-24 flex flex-col items-center justify-center">
             <div className="flex flex-col items-start justify-center w-full h-full">
                 <button
                     className={`w-full text-lg font-semibold text-white rounded-sm p-1 ${clickSelect ? 'bg-blue-500' : 'bg-zinc-500'}`}

@@ -1,18 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import ItemManager from "@/components/editor/sidebars/item-manager";
 import Dock from "@/components/editor/sidebars/dock";
-import {ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon} from "@heroicons/react/16/solid";
+import { ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon } from "@heroicons/react/16/solid";
 import Editor from "@/components/editor/editor";
-import {useEditorStore} from "@/stores/editorStore";
+import { useEditorStore } from "@/stores/editorStore";
 import Form from "@/components/editor/form";
 import SelectionsMenu from "@/components/editor/editormenus/selections-menu";
+import UndoRedoMenu from "@/components/editor/editormenus/undo-redo-menu";
 
 export function EditorLayout({
-    projectUuid = null,
-    routeUuid = null
-}: {
-    projectUuid?: null|string,
-    routeUuid?: null|string
+                                 projectUuid = null,
+                                 routeUuid = null
+                             }: {
+    projectUuid?: null | string,
+    routeUuid?: null | string
 }) {
 
     enum ResizeWhat {
@@ -22,18 +23,18 @@ export function EditorLayout({
     }
 
     const [resizing, setResizing] = useState<ResizeWhat | null>(null);
-    const [width, setWidth] = useState({ itemManager: 256, dock: 256 });
-    const [height, setHeight] = useState({ horizontalEditorLayout: 0 });
+    const [width, setWidth] = useState({itemManager: 256, dock: 256});
+    const [height, setHeight] = useState({horizontalEditorLayout: 0});
     const [windowHeight, setWindowHeight] = useState(0);
 
     const [itemManagerClosed, setItemManagerClosed] = useState(false);
     const [dockClosed, setDockClosed] = useState(false);
     const [outputClosed, setOutputClosed] = useState(false);
 
-    const { showForm, setActiveProjectId, setActiveRouteId, closeFormMessage } = useEditorStore();
+    const {showForm, setActiveProjectId, setActiveRouteId, closeFormMessage} = useEditorStore();
 
     useEffect(() => {
-        setHeight({ horizontalEditorLayout: window.innerHeight * 0.85 });
+        setHeight({horizontalEditorLayout: window.innerHeight * 0.85});
         setWindowHeight(window.innerHeight);
         setActiveProjectId(projectUuid as string);
         if (routeUuid) {
@@ -65,12 +66,12 @@ export function EditorLayout({
                 const newHeight = e.clientY;
                 const newWidth = e.clientX;
                 if (resizing === ResizeWhat.ItemManager) {
-                    setWidth((prev) => ({ ...prev, itemManager: Math.max(newWidth, 100) }));
+                    setWidth((prev) => ({...prev, itemManager: Math.max(newWidth, 100)}));
                 } else if (resizing === ResizeWhat.Dock) {
                     const dockWidth = window.innerWidth - newWidth;
-                    setWidth((prev) => ({ ...prev, dock: Math.max(dockWidth, 100) }));
+                    setWidth((prev) => ({...prev, dock: Math.max(dockWidth, 100)}));
                 } else if (resizing === ResizeWhat.Output) {
-                    setHeight((prev) => ({ ...prev, horizontalEditorLayout: Math.max(newHeight, 100) }));
+                    setHeight((prev) => ({...prev, horizontalEditorLayout: Math.max(newHeight, 100)}));
                 }
             }
         },
@@ -123,10 +124,10 @@ export function EditorLayout({
             )}
             <div className="absolute top-0 right-0 left-0"
                  style={{height: outputClosed ? windowHeight - 10 : height.horizontalEditorLayout}}>
-            {!itemManagerClosed && (
-                    <div style={{ width: width.itemManager }} className="absolute top-0 left-0 bottom-0 max-lg:hidden">
+                {!itemManagerClosed && (
+                    <div style={{width: width.itemManager}} className="absolute top-0 left-0 bottom-0 max-lg:hidden">
                         <div className="absolute inset-[10px]">
-                            <ItemManager toggleClose={toggleCloseItemManager} />
+                            <ItemManager toggleClose={toggleCloseItemManager}/>
                         </div>
                         <button
                             onMouseDown={() => startResizing(ResizeWhat.ItemManager)}
@@ -140,7 +141,7 @@ export function EditorLayout({
                     type="button"
                     onClick={toggleCloseItemManager}
                     className="absolute z-10 top-[10px] left-0 p-3 default-editor-container radius-tl-0"
-                ><ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white" /></button>)}
+                ><ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/></button>)}
 
                 <main className="absolute top-0 bottom-0" style={{
                     left: itemManagerClosed ? 10 : width.itemManager,
@@ -150,12 +151,13 @@ export function EditorLayout({
                         className="absolute top-[10px] left-0 right-0 bottom-0 default-editor-container overflow-scroll"
                     >
                         {showForm ? (
-                            <Form />
+                            <Form/>
                         ) : (
                             projectUuid && routeUuid ? (
                                 <>
-                                <Editor />
-                                <SelectionsMenu />
+                                    <Editor/>
+                                    <SelectionsMenu/>
+                                    <UndoRedoMenu/>
                                 </>
                             ) : (
                                 <div className="flex justify-center items-center ">
@@ -185,7 +187,7 @@ export function EditorLayout({
                         onClick={toggleCloseDock}
                         className="absolute z-10 top-[10px] right-0 p-3 default-editor-container radius-tr-0"
                     >
-                        <ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white" />
+                        <ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/>
                     </button>
                 )}
             </div>
@@ -193,19 +195,20 @@ export function EditorLayout({
             {!outputClosed && (
                 <div
                     className="absolute left-0 bottom-0 right-0"
-                    style={{ height: windowHeight - height.horizontalEditorLayout }}
+                    style={{height: windowHeight - height.horizontalEditorLayout}}
                 >
                     <button
                         type="button"
                         onClick={toggleCloseOutput}
                         className={`absolute z-10 top-[10px] right-[10px] p-3 radius-bl-0`}
-                    ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white" /></button>
+                    ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/></button>
                     <button
                         onMouseDown={() => startResizing(ResizeWhat.Output)}
                         type="button"
                         className="absolute h-[8px] left-0 right-0 top-0 cursor-row-resize z-10"
                     />
-                    <div className="absolute top-[10px] left-[10px] right-[10px] bottom-[10px] default-editor-container">
+                    <div
+                        className="absolute top-[10px] left-[10px] right-[10px] bottom-[10px] default-editor-container">
                         <p>Output</p>
                     </div>
                 </div>
@@ -217,7 +220,7 @@ export function EditorLayout({
                     onClick={toggleCloseOutput}
                     className="absolute z-10 bottom-[10px] right-[10px] p-3 default-editor-container radius-bl-0"
                 >
-                    <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white" />
+                    <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/>
                 </button>
             )}
         </div>

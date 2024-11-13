@@ -68,7 +68,10 @@ const useDraggable = () => {
         if (!isDragging) return;
 
         selectedNodesRef.current.forEach((nodeId) => {
-            const { inConnections, outConnections } = initialConnections[nodeId] || { inConnections: [], outConnections: [] };
+            const {
+                inConnections,
+                outConnections
+            } = initialConnections[nodeId] || { inConnections: [], outConnections: [] };
 
             inConnections.forEach((connection) => {
                 const isSourceNodeSelected = selectedNodesRef.current.includes(connection.sourceNodeUuid);
@@ -85,7 +88,6 @@ const useDraggable = () => {
 
             outConnections.forEach((connection) => {
                 const isTargetNodeSelected = selectedNodesRef.current.includes(connection.targetNodeUuid || "");
-
                 updateConnection({
                     ...connection,
                     startX: connection.startX + dragDelta.x,

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, {useRef, useEffect, useCallback} from 'react';
 import { useZoom } from "@/hooks/editor/useZoom";
 import { usePan } from "@/hooks/editor/usePan";
 import { Grid } from "@/components/editor/grid";
@@ -6,9 +6,11 @@ import Node from "@/components/editor/nodes/node";
 import { useEditorStore } from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import Connection from "@/components/editor/nodes/connection";
+import { Connection as ConnectionProps } from "@/stores/connectionsStore";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useDeselectOnClickOutside } from "@/hooks/editor/nodes/useDeselectOnClickOutside";
 import BoxSelect from "@/components/editor/box-select";
+import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -22,29 +24,56 @@ export default function Editor() {
         mousePosition,
     } = useEditorStore();
     const { getNodes } = useNodesStore();
-    const { getConnections } = useConnectionsStore();
+    const { connections } = useConnectionsStore();
 
     const { handleZoom } = useZoom();
     const { handlePanMouseDown, handleMouseMove, handleMouseUp } = usePan();
     const { handleEditorMouseDown } = useDeselectOnClickOutside();
 
-    useEffect(() => {
-        const updateEditorPosition = () => {
-            if (contentRef.current) {
-                const rect = contentRef.current.getBoundingClientRect();
-                setEditorPosition({ x: rect.left, y: rect.top });
-            }
-        };
+    const updateEditorPosition = useCallback(() => {
+        if (contentRef.current) {
+            const rect = contentRef.current.getBoundingClientRect();
+            setEditorPosition({ x: rect.left, y: rect.top });
+        }
+    }, [setEditorPosition]);
 
+    useEffect(() => {
         updateEditorPosition();
         window.addEventListener('resize', updateEditorPosition);
         return () => window.removeEventListener('resize', updateEditorPosition);
-    }, [ setEditorPosition ]);
+    }, [setEditorPosition, updateEditorPosition]);
 
     const handleWheel = (e: React.WheelEvent) => {
         if (!contentRef.current) return;
         handleZoom(e, contentRef.current.getBoundingClientRect());
     };
+
+    const getAdjustedConnection = (connection: ConnectionProps): ConnectionProps => {
+        if (isDrawingConnection === connection.id) {
+            return {
+                ...connection,
+                endX: mousePosition.x,
+                endY: mousePosition.y,
+            };
+        }
+        return connection;
+    };
+
+    useKeyBindings({
+        'delete': () => {
+            // Voeg hier logica toe om geselecteerde nodes te verwijderen
+            console.log('Delete key pressed');
+        },
+        'ctrl+c': (event) => {
+            console.log('Copy selected nodes');
+        },
+        'ctrl+v': (event) => {
+            console.log('Paste nodes');
+        },
+        'ctrl+z': (event) => {
+            console.log('Undo last action');
+        },
+    });
 
     return (
         <div
@@ -73,13 +102,10 @@ export default function Editor() {
                     />
                 ))}
 
-                {getConnections().map((connection) => (
+                {connections.map((connection) => (
                     <Connection
                         key={connection.id}
-                        startX={connection.startX}
-                        startY={connection.startY}
-                        endX={isDrawingConnection === connection.id ? mousePosition.x : connection.endX}
-                        endY={isDrawingConnection === connection.id ? mousePosition.y : connection.endY}
+                        connection={getAdjustedConnection(connection)}
                     />
                 ))}
             </div>

@@ -5,6 +5,7 @@ import { useConnectionsStore } from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
 import { v4 as uuidv4 } from "uuid";
 import { calculateConnectorPosition } from "@/utils/positionUtils";
+import { InOut } from "@/types/types";
 
 type ConnectorProps = {
     nodeUuid: string;
@@ -15,7 +16,12 @@ type ConnectorProps = {
     );
 
 const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: isOut }): React.ReactElement => {
-    const { getConnection, addConnection, updateConnectionEnd, removeConnectionById } = useConnectionsStore();
+    const {
+        getConnection,
+        addConnection,
+        updateConnectionEnd,
+        removeConnectionById
+    } = useConnectionsStore();
     const {
         setIsDrawingConnection,
         setMousePosition,
@@ -23,7 +29,9 @@ const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: 
         panPosition,
         editorPosition,
     } = useEditorStore();
-    const { updateConnections } = useNodesStore();
+    const {
+        updateConnections
+    } = useNodesStore();
 
     const handleMouseDown = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -55,7 +63,6 @@ const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: 
             const newX = (moveEvent.clientX - editorPosition.x - panPosition.x) / zoomFactor;
             const newY = (moveEvent.clientY - editorPosition.y - panPosition.y) / zoomFactor;
             setMousePosition({ x: newX, y: newY });
-            updateConnectionEnd(id, newX, newY);
         };
 
         const handleMouseUp = (upEvent: MouseEvent) => {
@@ -93,7 +100,7 @@ const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: 
     return (
         <div
             onMouseDown={handleMouseDown}
-            data-type={isIn ? "in" : "out"}
+            data-type={isIn ? InOut.In : InOut.Out}
             data-node-uuid={nodeUuid}
             data-handle={handle}
             className={`w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-white bg-slate-800 cursor-pointer

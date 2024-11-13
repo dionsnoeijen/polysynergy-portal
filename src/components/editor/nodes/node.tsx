@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
 import useResizable from "@/hooks/editor/nodes/useResizable";
 import {
@@ -10,8 +10,9 @@ import {
 } from "@heroicons/react/16/solid";
 import Connector from "@/components/editor/nodes/connector";
 import { Node as NodeType, NodeVariable, NodeVariableType } from "@/stores/nodesStore";
-import {Switch} from "@/components/switch";
-import {useEditorStore} from "@/stores/editorStore";
+import { Switch } from "@/components/switch";
+import { useEditorStore } from "@/stores/editorStore";
+import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
 
 type NodeProps = {
     node: NodeType;
@@ -20,10 +21,14 @@ type NodeProps = {
 const Node: React.FC<NodeProps> = ({ node }) => {
     const { onDragMouseDown } = useDraggable();
     const { size, handleResizeMouseDown } = useResizable(node);
-    const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
+    const [isOpenMap, setIsOpenMap] = useState<{ [key: string]: boolean }>({});
     const { selectedNodes, setSelectedNodes } = useEditorStore();
+    const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
+    const shouldUpdateConnections = useRef(false);
 
     const handleNodeMouseDown = (e: React.MouseEvent) => {
+        const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
+        if (isToggleClick) return;
         e.preventDefault();
         if (!selectedNodes.includes(node.uuid)) {
             setSelectedNodes([node.uuid]);
@@ -37,13 +42,29 @@ const Node: React.FC<NodeProps> = ({ node }) => {
 
     const handleToggle = (handle: string) => (e: React.MouseEvent) => {
         e.preventDefault();
+        shouldUpdateConnections.current = true;
         setIsOpenMap((prev) => ({
             ...prev,
             [handle]: !prev[handle],
         }));
     };
 
-    const handleNodeClick = () => {
+    useEffect(() => {
+        if (shouldUpdateConnections.current) {
+            Object.entries(isOpenMap).forEach(([handle, isOpen]) => {
+                if (isOpen) {
+                    openConnections(handle);
+                } else {
+                    collapseConnections(handle);
+                }
+            });
+            shouldUpdateConnections.current = false; // Reset voor toekomstige wijzigingen
+        }
+    }, [isOpenMap, openConnections, collapseConnections]);
+
+    const handleNodeClick = (e: React.MouseEvent) => {
+        const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
+        if (isToggleClick) return;
         if (!selectedNodes.includes(node.uuid)) {
             setSelectedNodes([node.uuid]);
         }
@@ -54,8 +75,8 @@ const Node: React.FC<NodeProps> = ({ node }) => {
             onClick={handleNodeClick}
             onMouseDown={handleNodeMouseDown}
             className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ${
-                selectedNodes.includes(node.uuid) ? "ring-2 ring-white" : "ring-1 ring-white/50"
-            } shadow-2xl bg-slate-800/90 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5`}
+                selectedNodes.includes(node.uuid) ? "ring-2 ring-white shadow-2xl" : "ring-1 ring-white/50"
+            } bg-slate-800/90 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5`}
             style={{
                 width: `${size.width}px`,
                 left: `${node.x}px`,
@@ -63,7 +84,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
             }}
         >
             <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">
-                <Connector in nodeUuid={node.uuid} />
+                <Connector in nodeUuid={node.uuid} handle={"node"} />
                 <Switch />
                 <h3 className="font-bold truncate ml-2">{node.name}</h3>
             </div>
@@ -91,6 +112,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                     <button
                                         type="button"
                                         onClick={handleToggle(variable.handle)}
+                                        data-toggle="true"
                                     >
                                         {isOpenMap[variable.handle] ? (
                                             <ChevronDownIcon className="w-5 h-5" />
@@ -107,29 +129,42 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                 Array.isArray(variable.value) &&
                                 isOpenMap[variable.handle] && (
                                     <React.Fragment>
-                                        {(variable.value as NodeVariable[]).map((item: NodeVariable, index: number): React.ReactNode => (
-                                            <div
-                                                key={item.handle}
-                                                className="flex items-center justify-between pl-5 pr-3 pt-1 relative"
-                                            >
-                                                {item.in_connections !== null && (
-                                                    <Connector in nodeUuid={node.uuid} handle={variable.handle} />
-                                                )}
-                                                <div className="flex items-center truncate">
-                                                    <span className="text-gray-400">
-                                                    {index === ((variable.value as NodeVariable[])?.length ?? 0) - 1 ? "└─" : "├─"}
-                                                    </span>{" "}
-                                                    {item.name}:{" "}
-                                                    {item.default_value && "{default: " + item.default_value + "}"}
+                                        {(variable.value as NodeVariable[]).map(
+                                            (item: NodeVariable, index: number): React.ReactNode => (
+                                                <div
+                                                    key={item.handle}
+                                                    className="flex items-center justify-between pl-5 pr-3 pt-1 relative"
+                                                >
+                                                    {item.in_connections !== null && (
+                                                        <Connector
+                                                            in
+                                                            nodeUuid={node.uuid}
+                                                            handle={variable.handle + "." + item.handle}
+                                                        />
+                                                    )}
+                                                    <div className="flex items-center truncate">
+                                                        <span className="text-gray-400">
+                                                            {index ===
+                                                            ((variable.value as NodeVariable[])?.length ?? 0) - 1
+                                                                ? "└─"
+                                                                : "├─"}
+                                                        </span>{" "}
+                                                        {" " + item.name}:{" "}
+                                                        {item.default_value &&
+                                                            "{default: " + item.default_value + "}"}
+                                                    </div>
+                                                    {item.out_connections !== null && (
+                                                        <Connector
+                                                            out
+                                                            nodeUuid={node.uuid}
+                                                            handle={variable.handle + "." + item.handle}
+                                                        />
+                                                    )}
                                                 </div>
-                                                {item.out_connections !== null && (
-                                                    <Connector out nodeUuid={node.uuid} handle={variable.handle} />
-                                                )}
-                                            </div>
-                                        ))}
+                                            )
+                                        )}
                                     </React.Fragment>
                                 )}
-
                         </React.Fragment>
                     ))}
                 </div>

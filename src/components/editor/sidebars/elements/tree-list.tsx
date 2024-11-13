@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/16/solid";
-
-type ListItemWithId = {
-    id: string;
-};
+import { ListItemWithId } from "@/types/types";
 
 type ListProps<T extends ListItemWithId> = {
     items: T[];

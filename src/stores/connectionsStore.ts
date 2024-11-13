@@ -10,18 +10,20 @@ export type Connection = {
     sourceHandle: string;
     targetNodeUuid?: string;
     targetHandle?: string;
+    collapsed?: boolean;
 };
 
 type ConnectionsStore = {
     connections: Connection[];
     getConnection: (connectionId: string) => Connection | undefined;
-    getConnections: () => Connection[];
     addConnection: (connection: Connection) => void;
     removeConnectionById: (connectionId: string) => void;
     removeConnection: (connection: Connection) => void;
     updateConnection: (connection: Connection) => void;
     findInConnectionsByNodeId: (nodeId: string) => Connection[];
     findOutConnectionsByNodeId: (nodeId: string) => Connection[];
+    findInConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact?: boolean) => Connection[];
+    findOutConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact?: boolean) => Connection[];
     updateConnectionEnd: (
         connectionId: string,
         endX: number,
@@ -39,10 +41,6 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
         return useConnectionsStore.getState()
             .connections
             .find((c) => c.id === connectionId);
-    },
-
-    getConnections: (): Connection[] => {
-        return useConnectionsStore.getState().connections;
     },
 
     addConnection: (connection: Connection) => {
@@ -63,7 +61,9 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
 
     updateConnection: (connection: Connection) => {
         set((state) => ({
-            connections: state.connections.map((c) => (c.id === connection.id ? connection : c)),
+            connections: state.connections.map((c) =>
+                c.id === connection.id ? connection : c
+            ),
         }));
     },
 
@@ -81,12 +81,28 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
             .filter((c) => c.sourceNodeUuid === nodeId);
     },
 
-    moveConnectionsRight(): void {
-
+    findInConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact: boolean = true): Connection[] => {
+        return useConnectionsStore
+            .getState()
+            .connections
+            .filter((c) =>
+                c.targetNodeUuid === nodeId &&
+                (matchExact
+                    ? c.targetHandle === handle
+                    : c.targetHandle?.startsWith(handle))
+            );
     },
 
-    moveConnectionsLeft(): void {
-
+    findOutConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact: boolean = true): Connection[] => {
+        return useConnectionsStore
+            .getState()
+            .connections
+            .filter((c) =>
+                c.sourceNodeUuid === nodeId &&
+                (matchExact
+                    ? c.sourceHandle === handle
+                    : c.sourceHandle?.startsWith(handle))
+            );
     },
 
     updateConnectionEnd: (
@@ -96,8 +112,6 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
         targetNodeUuid?: string,
         targetHandle?: string
     ) => {
-
-        // Make sure no connection can be made to self
         const connection = useConnectionsStore.getState().connections.find((c) => c.id === connectionId);
         if (connection?.sourceNodeUuid === targetNodeUuid) {
             useConnectionsStore.getState().removeConnectionById(connectionId);

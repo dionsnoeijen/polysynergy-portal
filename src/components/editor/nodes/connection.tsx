@@ -1,25 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Connection as ConnectionProps } from "@/stores/connectionsStore";
 
-interface ConnectionProps {
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
-    color?: string;
-    width?: number;
-    dotRadius?: number; // Optioneel: grootte van de bollen
-}
+type Props = {
+    connection: ConnectionProps;
+};
 
-const Connection: React.FC<ConnectionProps> = ({
-    startX,
-    startY,
-    endX,
-    endY,
-    color = '#ffffff',
-    width = 2,
-    dotRadius = 6.5,
-}) => {
+const Connection: React.FC<Props> = ({ connection }) => {
     const [path, setPath] = useState('');
+
+    const color = connection.collapsed ? '#666666' : '#ffffff';
+    const width = 2;
+    const dotRadius = 6.5;
+    const dashArray = connection.collapsed ? "4 4" : "0";
+
+    const {
+        startX,
+        startY,
+        endX,
+        endY
+    } = connection;
 
     const generatePath = useCallback(() => {
         const controlPointX = (startX + endX) / 2;
@@ -37,7 +36,7 @@ const Connection: React.FC<ConnectionProps> = ({
     return (
         <>
             <svg style={{ position: 'absolute', pointerEvents: 'none', overflow: 'visible', zIndex: 1 }}>
-                <path d={path} stroke={color} strokeWidth={width} fill="none" />
+                <path d={path} stroke={color} strokeWidth={width} fill="none" strokeDasharray={dashArray} />
             </svg>
 
             <div

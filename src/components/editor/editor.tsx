@@ -11,6 +11,9 @@ import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useDeselectOnClickOutside } from "@/hooks/editor/nodes/useDeselectOnClickOutside";
 import BoxSelect from "@/components/editor/box-select";
 import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
+import useGroupsStore from "@/stores/groupStore";
+import useGrouping from "@/hooks/editor/nodes/useGrouping";
+import OpenGroup from "@/components/editor/nodes/open-group";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -25,10 +28,12 @@ export default function Editor() {
     } = useEditorStore();
     const { getNodes } = useNodesStore();
     const { connections } = useConnectionsStore();
+    const { getOpenGroups } = useGroupsStore();
 
     const { handleZoom } = useZoom();
     const { handlePanMouseDown, handleMouseMove, handleMouseUp } = usePan();
     const { handleEditorMouseDown } = useDeselectOnClickOutside();
+    const { createGroup } = useGrouping();
 
     const updateEditorPosition = useCallback(() => {
         if (contentRef.current) {
@@ -61,18 +66,26 @@ export default function Editor() {
 
     useKeyBindings({
         'delete': () => {
-            // Voeg hier logica toe om geselecteerde nodes te verwijderen
             console.log('Delete key pressed');
         },
-        'ctrl+c': (event) => {
+        'ctrl+shift+g': () => {
+            console.log('DEGROUP');
+        },
+        'ctrl+g': () => {
+            createGroup();
+        },
+        'ctrl+c': () => {
             console.log('Copy selected nodes');
         },
-        'ctrl+v': (event) => {
+        'ctrl+v': () => {
             console.log('Paste nodes');
         },
-        'ctrl+z': (event) => {
+        'ctrl+z': () => {
             console.log('Undo last action');
         },
+        'ctrl+shift+z': () => {
+            console.log('Redo last action');
+        }
     });
 
     return (
@@ -89,12 +102,15 @@ export default function Editor() {
             ref={contentRef}
         >
             <Grid zoomFactor={zoomFactor} position={panPosition} />
-            <BoxSelect />
 
             <div
                 style={{ transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomFactor})` }}
                 className="absolute top-0 left-0 w-0 h-0 overflow-visible"
             >
+                {getOpenGroups().map((group) => (
+                    <OpenGroup key={group.id} group={group} />
+                ))}
+
                 {getNodes().map((node) => (
                     <Node
                         key={node.uuid}
@@ -109,6 +125,8 @@ export default function Editor() {
                     />
                 ))}
             </div>
+
+            <BoxSelect />
         </div>
     );
 }

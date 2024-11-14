@@ -1,11 +1,8 @@
-import React, { useCallback } from "react";
+import React from "react";
 import {
     ArrowTurnDownLeftIcon,
     ArrowTurnDownRightIcon,
-    CursorArrowRaysIcon,
-    StopIcon
 } from "@heroicons/react/16/solid";
-import { useEditorStore } from "@/stores/editorStore";
 
 const UndoRedoMenu: React.FC = () => {
     return (

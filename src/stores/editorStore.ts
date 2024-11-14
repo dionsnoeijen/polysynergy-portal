@@ -1,6 +1,18 @@
 import { create } from 'zustand';
 import { FormType } from "@/types/types";
 
+export enum BottomBarView {
+    Output = 'Output',
+    Debug = 'Debug'
+}
+
+export type ContextMenu = {
+    visible: boolean;
+    x: number;
+    y: number;
+    items: Array<{ label: string; action: () => void }>;
+};
+
 type EditorState = {
     zoomFactor: number;
     setZoomFactor: (factor: number) => void;
@@ -34,6 +46,11 @@ type EditorState = {
     setControlDeselectOne: (controlDeselectOne: boolean) => void;
     boxSelect: boolean;
     setBoxSelect: (boxSelect: boolean) => void;
+    bottomBarView: BottomBarView;
+    setBottomBarView: (view: BottomBarView) => void;
+    contextMenu: ContextMenu;
+    openContextMenu: (x: number, y: number, items: Array<{ label: string; action: () => void }>) => void;
+    closeContextMenu: () => void;
 };
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -81,4 +98,11 @@ export const useEditorStore = create<EditorState>((set) => ({
     setControlDeselectOne: (controlDeselectOne) => set({ controlDeselectOne: controlDeselectOne }),
     boxSelect: false,
     setBoxSelect: (boxSelect) => set({ boxSelect: boxSelect }),
+    bottomBarView: BottomBarView.Debug,
+    setBottomBarView: (view) => set({ bottomBarView: view }),
+    contextMenu: { visible: false, x: 0, y: 0, items: [] },
+    openContextMenu: (x, y, items) =>
+        set({ contextMenu: { visible: true, x, y, items } }),
+    closeContextMenu: () =>
+        set({ contextMenu: { visible: false, x: 0, y: 0, items: [] } }),
 }));

@@ -105,6 +105,9 @@ const BoxSelect: React.FC = (): React.ReactElement => {
         <div
             className="absolute w-full h-full"
             onMouseDown={handleBoxMouseDown}
+            style={{
+                pointerEvents: boxSelect ? "auto" : "none",
+            }}
         >
             {isSelecting && <div
                 className="absolute bg-slate-800/20 ring-1 ring-white rounded-md z-10 select-none"

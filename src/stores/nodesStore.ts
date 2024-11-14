@@ -42,10 +42,12 @@ type NodesStore = {
     }) => void;
     updateNodePosition: (nodeId: string, deltaX: number, deltaY: number) => void;
     updateNodeWidth: (nodeId: string, width: number) => void;
+    updateNodeHeight: (nodeId: string, newHeight: number) => void;
     addNode: (node: Node) => void;
     removeNode: (nodeUuid: string) => void;
     getNode: (nodeUuid: string) => Node | undefined;
     getNodes: () => Node[];
+    getNodesByIds: (nodeIds: string[]) => Node[];
 };
 
 const useNodesStore = create<NodesStore>((set) => ({
@@ -505,6 +507,29 @@ const useNodesStore = create<NodesStore>((set) => ({
         });
     },
 
+    updateNodeHeight: (nodeId, newHeight) => {
+        const { activeRouteId, activeProjectId } = useEditorStore.getState();
+
+        set((state) => {
+            const projectNodes = state.nodes[activeProjectId];
+            const routeNodes = projectNodes[activeRouteId].map((node) =>
+                node.uuid === nodeId
+                    ? { ...node, height: newHeight }
+                    : node
+            );
+
+            return {
+                nodes: {
+                    ...state.nodes,
+                    [activeProjectId]: {
+                        ...projectNodes,
+                        [activeRouteId]: routeNodes,
+                    },
+                },
+            };
+        });
+    },
+
     updateNodePosition: (nodeId, deltaX, deltaY) => {
         const { activeProjectId, activeRouteId } = useEditorStore.getState();
 
@@ -538,6 +563,12 @@ const useNodesStore = create<NodesStore>((set) => ({
     getNodes: (): Node[] => {
         const { activeProjectId, activeRouteId } = useEditorStore.getState();
         return (useNodesStore.getState().nodes[activeProjectId]?.[activeRouteId] || []);
+    },
+
+    getNodesByIds: (nodeIds: string[]): Node[] => {
+        const { activeProjectId, activeRouteId } = useEditorStore.getState();
+        return (useNodesStore.getState().nodes[activeProjectId]?.[activeRouteId] || [])
+            .filter((node) => nodeIds.includes(node.uuid));
     }
 }));
 

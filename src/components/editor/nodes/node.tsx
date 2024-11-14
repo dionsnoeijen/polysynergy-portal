@@ -9,7 +9,7 @@ import {
     Squares2X2Icon
 } from "@heroicons/react/16/solid";
 import Connector from "@/components/editor/nodes/connector";
-import { Node as NodeType, NodeVariable, NodeVariableType } from "@/stores/nodesStore";
+import useNodesStore, { Node as NodeType, NodeVariable, NodeVariableType } from "@/stores/nodesStore";
 import { Switch } from "@/components/switch";
 import { useEditorStore } from "@/stores/editorStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
@@ -19,12 +19,14 @@ type NodeProps = {
 };
 
 const Node: React.FC<NodeProps> = ({ node }) => {
+    const ref = useRef<HTMLDivElement>(null);
     const { onDragMouseDown } = useDraggable();
     const { size, handleResizeMouseDown } = useResizable(node);
     const [isOpenMap, setIsOpenMap] = useState<{ [key: string]: boolean }>({});
-    const { selectedNodes, setSelectedNodes } = useEditorStore();
+    const { selectedNodes, setSelectedNodes, openContextMenu } = useEditorStore();
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
     const shouldUpdateConnections = useRef(false);
+    const { updateNodeHeight } = useNodesStore();
 
     const handleNodeMouseDown = (e: React.MouseEvent) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
@@ -58,9 +60,18 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                     collapseConnections(handle);
                 }
             });
-            shouldUpdateConnections.current = false; // Reset voor toekomstige wijzigingen
+            shouldUpdateConnections.current = false;
         }
     }, [isOpenMap, openConnections, collapseConnections]);
+
+    useEffect(() => {
+        if (ref.current) {
+            const actualHeight = ref.current.getBoundingClientRect().height;
+            if (actualHeight !== node.height) {
+                updateNodeHeight(node.uuid, actualHeight);
+            }
+        }
+    }, [node.height, isOpenMap, updateNodeHeight, node.uuid]);
 
     const handleNodeClick = (e: React.MouseEvent) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
@@ -70,9 +81,22 @@ const Node: React.FC<NodeProps> = ({ node }) => {
         }
     };
 
+    const handleContextMenu = (e: React.MouseEvent) => {
+        e.preventDefault();
+
+        const contextMenuItems = [
+            { label: "Node-specific option", action: () => console.log("Node action") },
+            { label: "Delete Node", action: () => console.log("Delete Node") }
+        ];
+
+        openContextMenu(e.clientX, e.clientY, contextMenuItems);
+    };
+
     return (
         <div
+            ref={ref}
             onClick={handleNodeClick}
+            onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
             className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ${
                 selectedNodes.includes(node.uuid) ? "ring-2 ring-white shadow-2xl" : "ring-1 ring-white/50"
@@ -82,6 +106,8 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                 left: `${node.x}px`,
                 top: `${node.y}px`,
             }}
+            data-type="node"
+            data-node-uuid={node.uuid}
         >
             <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">
                 <Connector in nodeUuid={node.uuid} handle={"node"} />

@@ -30,3 +30,28 @@ export const calculateConnectorPositionByAttributes = (
 
     return calculateConnectorPosition(target, editorPosition, panPosition, zoomFactor);
 };
+
+export const calculateNodeSize = (nodeUuid: string, zoomFactor: number) => {
+    const selector = `[data-type="node"][data-node-uuid="${nodeUuid}"]`;
+    const target = document.querySelector(selector) as HTMLElement;
+
+    if (!target) {
+        console.warn(`Node with uuid ${nodeUuid} not found.`);
+        return { width: 0, height: 0 };
+    }
+
+    const rect = target.getBoundingClientRect();
+
+    console.log(
+        'zf', zoomFactor,
+        rect,
+        'rw', rect.width / zoomFactor,
+        'rh', rect.height / zoomFactor,
+    );
+
+    return {
+        width: rect.width / zoomFactor,
+        height: rect.height / zoomFactor,
+    };
+};
+

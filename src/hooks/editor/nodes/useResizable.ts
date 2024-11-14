@@ -10,8 +10,8 @@ type Size = {
 };
 
 const useResizable = (node: Node) => {
-    const [size, setSize] = useState<Size>({ width: node.width || 100, height: node.height || 100 }); // Zorgt voor initiële waarde
-    const [isResizing, setIsResizing] = useState(false);
+    const [ size, setSize ] = useState<Size>({ width: node.width || 100, height: node.height || 100 }); // Zorgt voor initiële waarde
+    const [ isResizing, setIsResizing ] = useState(false);
     const { zoomFactor } = useEditorStore();
     const { updateNodeWidth } = useNodesStore();
     const { findOutConnectionsByNodeId, updateConnection } = useConnectionsStore();

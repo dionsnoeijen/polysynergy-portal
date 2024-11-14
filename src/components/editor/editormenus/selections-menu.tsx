@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { CursorArrowRaysIcon, StopIcon } from "@heroicons/react/16/solid";
 import { useEditorStore } from "@/stores/editorStore";
+import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 
 const SelectionsMenu: React.FC = () => {
     const clickSelect = useEditorStore((state) => state.clickSelect);
@@ -18,20 +19,28 @@ const SelectionsMenu: React.FC = () => {
         setBoxSelect(true);
     }, [setClickSelect, setBoxSelect]);
 
+    useKeyBindings({
+        'b': () => {
+            handleBoxSelect();
+        },
+    });
+
     return (
         <div className="absolute left-5 top-24 flex flex-col items-center justify-center">
             <div className="flex flex-col items-start justify-center w-full h-full">
                 <button
+                    type="button"
                     className={`w-full text-lg font-semibold text-white rounded-sm p-1 ${clickSelect ? 'bg-blue-500' : 'bg-zinc-500'}`}
                     onMouseDown={handleClickSelect}
                 >
-                    <CursorArrowRaysIcon className={"w-4 h-4"} />
+                    <CursorArrowRaysIcon className="w-4 h-4" />
                 </button>
                 <button
+                    type="button"
                     className={`w-full text-lg font-semibold text-white rounded-sm p-1 mt-1 ${boxSelect ? 'bg-blue-500' : 'bg-zinc-500'}`}
                     onMouseDown={handleBoxSelect}
                 >
-                    <StopIcon className={"w-4 h-4"} />
+                    <StopIcon className="w-4 h-4" />
                 </button>
             </div>
         </div>

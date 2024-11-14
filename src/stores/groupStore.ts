@@ -1,25 +1,27 @@
 import { create } from 'zustand';
+import { v4 as uuidv4 } from "uuid";
 
 export type Group = {
-    uuid: string;
+    id: string;
     name: string;
     isOpen: boolean;
+    nodes: string[];
     parentGroupId?: string;
-    nodes: string[]; // UUID's van de nodes in deze groep
-    inConnections: string[];
-    outConnections: string[];
+    inConnections?: string[];
+    outConnections?: string[];
 };
 
 type GroupsStore = {
     groups: Record<string, Group>;
     toggleGroupOpen: (groupId: string) => void;
-    addGroup: (group: Group) => void;
+    addGroup: (group: Partial<Group>) => void;
     removeGroup: (groupId: string) => void;
     addNodeToGroup: (groupId: string, nodeId: string) => void;
     removeNodeFromGroup: (groupId: string, nodeId: string) => void;
+    getOpenGroups: () => Group[];
 };
 
-const useGroupsStore = create<GroupsStore>((set) => ({
+const useGroupsStore = create<GroupsStore>((set, get) => ({
     groups: {},
 
     toggleGroupOpen: (groupId) => set((state) => {
@@ -32,12 +34,23 @@ const useGroupsStore = create<GroupsStore>((set) => ({
         };
     }),
 
-    addGroup: (group) => set((state) => ({
-        groups: { ...state.groups, [group.uuid]: group }
-    })),
+    addGroup: (group: Partial<Group>) => {
+        const newGroup: Group = {
+            id: group.id || uuidv4(),
+            name: group.name || 'Untitled Group',
+            isOpen: group.isOpen !== undefined ? group.isOpen : true,
+            parentGroupId: group.parentGroupId,
+            nodes: group.nodes || [],
+            inConnections: group.inConnections || [],
+            outConnections: group.outConnections || []
+        };
+
+        set((state) => ({
+            groups: { ...state.groups, [newGroup.id]: newGroup }
+        }));
+    },
 
     removeGroup: (groupId) => set((state) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [groupId]: _, ...remainingGroups } = state.groups;
         return { groups: remainingGroups };
     }),
@@ -61,6 +74,11 @@ const useGroupsStore = create<GroupsStore>((set) => ({
             }
         };
     }),
+
+    getOpenGroups: () => {
+        const { groups } = get();
+        return Object.values(groups).filter((group) => group.isOpen);
+    },
 }));
 
 export default useGroupsStore;

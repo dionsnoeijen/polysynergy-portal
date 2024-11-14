@@ -7,13 +7,15 @@ type KeyBindings = {
 export const useKeyBindings = (bindings: KeyBindings) => {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            const keyCombination = [
-                event.ctrlKey || event.metaKey ? 'ctrl' : '',
+            const modifiers = [
+                event.ctrlKey ? 'ctrl' : '',
                 event.shiftKey ? 'shift' : '',
-                event.key.toLowerCase(),
-            ]
-                .filter(Boolean)
-                .join('+');
+                event.altKey ? 'alt' : '',
+                event.metaKey && !event.ctrlKey ? 'meta' : '',
+            ].filter(Boolean);
+
+            const mainKey = event.key.toLowerCase();
+            const keyCombination = [...modifiers, mainKey].join('+');
 
             if (bindings[keyCombination]) {
                 bindings[keyCombination](event);

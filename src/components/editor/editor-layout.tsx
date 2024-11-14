@@ -7,6 +7,8 @@ import { useEditorStore } from "@/stores/editorStore";
 import Form from "@/components/editor/form";
 import SelectionsMenu from "@/components/editor/editormenus/selections-menu";
 import UndoRedoMenu from "@/components/editor/editormenus/undo-redo-menu";
+import BottomBar from "@/components/editor/bottombars/bottom-bar";
+import ContextMenu from "@/components/editor/context-menu";
 
 export function EditorLayout({
                                  projectUuid = null,
@@ -209,7 +211,7 @@ export function EditorLayout({
                     />
                     <div
                         className="absolute top-[10px] left-[10px] right-[10px] bottom-[10px] default-editor-container">
-                        <p>Output</p>
+                        <BottomBar />
                     </div>
                 </div>
             )}
@@ -223,6 +225,8 @@ export function EditorLayout({
                     <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/>
                 </button>
             )}
+
+            <ContextMenu />
         </div>
     );
 }

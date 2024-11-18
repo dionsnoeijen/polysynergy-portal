@@ -1,19 +1,15 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useEditorStore } from "@/stores/editorStore";
-import { useConnectionsStore, Connection } from "@/stores/connectionsStore";
-import useNodesStore from "@/stores/nodesStore";
+import { useConnectionsStore } from "@/stores/connectionsStore";
+import useNodesStore, { Node } from "@/stores/nodesStore";
 
-type Position = { x: number; y: number };
+const collisionThreshold = 150;
+const repulsionStrength = 10;
 
 const useDraggable = () => {
-    const [dragDelta, setDragDelta] = useState<Position>({ x: 0, y: 0 });
-    const { selectedNodes, zoomFactor, activeProjectId, activeRouteId, isDragging, setIsDragging } = useEditorStore();
-    const { updateNodePosition } = useNodesStore();
+    const { selectedNodes, zoomFactor, setIsDragging } = useEditorStore();
+    const { updateNodePosition, getNodes } = useNodesStore();
     const { findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection } = useConnectionsStore();
-
-    const [initialConnections, setInitialConnections] = useState<{
-        [nodeId: string]: { inConnections: Connection[]; outConnections: Connection[] };
-    }>({});
 
     const selectedNodesRef = useRef<string[]>(selectedNodes);
 
@@ -21,40 +17,116 @@ const useDraggable = () => {
         selectedNodesRef.current = selectedNodes;
     }, [selectedNodes]);
 
+    const updateConnectionPositions = useCallback(
+        (nodeId: string, deltaX: number, deltaY: number) => {
+            const inConnections = findInConnectionsByNodeId(nodeId);
+            const outConnections = findOutConnectionsByNodeId(nodeId);
+
+            inConnections.forEach((connection) => {
+                updateConnection({
+                    ...connection,
+                    endX: connection.endX + deltaX,
+                    endY: connection.endY + deltaY,
+                });
+            });
+
+            outConnections.forEach((connection) => {
+                updateConnection({
+                    ...connection,
+                    startX: connection.startX + deltaX,
+                    startY: connection.startY + deltaY,
+                });
+            });
+        },
+        [findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection]
+    );
+
+    const cascadeRepulsion = (node: Node, allNodes: Node[], visited: Set<string>) => {
+        visited.add(node.uuid);
+
+        const radiusX = node.width / 2 + collisionThreshold;
+        const radiusY = node.height / 2 + collisionThreshold;
+
+        allNodes.forEach((otherNode) => {
+            if (visited.has(otherNode.uuid) || otherNode.uuid === node.uuid) return;
+
+            const dx = otherNode.x - node.x;
+            const dy = otherNode.y - node.y;
+            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+
+            const isOverlapping =
+                distance < Math.max(radiusX, radiusY) &&
+                distance > 0;
+
+            if (isOverlapping) {
+                const repulsionX = (dx / distance) * repulsionStrength;
+                const repulsionY = (dy / distance) * repulsionStrength;
+
+                updateNodePosition(otherNode.uuid, repulsionX, repulsionY);
+                updateConnectionPositions(otherNode.uuid, repulsionX, repulsionY);
+
+                cascadeRepulsion(otherNode, allNodes, visited);
+            }
+        });
+    };
+
+    const calculateRepulsion = (draggedNode: Node, deltaX: number, deltaY: number) => {
+        const allNodes = getNodes();
+        const updatedDraggedNode = {
+            ...draggedNode,
+            x: draggedNode.x + deltaX,
+            y: draggedNode.y + deltaY,
+        };
+
+        const radiusX = updatedDraggedNode.width / 2 + collisionThreshold;
+        const radiusY = updatedDraggedNode.height / 2 + collisionThreshold;
+
+        allNodes.forEach((otherNode) => {
+            if (
+                draggedNode.uuid === otherNode.uuid ||
+                selectedNodesRef.current.includes(otherNode.uuid)
+            ) {
+                return;
+            }
+
+            const dx = otherNode.x - updatedDraggedNode.x;
+            const dy = otherNode.y - updatedDraggedNode.y;
+            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+
+            const isTouching = distance < Math.max(radiusX, radiusY);
+
+            if (isTouching) {
+                const repulsionX = (dx / distance) * repulsionStrength;
+                const repulsionY = (dy / distance) * repulsionStrength;
+
+                updateNodePosition(otherNode.uuid, repulsionX, repulsionY);
+                updateConnectionPositions(otherNode.uuid, repulsionX, repulsionY);
+
+                cascadeRepulsion(otherNode, allNodes, new Set([draggedNode.uuid]));
+            }
+        });
+    };
+
     const onDragMouseDown = useCallback(() => {
         setIsDragging(true);
-
-        const connections = selectedNodesRef.current.reduce((acc, nodeId) => {
-            acc[nodeId] = {
-                inConnections: findInConnectionsByNodeId(nodeId),
-                outConnections: findOutConnectionsByNodeId(nodeId),
-            };
-            return acc;
-        }, {} as { [nodeId: string]: { inConnections: Connection[]; outConnections: Connection[] } });
-
-        setInitialConnections(connections);
 
         const handleDraggableMouseMove = (moveEvent: MouseEvent) => {
             const deltaX = moveEvent.movementX / zoomFactor;
             const deltaY = moveEvent.movementY / zoomFactor;
 
-            setDragDelta((prevDelta) => ({
-                x: prevDelta.x + deltaX,
-                y: prevDelta.y + deltaY,
-            }));
-
             selectedNodesRef.current.forEach((nodeId) => {
+                const draggedNode = getNodes().find((node) => node.uuid === nodeId);
+                if (!draggedNode) return;
+
                 updateNodePosition(nodeId, deltaX, deltaY);
+                updateConnectionPositions(nodeId, deltaX, deltaY);
+
+                calculateRepulsion(draggedNode, deltaX, deltaY);
             });
         };
 
         const handleDraggableMouseUp = () => {
             setIsDragging(false);
-            setDragDelta({ x: 0, y: 0 });
-
-            selectedNodesRef.current.forEach((nodeId) => {
-                updateNodePosition(nodeId, dragDelta.x, dragDelta.y);
-            });
 
             document.removeEventListener("mousemove", handleDraggableMouseMove);
             document.removeEventListener("mouseup", handleDraggableMouseUp);
@@ -62,44 +134,7 @@ const useDraggable = () => {
 
         document.addEventListener("mousemove", handleDraggableMouseMove);
         document.addEventListener("mouseup", handleDraggableMouseUp);
-    }, [setIsDragging, findInConnectionsByNodeId, findOutConnectionsByNodeId, zoomFactor, updateNodePosition, activeProjectId, activeRouteId, dragDelta.x, dragDelta.y]);
-
-    useEffect(() => {
-        if (!isDragging) return;
-
-        selectedNodesRef.current.forEach((nodeId) => {
-            const {
-                inConnections,
-                outConnections
-            } = initialConnections[nodeId] || { inConnections: [], outConnections: [] };
-
-            inConnections.forEach((connection) => {
-                const isSourceNodeSelected = selectedNodesRef.current.includes(connection.sourceNodeUuid);
-                updateConnection({
-                    ...connection,
-                    endX: connection.endX + dragDelta.x,
-                    endY: connection.endY + dragDelta.y,
-                    ...(isSourceNodeSelected && {
-                        startX: connection.startX + dragDelta.x,
-                        startY: connection.startY + dragDelta.y,
-                    }),
-                });
-            });
-
-            outConnections.forEach((connection) => {
-                const isTargetNodeSelected = selectedNodesRef.current.includes(connection.targetNodeUuid || "");
-                updateConnection({
-                    ...connection,
-                    startX: connection.startX + dragDelta.x,
-                    startY: connection.startY + dragDelta.y,
-                    ...(isTargetNodeSelected && {
-                        endX: connection.endX + dragDelta.x,
-                        endY: connection.endY + dragDelta.y,
-                    }),
-                });
-            });
-        });
-    }, [dragDelta, isDragging, initialConnections, updateConnection]);
+    }, [setIsDragging, zoomFactor, getNodes, updateNodePosition, updateConnectionPositions, calculateRepulsion]);
 
     return { onDragMouseDown };
 };

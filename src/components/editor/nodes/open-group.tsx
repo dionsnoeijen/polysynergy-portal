@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Group } from "@/stores/groupStore";
 import useNodesStore from "@/stores/nodesStore";
 import { useEditorStore } from "@/stores/editorStore";
-import Connector from "@/components/editor/nodes/connector";
+import ConnectorGroup from "@/components/editor/nodes/connector-group";
 
 type GroupProps = { group: Group; };
 
@@ -55,8 +55,8 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
                     height: height + 200,
                 }}
             >
-                <Connector in handle="group" nodeUuid={''} />
-                <Connector out handle="group" nodeUuid={''} />
+                <ConnectorGroup in groupId={group.id} />
+                <ConnectorGroup out groupId={group.id} />
             </div>
         </div>
     );

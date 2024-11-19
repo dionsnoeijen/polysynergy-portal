@@ -19,6 +19,7 @@ type GroupsStore = {
     addNodeToGroup: (groupId: string, nodeId: string) => void;
     removeNodeFromGroup: (groupId: string, nodeId: string) => void;
     getOpenGroups: () => Group[];
+    getNodesInGroup: (groupId: string) => string[];
 };
 
 const useGroupsStore = create<GroupsStore>((set, get) => ({
@@ -79,6 +80,11 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         const { groups } = get();
         return Object.values(groups).filter((group) => group.isOpen);
     },
+
+    getNodesInGroup: (groupId: string) => {
+        const { groups } = get();
+        return groups[groupId].nodes;
+    }
 }));
 
 export default useGroupsStore;

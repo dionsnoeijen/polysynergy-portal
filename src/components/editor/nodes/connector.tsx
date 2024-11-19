@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { ChevronRightIcon } from "@heroicons/react/16/solid";
 import { useEditorStore } from "@/stores/editorStore";
 import { useConnectionsStore } from "@/stores/connectionsStore";
@@ -10,12 +10,13 @@ import { InOut } from "@/types/types";
 type ConnectorProps = {
     nodeUuid: string;
     handle?: string;
+    isGroup?: boolean;
 } & (
     | { in: true; out?: never }
     | { out: true; in?: never }
     );
 
-const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: isOut }): React.ReactElement => {
+const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: isOut, isGroup = false }): React.ReactElement => {
     const {
         getConnection,
         addConnection,
@@ -28,14 +29,20 @@ const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: 
         zoomFactor,
         panPosition,
         editorPosition,
+        onInConnectionAddedCallback,
+        onOutConnectionAddedCallback
     } = useEditorStore();
     const {
         updateConnections
     } = useNodesStore();
 
+    const startedFromGroup = useRef(false);
+
     const handleMouseDown = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (isIn) return;
+        if (!isGroup && isIn) return;
+
+        startedFromGroup.current = isGroup;
 
         const { x, y } = calculateConnectorPosition(
             e.currentTarget as HTMLElement,
@@ -66,15 +73,19 @@ const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: 
         };
 
         const handleMouseUp = (upEvent: MouseEvent) => {
-            document.removeEventListener("mousemove", handleMouseMove);
-            document.removeEventListener("mouseup", handleMouseUp);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
 
-            const target = (upEvent.target as HTMLElement).closest('[data-type="in"]') as HTMLElement;
+            const target = (upEvent.target as HTMLElement).closest('[data-type]') as HTMLElement;
+
             if (target) {
-                const { x, y } = calculateConnectorPosition(target, editorPosition, panPosition, zoomFactor);
-                const targetNodeUuid = target.getAttribute("data-node-uuid") as string;
-                const targetHandle = target.getAttribute("data-handle") as string;
+                const targetIsGroup = target.getAttribute('data-is-group') === 'true';
+                const targetNodeUuid = target.getAttribute('data-node-uuid') as string;
+                const targetHandle = target.getAttribute('data-handle') as string;
+                const dataNodeType = target.getAttribute('data-type') as InOut;
 
+                // Unified connection logic for both in and out connectors
+                const { x, y } = calculateConnectorPosition(target, editorPosition, panPosition, zoomFactor);
                 updateConnectionEnd(id, x, y, targetNodeUuid, targetHandle);
                 const connection = getConnection(id);
                 if (connection) {
@@ -85,6 +96,19 @@ const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: 
                         targetNodeUuid: targetNodeUuid,
                         targetHandle: targetHandle,
                     });
+
+                    console.log('Started From Group:', startedFromGroup.current, 'Target Is Group:', targetIsGroup);
+
+                    // Handle connection added callbacks based on origin and target
+                    if (startedFromGroup.current || targetIsGroup) {
+                        if (dataNodeType === InOut.In && onInConnectionAddedCallback) {
+                            onInConnectionAddedCallback();
+                        } else if (dataNodeType === InOut.Out && onOutConnectionAddedCallback) {
+                            onOutConnectionAddedCallback();
+                        }
+                    }
+                } else {
+                    removeConnectionById(id);
                 }
             } else {
                 removeConnectionById(id);
@@ -93,8 +117,8 @@ const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: 
             setIsDrawingConnection("");
         };
 
-        document.addEventListener("mousemove", handleMouseMove);
-        document.addEventListener("mouseup", handleMouseUp);
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
     };
 
     return (
@@ -103,10 +127,12 @@ const Connector: React.FC<ConnectorProps> = ({ nodeUuid, handle, in: isIn, out: 
             data-type={isIn ? InOut.In : InOut.Out}
             data-node-uuid={nodeUuid}
             data-handle={handle}
+            data-is-group={isGroup ? 'true' : 'false'}
             className={`w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-white bg-slate-800 cursor-pointer
-                ${isIn ? "left-0 -translate-x-1/2" : ""}
-                ${isOut ? "right-0 translate-x-1/2" : ""}
+                ${isIn ? (isGroup ? "right-0 translate-x-1/2" : "left-0 -translate-x-1/2") : ""}
+                ${isOut ? (isGroup ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2") : ""}
             `}
+            style={{ zIndex: isOut ? 10 : 5 }}
         >
             <ChevronRightIcon className="w-5 h-5 absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2" />
         </div>

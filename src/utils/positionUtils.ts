@@ -1,4 +1,4 @@
-import {InOut} from "@/types/types";
+import { InOut } from "@/types/types";
 
 export const calculateConnectorPosition = (
     target: HTMLElement,
@@ -24,7 +24,6 @@ export const calculateConnectorPositionByAttributes = (
     const target = document.querySelector(selector) as HTMLElement;
 
     if (!target) {
-        console.warn(`Connector with node-uuid ${nodeUuid} and handle ${handle} not found.`);
         return { x: 0, y: 0 };
     }
 
@@ -36,22 +35,13 @@ export const calculateNodeSize = (nodeUuid: string, zoomFactor: number) => {
     const target = document.querySelector(selector) as HTMLElement;
 
     if (!target) {
-        console.warn(`Node with uuid ${nodeUuid} not found.`);
         return { width: 0, height: 0 };
     }
 
     const rect = target.getBoundingClientRect();
-
-    console.log(
-        'zf', zoomFactor,
-        rect,
-        'rw', rect.width / zoomFactor,
-        'rh', rect.height / zoomFactor,
-    );
 
     return {
         width: rect.width / zoomFactor,
         height: rect.height / zoomFactor,
     };
 };
-

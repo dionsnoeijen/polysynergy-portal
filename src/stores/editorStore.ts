@@ -51,6 +51,10 @@ type EditorState = {
     contextMenu: ContextMenu;
     openContextMenu: (x: number, y: number, items: Array<{ label: string; action: () => void }>) => void;
     closeContextMenu: () => void;
+    onInConnectionAddedCallback: null | (() => void);
+    setOnInConnectionAddedCallback: (callback: null | (() => void)) => void;
+    onOutConnectionAddedCallback: null | (() => void);
+    setOnOutConnectionAddedCallback: (callback: null | (() => void)) => void;
 };
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -105,4 +109,8 @@ export const useEditorStore = create<EditorState>((set) => ({
         set({ contextMenu: { visible: true, x, y, items } }),
     closeContextMenu: () =>
         set({ contextMenu: { visible: false, x: 0, y: 0, items: [] } }),
+    onInConnectionAddedCallback: null,
+    setOnInConnectionAddedCallback: (callback) => set({ onInConnectionAddedCallback: callback }),
+    onOutConnectionAddedCallback: null,
+    setOnOutConnectionAddedCallback: (callback) => set({ onOutConnectionAddedCallback: callback }),
 }));

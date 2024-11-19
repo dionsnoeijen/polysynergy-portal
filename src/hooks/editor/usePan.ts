@@ -3,7 +3,7 @@ import { useEditorStore } from "@/stores/editorStore";
 
 export const usePan = () => {
     const { panPosition, setPanPosition, boxSelect } = useEditorStore();
-    const [isPanning, setIsPanning] = useState(false);
+    const [ isPanning, setIsPanning ] = useState(false);
     const startPanPosition = useRef({ x: 0, y: 0 });
 
     const handlePanMouseDown = (e: React.MouseEvent) => {

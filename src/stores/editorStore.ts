@@ -55,6 +55,10 @@ type EditorState = {
     setOnInConnectionAddedCallback: (callback: null | (() => void)) => void;
     onOutConnectionAddedCallback: null | (() => void);
     setOnOutConnectionAddedCallback: (callback: null | (() => void)) => void;
+    onInConnectionRemovedCallback: null | (() => void);
+    setOnInConnectionRemovedCallback: (callback: null | (() => void)) => void;
+    onOutConnectionRemovedCallback: null | (() => void);
+    setOnOutConnectionRemovedCallback: (callback: null | (() => void)) => void;
 };
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -113,4 +117,8 @@ export const useEditorStore = create<EditorState>((set) => ({
     setOnInConnectionAddedCallback: (callback) => set({ onInConnectionAddedCallback: callback }),
     onOutConnectionAddedCallback: null,
     setOnOutConnectionAddedCallback: (callback) => set({ onOutConnectionAddedCallback: callback }),
+    onInConnectionRemovedCallback: null,
+    setOnInConnectionRemovedCallback: (callback) => set({ onInConnectionRemovedCallback: callback }),
+    onOutConnectionRemovedCallback: null,
+    setOnOutConnectionRemovedCallback: (callback) => set({ onOutConnectionRemovedCallback: callback }),
 }));

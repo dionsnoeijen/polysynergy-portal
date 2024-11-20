@@ -22,6 +22,16 @@ type GroupsStore = {
     getNodesInGroup: (groupId: string) => string[];
 };
 
+const getNodesInGroup = (get: () => GroupsStore) => (groupId: string): string[] => {
+    const { groups } = get();
+    return groups[groupId]?.nodes || [];
+};
+
+const getOpenGroups = (get: () => GroupsStore) => (): Group[] => {
+    const { groups } = get();
+    return Object.values(groups).filter((group) => group.isOpen);
+};
+
 const useGroupsStore = create<GroupsStore>((set, get) => ({
     groups: {},
 
@@ -76,15 +86,8 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         };
     }),
 
-    getOpenGroups: () => {
-        const { groups } = get();
-        return Object.values(groups).filter((group) => group.isOpen);
-    },
-
-    getNodesInGroup: (groupId: string) => {
-        const { groups } = get();
-        return groups[groupId].nodes;
-    }
+    getOpenGroups: getOpenGroups(get),
+    getNodesInGroup: getNodesInGroup(get),
 }));
 
 export default useGroupsStore;

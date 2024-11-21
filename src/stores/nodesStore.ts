@@ -139,6 +139,15 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                            has_dock: true,
                        },
                        {
+                           name: 'Human',
+                           handle: 'human',
+                           value: true,
+                           type: NodeVariableType.Boolean,
+                           in_connections: [],
+                           out_connections: [],
+                           has_dock: true,
+                       },
+                       {
                            name: 'Super Variables',
                            handle: 'superVariables',
                            value: [

@@ -127,13 +127,13 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                 <div className="flex items-center truncate">
                                     <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}</h3>
                                     {variable.type === NodeVariableType.Array && (
-                                        <Squares2X2Icon className="w-4 h-4 ml-1 text-sky-600 dark:text-slate-400" />
+                                        <Squares2X2Icon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
                                     )}
                                     {variable.type === NodeVariableType.String && (
-                                        <DocumentTextIcon className="w-4 h-4 ml-1 text-sky-600 dark:text-slate-400" />
+                                        <DocumentTextIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
                                     )}
                                     {variable.type === NodeVariableType.Number && (
-                                        <HashtagIcon className="w-4 h-4 ml-1 text-sky-600 dark:text-slate-400" />
+                                        <HashtagIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
                                     )}
                                 </div>
                                 {variable.type === NodeVariableType.Array && (
@@ -143,9 +143,9 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                         data-toggle="true"
                                     >
                                         {isOpenMap[variable.handle] ? (
-                                            <ChevronDownIcon className="w-5 h-5 text-sky-600 dark:text-slate-400" />
+                                            <ChevronDownIcon className="w-5 h-5 text-sky-400 dark:text-slate-400" />
                                         ) : (
-                                            <ChevronLeftIcon className="w-5 h-5 text-sky-600 dark:text-slate-400" />
+                                            <ChevronLeftIcon className="w-5 h-5 text-sky-400 dark:text-slate-400" />
                                         )}
                                     </button>
                                 )}
@@ -170,8 +170,8 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                                             handle={variable.handle + "." + item.handle}
                                                         />
                                                     )}
-                                                    <div className="flex items-center truncate text-sky-600 dark:text-white">
-                                                        <span className="text-sky-600 dark:text-slate-400">
+                                                    <div className="flex items-center truncate text-sky-400 dark:text-white">
+                                                        <span className="text-sky-400 dark:text-slate-400">
                                                             {index ===
                                                             ((variable.value as NodeVariable[])?.length ?? 0) - 1
                                                                 ? "└─"

@@ -83,7 +83,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
             <div
                 data-type="open-group"
                 onContextMenu={handleContextMenu}
-                className="absolute border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500 bg-opacity-25"
+                className="absolute border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500/20 bg-opacity-25"
                 style={{
                     left: bounds.minX - 100,
                     top: bounds.minY - 100,

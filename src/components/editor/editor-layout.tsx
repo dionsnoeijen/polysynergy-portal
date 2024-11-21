@@ -11,9 +11,9 @@ import BottomBar from "@/components/editor/bottombars/bottom-bar";
 import ContextMenu from "@/components/editor/context-menu";
 
 export function EditorLayout({
-                                 projectUuid = null,
-                                 routeUuid = null
-                             }: {
+    projectUuid = null,
+    routeUuid = null
+}: {
     projectUuid?: null | string,
     routeUuid?: null | string
 }) {
@@ -113,7 +113,7 @@ export function EditorLayout({
     };
 
     return (
-        <div className="absolute top-0 right-0 bottom-0 left-0 dark:bg-zinc-800">
+        <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-800">
 
             {closeFormMessage && (
                 <>
@@ -150,7 +150,7 @@ export function EditorLayout({
                     right: dockClosed ? 10 : width.dock
                 }}>
                     <div
-                        className="absolute top-[10px] left-0 right-0 bottom-0 overflow-scroll border border-sky-500 dark:border-white/20 shadow-sm rounded-md bg-white dark:bg-zinc-700"
+                        className={`absolute top-[10px] left-0 right-0 bottom-0 overflow-scroll border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-900' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {showForm ? (
                             <Form/>

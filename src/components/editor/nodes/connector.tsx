@@ -17,12 +17,12 @@ type ConnectorProps = {
     );
 
 const Connector: React.FC<ConnectorProps> = ({
-                                                 nodeUuid,
-                                                 handle,
-                                                 in: isIn,
-                                                 out: isOut,
-                                                 isGroup = false,
-                                             }): React.ReactElement => {
+    nodeUuid,
+    handle,
+    in: isIn,
+    out: isOut,
+    isGroup = false,
+}): React.ReactElement => {
     const {
         getConnection,
         addConnection,

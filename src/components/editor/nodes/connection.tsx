@@ -11,7 +11,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
 
     const { theme } = useTheme();
 
-    let color = connection.collapsed ? '#666666' : '#ffffff';
+    let color = connection.collapsed ? '#cccccc' : '#ffffff';
 
     if (theme === 'light') {
         color = connection.collapsed ? 'rgb(7, 89, 133)' : 'rgb(14, 165, 233)';

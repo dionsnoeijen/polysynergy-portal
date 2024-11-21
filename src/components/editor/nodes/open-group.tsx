@@ -1,15 +1,32 @@
-import React, { useMemo } from "react";
-import { Group } from "@/stores/groupStore";
+import React, { useMemo, useState } from "react";
+import useGroupsStore, { Group } from "@/stores/groupStore";
 import useNodesStore from "@/stores/nodesStore";
 import { useEditorStore } from "@/stores/editorStore";
 import ConnectorGroup from "@/components/editor/nodes/connector-group";
+import { useConnectionsStore } from "@/stores/connectionsStore";
+import {
+    Dialog,
+    DialogTitle,
+    DialogDescription,
+    DialogBody,
+    DialogActions,
+} from "@/components/dialog";
+import { Button } from "@/components/button";
 
-type GroupProps = { group: Group; };
+type GroupProps = { group: Group };
 
 const OpenGroup: React.FC<GroupProps> = ({ group }) => {
     const { getNodesByIds } = useNodesStore();
+    const {
+        findInConnectionsByNodeId,
+        findOutConnectionsByNodeId,
+        removeConnections,
+    } = useConnectionsStore();
     const { openContextMenu } = useEditorStore();
+    const { removeGroup } = useGroupsStore();
     const nodes = getNodesByIds(group.nodes);
+
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const bounds = useMemo(() => {
         return nodes.reduce(
@@ -31,15 +48,34 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
     const width = bounds.maxX - bounds.minX;
     const height = bounds.maxY - bounds.minY;
 
-
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
 
         const contextMenuItems = [
-            { label: "Dissolve Group", action: () => console.log("Dissolve Group") },
+            { label: "Close Group", action: () => console.log("Close Group") },
+            {
+                label: "Dissolve Group",
+                action: () => {
+                    setIsDialogOpen(true); // Open the confirmation dialog
+                },
+            },
         ];
 
         openContextMenu(e.clientX, e.clientY, contextMenuItems);
+    };
+
+    const handleConfirmDissolve = () => {
+        const inConnections = findInConnectionsByNodeId(group.id);
+        const outConnections = findOutConnectionsByNodeId(group.id);
+        const connections = [...inConnections, ...outConnections];
+
+        removeConnections(connections);
+        removeGroup(group.id);
+        setIsDialogOpen(false); // Close the dialog
+    };
+
+    const handleCancelDissolve = () => {
+        setIsDialogOpen(false); // Close the dialog
     };
 
     return (
@@ -47,7 +83,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
             <div
                 data-type="open-group"
                 onContextMenu={handleContextMenu}
-                className="absolute border border-white rounded-md bg-slate-500 bg-opacity-25"
+                className="absolute border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500 bg-opacity-25"
                 style={{
                     left: bounds.minX - 100,
                     top: bounds.minY - 100,
@@ -58,6 +94,24 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
                 <ConnectorGroup in groupId={group.id} />
                 <ConnectorGroup out groupId={group.id} />
             </div>
+
+            <Dialog size="md" className={'rounded-sm'} open={isDialogOpen} onClose={handleCancelDissolve}>
+                <DialogTitle>Confirm Dissolve Group</DialogTitle>
+                <DialogDescription>
+                    Are you sure you want to dissolve this group? This action cannot be undone.
+                </DialogDescription>
+                <DialogBody>
+                    {/* Additional content can go here if needed */}
+                </DialogBody>
+                <DialogActions>
+                    <Button outline onClick={handleCancelDissolve}>
+                        Cancel
+                    </Button>
+                    <Button color="red" onClick={handleConfirmDissolve}>
+                        Dissolve
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };

@@ -294,7 +294,7 @@ const Connector: React.FC<ConnectorProps> = ({
             data-node-uuid={nodeUuid}
             data-handle={handle}
             data-is-group={isGroup ? "true" : "false"}
-            className={`w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-white bg-slate-800 cursor-pointer
+            className={`w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-sky-500 dark:ring-white bg-white dark:bg-slate-800 cursor-pointer
         ${
                 isIn
                     ? isGroup
@@ -312,7 +312,7 @@ const Connector: React.FC<ConnectorProps> = ({
       `}
             style={{ zIndex: isOut ? 10 : 5 }}
         >
-            <ChevronRightIcon className="w-5 h-5 absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2" />
+            <ChevronRightIcon className="w-5 h-5 absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 text-sky-600 dark:text-slate-400" />
         </div>
     );
 };

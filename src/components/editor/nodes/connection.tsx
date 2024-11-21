@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Connection as ConnectionProps } from "@/stores/connectionsStore";
+import { useTheme } from 'next-themes';
 
 type Props = {
     connection: ConnectionProps;
@@ -8,7 +9,14 @@ type Props = {
 const Connection: React.FC<Props> = ({ connection }) => {
     const [path, setPath] = useState('');
 
-    const color = connection.collapsed ? '#666666' : '#ffffff';
+    const { theme } = useTheme();
+
+    let color = connection.collapsed ? '#666666' : '#ffffff';
+
+    if (theme === 'light') {
+        color = connection.collapsed ? 'rgb(7, 89, 133)' : 'rgb(14, 165, 233)';
+    }
+
     const width = 2;
     const dotRadius = 6.5;
     const dashArray = connection.collapsed ? "4 4" : "0";

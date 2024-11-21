@@ -15,7 +15,7 @@ export default function Home() {
 
     return (
       <ApplicationLayout>
-        <Heading>Good afternoon, Octopus</Heading>
+        <Heading>Good afternoon, PolySynergy</Heading>
         <div className="mt-8 flex items-end justify-between">
           <Subheading>Overview</Subheading>
         </div>

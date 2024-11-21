@@ -110,7 +110,7 @@ const BoxSelect: React.FC = (): React.ReactElement => {
             }}
         >
             {isSelecting && <div
-                className="absolute bg-slate-800/20 ring-1 ring-white rounded-md z-10 select-none"
+                className="absolute bg-sky-200/20 dark:bg-slate-600/20 ring-1 ring-sky-500 dark:ring-white rounded-md z-10 select-none"
                 style={boxStyle}
             />}
         </div>

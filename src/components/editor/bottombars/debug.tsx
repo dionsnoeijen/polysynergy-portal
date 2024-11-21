@@ -3,11 +3,14 @@ import useNodesStore from "@/stores/nodesStore";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import useGroupsStore from "@/stores/groupStore";
 import ReactJson from "react-json-view";
+import { useTheme } from 'next-themes';
 
 const Debug: React.FC = (): React.ReactElement => {
     const { nodes } = useNodesStore();
     const { connections } = useConnectionsStore();
     const { groups } = useGroupsStore();
+
+    const { theme } = useTheme();
 
     const [nodesSnapshot, setNodesSnapshot] = useState(nodes);
     const [connectionsSnapshot, setConnectionsSnapshot] = useState(connections);
@@ -18,7 +21,7 @@ const Debug: React.FC = (): React.ReactElement => {
             setNodesSnapshot(nodes);
             setConnectionsSnapshot(connections);
             setGroupsSnapshot(groups);
-        }, 2000); // Update elke 2 seconden, pas dit aan naar je behoefte
+        }, 2000);
 
         return () => clearInterval(interval);
     }, [nodes, connections, groups]);
@@ -32,7 +35,7 @@ const Debug: React.FC = (): React.ReactElement => {
                 <div className="flex-1 overflow-scroll">
                     <ReactJson
                         src={nodesSnapshot}
-                        theme="monokai"
+                        theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
                         collapsed={false}
                         displayDataTypes={false}
                         indentWidth={2}
@@ -46,7 +49,7 @@ const Debug: React.FC = (): React.ReactElement => {
                 <div className="flex-1 overflow-scroll">
                     <ReactJson
                         src={connectionsSnapshot}
-                        theme="monokai"
+                        theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
                         collapsed={false}
                         displayDataTypes={false}
                         indentWidth={2}
@@ -60,7 +63,7 @@ const Debug: React.FC = (): React.ReactElement => {
                 <div className="flex-1 overflow-scroll">
                     <ReactJson
                         src={groupsSnapshot}
-                        theme="monokai"
+                        theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
                         collapsed={false}
                         displayDataTypes={false}
                         indentWidth={2}

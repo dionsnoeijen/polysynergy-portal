@@ -1,28 +1,26 @@
-import '@/styles/tailwind.css'
-import type { Metadata } from 'next'
-import type React from 'react'
+import '@/styles/tailwind.css';
+import type { Metadata } from 'next';
+import type React from 'react';
+import { ThemeProvider } from '@/contexts/theme-context';
 
 export const metadata: Metadata = {
-  title: {
-    template: '%s - Octopus',
-    default: 'Octopus',
-  },
-  description: '',
-}
+    title: {
+        template: '%s - PolySynergy',
+        default: 'PolySynergy',
+    },
+    description: '',
+};
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-      <html
-          lang="en"
-          className="text-zinc-950 antialiased lg:bg-zinc-100 dark:bg-zinc-900 dark:text-white dark:lg:bg-zinc-950"
-      >
-      <head>
-        <link rel="preconnect" href="https://rsms.me/" />
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-      </head>
-      <body>
-        {children}
-      </body>
-      </html>
-  )
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <html lang="en">
+        <head>
+            <link rel="preconnect" href="https://rsms.me/" />
+            <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+        </head>
+        <body>
+        <ThemeProvider>{children}</ThemeProvider>
+        </body>
+        </html>
+    );
 }

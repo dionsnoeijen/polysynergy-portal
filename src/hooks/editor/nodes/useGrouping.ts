@@ -3,12 +3,13 @@ import { useEditorStore } from "@/stores/editorStore";
 
 const useGrouping = () => {
 
-    const { selectedNodes } = useEditorStore();
+    const { selectedNodes, setSelectedNodes } = useEditorStore();
     const { addGroup } = useGroupsStore();
 
     const createGroup = () => {
         if (selectedNodes.length < 2) return;
         addGroup({nodes: selectedNodes});
+        setSelectedNodes([]);
     };
 
     return { createGroup };

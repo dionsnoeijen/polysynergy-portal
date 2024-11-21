@@ -13,6 +13,7 @@ import useNodesStore, { Node as NodeType, NodeVariable, NodeVariableType } from 
 import { Switch } from "@/components/switch";
 import { useEditorStore } from "@/stores/editorStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
+import { useTheme } from 'next-themes';
 
 type NodeProps = {
     node: NodeType;
@@ -27,6 +28,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
     const shouldUpdateConnections = useRef(false);
     const { updateNodeHeight } = useNodesStore();
+    const { theme } = useTheme();
 
     const handleNodeMouseDown = (e: React.MouseEvent) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
@@ -98,9 +100,9 @@ const Node: React.FC<NodeProps> = ({ node }) => {
             onClick={handleNodeClick}
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
-            className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ${
-                selectedNodes.includes(node.uuid) ? "ring-2 ring-white shadow-2xl" : "ring-1 ring-white/50"
-            } bg-slate-800/90 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5`}
+            className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ring-2 ${
+                selectedNodes.includes(node.uuid) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
+            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5`}
             style={{
                 width: `${size.width}px`,
                 left: `${node.x}px`,
@@ -111,8 +113,8 @@ const Node: React.FC<NodeProps> = ({ node }) => {
         >
             <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">
                 <Connector in nodeUuid={node.uuid} handle={"node"} />
-                <Switch />
-                <h3 className="font-bold truncate ml-2">{node.name}</h3>
+                <Switch color={theme === 'light' ? 'sky' : 'dark'} />
+                <h3 className="font-bold truncate ml-2 text-sky-600 dark:text-white">{node.name}</h3>
             </div>
             <div className="flex flex-col w-full items-start overflow-visible">
                 <div className="w-full">
@@ -123,15 +125,15 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                     <Connector in nodeUuid={node.uuid} handle={variable.handle} />
                                 )}
                                 <div className="flex items-center truncate">
-                                    <h3 className="font-semibold truncate">{variable.name}</h3>
+                                    <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}</h3>
                                     {variable.type === NodeVariableType.Array && (
-                                        <Squares2X2Icon className="w-4 h-4 ml-1 text-gray-400" />
+                                        <Squares2X2Icon className="w-4 h-4 ml-1 text-sky-600 dark:text-slate-400" />
                                     )}
                                     {variable.type === NodeVariableType.String && (
-                                        <DocumentTextIcon className="w-4 h-4 ml-1 text-gray-400" />
+                                        <DocumentTextIcon className="w-4 h-4 ml-1 text-sky-600 dark:text-slate-400" />
                                     )}
                                     {variable.type === NodeVariableType.Number && (
-                                        <HashtagIcon className="w-4 h-4 ml-1 text-gray-400" />
+                                        <HashtagIcon className="w-4 h-4 ml-1 text-sky-600 dark:text-slate-400" />
                                     )}
                                 </div>
                                 {variable.type === NodeVariableType.Array && (
@@ -141,9 +143,9 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                         data-toggle="true"
                                     >
                                         {isOpenMap[variable.handle] ? (
-                                            <ChevronDownIcon className="w-5 h-5" />
+                                            <ChevronDownIcon className="w-5 h-5 text-sky-600 dark:text-slate-400" />
                                         ) : (
-                                            <ChevronLeftIcon className="w-5 h-5" />
+                                            <ChevronLeftIcon className="w-5 h-5 text-sky-600 dark:text-slate-400" />
                                         )}
                                     </button>
                                 )}
@@ -168,8 +170,8 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                                             handle={variable.handle + "." + item.handle}
                                                         />
                                                     )}
-                                                    <div className="flex items-center truncate">
-                                                        <span className="text-gray-400">
+                                                    <div className="flex items-center truncate text-sky-600 dark:text-white">
+                                                        <span className="text-sky-600 dark:text-slate-400">
                                                             {index ===
                                                             ((variable.value as NodeVariable[])?.length ?? 0) - 1
                                                                 ? "└─"

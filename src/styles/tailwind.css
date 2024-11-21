@@ -3,16 +3,7 @@
 @tailwind utilities;
 
 .default-editor-container {
-    @apply rounded-md shadow-sm ring-1 bg-zinc-900 ring-white/10;
-}
-
-.grid-background {
-    background-image:
-        linear-gradient(90deg, rgba(200, 200, 200, 0.1) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(200, 200, 200, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(150, 150, 150, 0.2) 2px, transparent 1px 100px),
-        linear-gradient(0deg, rgba(150, 150, 150, 0.2) 2px, transparent 1px 100px);
-    background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+    @apply rounded-md shadow-sm ring-1 bg-zinc-200 dark:bg-zinc-900 ring-white/10;
 }
 
 @keyframes fadeInOut {
@@ -43,3 +34,18 @@
 .animate-fade-in-out {
     animation: fadeInOut 5s forwards;
 }
+
+/*:root {*/
+/*    --background: #ffffff;*/
+/*    --foreground: #000000;*/
+/*}*/
+
+/*.dark {*/
+/*    --background: #000000;*/
+/*    --foreground: #ffffff;*/
+/*}*/
+
+/*body {*/
+/*    background-color: var(--background);*/
+/*    color: var(--foreground);*/
+/*}*/

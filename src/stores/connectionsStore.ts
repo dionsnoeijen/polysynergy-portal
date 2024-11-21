@@ -19,6 +19,7 @@ type ConnectionsStore = {
     addConnection: (connection: Connection) => void;
     removeConnectionById: (connectionId: string) => void;
     removeConnection: (connection: Connection) => void;
+    removeConnections: (connections: Connection[]) => void;
     updateConnection: (connection: Connection) => void;
     findInConnectionsByNodeId: (nodeId: string) => Connection[];
     findOutConnectionsByNodeId: (nodeId: string) => Connection[];
@@ -56,6 +57,12 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
     removeConnection: (connection: Connection) => {
         set((state) => ({
             connections: state.connections.filter((c) => c.id !== connection.id),
+        }));
+    },
+
+    removeConnections: (connections: Connection[]) => {
+        set((state) => ({
+            connections: state.connections.filter((c) => !connections.includes(c)),
         }));
     },
 

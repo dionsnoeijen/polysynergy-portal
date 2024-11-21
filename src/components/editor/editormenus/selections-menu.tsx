@@ -30,14 +30,14 @@ const SelectionsMenu: React.FC = () => {
             <div className="flex flex-col items-start justify-center w-full h-full">
                 <button
                     type="button"
-                    className={`w-full text-lg font-semibold text-white rounded-sm p-1 ${clickSelect ? 'bg-blue-500' : 'bg-zinc-500'}`}
+                    className={`w-full text-lg font-semibold text-white rounded-sm p-1 ${clickSelect ? 'bg-sky-500' : 'bg-zinc-500'}`}
                     onMouseDown={handleClickSelect}
                 >
                     <CursorArrowRaysIcon className="w-4 h-4" />
                 </button>
                 <button
                     type="button"
-                    className={`w-full text-lg font-semibold text-white rounded-sm p-1 mt-1 ${boxSelect ? 'bg-blue-500' : 'bg-zinc-500'}`}
+                    className={`w-full text-lg font-semibold text-white rounded-sm p-1 mt-1 ${boxSelect ? 'bg-sky-500' : 'bg-zinc-500'}`}
                     onMouseDown={handleBoxSelect}
                 >
                     <StopIcon className="w-4 h-4" />

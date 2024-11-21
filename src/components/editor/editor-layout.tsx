@@ -113,7 +113,7 @@ export function EditorLayout({
     };
 
     return (
-        <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-950">
+        <div className="absolute top-0 right-0 bottom-0 left-0 dark:bg-zinc-800">
 
             {closeFormMessage && (
                 <>
@@ -142,7 +142,7 @@ export function EditorLayout({
                 {itemManagerClosed && (<button
                     type="button"
                     onClick={toggleCloseItemManager}
-                    className="absolute z-10 top-[10px] left-0 p-3 default-editor-container radius-tl-0"
+                    className="absolute z-10 top-[10px] left-0 p-3 radius-tl-0"
                 ><ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/></button>)}
 
                 <main className="absolute top-0 bottom-0" style={{
@@ -150,7 +150,7 @@ export function EditorLayout({
                     right: dockClosed ? 10 : width.dock
                 }}>
                     <div
-                        className="absolute top-[10px] left-0 right-0 bottom-0 default-editor-container overflow-scroll"
+                        className="absolute top-[10px] left-0 right-0 bottom-0 overflow-scroll border border-sky-500 dark:border-white/20 shadow-sm rounded-md bg-white dark:bg-zinc-700"
                     >
                         {showForm ? (
                             <Form/>
@@ -187,7 +187,7 @@ export function EditorLayout({
                     <button
                         type="button"
                         onClick={toggleCloseDock}
-                        className="absolute z-10 top-[10px] right-0 p-3 default-editor-container radius-tr-0"
+                        className="absolute z-10 top-[10px] right-0 p-3 radius-tr-0"
                     >
                         <ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/>
                     </button>
@@ -210,7 +210,7 @@ export function EditorLayout({
                         className="absolute h-[8px] left-0 right-0 top-0 cursor-row-resize z-10"
                     />
                     <div
-                        className="absolute top-[10px] left-[10px] right-[10px] bottom-[10px] default-editor-container">
+                        className="absolute top-[10px] left-[10px] right-[10px] bottom-[10px]">
                         <BottomBar />
                     </div>
                 </div>
@@ -220,7 +220,7 @@ export function EditorLayout({
                 <button
                     type="button"
                     onClick={toggleCloseOutput}
-                    className="absolute z-10 bottom-[10px] right-[10px] p-3 default-editor-container radius-bl-0"
+                    className="absolute z-10 bottom-[10px] right-[10px] p-3 radius-bl-0"
                 >
                     <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/>
                 </button>

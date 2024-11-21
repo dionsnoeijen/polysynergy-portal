@@ -22,9 +22,9 @@ export default function TreeList<T extends ListItemWithId>({
     const [isOpen, setIsOpen] = useState(true);
 
     return (
-        <div className="default-editor-container mt-[10px]">
+        <div className="mt-[10px]">
             <div
-                className={`flex items-center justify-between ring-1 ring-white/20 p-2 bg-zinc-800 rounded-md${
+                className={`flex items-center shadow-sm justify-between border-t border-l border-r border-sky-500 p-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
                     isOpen ? " rounded-bl-none rounded-br-none" : ""
                 }`}
             >
@@ -45,13 +45,13 @@ export default function TreeList<T extends ListItemWithId>({
             >
                 {items.map((item, index) => (
                     <li
-                        className={`flex items-center border-l border-r border-white/20 justify-between pl-2 hover:bg-slate-950 ${
+                        className={`flex items-center border-l border-r border-sky-500 dark:border-white/20 justify-between pl-2 dark:hover:bg-sky-950 ${
                             activeItem === item.id
-                                ? "bg-slate-800"
-                                : "odd:bg-zinc-950/25"
+                                ? "bg-sky-300 dark:bg-slate-800"
+                                : "odd:bg-zinc-200 dark:odd:bg-zinc-950/20"
                         } ${
                             formEditingItem === item.id
-                                ? "bg-slate-950"
+                                ? "bg-sky-400 dark:bg-slate-950"
                                 : ""
                         } transition-colors duration-200 group`}
                         key={index}
@@ -60,7 +60,7 @@ export default function TreeList<T extends ListItemWithId>({
                     </li>
                 ))}
                 {addButton && (
-                    <li className="odd:bg-zinc-950/25 flex items-center justify-between">
+                    <li className="flex items-center justify-between border-l border-b border-r border-sky-500 dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
                         {addButton}
                     </li>
                 )}

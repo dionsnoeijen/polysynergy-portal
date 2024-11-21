@@ -9,6 +9,7 @@ import { Text } from '@/components/text'
 import { Textarea } from '@/components/textarea'
 import type { Metadata } from 'next'
 import { Address } from './address'
+import ThemeToggle from "@/components/theme-toggle";
 
 export const metadata: Metadata = {
   title: 'Settings',
@@ -19,6 +20,8 @@ export default function Settings() {
     <form method="post" className="mx-auto max-w-4xl">
       <Heading>Settings</Heading>
       <Divider className="my-10 mt-6" />
+      <ThemeToggle />
+      <Divider className="my-10" soft />
 
       <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
         <div className="space-y-1">

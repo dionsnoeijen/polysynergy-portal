@@ -17,7 +17,7 @@ export default function SidebarTenantHeader()
             <Dropdown>
                 <DropdownButton as={SidebarItem}>
                     <Avatar src="/parsemind-nt.svg" />
-                    <SidebarLabel>Octopus</SidebarLabel>
+                    <SidebarLabel>PolySynergy</SidebarLabel>
                     <ChevronDownIcon />
                 </DropdownButton>
                 <DropdownMenu className="min-w-80 lg:min-w-64" anchor="bottom start">

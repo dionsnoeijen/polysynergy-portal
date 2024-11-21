@@ -91,7 +91,7 @@ export default function Editor() {
     return (
         <div
             data-type="editor"
-            className="relative w-full h-full overflow-hidden ring-1 ring-white/10 rounded-md"
+            className="relative w-full h-full overflow-hidden rounded-md"
             onWheel={handleWheel}
             onMouseDown={(e) => {
                 handleEditorMouseDown();

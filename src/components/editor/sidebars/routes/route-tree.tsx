@@ -26,9 +26,9 @@ export default function RouteTree(): ReactElement {
                 <>
                     <a href={`/project/${activeProjectId}/route/${route.id}`}
                        title={`${route.method}}: /${formatSegments(route.segments)}`}
-                       className={`block flex-1 truncate hover:text-zinc-300 pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'text-white' : 'text-zinc-500'}`}
+                       className={`block flex-1 truncate dark:hover:text-zinc-300 pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
                     >
-                        <b className="text-white">{route.method}</b>: /{formatSegments(route.segments)}
+                        <b className="dark:text-white">{route.method}</b>: /{formatSegments(route.segments)}
                     </a>
                     <button
                         onClick={() => openForm(FormType.EditRoute, route.id)}
@@ -42,8 +42,8 @@ export default function RouteTree(): ReactElement {
             addButton={
                 <Button
                     onClick={() => openForm(FormType.AddRoute)}
-                    color="dark"
-                    className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none dark:after:rounded-tl-none dark:after:rounded-tr-none p-0">
+                    plain
+                    className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0">
                     <PlusIcon/>
                 </Button>
             }

@@ -38,30 +38,26 @@ const Node: React.FC<NodeProps> = ({ node }) => {
 
         e.preventDefault();
 
-        // Met ctrl: deselecteer als de node geselecteerd is, anders voeg toe
         if (e.ctrlKey) {
             if (selectedNodes.includes(node.id)) {
-                setSelectedNodes(selectedNodes.filter((id) => id !== node.id)); // Deselecteer
+                setSelectedNodes(selectedNodes.filter((id) => id !== node.id));
             } else {
-                setSelectedNodes([...selectedNodes, node.id]); // Voeg toe
+                setSelectedNodes([...selectedNodes, node.id]);
             }
-            return; // Voorkom dragged behavior na deselectie
+            return;
         }
 
-        // Met shift: voeg toe zonder deselectie
         if (e.shiftKey) {
             if (!selectedNodes.includes(node.id)) {
-                setSelectedNodes([...selectedNodes, node.id]); // Voeg toe
+                setSelectedNodes([...selectedNodes, node.id]);
             }
-            return; // Voorkom dragged behavior na toevoeging
+            return;
         }
 
-        // Zonder keys: selecteer alleen de geklikte node
         if (!selectedNodes.includes(node.id)) {
             setSelectedNodes([node.id]);
         }
 
-        // Start drag logic
         onDragMouseDown();
     };
 

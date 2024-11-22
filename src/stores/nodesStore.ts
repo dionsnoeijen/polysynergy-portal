@@ -20,14 +20,18 @@ export type NodeVariable = {
     has_dock?: boolean;
 };
 
-export type Node = {
-    uuid: string;
-    name: string;
-    type: string;
+export type NodeView = {
     x: number;
     y: number;
     width: number;
     height: number;
+};
+
+export type Node = {
+    uuid: string;
+    name: string;
+    type: string;
+    view: NodeView;
     enabled: string[] | boolean;
     variables: NodeVariable[];
 };
@@ -69,12 +73,14 @@ const useNodesStore = create<NodesStore>((set, get) => ({
            'a2ac29df-2130-41da-b64d-b0314c19e47a': [
                {
                    uuid: 'e8941d69-af86-4cbc-83cd-758c8b80e89c',
+                   view: {
+                       x: 100,
+                       y: 100,
+                       width: 200,
+                       height: 200,
+                   },
                    name: 'Route',
                    type: 'route',
-                   x: 100,
-                   y: 100,
-                   width: 200,
-                   height: 200,
                    enabled: true,
                    variables: [
                        {
@@ -194,12 +200,14 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                },
                {
                    uuid: '15bcbcac-ae11-4ca4-ac9b-601f431a90db',
+                   view: {
+                       x: 400,
+                       y: 100,
+                       width: 200,
+                       height: 200,
+                   },
                    name: 'Route',
                    type: 'route',
-                   x: 400,
-                   y: 100,
-                   width: 200,
-                   height: 200,
                    enabled: true,
                    variables: [
                        {
@@ -310,12 +318,14 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                },
                {
                    uuid: '4fcee4b2-49cf-405f-bf30-1dcb61abd79e',
+                   view: {
+                       x: 700,
+                       y: 100,
+                       width: 200,
+                       height: 200,
+                   },
                    name: 'Route',
                    type: 'route',
-                   x: 700,
-                   y: 100,
-                   width: 200,
-                   height: 200,
                    enabled: true,
                    variables: [
                        {
@@ -608,7 +618,14 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             const projectNodes = state.nodes[activeProjectId];
             const routeNodes = projectNodes[activeRouteId].map((node) =>
                 node.uuid === nodeId
-                    ? { ...node, x: node.x + deltaX, y: node.y + deltaY }
+                    ? {
+                        ...node,
+                        view: {
+                            ...node.view,
+                            x: node.view.x + deltaX,
+                            y: node.view.y + deltaY,
+                        },
+                    }
                     : node
             );
 
@@ -623,6 +640,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             };
         });
     },
+
 
     getNode: (nodeUuid): Node | undefined => {
         const { activeProjectId, activeRouteId } = useEditorStore.getState();

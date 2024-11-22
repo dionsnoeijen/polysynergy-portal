@@ -14,11 +14,13 @@ export type Group = {
 type GroupsStore = {
     groups: Record<string, Group>;
     toggleGroupOpen: (groupId: string) => void;
+    closeGroup: (groupId: string) => void;
     addGroup: (group: Partial<Group>) => void;
     removeGroup: (groupId: string) => void;
     addNodeToGroup: (groupId: string, nodeId: string) => void;
     removeNodeFromGroup: (groupId: string, nodeId: string) => void;
     getOpenGroups: () => Group[];
+    getClosedGroups: () => Group[];
     getNodesInGroup: (groupId: string) => string[];
 };
 
@@ -32,6 +34,11 @@ const getOpenGroups = (get: () => GroupsStore) => (): Group[] => {
     return Object.values(groups).filter((group) => group.isOpen);
 };
 
+const getClosedGroups = (get: () => GroupsStore) => (): Group[] => {
+    const { groups } = get();
+    return Object.values(groups).filter((group) => !group.isOpen);
+};
+
 const useGroupsStore = create<GroupsStore>((set, get) => ({
     groups: {},
 
@@ -41,6 +48,16 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
             groups: {
                 ...state.groups,
                 [groupId]: { ...group, isOpen: !group.isOpen }
+            }
+        };
+    }),
+
+    closeGroup: (groupId) => set((state) => {
+        const group = state.groups[groupId];
+        return {
+            groups: {
+                ...state.groups,
+                [groupId]: { ...group, isOpen: false }
             }
         };
     }),
@@ -87,6 +104,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     }),
 
     getOpenGroups: getOpenGroups(get),
+    getClosedGroups: getClosedGroups(get),
     getNodesInGroup: getNodesInGroup(get),
 }));
 

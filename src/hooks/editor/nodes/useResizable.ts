@@ -10,7 +10,7 @@ type Size = {
 };
 
 const useResizable = (node: Node) => {
-    const [ size, setSize ] = useState<Size>({ width: node.width || 100, height: node.height || 100 }); // Zorgt voor initiële waarde
+    const [ size, setSize ] = useState<Size>({ width: node.view.width || 100, height: node.view.height || 100 });
     const [ isResizing, setIsResizing ] = useState(false);
     const { zoomFactor } = useEditorStore();
     const { updateNodeWidth } = useNodesStore();

@@ -69,11 +69,11 @@ const Node: React.FC<NodeProps> = ({ node }) => {
     useEffect(() => {
         if (ref.current) {
             const actualHeight = ref.current.getBoundingClientRect().height;
-            if (actualHeight !== node.height) {
+            if (actualHeight !== node.view.height) {
                 updateNodeHeight(node.uuid, actualHeight);
             }
         }
-    }, [node.height, isOpenMap, updateNodeHeight, node.uuid]);
+    }, [node.view.height, isOpenMap, updateNodeHeight, node.uuid]);
 
     const handleNodeClick = (e: React.MouseEvent) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
@@ -105,8 +105,8 @@ const Node: React.FC<NodeProps> = ({ node }) => {
             } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5`}
             style={{
                 width: `${size.width}px`,
-                left: `${node.x}px`,
-                top: `${node.y}px`,
+                left: `${node.view.x}px`,
+                top: `${node.view.y}px`,
             }}
             data-type="node"
             data-node-uuid={node.uuid}
@@ -170,7 +170,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                                             handle={variable.handle + "." + item.handle}
                                                         />
                                                     )}
-                                                    <div className="flex items-center truncate text-sky-400 dark:text-white">
+                                                    <div className="flex items-center truncate text-sky-200 dark:text-white">
                                                         <span className="text-sky-400 dark:text-slate-400">
                                                             {index ===
                                                             ((variable.value as NodeVariable[])?.length ?? 0) - 1

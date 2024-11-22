@@ -36,10 +36,10 @@ const BoxSelect: React.FC = (): React.ReactElement => {
             const boxBottom = Math.max(boxStart.y, boxEnd.y);
 
             const selectedNodes = getNodes().filter((node) => {
-                const nodeLeft = node.x;
-                const nodeTop = node.y;
-                const nodeRight = nodeLeft + node.width;
-                const nodeBottom = nodeTop + node.height;
+                const nodeLeft = node.view.x;
+                const nodeTop = node.view.y;
+                const nodeRight = nodeLeft + node.view.width;
+                const nodeBottom = nodeTop + node.view.height;
 
                 return (
                     nodeRight >= boxLeft &&

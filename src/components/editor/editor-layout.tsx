@@ -171,7 +171,7 @@ export function EditorLayout({
                 </main>
 
                 {!dockClosed && (
-                    <div style={{width: width.dock}} className="absolute top-0 right-0 bottom-0">
+                    <div style={{width: width.dock}} className="absolute top-0 right-0 bottom-0 overflow-scroll">
                         <div className="absolute inset-[10px]">
                             <Dock toggleClose={toggleCloseDock}/>
                         </div>

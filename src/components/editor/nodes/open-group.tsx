@@ -23,7 +23,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
         removeConnections,
     } = useConnectionsStore();
     const { openContextMenu } = useEditorStore();
-    const { removeGroup } = useGroupsStore();
+    const { removeGroup, closeGroup } = useGroupsStore();
     const nodes = getNodesByIds(group.nodes);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -31,12 +31,12 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
     const bounds = useMemo(() => {
         return nodes.reduce(
             (acc, node) => {
-                const nodeRight = node.x + node.width;
-                const nodeBottom = node.y + node.height;
+                const nodeRight = node.view.x + node.view.width;
+                const nodeBottom = node.view.y + node.view.height;
 
                 return {
-                    minX: Math.min(acc.minX, node.x),
-                    minY: Math.min(acc.minY, node.y),
+                    minX: Math.min(acc.minX, node.view.x),
+                    minY: Math.min(acc.minY, node.view.y),
                     maxX: Math.max(acc.maxX, nodeRight),
                     maxY: Math.max(acc.maxY, nodeBottom),
                 };
@@ -52,11 +52,11 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
         e.preventDefault();
 
         const contextMenuItems = [
-            { label: "Close Group", action: () => console.log("Close Group") },
+            { label: "Close Group", action: () => closeGroup(group.id) },
             {
                 label: "Dissolve Group",
                 action: () => {
-                    setIsDialogOpen(true); // Open the confirmation dialog
+                    setIsDialogOpen(true);
                 },
             },
         ];

@@ -44,14 +44,14 @@ const useDraggable = () => {
     const cascadeRepulsion = (node: Node, allNodes: Node[], visited: Set<string>) => {
         visited.add(node.uuid);
 
-        const radiusX = node.width / 2 + collisionThreshold;
-        const radiusY = node.height / 2 + collisionThreshold;
+        const radiusX = node.view.width / 2 + collisionThreshold;
+        const radiusY = node.view.height / 2 + collisionThreshold;
 
         allNodes.forEach((otherNode) => {
             if (visited.has(otherNode.uuid) || otherNode.uuid === node.uuid) return;
 
-            const dx = otherNode.x - node.x;
-            const dy = otherNode.y - node.y;
+            const dx = otherNode.view.x - node.view.x;
+            const dy = otherNode.view.y - node.view.y;
             const distance = Math.sqrt(dx * dx + dy * dy) || 1;
 
             const isOverlapping =
@@ -74,12 +74,12 @@ const useDraggable = () => {
         const allNodes = getNodes();
         const updatedDraggedNode = {
             ...draggedNode,
-            x: draggedNode.x + deltaX,
-            y: draggedNode.y + deltaY,
+            x: draggedNode.view.x + deltaX,
+            y: draggedNode.view.y + deltaY,
         };
 
-        const radiusX = updatedDraggedNode.width / 2 + collisionThreshold;
-        const radiusY = updatedDraggedNode.height / 2 + collisionThreshold;
+        const radiusX = updatedDraggedNode.view.width / 2 + collisionThreshold;
+        const radiusY = updatedDraggedNode.view.height / 2 + collisionThreshold;
 
         allNodes.forEach((otherNode) => {
             if (
@@ -89,8 +89,8 @@ const useDraggable = () => {
                 return;
             }
 
-            const dx = otherNode.x - updatedDraggedNode.x;
-            const dy = otherNode.y - updatedDraggedNode.y;
+            const dx = otherNode.view.x - updatedDraggedNode.view.x;
+            const dy = otherNode.view.y - updatedDraggedNode.view.y;
             const distance = Math.sqrt(dx * dx + dy * dy) || 1;
 
             const isTouching = distance < Math.max(radiusX, radiusY);

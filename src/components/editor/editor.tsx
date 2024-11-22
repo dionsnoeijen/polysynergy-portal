@@ -1,4 +1,4 @@
-import React, {useRef, useEffect, useCallback} from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useZoom } from "@/hooks/editor/useZoom";
 import { usePan } from "@/hooks/editor/usePan";
 import { Grid } from "@/components/editor/grid";
@@ -14,6 +14,8 @@ import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 import useGroupsStore from "@/stores/groupStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import OpenGroup from "@/components/editor/nodes/open-group";
+import { Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle } from "@/components/dialog";
+import { Button } from "@/components/button";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -25,15 +27,18 @@ export default function Editor() {
         panPosition,
         isDrawingConnection,
         mousePosition,
+        selectedNodes
     } = useEditorStore();
-    const { nodes } = useNodesStore();
-    const { connections } = useConnectionsStore();
+    const { nodes, removeNode } = useNodesStore();
+    const { connections, removeConnections, findInConnectionsByNodeId, findOutConnectionsByNodeId } = useConnectionsStore();
     const { getOpenGroups, getClosedGroups } = useGroupsStore();
 
     const { handleZoom } = useZoom();
     const { handlePanMouseDown, handleMouseMove, handleMouseUp } = usePan();
     const { handleEditorMouseDown } = useDeselectOnClickOutside();
     const { createGroup } = useGrouping();
+
+    const [isDeleteNodesDialogOpen, setIsDeleteNodesDialogOpen] = useState(false);
 
     const updateEditorPosition = useCallback(() => {
         if (contentRef.current) {
@@ -66,7 +71,19 @@ export default function Editor() {
 
     useKeyBindings({
         'delete': () => {
-            console.log('Delete key pressed');
+            if (selectedNodes.length > 0) {
+                setIsDeleteNodesDialogOpen(true);
+            }
+        },
+        'x': () => {
+            if (selectedNodes.length > 0) {
+                setIsDeleteNodesDialogOpen(true);
+            }
+        },
+        'backspace': () => {
+            if (selectedNodes.length > 0) {
+                setIsDeleteNodesDialogOpen(true);
+            }
         },
         'ctrl+shift+g': () => {
             console.log('DEGROUP');
@@ -96,6 +113,21 @@ export default function Editor() {
     const nodesToRender = nodes.filter(
         (node) => !closedGroupNodeIds().includes(node.id)
     );
+
+    const handleConfirmDelete = () => {
+        selectedNodes.map((nodeId) => {
+            const inConnections = findInConnectionsByNodeId(nodeId);
+            const outConnections = findOutConnectionsByNodeId(nodeId);
+            const connections = [...inConnections, ...outConnections];
+            removeConnections(connections);
+            removeNode(nodeId);
+        });
+        setIsDeleteNodesDialogOpen(false);
+    };
+
+    const handleCancelDelete = () => {
+        setIsDeleteNodesDialogOpen(false);
+    };
 
     return (
         <div
@@ -137,6 +169,24 @@ export default function Editor() {
             </div>
 
             <BoxSelect />
+
+            <Dialog size="md" className={'rounded-sm'} open={isDeleteNodesDialogOpen} onClose={handleCancelDelete}>
+                <DialogTitle>Confirm Delete Node{selectedNodes.length > 1 ? 's' : ''}</DialogTitle>
+                <DialogDescription>
+                    Are you sure you want to delete the nodes?
+                </DialogDescription>
+                <DialogBody>
+                    {/* Additional content can go here if needed */}
+                </DialogBody>
+                <DialogActions>
+                    <Button outline onClick={handleCancelDelete}>
+                        Cancel
+                    </Button>
+                    <Button color="red" onClick={handleConfirmDelete}>
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

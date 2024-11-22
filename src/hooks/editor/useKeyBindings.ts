@@ -10,6 +10,7 @@ export const useKeyBindings = (bindings: KeyBindings) => {
             const activeElement = document.activeElement;
             if (
                 activeElement &&
+                activeElement instanceof HTMLElement &&
                 (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA" || activeElement.isContentEditable)
             ) {
                 return;

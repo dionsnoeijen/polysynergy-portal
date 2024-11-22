@@ -35,16 +35,36 @@ const Node: React.FC<NodeProps> = ({ node }) => {
     const handleNodeMouseDown = (e: React.MouseEvent) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
         if (isToggleClick) return;
+
         e.preventDefault();
+
+        // Met ctrl: deselecteer als de node geselecteerd is, anders voeg toe
+        if (e.ctrlKey) {
+            if (selectedNodes.includes(node.id)) {
+                setSelectedNodes(selectedNodes.filter((id) => id !== node.id)); // Deselecteer
+            } else {
+                setSelectedNodes([...selectedNodes, node.id]); // Voeg toe
+            }
+            return; // Voorkom dragged behavior na deselectie
+        }
+
+        // Met shift: voeg toe zonder deselectie
+        if (e.shiftKey) {
+            if (!selectedNodes.includes(node.id)) {
+                setSelectedNodes([...selectedNodes, node.id]); // Voeg toe
+            }
+            return; // Voorkom dragged behavior na toevoeging
+        }
+
+        // Zonder keys: selecteer alleen de geklikte node
         if (!selectedNodes.includes(node.id)) {
             setSelectedNodes([node.id]);
-            setTimeout(() => {
-                onDragMouseDown();
-            }, 0);
-        } else {
-            onDragMouseDown();
         }
+
+        // Start drag logic
+        onDragMouseDown();
     };
+
 
     const handleToggle = (handle: string) => (e: React.MouseEvent) => {
         e.preventDefault();
@@ -77,14 +97,6 @@ const Node: React.FC<NodeProps> = ({ node }) => {
         }
     }, [node.view.height, isOpenMap, updateNodeHeight, node.id]);
 
-    const handleNodeClick = (e: React.MouseEvent) => {
-        const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
-        if (isToggleClick) return;
-        if (!selectedNodes.includes(node.id)) {
-            setSelectedNodes([node.id]);
-        }
-    };
-
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
 
@@ -99,7 +111,6 @@ const Node: React.FC<NodeProps> = ({ node }) => {
     return (
         <div
             ref={ref}
-            onClick={handleNodeClick}
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
             className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ring-2 ${
@@ -152,9 +163,9 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                             typeof variable.value === 'number' ||
                                             typeof variable.value === 'boolean') && (
                                             <span className="ml-1">
-                    {variable.value.toString().slice(0, 100)}
+                                                {variable.value.toString().slice(0, 100)}
                                                 {variable.value.toString().length > 100 ? '...' : ''}
-                </span>
+                                            </span>
                                         )}
                                     </Text>
                                 </div>

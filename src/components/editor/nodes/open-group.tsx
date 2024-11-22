@@ -22,7 +22,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
         findOutConnectionsByNodeId,
         removeConnections,
     } = useConnectionsStore();
-    const { openContextMenu } = useEditorStore();
+    const { openContextMenu, setSelectedNodes, setOpenGroup } = useEditorStore();
     const { removeGroup, closeGroup } = useGroupsStore();
     const nodes = getNodesByIds(group.nodes);
 
@@ -52,10 +52,18 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
         e.preventDefault();
 
         const contextMenuItems = [
-            { label: "Close Group", action: () => closeGroup(group.id) },
+            {
+                label: "Close Group",
+                action: () => {
+                    setOpenGroup(null);
+                    setSelectedNodes([]);
+                    closeGroup(group.id);
+                }
+            },
             {
                 label: "Dissolve Group",
                 action: () => {
+                    setSelectedNodes([]);
                     setIsDialogOpen(true);
                 },
             },
@@ -71,11 +79,11 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
 
         removeConnections(connections);
         removeGroup(group.id);
-        setIsDialogOpen(false); // Close the dialog
+        setIsDialogOpen(false);
     };
 
     const handleCancelDissolve = () => {
-        setIsDialogOpen(false); // Close the dialog
+        setIsDialogOpen(false);
     };
 
     return (

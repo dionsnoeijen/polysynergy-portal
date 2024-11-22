@@ -60,7 +60,6 @@ const Connector: React.FC<ConnectorProps> = ({
 
         const existingConnection = existingConnections[0];
 
-        // Remove the connection ID from the target node's in_connections
         removeConnectionFromNode(
             existingConnection.id,
             nodeId,
@@ -93,7 +92,6 @@ const Connector: React.FC<ConnectorProps> = ({
                 (moveEvent.clientY - editorPosition.y - panPosition.y) / zoomFactor;
             setMousePosition({ x: newX, y: newY });
 
-            // Update the connection's end coordinates
             updateConnectionEnd(existingConnection.id, newX, newY);
         };
 
@@ -127,7 +125,6 @@ const Connector: React.FC<ConnectorProps> = ({
 
                 const connection = getConnection(existingConnection.id);
                 if (connection) {
-                    // Update the nodes store with the new connection
                     updateConnections({
                         connectionId: existingConnection.id,
                         sourceNodeId: connection.sourceNodeId,

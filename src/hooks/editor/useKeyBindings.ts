@@ -7,6 +7,14 @@ type KeyBindings = {
 export const useKeyBindings = (bindings: KeyBindings) => {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
+            const activeElement = document.activeElement;
+            if (
+                activeElement &&
+                (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA" || activeElement.isContentEditable)
+            ) {
+                return;
+            }
+
             const modifiers = [
                 event.ctrlKey ? 'ctrl' : '',
                 event.shiftKey ? 'shift' : '',

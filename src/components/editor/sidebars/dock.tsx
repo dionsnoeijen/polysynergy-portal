@@ -1,5 +1,4 @@
-import React from "react";
-import clsx from 'clsx';
+import clsx from "clsx";
 import Heading from "@/components/editor/sidebars/elements/heading";
 import useNodesStore, { NodeVariableType } from "@/stores/nodesStore";
 import { useEditorStore } from "@/stores/editorStore";
@@ -8,9 +7,12 @@ import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-
 import VariableTypeArray from "@/components/editor/sidebars/dock/variable-type-array";
 import { Divider } from "@/components/divider";
 import VariableTypeBoolean from "@/components/editor/sidebars/dock/variable-type-boolean";
+import useGroupsStore from "@/stores/groupStore";
+import GroupName from "@/components/editor/sidebars/dock/group-name";
+import React from "react";
 
-type Props = React.ComponentPropsWithoutRef<'div'> & {
-    toggleClose: () => void
+type Props = React.ComponentPropsWithoutRef<"div"> & {
+    toggleClose: () => void;
 };
 
 const VariableTypeComponents = {
@@ -21,36 +23,39 @@ const VariableTypeComponents = {
 };
 
 const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
-    const { selectedNodes } = useEditorStore();
-    const getNode = useNodesStore((state) => state.getNode);
-
-    if (selectedNodes.length === 1) {
-        const node = getNode(selectedNodes[0]);
-
-        return (
-            <div
-                {...props}
-                className={clsx(className, 'absolute left-0 top-0 right-0 bottom-0 flex flex-col gap-4')}
-            >
-                <Heading arrowToLeft={true} toggleClose={toggleClose}>
-                    Dock: {node?.name}
-                </Heading>
-                {node?.variables.map((variable) => {
-                    const VariableComponent = VariableTypeComponents[variable.type];
-                    return VariableComponent ? (
-                        <div key={variable.handle}>
-                            <Divider />
-                            <VariableComponent variable={variable} />
-                        </div>
-                    ) : null;
-                })}
-            </div>
-        );
-    }
+    const { selectedNodes, openGroup } = useEditorStore();
+    const { getGroupById } = useGroupsStore();
+    const nodes = useNodesStore((state) => state.nodes);
+    const group = openGroup ? getGroupById(openGroup) : null;
+    const node = selectedNodes.length === 1 ? nodes.find((n) => n.id === selectedNodes[0]) : null;
 
     return (
-        <div {...props} className={clsx(className, 'absolute left-0 top-0 right-0 bottom-0')}>
-            <Heading arrowToLeft={true} toggleClose={toggleClose}>Dock: select node</Heading>
+        <div
+            {...props}
+            className={clsx(className, "absolute left-0 top-0 right-0 bottom-0 flex flex-col gap-2")}
+        >
+            <Heading arrowToLeft={true} toggleClose={toggleClose}>
+                Dock: {node ? node.name : "select node"}
+            </Heading>
+
+            {node && node.variables.map((variable) => {
+                const VariableComponent = VariableTypeComponents[variable.type];
+                return VariableComponent ? (
+                    <div key={variable.handle}>
+                        <VariableComponent nodeId={node.id} variable={variable} />
+                    </div>
+                ) : null;
+            })}
+
+            {group && (
+                <>
+                    <Divider />
+                    <Heading>
+                        Group: {group.name}
+                    </Heading>
+                    <GroupName group={group} />
+                </>
+            )}
         </div>
     );
 };

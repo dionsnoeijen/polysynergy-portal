@@ -59,6 +59,7 @@ type NodesStore = {
     getNode: (nodeId: string) => Node | undefined;
     getNodes: () => Node[];
     getNodesByIds: (nodeIds: string[]) => Node[];
+    updateNodeVariable: (nodeId: string, variableHandle: string, newValue: any) => void;
 };
 
 const useNodesStore = create<NodesStore>((set, get) => ({
@@ -99,7 +100,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         {
                             name: '{id}',
                             handle: 'id',
-                            value: 30,
+                            value: '59027142-1a33-4d75-8ee6-231d7b4a3335',
                             type: NodeVariableType.String,
                             in_connections: [],
                             out_connections: [],
@@ -563,6 +564,23 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     getNodesByIds: (nodeIds) => {
         return get().nodes.filter((node) => nodeIds.includes(node.id));
+    },
+
+    updateNodeVariable: (nodeId, variableHandle, newValue) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        variables: node.variables.map((variable) =>
+                            variable.handle === variableHandle
+                                ? { ...variable, value: newValue }
+                                : variable
+                        ),
+                    }
+                    : node
+            ),
+        }));
     },
 }));
 

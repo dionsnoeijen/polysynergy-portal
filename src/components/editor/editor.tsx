@@ -26,9 +26,9 @@ export default function Editor() {
         isDrawingConnection,
         mousePosition,
     } = useEditorStore();
-    const { getNodes } = useNodesStore();
+    const { nodes } = useNodesStore();
     const { connections } = useConnectionsStore();
-    const { getOpenGroups } = useGroupsStore();
+    const { getOpenGroups, getClosedGroups } = useGroupsStore();
 
     const { handleZoom } = useZoom();
     const { handlePanMouseDown, handleMouseMove, handleMouseUp } = usePan();
@@ -88,6 +88,15 @@ export default function Editor() {
         }
     });
 
+    const closedGroupNodeIds = useCallback(() => {
+        const closedGroups = getClosedGroups();
+        return closedGroups.flatMap((group) => group.nodes);
+    }, [getClosedGroups]);
+
+    const nodesToRender = nodes.filter(
+        (node) => !closedGroupNodeIds().includes(node.id)
+    );
+
     return (
         <div
             data-type="editor"
@@ -112,7 +121,7 @@ export default function Editor() {
                     <OpenGroup key={group.id} group={group} />
                 ))}
 
-                {getNodes().map((node) => (
+                {nodesToRender.map((node) => (
                     <Node
                         key={node.id}
                         node={node}

@@ -1,14 +1,22 @@
 import React from "react";
 
-import { NodeVariable } from '@/stores/nodesStore';
+import { NodeVariable } from "@/stores/nodesStore";
 import { Field, Fieldset, Label } from "@/components/fieldset";
 import { Checkbox, CheckboxField } from "@/components/checkbox";
+import useNodesStore from "@/stores/nodesStore";
 
 type Props = {
+    nodeId: string;
     variable: NodeVariable;
 };
 
-const VariableTypeBoolean: React.FC<Props> = ({variable}): React.ReactElement => {
+const VariableTypeBoolean: React.FC<Props> = ({ nodeId, variable }): React.ReactElement => {
+    const { updateNodeVariable } = useNodesStore();
+
+    const handleChange = (checked: boolean) => {
+        updateNodeVariable(nodeId, variable.handle, checked);
+    };
+
     return (
         <Fieldset>
             <Label>{variable.handle}</Label>
@@ -16,13 +24,13 @@ const VariableTypeBoolean: React.FC<Props> = ({variable}): React.ReactElement =>
                 <CheckboxField>
                     <Checkbox
                         name={variable.handle}
-                        checked={variable.value as boolean}
-                        onChange={(e) => {}}
+                        checked={!!variable.value}
+                        onChange={handleChange}
                     />
                 </CheckboxField>
             </Field>
         </Fieldset>
-    )
+    );
 };
 
 export default VariableTypeBoolean;

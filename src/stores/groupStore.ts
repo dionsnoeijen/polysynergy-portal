@@ -17,13 +17,20 @@ type GroupsStore = {
     groups: Record<string, Group>;
     toggleGroupOpen: (groupId: string) => void;
     closeGroup: (groupId: string) => void;
-    addGroup: (group: Partial<Group>) => void;
+    addGroup: (group: Partial<Group>) => string;
     removeGroup: (groupId: string) => void;
     addNodeToGroup: (groupId: string, nodeId: string) => void;
     removeNodeFromGroup: (groupId: string, nodeId: string) => void;
     getOpenGroups: () => Group[];
     getClosedGroups: () => Group[];
     getNodesInGroup: (groupId: string) => string[];
+    getGroupById: (groupId: string) => Group | undefined;
+    updateGroup: (groupId: string, group: Partial<Group>) => void;
+    updateConnectionsForGroups: (payload: {
+        connectionId: string;
+        sourceGroupId?: string;
+        targetGroupId?: string;
+    }) => void;
 };
 
 const getNodesInGroup = (get: () => GroupsStore) => (groupId: string): string[] => {
@@ -84,9 +91,12 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         set((state) => ({
             groups: { ...state.groups, [newGroup.id]: newGroup }
         }));
+
+        return newGroup.id;
     },
 
     removeGroup: (groupId) => set((state) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [groupId]: _, ...remainingGroups } = state.groups;
         return { groups: remainingGroups };
     }),
@@ -114,6 +124,54 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     getOpenGroups: getOpenGroups(get),
     getClosedGroups: getClosedGroups(get),
     getNodesInGroup: getNodesInGroup(get),
+
+    getGroupById: (groupId) => get().groups[groupId],
+
+    updateGroup: (groupId, group) => set((state) => {
+        const currentGroup = state.groups[groupId];
+        return {
+            groups: {
+                ...state.groups,
+                [groupId]: { ...currentGroup, ...group }
+            }
+        };
+    }),
+
+    updateConnectionsForGroups: ({
+        connectionId,
+        sourceGroupId,
+        targetGroupId,
+    }: {
+        connectionId: string;
+        sourceGroupId?: string;
+        targetGroupId?: string;
+    }) => {
+        set((state) => {
+            const updatedGroups = { ...state.groups };
+
+            if (sourceGroupId && updatedGroups[sourceGroupId]) {
+                updatedGroups[sourceGroupId] = {
+                    ...updatedGroups[sourceGroupId],
+                    outConnections: [
+                        ...(updatedGroups[sourceGroupId].outConnections || []),
+                        connectionId,
+                    ],
+                };
+            }
+
+            if (targetGroupId && updatedGroups[targetGroupId]) {
+                updatedGroups[targetGroupId] = {
+                    ...updatedGroups[targetGroupId],
+                    inConnections: [
+                        ...(updatedGroups[targetGroupId].inConnections || []),
+                        connectionId,
+                    ],
+                };
+            }
+
+            return { groups: updatedGroups };
+        });
+    },
 }));
 
 export default useGroupsStore;

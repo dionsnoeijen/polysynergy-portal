@@ -1,12 +1,13 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
 import useResizable from "@/hooks/editor/nodes/useResizable";
 import {
+    CheckCircleIcon,
     ChevronDownIcon,
     ChevronLeftIcon,
     DocumentTextIcon,
     HashtagIcon,
-    Squares2X2Icon
+    Squares2X2Icon, XCircleIcon
 } from "@heroicons/react/16/solid";
 import Connector from "@/components/editor/nodes/connector";
 import useNodesStore, { Node as NodeType, NodeVariable, NodeVariableType } from "@/stores/nodesStore";
@@ -14,6 +15,7 @@ import { Switch } from "@/components/switch";
 import { useEditorStore } from "@/stores/editorStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
 import { useTheme } from 'next-themes';
+import { Text } from "@/components/text";
 
 type NodeProps = {
     node: NodeType;
@@ -120,21 +122,41 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                 <div className="w-full">
                     {node.variables.map((variable) => (
                         <React.Fragment key={variable.handle}>
-                            <div className="flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative">
+                            <div
+                                className="flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative">
                                 {variable.in_connections !== null && (
-                                    <Connector in nodeId={node.id} handle={variable.handle} />
+                                    <Connector in nodeId={node.id} handle={variable.handle}/>
                                 )}
                                 <div className="flex items-center truncate">
-                                    <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}</h3>
+                                    <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
+
                                     {variable.type === NodeVariableType.Array && (
-                                        <Squares2X2Icon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
+                                        <Squares2X2Icon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
                                     )}
                                     {variable.type === NodeVariableType.String && (
-                                        <DocumentTextIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
+                                        <DocumentTextIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
                                     )}
                                     {variable.type === NodeVariableType.Number && (
-                                        <HashtagIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
+                                        <HashtagIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
                                     )}
+                                    {variable.type === NodeVariableType.Boolean && (
+                                        variable.value ? (
+                                            <CheckCircleIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
+                                        ) : (
+                                            <XCircleIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
+                                        )
+                                    )}
+
+                                    <Text>
+                                        {(typeof variable.value === 'string' ||
+                                            typeof variable.value === 'number' ||
+                                            typeof variable.value === 'boolean') && (
+                                            <span className="ml-1">
+                    {variable.value.toString().slice(0, 100)}
+                                                {variable.value.toString().length > 100 ? '...' : ''}
+                </span>
+                                        )}
+                                    </Text>
                                 </div>
                                 {variable.type === NodeVariableType.Array && (
                                     <button
@@ -143,14 +165,14 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                         data-toggle="true"
                                     >
                                         {isOpenMap[variable.handle] ? (
-                                            <ChevronDownIcon className="w-5 h-5 text-sky-400 dark:text-slate-400" />
+                                            <ChevronDownIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
                                         ) : (
-                                            <ChevronLeftIcon className="w-5 h-5 text-sky-400 dark:text-slate-400" />
+                                            <ChevronLeftIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
                                         )}
                                     </button>
                                 )}
                                 {variable.out_connections !== null && (
-                                    <Connector out nodeId={node.id} handle={variable.handle} />
+                                    <Connector out nodeId={node.id} handle={variable.handle}/>
                                 )}
                             </div>
                             {variable.type === NodeVariableType.Array &&

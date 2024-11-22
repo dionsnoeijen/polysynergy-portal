@@ -59,6 +59,8 @@ type EditorState = {
     setOnInConnectionRemovedCallback: (callback: null | (() => void)) => void;
     onOutConnectionRemovedCallback: null | (() => void);
     setOnOutConnectionRemovedCallback: (callback: null | (() => void)) => void;
+    openGroup: string | null;
+    setOpenGroup: (groupId: string | null) => void;
 };
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -121,4 +123,6 @@ export const useEditorStore = create<EditorState>((set) => ({
     setOnInConnectionRemovedCallback: (callback) => set({ onInConnectionRemovedCallback: callback }),
     onOutConnectionRemovedCallback: null,
     setOnOutConnectionRemovedCallback: (callback) => set({ onOutConnectionRemovedCallback: callback }),
+    openGroup: null,
+    setOpenGroup: (groupId) => set({ openGroup: groupId }),
 }));

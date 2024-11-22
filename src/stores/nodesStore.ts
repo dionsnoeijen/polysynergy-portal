@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { useEditorStore } from '@/stores/editorStore';
 import { InOut } from "@/types/types";
 
 export enum NodeVariableType {
@@ -28,7 +27,7 @@ export type NodeView = {
 };
 
 export type Node = {
-    uuid: string;
+    id: string;
     name: string;
     type: string;
     view: NodeView;
@@ -37,464 +36,471 @@ export type Node = {
 };
 
 type NodesStore = {
-    nodes: Record<string, Record<string, Node[]>>;
+    nodes: Node[];
+    addNode: (node: Node) => void;
+    removeNode: (nodeId: string) => void;
+    updateNode: (nodeId: string, updatedFields: Partial<Node>) => void;
+    updateNodePosition: (nodeId: string, deltaX: number, deltaY: number) => void;
+    updateNodeWidth: (nodeId: string, width: number) => void;
+    updateNodeHeight: (nodeId: string, height: number) => void;
+    updateConnections: (payload: {
+        connectionId: string;
+        sourceNodeId: string;
+        sourceHandle: string;
+        targetNodeId: string;
+        targetHandle: string;
+    }) => void;
     removeConnectionFromNode: (
         connectionId: string,
-        nodeUuid: string,
+        nodeId: string,
         handle: string,
         direction: InOut
     ) => void;
-    updateConnections: (payload: {
-        connectionId: string;
-        sourceNodeUuid: string;
-        sourceHandle: string;
-        targetNodeUuid: string;
-        targetHandle: string;
-    }) => void;
-    updateNodePosition: (nodeId: string, deltaX: number, deltaY: number) => void;
-    updateNodeWidth: (nodeId: string, width: number) => void;
-    updateNodeHeight: (nodeId: string, newHeight: number) => void;
-    addNode: (node: Node) => void;
-    removeNode: (nodeUuid: string) => void;
-    getNode: (nodeUuid: string) => Node | undefined;
+    getNode: (nodeId: string) => Node | undefined;
     getNodes: () => Node[];
     getNodesByIds: (nodeIds: string[]) => Node[];
 };
 
-const getNodesByIds = (get: () => NodesStore) => (nodeIds: string[]): Node[] => {
-    const { activeProjectId, activeRouteId } = useEditorStore.getState();
-    const allNodes = get().nodes[activeProjectId]?.[activeRouteId] || [];
-    return allNodes.filter((node) => nodeIds.includes(node.uuid));
-};
-
 const useNodesStore = create<NodesStore>((set, get) => ({
-    nodes: {
-        '72b38eed-dfb5-4a96-be50-1e2872e1581e': {
-           'a2ac29df-2130-41da-b64d-b0314c19e47a': [
-               {
-                   uuid: 'e8941d69-af86-4cbc-83cd-758c8b80e89c',
-                   view: {
-                       x: 100,
-                       y: 100,
-                       width: 200,
-                       height: 200,
-                   },
-                   name: 'Route',
-                   type: 'route',
-                   enabled: true,
-                   variables: [
-                       {
-                           name: 'Route Variables',
-                           handle: 'routeVariables',
-                           value: [
-                               {
-                                   name: '{amount}',
-                                   handle: 'amount',
-                                   value: null,
-                                   default_value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{age}',
-                                   handle: 'age',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{uuid}',
-                                   handle: 'uuid',
-                                   value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{space}',
-                                   handle: 'space',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                           ],
-                           type: NodeVariableType.Array,
-                           in_connections: [],
-                           out_connections: [],
-                           has_dock: true,
-                       },
-                       {
-                           name: 'Name',
-                           handle: 'name',
-                           value: 'John Doe',
-                           type: NodeVariableType.String,
-                           in_connections: [],
-                           out_connections: [],
-                           has_dock: false,
-                       },
-                       {
-                           name: 'Age',
-                           handle: 'age',
-                           value: 30,
-                           type: NodeVariableType.Number,
-                           in_connections: null,
-                           out_connections: [],
-                           has_dock: true,
-                       },
-                       {
-                           name: 'Human',
-                           handle: 'human',
-                           value: true,
-                           type: NodeVariableType.Boolean,
-                           in_connections: [],
-                           out_connections: [],
-                           has_dock: true,
-                       },
-                       {
-                           name: 'Super Variables',
-                           handle: 'superVariables',
-                           value: [
-                               {
-                                   name: '{amount}',
-                                   handle: 'amount',
-                                   value: null,
-                                   default_value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{age}',
-                                   handle: 'age',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{uuid}',
-                                   handle: 'uuid',
-                                   value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{space}',
-                                   handle: 'space',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                           ],
-                           type: NodeVariableType.Array,
-                           in_connections: [],
-                           out_connections: [],
-                           has_dock: true,
-                       },
-                   ],
-               },
-               {
-                   uuid: '15bcbcac-ae11-4ca4-ac9b-601f431a90db',
-                   view: {
-                       x: 400,
-                       y: 100,
-                       width: 200,
-                       height: 200,
-                   },
-                   name: 'Route',
-                   type: 'route',
-                   enabled: true,
-                   variables: [
-                       {
-                           name: 'Route Variables',
-                           handle: 'routeVariables',
-                           value: [
-                               {
-                                   name: '{amount}',
-                                   handle: 'amount',
-                                   value: null,
-                                   default_value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{age}',
-                                   handle: 'age',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{uuid}',
-                                   handle: 'uuid',
-                                   value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{space}',
-                                   handle: 'space',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                           ],
-                           type: NodeVariableType.Array,
-                           in_connections: [],
-                           out_connections: [],
-                           has_dock: true,
-                       },
-                       {
-                           name: 'Name',
-                           handle: 'name',
-                           value: 'John Doe',
-                           type: NodeVariableType.String,
-                           in_connections: [],
-                           out_connections: [],
-                           has_dock: false,
-                       },
-                       {
-                           name: 'Age',
-                           handle: 'age',
-                           value: 30,
-                           type: NodeVariableType.Number,
-                           in_connections: null,
-                           out_connections: [],
-                           has_dock: true,
-                       },
-                       {
-                           name: 'Super Variables',
-                           handle: 'superVariables',
-                           value: [
-                               {
-                                   name: '{amount}',
-                                   handle: 'amount',
-                                   value: null,
-                                   default_value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{age}',
-                                   handle: 'age',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{uuid}',
-                                   handle: 'uuid',
-                                   value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{space}',
-                                   handle: 'space',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                           ],
-                           type: NodeVariableType.Array,
-                           in_connections: [],
-                           out_connections: [],
-                           has_dock: true,
-                       },
-                   ],
-               },
-               {
-                   uuid: '4fcee4b2-49cf-405f-bf30-1dcb61abd79e',
-                   view: {
-                       x: 700,
-                       y: 100,
-                       width: 200,
-                       height: 200,
-                   },
-                   name: 'Route',
-                   type: 'route',
-                   enabled: true,
-                   variables: [
-                       {
-                           name: 'Route Variables',
-                           handle: 'routeVariables',
-                           value: [
-                               {
-                                   name: '{amount}',
-                                   handle: 'amount',
-                                   value: null,
-                                   default_value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{age}',
-                                   handle: 'age',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{uuid}',
-                                   handle: 'uuid',
-                                   value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{space}',
-                                   handle: 'space',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                           ],
-                           type: NodeVariableType.Array,
-                           in_connections: [],
-                           out_connections: [],
-                           has_dock: true,
-                       },
-                       {
-                           name: 'Name',
-                           handle: 'name',
-                           value: 'John Doe',
-                           type: NodeVariableType.String,
-                           in_connections: [],
-                           out_connections: [],
-                           has_dock: false,
-                       },
-                       {
-                           name: 'Age',
-                           handle: 'age',
-                           value: 30,
-                           type: NodeVariableType.Number,
-                           in_connections: null,
-                           out_connections: [],
-                           has_dock: true,
-                       },
-                       {
-                           name: 'Super Variables',
-                           handle: 'superVariables',
-                           value: [
-                               {
-                                   name: '{amount}',
-                                   handle: 'amount',
-                                   value: null,
-                                   default_value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{age}',
-                                   handle: 'age',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{uuid}',
-                                   handle: 'uuid',
-                                   value: 30,
-                                   type: NodeVariableType.String,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                               {
-                                   name: '{space}',
-                                   handle: 'space',
-                                   value: 30,
-                                   type: NodeVariableType.Number,
-                                   in_connections: [],
-                                   out_connections: [],
-                               },
-                           ],
-                           type: NodeVariableType.Array,
-                           in_connections: [],
-                           out_connections: [],
-                           has_dock: true,
-                       },
-                   ],
-               }
-           ]
-        }
-    },
-
-    removeConnectionFromNode: (connectionId: string, nodeUuid: string, handle: string, direction: InOut) => {
-        const { activeProjectId, activeRouteId } = useEditorStore.getState();
-
-        set((state) => {
-            const projectNodes = state.nodes[activeProjectId];
-            const routeNodes = projectNodes[activeRouteId];
-
-            const updatedRouteNodes = routeNodes.map((node) => {
-                if (node.uuid === nodeUuid) {
-                    return {
-                        ...node,
-                        variables: node.variables.map((variable) => {
-                            if (variable.handle === handle) {
-                                if (direction === 'in') {
-                                    return {
-                                        ...variable,
-                                        in_connections: (variable.in_connections || []).filter(
-                                            (id) => id !== connectionId
-                                        ),
-                                    };
-                                } else {
-                                    return {
-                                        ...variable,
-                                        out_connections: (variable.out_connections || []).filter(
-                                            (id) => id !== connectionId
-                                        ),
-                                    };
-                                }
-                            }
-                            return variable;
-                        }),
-                    };
-                }
-                return node;
-            });
-
-            return {
-                nodes: {
-                    ...state.nodes,
-                    [activeProjectId]: {
-                        ...projectNodes,
-                        [activeRouteId]: updatedRouteNodes,
-                    },
+    nodes: [
+        {
+            id: 'e8941d69-af86-4cbc-83cd-758c8b80e89c',
+            view: {
+                x: 100,
+                y: 100,
+                width: 200,
+                height: 200,
+            },
+            name: 'Route',
+            type: 'route',
+            enabled: true,
+            variables: [
+                {
+                    name: 'Route Variables',
+                    handle: 'routeVariables',
+                    value: [
+                        {
+                            name: '{amount}',
+                            handle: 'amount',
+                            value: null,
+                            default_value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{age}',
+                            handle: 'age',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{id}',
+                            handle: 'id',
+                            value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{space}',
+                            handle: 'space',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                    ],
+                    type: NodeVariableType.Array,
+                    in_connections: [],
+                    out_connections: [],
+                    has_dock: true,
                 },
-            };
-        });
+                {
+                    name: 'Name',
+                    handle: 'name',
+                    value: 'John Doe',
+                    type: NodeVariableType.String,
+                    in_connections: [],
+                    out_connections: [],
+                    has_dock: false,
+                },
+                {
+                    name: 'Age',
+                    handle: 'age',
+                    value: 30,
+                    type: NodeVariableType.Number,
+                    in_connections: null,
+                    out_connections: [],
+                    has_dock: true,
+                },
+                {
+                    name: 'Human',
+                    handle: 'human',
+                    value: true,
+                    type: NodeVariableType.Boolean,
+                    in_connections: [],
+                    out_connections: [],
+                    has_dock: true,
+                },
+                {
+                    name: 'Super Variables',
+                    handle: 'superVariables',
+                    value: [
+                        {
+                            name: '{amount}',
+                            handle: 'amount',
+                            value: null,
+                            default_value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{age}',
+                            handle: 'age',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{id}',
+                            handle: 'id',
+                            value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{space}',
+                            handle: 'space',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                    ],
+                    type: NodeVariableType.Array,
+                    in_connections: [],
+                    out_connections: [],
+                    has_dock: true,
+                },
+            ],
+        },
+        {
+            id: '15bcbcac-ae11-4ca4-ac9b-601f431a90db',
+            view: {
+                x: 400,
+                y: 100,
+                width: 200,
+                height: 200,
+            },
+            name: 'Route',
+            type: 'route',
+            enabled: true,
+            variables: [
+                {
+                    name: 'Route Variables',
+                    handle: 'routeVariables',
+                    value: [
+                        {
+                            name: '{amount}',
+                            handle: 'amount',
+                            value: null,
+                            default_value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{age}',
+                            handle: 'age',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{id}',
+                            handle: 'id',
+                            value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{space}',
+                            handle: 'space',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                    ],
+                    type: NodeVariableType.Array,
+                    in_connections: [],
+                    out_connections: [],
+                    has_dock: true,
+                },
+                {
+                    name: 'Name',
+                    handle: 'name',
+                    value: 'John Doe',
+                    type: NodeVariableType.String,
+                    in_connections: [],
+                    out_connections: [],
+                    has_dock: false,
+                },
+                {
+                    name: 'Age',
+                    handle: 'age',
+                    value: 30,
+                    type: NodeVariableType.Number,
+                    in_connections: null,
+                    out_connections: [],
+                    has_dock: true,
+                },
+                {
+                    name: 'Super Variables',
+                    handle: 'superVariables',
+                    value: [
+                        {
+                            name: '{amount}',
+                            handle: 'amount',
+                            value: null,
+                            default_value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{age}',
+                            handle: 'age',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{id}',
+                            handle: 'id',
+                            value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{space}',
+                            handle: 'space',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                    ],
+                    type: NodeVariableType.Array,
+                    in_connections: [],
+                    out_connections: [],
+                    has_dock: true,
+                },
+            ],
+        },
+        {
+            id: '4fcee4b2-49cf-405f-bf30-1dcb61abd79e',
+            view: {
+                x: 700,
+                y: 100,
+                width: 200,
+                height: 200,
+            },
+            name: 'Route',
+            type: 'route',
+            enabled: true,
+            variables: [
+                {
+                    name: 'Route Variables',
+                    handle: 'routeVariables',
+                    value: [
+                        {
+                            name: '{amount}',
+                            handle: 'amount',
+                            value: null,
+                            default_value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{age}',
+                            handle: 'age',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{id}',
+                            handle: 'id',
+                            value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{space}',
+                            handle: 'space',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                    ],
+                    type: NodeVariableType.Array,
+                    in_connections: [],
+                    out_connections: [],
+                    has_dock: true,
+                },
+                {
+                    name: 'Name',
+                    handle: 'name',
+                    value: 'John Doe',
+                    type: NodeVariableType.String,
+                    in_connections: [],
+                    out_connections: [],
+                    has_dock: false,
+                },
+                {
+                    name: 'Age',
+                    handle: 'age',
+                    value: 30,
+                    type: NodeVariableType.Number,
+                    in_connections: null,
+                    out_connections: [],
+                    has_dock: true,
+                },
+                {
+                    name: 'Super Variables',
+                    handle: 'superVariables',
+                    value: [
+                        {
+                            name: '{amount}',
+                            handle: 'amount',
+                            value: null,
+                            default_value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{age}',
+                            handle: 'age',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{id}',
+                            handle: 'id',
+                            value: 30,
+                            type: NodeVariableType.String,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                        {
+                            name: '{space}',
+                            handle: 'space',
+                            value: 30,
+                            type: NodeVariableType.Number,
+                            in_connections: [],
+                            out_connections: [],
+                        },
+                    ],
+                    type: NodeVariableType.Array,
+                    in_connections: [],
+                    out_connections: [],
+                    has_dock: true,
+                },
+            ],
+        }
+    ],
+
+    addNode: (node) => {
+        set((state) => ({
+            nodes: [...state.nodes, node],
+        }));
     },
 
+    removeNode: (nodeId) => {
+        set((state) => ({
+            nodes: state.nodes.filter((node) => node.id !== nodeId),
+        }));
+    },
 
-    updateConnections: ({connectionId, sourceNodeUuid, sourceHandle, targetNodeUuid, targetHandle}) => {
-        const { activeProjectId, activeRouteId } = useEditorStore.getState();
-        set((state) => {
-            const projectNodes = state.nodes[activeProjectId];
-            const routeNodes = projectNodes[activeRouteId];
+    updateNode: (nodeId, updatedFields) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId ? { ...node, ...updatedFields } : node
+            ),
+        }));
+    },
 
-            const updatedRouteNodes = routeNodes.map((node) => {
-                if (node.uuid === sourceNodeUuid) {
+    updateNodePosition: (nodeId, deltaX, deltaY) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        view: {
+                            ...node.view,
+                            x: node.view.x + deltaX,
+                            y: node.view.y + deltaY,
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    updateNodeWidth: (nodeId, width) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        view: {
+                            ...node.view,
+                            width,
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    updateNodeHeight: (nodeId, height) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        view: {
+                            ...node.view,
+                            height,
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    updateConnections: ({ connectionId, sourceNodeId, sourceHandle, targetNodeId, targetHandle }) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) => {
+                if (node.id === sourceNodeId) {
                     return {
                         ...node,
                         variables: node.variables.map((variable) =>
@@ -507,7 +513,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         ),
                     };
                 }
-                if (node.uuid === targetNodeUuid) {
+                if (node.id === targetNodeId) {
                     return {
                         ...node,
                         variables: node.variables.map((variable) =>
@@ -521,140 +527,43 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     };
                 }
                 return node;
-            });
-
-            return {
-                nodes: {
-                    ...state.nodes,
-                    [activeProjectId]: {
-                        ...projectNodes,
-                        [activeRouteId]: updatedRouteNodes,
-                    },
-                },
-            };
-        });
-    },
-
-    addNode: (node) => {
-        const { activeProjectId, activeRouteId } = useEditorStore.getState();
-        set((state) => ({
-            nodes: {
-                ...state.nodes,
-                [activeProjectId]: {
-                    ...state.nodes[activeProjectId],
-                    [activeRouteId]: [...(state.nodes[activeProjectId]?.[activeRouteId] || []), node],
-                },
-            },
+            }),
         }));
     },
 
-    removeNode: (nodeUuid) => {
-        const { activeProjectId, activeRouteId } = useEditorStore.getState();
-        set((state: NodesStore) => {
-            const projectNodes = state.nodes[activeProjectId] || {};
-            const routeNodes = projectNodes[activeRouteId]?.filter((node) => node.uuid !== nodeUuid) || [];
-            return {
-                nodes: {
-                    ...state.nodes,
-                    [activeProjectId]: {
-                        ...projectNodes,
-                        [activeRouteId]: routeNodes,
-                    },
-                },
-            };
-        });
-    },
-
-    updateNodeWidth: (nodeId, width) => {
-        const { activeRouteId, activeProjectId } = useEditorStore.getState();
-
-        set((state) => {
-            const projectNodes = state.nodes[activeProjectId];
-            const routeNodes = projectNodes[activeRouteId].map((node) =>
-                node.uuid === nodeId
-                    ? { ...node, width }
-                    : node
-            );
-
-            return {
-                nodes: {
-                    ...state.nodes,
-                    [activeProjectId]: {
-                        ...projectNodes,
-                        [activeRouteId]: routeNodes,
-                    },
-                },
-            };
-        });
-    },
-
-    updateNodeHeight: (nodeId, newHeight) => {
-        const { activeRouteId, activeProjectId } = useEditorStore.getState();
-
-        set((state) => {
-            const projectNodes = state.nodes[activeProjectId];
-            const routeNodes = projectNodes[activeRouteId].map((node) =>
-                node.uuid === nodeId
-                    ? { ...node, height: newHeight }
-                    : node
-            );
-
-            return {
-                nodes: {
-                    ...state.nodes,
-                    [activeProjectId]: {
-                        ...projectNodes,
-                        [activeRouteId]: routeNodes,
-                    },
-                },
-            };
-        });
-    },
-
-    updateNodePosition: (nodeId, deltaX, deltaY) => {
-        const { activeProjectId, activeRouteId } = useEditorStore.getState();
-
-        set((state) => {
-            const projectNodes = state.nodes[activeProjectId];
-            const routeNodes = projectNodes[activeRouteId].map((node) =>
-                node.uuid === nodeId
+    removeConnectionFromNode: (connectionId, nodeId, handle, direction) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
                     ? {
                         ...node,
-                        view: {
-                            ...node.view,
-                            x: node.view.x + deltaX,
-                            y: node.view.y + deltaY,
-                        },
+                        variables: node.variables.map((variable) =>
+                            variable.handle === handle
+                                ? {
+                                    ...variable,
+                                    [`${direction}_connections`]: (
+                                        variable[`${direction}_connections`] || []
+                                    ).filter((id) => id !== connectionId),
+                                }
+                                : variable
+                        ),
                     }
                     : node
-            );
-
-            return {
-                nodes: {
-                    ...state.nodes,
-                    [activeProjectId]: {
-                        ...projectNodes,
-                        [activeRouteId]: routeNodes,
-                    },
-                },
-            };
-        });
+            ),
+        }));
     },
 
-
-    getNode: (nodeUuid): Node | undefined => {
-        const { activeProjectId, activeRouteId } = useEditorStore.getState();
-        return (get().nodes[activeProjectId]?.[activeRouteId] || []).find(
-            (node) => node.uuid === nodeUuid
-        );
+    getNode: (nodeId) => {
+        return get().nodes.find((node) => node.id === nodeId);
     },
 
-    getNodes: (): Node[] => {
-        const { activeProjectId, activeRouteId } = useEditorStore.getState();
-        return get().nodes[activeProjectId]?.[activeRouteId] || [];
+    getNodes: () => {
+        return get().nodes;
     },
 
-    getNodesByIds: getNodesByIds(get),
+    getNodesByIds: (nodeIds) => {
+        return get().nodes.filter((node) => nodeIds.includes(node.id));
+    },
 }));
 
 export default useNodesStore;

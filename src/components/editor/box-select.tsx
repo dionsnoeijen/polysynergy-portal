@@ -49,7 +49,7 @@ const BoxSelect: React.FC = (): React.ReactElement => {
                 );
             });
 
-            setSelectedNodes(selectedNodes.map((node) => node.uuid));
+            setSelectedNodes(selectedNodes.map((node) => node.id));
             setBoxStart(null);
             setBoxEnd(null);
             setBoxSelect(false);

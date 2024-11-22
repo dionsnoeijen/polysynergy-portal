@@ -17,10 +17,10 @@ type ConnectorGroupProps = {
     );
 
 const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
-                                                           groupId,
-                                                           in: isIn,
-                                                           out: isOut,
-                                                       }) => {
+    groupId,
+    in: isIn,
+    out: isOut,
+}) => {
     const {
         findInConnectionsByNodeId,
         findOutConnectionsByNodeId,
@@ -42,12 +42,11 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
     );
 
     const allNodes = useNodesStore((state) => {
-        const { activeProjectId, activeRouteId } = useEditorStore.getState();
-        return state.nodes[activeProjectId]?.[activeRouteId] || [];
+        return state.nodes;
     });
 
     const nodes = useMemo(() => {
-        return allNodes.filter((node) => nodesInGroup.includes(node.uuid));
+        return allNodes.filter((node) => nodesInGroup.includes(node.id));
     }, [allNodes, nodesInGroup]);
 
     const [connectionSlots, setConnectionSlots] = useState<
@@ -159,19 +158,12 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
                 }
             });
         }
-    }, [
-        nodes,
-        connectionSlots,
-        editorPosition,
-        panPosition,
-        zoomFactor,
-        findInConnectionsByNodeIdAndHandle,
-        findOutConnectionsByNodeIdAndHandle,
-        updateConnection,
-        isIn,
-        isOut,
-        groupId,
-    ]);
+    },
+        // eslint-disable-next-line
+        [
+            nodes,
+            connectionSlots,
+        ]);
 
     return (
         <div
@@ -186,7 +178,7 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
                 >
                     {isIn && (
                         <Connector
-                            nodeUuid={groupId}
+                            nodeId={groupId}
                             handle={`${index}`}
                             in
                             isGroup
@@ -194,7 +186,7 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
                     )}
                     {isOut && (
                         <Connector
-                            nodeUuid={groupId}
+                            nodeId={groupId}
                             handle={`${index}`}
                             out
                             isGroup

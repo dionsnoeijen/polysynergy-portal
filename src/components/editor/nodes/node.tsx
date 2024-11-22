@@ -34,8 +34,8 @@ const Node: React.FC<NodeProps> = ({ node }) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
         if (isToggleClick) return;
         e.preventDefault();
-        if (!selectedNodes.includes(node.uuid)) {
-            setSelectedNodes([node.uuid]);
+        if (!selectedNodes.includes(node.id)) {
+            setSelectedNodes([node.id]);
             setTimeout(() => {
                 onDragMouseDown();
             }, 0);
@@ -70,16 +70,16 @@ const Node: React.FC<NodeProps> = ({ node }) => {
         if (ref.current) {
             const actualHeight = ref.current.getBoundingClientRect().height;
             if (actualHeight !== node.view.height) {
-                updateNodeHeight(node.uuid, actualHeight);
+                updateNodeHeight(node.id, actualHeight);
             }
         }
-    }, [node.view.height, isOpenMap, updateNodeHeight, node.uuid]);
+    }, [node.view.height, isOpenMap, updateNodeHeight, node.id]);
 
     const handleNodeClick = (e: React.MouseEvent) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
         if (isToggleClick) return;
-        if (!selectedNodes.includes(node.uuid)) {
-            setSelectedNodes([node.uuid]);
+        if (!selectedNodes.includes(node.id)) {
+            setSelectedNodes([node.id]);
         }
     };
 
@@ -101,7 +101,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
             className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ring-2 ${
-                selectedNodes.includes(node.uuid) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
+                selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
             } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5`}
             style={{
                 width: `${size.width}px`,
@@ -109,10 +109,10 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                 top: `${node.view.y}px`,
             }}
             data-type="node"
-            data-node-uuid={node.uuid}
+            data-node-id={node.id}
         >
             <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">
-                <Connector in nodeUuid={node.uuid} handle={"node"} />
+                <Connector in nodeId={node.id} handle={"node"} />
                 <Switch color={theme === 'light' ? 'sky' : 'dark'} />
                 <h3 className="font-bold truncate ml-2 text-sky-600 dark:text-white">{node.name}</h3>
             </div>
@@ -122,7 +122,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                         <React.Fragment key={variable.handle}>
                             <div className="flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative">
                                 {variable.in_connections !== null && (
-                                    <Connector in nodeUuid={node.uuid} handle={variable.handle} />
+                                    <Connector in nodeId={node.id} handle={variable.handle} />
                                 )}
                                 <div className="flex items-center truncate">
                                     <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}</h3>
@@ -150,7 +150,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                     </button>
                                 )}
                                 {variable.out_connections !== null && (
-                                    <Connector out nodeUuid={node.uuid} handle={variable.handle} />
+                                    <Connector out nodeId={node.id} handle={variable.handle} />
                                 )}
                             </div>
                             {variable.type === NodeVariableType.Array &&
@@ -166,7 +166,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                                     {item.in_connections !== null && (
                                                         <Connector
                                                             in
-                                                            nodeUuid={node.uuid}
+                                                            nodeId={node.id}
                                                             handle={variable.handle + "." + item.handle}
                                                         />
                                                     )}
@@ -184,7 +184,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
                                                     {item.out_connections !== null && (
                                                         <Connector
                                                             out
-                                                            nodeUuid={node.uuid}
+                                                            nodeId={node.id}
                                                             handle={variable.handle + "." + item.handle}
                                                         />
                                                     )}

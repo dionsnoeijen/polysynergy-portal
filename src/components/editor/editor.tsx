@@ -114,7 +114,7 @@ export default function Editor() {
 
                 {getNodes().map((node) => (
                     <Node
-                        key={node.uuid}
+                        key={node.id}
                         node={node}
                     />
                 ))}

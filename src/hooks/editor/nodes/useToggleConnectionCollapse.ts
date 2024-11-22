@@ -15,11 +15,11 @@ const useToggleConnectionCollapse = (node: Node) => {
     const { editorPosition, panPosition, zoomFactor } = useEditorStore();
 
     const collapseConnections = (handle: string) => {
-        const inConnections = findInConnectionsByNodeIdAndHandle(node.uuid, handle, false);
-        const outConnections = findOutConnectionsByNodeIdAndHandle(node.uuid, handle, false);
+        const inConnections = findInConnectionsByNodeIdAndHandle(node.id, handle, false);
+        const outConnections = findOutConnectionsByNodeIdAndHandle(node.id, handle, false);
 
         const connectorPosition = calculateConnectorPositionByAttributes(
-            node.uuid,
+            node.id,
             handle,
             InOut.In,
             editorPosition,
@@ -49,12 +49,12 @@ const useToggleConnectionCollapse = (node: Node) => {
     };
 
     const openConnections = (handle: string) => {
-        const inConnections = findInConnectionsByNodeIdAndHandle(node.uuid, handle, false);
-        const outConnections = findOutConnectionsByNodeIdAndHandle(node.uuid, handle, false);
+        const inConnections = findInConnectionsByNodeIdAndHandle(node.id, handle, false);
+        const outConnections = findOutConnectionsByNodeIdAndHandle(node.id, handle, false);
 
         inConnections.forEach((connection) => {
             const endConnectorPosition = calculateConnectorPositionByAttributes(
-                connection.targetNodeUuid || '',
+                connection.targetNodeId || '',
                 connection.targetHandle || '',
                 InOut.In,
                 editorPosition,
@@ -71,7 +71,7 @@ const useToggleConnectionCollapse = (node: Node) => {
 
         outConnections.forEach((connection) => {
             const startConnectorPosition = calculateConnectorPositionByAttributes(
-                connection.sourceNodeUuid,
+                connection.sourceNodeId,
                 connection.sourceHandle,
                 InOut.Out,
                 editorPosition,
@@ -90,8 +90,8 @@ const useToggleConnectionCollapse = (node: Node) => {
     };
 
     const updateAllConnectionsForNode = () => {
-        const allInConnections = findInConnectionsByNodeId(node.uuid);
-        const allOutConnections = findOutConnectionsByNodeId(node.uuid);
+        const allInConnections = findInConnectionsByNodeId(node.id);
+        const allOutConnections = findOutConnectionsByNodeId(node.id);
 
         allInConnections.forEach((connection) => {
             const targetHandle = connection.collapsed
@@ -99,7 +99,7 @@ const useToggleConnectionCollapse = (node: Node) => {
                 : connection.targetHandle;
 
             const endConnectorPosition = calculateConnectorPositionByAttributes(
-                connection.targetNodeUuid || '',
+                connection.targetNodeId || '',
                 targetHandle || '',
                 InOut.In,
                 editorPosition,
@@ -120,7 +120,7 @@ const useToggleConnectionCollapse = (node: Node) => {
                 : connection.sourceHandle;
 
             const startConnectorPosition = calculateConnectorPositionByAttributes(
-                connection.sourceNodeUuid,
+                connection.sourceNodeId,
                 sourceHandle || '',
                 InOut.Out,
                 editorPosition,

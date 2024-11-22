@@ -6,9 +6,9 @@ export type Connection = {
     startY: number;
     endX: number;
     endY: number;
-    sourceNodeUuid: string;
+    sourceNodeId: string;
     sourceHandle: string;
-    targetNodeUuid?: string;
+    targetNodeId?: string;
     targetHandle?: string;
     collapsed?: boolean;
 };
@@ -29,7 +29,7 @@ type ConnectionsStore = {
         connectionId: string,
         endX: number,
         endY: number,
-        targetNodeUuid?: string,
+        targetNodeId?: string,
         targetHandle?: string
     ) => void;
     clearConnections: () => void;
@@ -78,14 +78,14 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
         return useConnectionsStore
             .getState()
             .connections
-            .filter((c) => c.targetNodeUuid === nodeId);
+            .filter((c) => c.targetNodeId === nodeId);
     },
 
     findOutConnectionsByNodeId: (nodeId: string): Connection[] => {
         return useConnectionsStore
             .getState()
             .connections
-            .filter((c) => c.sourceNodeUuid === nodeId);
+            .filter((c) => c.sourceNodeId === nodeId);
     },
 
     findInConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact: boolean = true): Connection[] => {
@@ -93,7 +93,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
             .getState()
             .connections
             .filter((c) =>
-                c.targetNodeUuid === nodeId &&
+                c.targetNodeId === nodeId &&
                 (matchExact
                     ? c.targetHandle === handle
                     : c.targetHandle?.startsWith(handle))
@@ -105,7 +105,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
             .getState()
             .connections
             .filter((c) =>
-                c.sourceNodeUuid === nodeId &&
+                c.sourceNodeId === nodeId &&
                 (matchExact
                     ? c.sourceHandle === handle
                     : c.sourceHandle?.startsWith(handle))
@@ -116,18 +116,18 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
         connectionId: string,
         endX: number,
         endY: number,
-        targetNodeUuid?: string,
+        targetNodeId?: string,
         targetHandle?: string
     ) => {
         const connection = useConnectionsStore.getState().connections.find((c) => c.id === connectionId);
-        if (connection?.sourceNodeUuid === targetNodeUuid) {
+        if (connection?.sourceNodeId === targetNodeId) {
             useConnectionsStore.getState().removeConnectionById(connectionId);
             return;
         }
 
         set((state) => ({
             connections: state.connections.map((c) => (
-                c.id === connectionId ? { ...c, endX, endY, targetNodeUuid, targetHandle } : c)),
+                c.id === connectionId ? { ...c, endX, endY, targetNodeId, targetHandle } : c)),
         }));
     },
 

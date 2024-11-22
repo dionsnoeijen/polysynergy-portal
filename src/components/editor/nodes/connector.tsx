@@ -8,7 +8,7 @@ import { calculateConnectorPosition } from "@/utils/positionUtils";
 import { InOut } from "@/types/types";
 
 type ConnectorProps = {
-    nodeUuid: string;
+    nodeId: string;
     handle?: string;
     isGroup?: boolean;
 } & (
@@ -17,7 +17,7 @@ type ConnectorProps = {
     );
 
 const Connector: React.FC<ConnectorProps> = ({
-    nodeUuid,
+                                                 nodeId,
     handle,
     in: isIn,
     out: isOut,
@@ -50,7 +50,7 @@ const Connector: React.FC<ConnectorProps> = ({
         e.stopPropagation();
 
         const existingConnections = findInConnectionsByNodeIdAndHandle(
-            nodeUuid,
+            nodeId,
             handle as string
         );
 
@@ -63,20 +63,18 @@ const Connector: React.FC<ConnectorProps> = ({
         // Remove the connection ID from the target node's in_connections
         removeConnectionFromNode(
             existingConnection.id,
-            nodeUuid,
+            nodeId,
             handle as string,
             InOut.In
         );
 
-        // Clear the connection's targetNodeUuid and targetHandle
         const updatedConnection = {
             ...existingConnection,
-            targetNodeUuid: undefined,
+            targetNodeId: undefined,
             targetHandle: undefined,
         };
         updateConnection(updatedConnection);
 
-        // Calculate initial position
         const { x, y } = calculateConnectorPosition(
             e.currentTarget as HTMLElement,
             editorPosition,
@@ -86,7 +84,6 @@ const Connector: React.FC<ConnectorProps> = ({
 
         setMousePosition({ x, y });
 
-        // Set the drawing connection
         setIsDrawingConnection(existingConnection.id);
 
         const handleMouseMove = (moveEvent: MouseEvent) => {
@@ -109,7 +106,7 @@ const Connector: React.FC<ConnectorProps> = ({
             ) as HTMLElement;
 
             if (target) {
-                const targetNodeUuid = target.getAttribute("data-node-uuid") as string;
+                const targetNodeId = target.getAttribute("data-node-id") as string;
                 const targetHandle = target.getAttribute("data-handle") as string;
 
                 const { x, y } = calculateConnectorPosition(
@@ -124,7 +121,7 @@ const Connector: React.FC<ConnectorProps> = ({
                     existingConnection.id,
                     x,
                     y,
-                    targetNodeUuid,
+                    targetNodeId,
                     targetHandle
                 );
 
@@ -133,9 +130,9 @@ const Connector: React.FC<ConnectorProps> = ({
                     // Update the nodes store with the new connection
                     updateConnections({
                         connectionId: existingConnection.id,
-                        sourceNodeUuid: connection.sourceNodeUuid,
+                        sourceNodeId: connection.sourceNodeId,
                         sourceHandle: connection.sourceHandle,
-                        targetNodeUuid: targetNodeUuid,
+                        targetNodeId: targetNodeId,
                         targetHandle: targetHandle,
                     });
 
@@ -198,7 +195,7 @@ const Connector: React.FC<ConnectorProps> = ({
             startY: y,
             endX: x,
             endY: y,
-            sourceNodeUuid: nodeUuid,
+            sourceNodeId: nodeId,
             sourceHandle: handle as string,
         });
 
@@ -223,8 +220,8 @@ const Connector: React.FC<ConnectorProps> = ({
             if (target) {
                 const targetIsGroup =
                     target.getAttribute("data-is-group") === "true";
-                const targetNodeUuid = target.getAttribute(
-                    "data-node-uuid"
+                const targetNodeId = target.getAttribute(
+                    "data-node-id"
                 ) as string;
                 const targetHandle = target.getAttribute("data-handle") as string;
                 const dataNodeType = target.getAttribute("data-type") as InOut;
@@ -235,14 +232,14 @@ const Connector: React.FC<ConnectorProps> = ({
                     panPosition,
                     zoomFactor
                 );
-                updateConnectionEnd(id, x, y, targetNodeUuid, targetHandle);
+                updateConnectionEnd(id, x, y, targetNodeId, targetHandle);
                 const connection = getConnection(id);
                 if (connection) {
                     updateConnections({
                         connectionId: id,
-                        sourceNodeUuid: connection.sourceNodeUuid,
+                        sourceNodeId: connection.sourceNodeId,
                         sourceHandle: connection.sourceHandle,
-                        targetNodeUuid: targetNodeUuid,
+                        targetNodeId: targetNodeId,
                         targetHandle: targetHandle,
                     });
 
@@ -291,7 +288,7 @@ const Connector: React.FC<ConnectorProps> = ({
         <div
             onMouseDown={handleMouseDown}
             data-type={isIn ? InOut.In : InOut.Out}
-            data-node-uuid={nodeUuid}
+            data-node-id={nodeId}
             data-handle={handle}
             data-is-group={isGroup ? "true" : "false"}
             className={`w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-sky-500 dark:ring-white bg-white dark:bg-slate-800 cursor-pointer

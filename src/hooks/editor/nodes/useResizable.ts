@@ -37,7 +37,7 @@ const useResizable = (node: Node) => {
 
             setSize((prevSize) => ({ ...prevSize, width: newWidth }));
 
-            const outConnections = findOutConnectionsByNodeId(node.uuid);
+            const outConnections = findOutConnectionsByNodeId(node.id);
             outConnections.forEach((connection) => {
                 updateConnection({
                     ...connection,
@@ -50,14 +50,14 @@ const useResizable = (node: Node) => {
             setIsResizing(false);
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
-            updateNodeWidth(node.uuid, sizeRef.current.width);
+            updateNodeWidth(node.id, sizeRef.current.width);
         };
 
         window.addEventListener("mousemove", handleMouseMove);
         window.addEventListener("mouseup", handleMouseUp);
     }, [
         zoomFactor,
-        node.uuid,
+        node.id,
         updateNodeWidth,
         findOutConnectionsByNodeId,
         updateConnection

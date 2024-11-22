@@ -13,14 +13,14 @@ export const calculateConnectorPosition = (
 };
 
 export const calculateConnectorPositionByAttributes = (
-    nodeUuid: string,
+    nodeId: string,
     handle: string,
     type: InOut,
     editorPosition: { x: number; y: number },
     panPosition: { x: number; y: number },
     zoomFactor: number
 ) => {
-    const selector = `[data-type="${type}"][data-node-uuid="${nodeUuid}"][data-handle="${handle}"]`;
+    const selector = `[data-type="${type}"][data-node-id="${nodeId}"][data-handle="${handle}"]`;
     const target = document.querySelector(selector) as HTMLElement;
 
     if (!target) {
@@ -30,8 +30,8 @@ export const calculateConnectorPositionByAttributes = (
     return calculateConnectorPosition(target, editorPosition, panPosition, zoomFactor);
 };
 
-export const calculateNodeSize = (nodeUuid: string, zoomFactor: number) => {
-    const selector = `[data-type="node"][data-node-uuid="${nodeUuid}"]`;
+export const calculateNodeSize = (nodeId: string, zoomFactor: number) => {
+    const selector = `[data-type="node"][data-node-id="${nodeId}"]`;
     const target = document.querySelector(selector) as HTMLElement;
 
     if (!target) {

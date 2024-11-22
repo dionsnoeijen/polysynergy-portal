@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from "uuid";
+import { NodeView } from "@/stores/nodesStore";
 
 export type Group = {
     id: string;
+    view: NodeView;
     name: string;
     isOpen: boolean;
     nodes: string[];
@@ -65,6 +67,12 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     addGroup: (group: Partial<Group>) => {
         const newGroup: Group = {
             id: group.id || uuidv4(),
+            view: {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0
+            },
             name: group.name || 'Untitled Group',
             isOpen: group.isOpen !== undefined ? group.isOpen : true,
             parentGroupId: group.parentGroupId,

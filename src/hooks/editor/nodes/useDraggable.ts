@@ -42,13 +42,13 @@ const useDraggable = () => {
     );
 
     const cascadeRepulsion = (node: Node, allNodes: Node[], visited: Set<string>) => {
-        visited.add(node.uuid);
+        visited.add(node.id);
 
         const radiusX = node.view.width / 2 + collisionThreshold;
         const radiusY = node.view.height / 2 + collisionThreshold;
 
         allNodes.forEach((otherNode) => {
-            if (visited.has(otherNode.uuid) || otherNode.uuid === node.uuid) return;
+            if (visited.has(otherNode.id) || otherNode.id === node.id) return;
 
             const dx = otherNode.view.x - node.view.x;
             const dy = otherNode.view.y - node.view.y;
@@ -62,8 +62,8 @@ const useDraggable = () => {
                 const repulsionX = (dx / distance) * repulsionStrength;
                 const repulsionY = (dy / distance) * repulsionStrength;
 
-                updateNodePosition(otherNode.uuid, repulsionX, repulsionY);
-                updateConnectionPositions(otherNode.uuid, repulsionX, repulsionY);
+                updateNodePosition(otherNode.id, repulsionX, repulsionY);
+                updateConnectionPositions(otherNode.id, repulsionX, repulsionY);
 
                 cascadeRepulsion(otherNode, allNodes, visited);
             }
@@ -83,8 +83,8 @@ const useDraggable = () => {
 
         allNodes.forEach((otherNode) => {
             if (
-                draggedNode.uuid === otherNode.uuid ||
-                selectedNodesRef.current.includes(otherNode.uuid)
+                draggedNode.id === otherNode.id ||
+                selectedNodesRef.current.includes(otherNode.id)
             ) {
                 return;
             }
@@ -99,10 +99,10 @@ const useDraggable = () => {
                 const repulsionX = (dx / distance) * repulsionStrength;
                 const repulsionY = (dy / distance) * repulsionStrength;
 
-                updateNodePosition(otherNode.uuid, repulsionX, repulsionY);
-                updateConnectionPositions(otherNode.uuid, repulsionX, repulsionY);
+                updateNodePosition(otherNode.id, repulsionX, repulsionY);
+                updateConnectionPositions(otherNode.id, repulsionX, repulsionY);
 
-                cascadeRepulsion(otherNode, allNodes, new Set([draggedNode.uuid]));
+                cascadeRepulsion(otherNode, allNodes, new Set([draggedNode.id]));
             }
         });
     };
@@ -115,7 +115,7 @@ const useDraggable = () => {
             const deltaY = moveEvent.movementY / zoomFactor;
 
             selectedNodesRef.current.forEach((nodeId) => {
-                const draggedNode = getNodes().find((node) => node.uuid === nodeId);
+                const draggedNode = getNodes().find((node) => node.id === nodeId);
                 if (!draggedNode) return;
 
                 updateNodePosition(nodeId, deltaX, deltaY);

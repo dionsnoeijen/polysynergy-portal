@@ -24,7 +24,7 @@ export default function TreeList<T extends ListItemWithId>({
     return (
         <div className="mt-[10px]">
             <div
-                className={`flex items-center shadow-sm justify-between border-t border-l border-r border-sky-500 p-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
+                className={`flex items-center shadow-sm justify-between border-t border-l border-r border-sky-500 p-2 dark:border-white/20 dark:bg-zinc-900 rounded-md${
                     isOpen ? " rounded-bl-none rounded-br-none" : ""
                 }`}
             >

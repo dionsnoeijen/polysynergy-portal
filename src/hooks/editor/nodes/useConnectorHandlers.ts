@@ -166,7 +166,6 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
                     panPosition,
                     zoomFactor
                 );
-                console.log("targetNodeId", targetNodeId, targetHandle);
 
                 updateConnectionEnd(id, x, y, targetNodeId, targetHandle);
                 const connection = getConnection(id);

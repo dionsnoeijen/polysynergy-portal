@@ -94,8 +94,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         },
                     ],
                     type: NodeVariableType.Array,
-                    in_connections: [],
-                    out_connections: [],
                     has_dock: true,
                 },
                 {
@@ -103,8 +101,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     handle: 'name',
                     value: 'John Doe',
                     type: NodeVariableType.String,
-                    in_connections: [],
-                    out_connections: [],
                     has_dock: false,
                 },
                 {
@@ -112,8 +108,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     handle: 'age',
                     value: 30,
                     type: NodeVariableType.Number,
-                    in_connections: null,
-                    out_connections: [],
                     has_dock: true,
                 },
                 {
@@ -121,8 +115,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     handle: 'human',
                     value: true,
                     type: NodeVariableType.Boolean,
-                    in_connections: [],
-                    out_connections: [],
                     has_dock: true,
                 },
                 {
@@ -156,8 +148,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         },
                     ],
                     type: NodeVariableType.Array,
-                    in_connections: [],
-                    out_connections: [],
                     has_dock: true,
                 },
             ],
@@ -205,8 +195,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         },
                     ],
                     type: NodeVariableType.Array,
-                    in_connections: [],
-                    out_connections: [],
                     has_dock: true,
                 },
                 {
@@ -214,8 +202,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     handle: 'name',
                     value: 'John Doe',
                     type: NodeVariableType.String,
-                    in_connections: [],
-                    out_connections: [],
                     has_dock: false,
                 },
                 {
@@ -223,8 +209,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     handle: 'age',
                     value: 30,
                     type: NodeVariableType.Number,
-                    in_connections: null,
-                    out_connections: [],
                     has_dock: true,
                 },
                 {
@@ -258,8 +242,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         },
                     ],
                     type: NodeVariableType.Array,
-                    in_connections: [],
-                    out_connections: [],
                     has_dock: true,
                 },
             ],
@@ -307,8 +289,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         },
                     ],
                     type: NodeVariableType.Array,
-                    in_connections: [],
-                    out_connections: [],
                     has_dock: true,
                 },
                 {
@@ -316,8 +296,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     handle: 'name',
                     value: 'John Doe',
                     type: NodeVariableType.String,
-                    in_connections: [],
-                    out_connections: [],
                     has_dock: false,
                 },
                 {
@@ -325,8 +303,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     handle: 'age',
                     value: 30,
                     type: NodeVariableType.Number,
-                    in_connections: null,
-                    out_connections: [],
                     has_dock: true,
                 },
                 {
@@ -360,8 +336,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         },
                     ],
                     type: NodeVariableType.Array,
-                    in_connections: [],
-                    out_connections: [],
                     has_dock: true,
                 },
             ],

@@ -51,14 +51,6 @@ type EditorState = {
     contextMenu: ContextMenu;
     openContextMenu: (x: number, y: number, items: Array<{ label: string; action: () => void }>) => void;
     closeContextMenu: () => void;
-    onInConnectionAddedCallback: null | (() => void);
-    setOnInConnectionAddedCallback: (callback: null | (() => void)) => void;
-    onOutConnectionAddedCallback: null | (() => void);
-    setOnOutConnectionAddedCallback: (callback: null | (() => void)) => void;
-    onInConnectionRemovedCallback: null | (() => void);
-    setOnInConnectionRemovedCallback: (callback: null | (() => void)) => void;
-    onOutConnectionRemovedCallback: null | (() => void);
-    setOnOutConnectionRemovedCallback: (callback: null | (() => void)) => void;
     openGroup: string | null;
     setOpenGroup: (groupId: string | null) => void;
 };
@@ -115,14 +107,6 @@ export const useEditorStore = create<EditorState>((set) => ({
         set({ contextMenu: { visible: true, x, y, items } }),
     closeContextMenu: () =>
         set({ contextMenu: { visible: false, x: 0, y: 0, items: [] } }),
-    onInConnectionAddedCallback: null,
-    setOnInConnectionAddedCallback: (callback) => set({ onInConnectionAddedCallback: callback }),
-    onOutConnectionAddedCallback: null,
-    setOnOutConnectionAddedCallback: (callback) => set({ onOutConnectionAddedCallback: callback }),
-    onInConnectionRemovedCallback: null,
-    setOnInConnectionRemovedCallback: (callback) => set({ onInConnectionRemovedCallback: callback }),
-    onOutConnectionRemovedCallback: null,
-    setOnOutConnectionRemovedCallback: (callback) => set({ onOutConnectionRemovedCallback: callback }),
     openGroup: null,
     setOpenGroup: (groupId) => set({ openGroup: groupId }),
 }));

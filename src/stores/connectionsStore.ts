@@ -35,7 +35,9 @@ type ConnectionsStore = {
     clearConnections: () => void;
 };
 
-export const useConnectionsStore = create<ConnectionsStore>((set) => ({
+const memoizedResults = new Map();
+
+export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
     connections: [],
 
     getConnection: (connectionId: string): Connection | undefined => {
@@ -45,52 +47,68 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
     },
 
     addConnection: (connection: Connection) => {
+        memoizedResults.clear();
         set((state) => ({ connections: [...state.connections, connection] }));
     },
 
     removeConnectionById: (connectionId: string) => {
+        memoizedResults.clear();
         set((state) => ({
             connections: state.connections.filter((c) => c.id !== connectionId),
         }));
     },
 
     removeConnection: (connection: Connection) => {
+        memoizedResults.clear();
         set((state) => ({
             connections: state.connections.filter((c) => c.id !== connection.id),
         }));
     },
 
     removeConnections: (connections: Connection[]) => {
+        memoizedResults.clear();
         set((state) => ({
             connections: state.connections.filter((c) => !connections.includes(c)),
         }));
     },
 
     updateConnection: (connection: Connection) => {
+        memoizedResults.clear();
         set((state) => ({
-            connections: state.connections.map((c) =>
-                c.id === connection.id ? connection : c
-            ),
+            connections: state.connections.map((c) => {
+                if (c.id === connection.id) {
+                    const hasChanged = JSON.stringify(c) !== JSON.stringify(connection);
+                    return hasChanged ? connection : c;
+                }
+                return c;
+            }),
         }));
     },
 
     findInConnectionsByNodeId: (nodeId: string): Connection[] => {
-        return useConnectionsStore
-            .getState()
-            .connections
-            .filter((c) => c.targetNodeId === nodeId);
+        const key = `in-${nodeId}`;
+        if (!memoizedResults.has(key)) {
+            const result = get()
+                .connections
+                .filter((c) => c.targetNodeId === nodeId);
+            memoizedResults.set(key, result);
+        }
+        return memoizedResults.get(key);
     },
 
     findOutConnectionsByNodeId: (nodeId: string): Connection[] => {
-        return useConnectionsStore
-            .getState()
-            .connections
-            .filter((c) => c.sourceNodeId === nodeId);
+        const key = `out-${nodeId}`;
+        if (!memoizedResults.has(key)) {
+            const result = get()
+                .connections
+                .filter((c) => c.sourceNodeId === nodeId);
+            memoizedResults.set(key, result);
+        }
+        return memoizedResults.get(key);
     },
 
     findInConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact: boolean = true): Connection[] => {
-        return useConnectionsStore
-            .getState()
+        return get()
             .connections
             .filter((c) =>
                 c.targetNodeId === nodeId &&
@@ -119,6 +137,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set) => ({
         targetNodeId?: string,
         targetHandle?: string
     ) => {
+        memoizedResults.clear();
         const connection = useConnectionsStore.getState().connections.find((c) => c.id === connectionId);
         if (connection?.sourceNodeId === targetNodeId) {
             useConnectionsStore.getState().removeConnectionById(connectionId);

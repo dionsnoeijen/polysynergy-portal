@@ -62,6 +62,8 @@ type NodesStore = {
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: any) => void;
 };
 
+const nodesByIdsCache = new Map<string, Node[]>();
+
 const useNodesStore = create<NodesStore>((set, get) => ({
     nodes: [
         {
@@ -430,18 +432,21 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     ],
 
     addNode: (node) => {
+        nodesByIdsCache.clear();
         set((state) => ({
             nodes: [...state.nodes, node],
         }));
     },
 
     removeNode: (nodeId) => {
+        nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.filter((node) => node.id !== nodeId),
         }));
     },
 
     updateNode: (nodeId, updatedFields) => {
+        nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId ? { ...node, ...updatedFields } : node
@@ -450,6 +455,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     updateNodePosition: (nodeId, deltaX, deltaY) => {
+        nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
@@ -467,6 +473,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     updateNodeWidth: (nodeId, width) => {
+        nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
@@ -483,6 +490,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     updateNodeHeight: (nodeId, height) => {
+        nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
@@ -499,6 +507,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     updateConnections: ({ connectionId, sourceNodeId, sourceHandle, targetNodeId, targetHandle }) => {
+        nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) => {
                 if (node.id === sourceNodeId) {
@@ -533,6 +542,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     removeConnectionFromNode: (connectionId, nodeId, handle, direction) => {
+        nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
@@ -563,10 +573,18 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     getNodesByIds: (nodeIds) => {
-        return get().nodes.filter((node) => nodeIds.includes(node.id));
+        const cacheKey = JSON.stringify(nodeIds.sort());
+        if (nodesByIdsCache.has(cacheKey)) {
+            return nodesByIdsCache.get(cacheKey)!;
+        }
+
+        const nodes = get().nodes.filter((node) => nodeIds.includes(node.id));
+        nodesByIdsCache.set(cacheKey, nodes);
+        return nodes;
     },
 
     updateNodeVariable: (nodeId, variableHandle, newValue) => {
+        nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId

@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import Connector from "@/components/editor/nodes/connector";
-import { EllipsisHorizontalIcon } from "@heroicons/react/16/solid";
-import { useConnectionsStore } from "@/stores/connectionsStore";
-import { v4 as uuidv4 } from "uuid";
-import { calculateConnectorPositionByAttributes } from "@/utils/positionUtils";
+import React, { useEffect, useMemo } from "react";
+import { ChevronRightIcon, EllipsisHorizontalIcon } from "@heroicons/react/16/solid";
 import { InOut } from "@/types/types";
-import { useEditorStore } from "@/stores/editorStore";
-import useNodesStore from "@/stores/nodesStore";
+import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
+import { useConnectorHandlers } from "@/hooks/editor/nodes/useConnectorHandlers";
+import { useUpdateGroupConnectionPositions } from "@/hooks/editor/nodes/updateGroupConnectionPositions";
 import useGroupsStore from "@/stores/groupStore";
+import useNodesStore from "@/stores/nodesStore";
 
 type ConnectorGroupProps = {
     groupId: string;
@@ -18,152 +16,52 @@ type ConnectorGroupProps = {
 
 const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
     groupId,
-    in: isIn,
-    out: isOut,
+    in: isIn = false,
+    out: isOut = false,
 }) => {
-    const {
-        findInConnectionsByNodeId,
-        findOutConnectionsByNodeId,
-        findInConnectionsByNodeIdAndHandle,
-        findOutConnectionsByNodeIdAndHandle,
-        updateConnection,
-    } = useConnectionsStore();
-    const {
-        editorPosition,
-        panPosition,
-        zoomFactor,
-        setOnInConnectionAddedCallback,
-        setOnOutConnectionAddedCallback,
-        setOnInConnectionRemovedCallback,
-        setOnOutConnectionRemovedCallback,
-    } = useEditorStore();
-    const nodesInGroup = useGroupsStore((state) =>
-        state.getNodesInGroup(groupId)
-    );
 
-    const allNodes = useNodesStore((state) => {
-        return state.nodes;
-    });
+    const { findInConnectionsByNodeId, findOutConnectionsByNodeId } = useConnectionsStore();
+    const { updateGroupConnectionPositions } = useUpdateGroupConnectionPositions({ groupId, isIn });
+    const updateConnection =
+        useConnectionsStore((state) => state.updateConnection);
+    const nodesInGroup = useGroupsStore((state) => state.getNodesInGroup(groupId));
+    const nodes = useNodesStore((state) => state.getNodesByIds(nodesInGroup));
 
-    const nodes = useMemo(() => {
-        return allNodes.filter((node) => nodesInGroup.includes(node.id));
-    }, [allNodes, nodesInGroup]);
+    const { handleMouseDown } = useConnectorHandlers(isIn, isOut, groupId, true);
 
-    const [connectionSlots, setConnectionSlots] = useState<
-        Array<{ id: string }>
-    >([]);
-    const connectionSlotsRef = useRef(connectionSlots);
+    const connections = isOut ?
+            findInConnectionsByNodeId(groupId) :
+            findOutConnectionsByNodeId(groupId);
+
+    const connectorSlots = useMemo(() => {
+        return [
+            ...connections.map((_, index) => ({ id: index.toString() })),
+            { id: connections.length.toString() },
+        ];
+    }, [connections]);
 
     useEffect(() => {
-        connectionSlotsRef.current = connectionSlots;
-    }, [connectionSlots]);
-
-    useEffect(() => {
-        const connections = isIn
-            ? findOutConnectionsByNodeId(groupId)
-            : findInConnectionsByNodeId(groupId);
-        setConnectionSlots([...connections, { id: "new" }]);
-    }, [
-        findInConnectionsByNodeId,
-        findOutConnectionsByNodeId,
-        groupId,
-        isIn,
-    ]);
-
-    const handleAddConnection = useCallback(() => {
-        setConnectionSlots((prevSlots) => {
-            return [...prevSlots, { id: `connection-${uuidv4()}` }];
-        });
-    }, []);
-
-    const handleRemoveConnection = useCallback(() => {
-        setConnectionSlots((prevSlots) => {
-            const slotsWithoutNew = prevSlots.filter((slot) => slot.id !== "new");
-            if (slotsWithoutNew.length > 0) {
-                slotsWithoutNew.pop();
-            }
-            return [...slotsWithoutNew, { id: "new" }];
-        });
-    }, []);
-
-    useEffect(() => {
-        if (isIn) {
-            setOnInConnectionAddedCallback(handleAddConnection);
-            setOnInConnectionRemovedCallback(handleRemoveConnection);
-        } else if (isOut) {
-            setOnOutConnectionAddedCallback(handleAddConnection);
-            setOnOutConnectionRemovedCallback(handleRemoveConnection);
-        }
-    }, [
-        handleAddConnection,
-        handleRemoveConnection,
-        isIn,
-        isOut,
-        setOnInConnectionAddedCallback,
-        setOnOutConnectionAddedCallback,
-        setOnInConnectionRemovedCallback,
-        setOnOutConnectionRemovedCallback,
-    ]);
-
-    useEffect(() => {
-        if (connectionSlotsRef.current.length > 0) {
-            connectionSlotsRef.current.forEach((connection) => {
-                if (connection.id !== "new") {
-                    const actualIndex = connectionSlotsRef.current
-                        .filter((slot) => slot.id !== "new")
-                        .indexOf(connection);
-
-                    const connections = isIn
-                        ? findOutConnectionsByNodeIdAndHandle(
-                            groupId,
-                            `${actualIndex}`
-                        )
-                        : findInConnectionsByNodeIdAndHandle(
-                            groupId,
-                            `${actualIndex}`
-                        );
-
-                    connections.forEach((conn) => {
-                        const position = calculateConnectorPositionByAttributes(
-                            groupId,
-                            `${actualIndex}`,
-                            isIn ? InOut.In : InOut.Out,
-                            editorPosition,
-                            panPosition,
-                            zoomFactor
-                        );
-
-                        if (
-                            isIn &&
-                            (conn.startX !== position.x ||
-                                conn.startY !== position.y)
-                        ) {
-                            updateConnection({
-                                ...conn,
-                                startX: position.x,
-                                startY: position.y,
-                            });
-                        } else if (
-                            isOut &&
-                            (conn.endX !== position.x ||
-                                conn.endY !== position.y)
-                        ) {
-                            updateConnection({
-                                ...conn,
-                                endX: position.x,
-                                endY: position.y,
-                            });
-                        }
+        const updateConnectionIndices = () => {
+            connections.forEach((connection: Connection, index) => {
+                if (connection.sourceHandle !== index.toString()) {
+                    updateConnection({
+                        ...connection,
+                        sourceHandle: index.toString(),
                     });
                 }
             });
-        }
-    },
-        // eslint-disable-next-line
-        [
-            nodes,
-            connectionSlots,
-        ]);
+        };
+        updateConnectionIndices();
+        updateGroupConnectionPositions();
+    // eslint-disable-next-line
+    }, [connections, updateConnection]);
+
+    useEffect(() => {
+        return () => {
+            updateGroupConnectionPositions();
+        };
+    // eslint-disable-next-line
+    }, [nodes]);
 
     return (
         <div
@@ -171,26 +69,26 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
                 isIn ? "left-[-30px]" : "right-[-30px]"
             }`}
         >
-            {connectionSlots.map((connection, index) => (
+            {connectorSlots.map((slot) => (
                 <div
-                    key={connection.id}
+                    key={slot.id}
                     className="relative w-[30px] h-[25px] mb-2"
                 >
-                    {isIn && (
-                        <Connector
-                            nodeId={groupId}
-                            handle={`${index}`}
-                            in
-                            isGroup
-                        />
-                    )}
-                    {isOut && (
-                        <Connector
-                            nodeId={groupId}
-                            handle={`${index}`}
-                            out
-                            isGroup
-                        />
+                    {(isIn || isOut) && (
+                        <div
+                            onMouseDown={handleMouseDown}
+                            data-type={isIn ? InOut.In : InOut.Out}
+                            data-group-id={groupId}
+                            data-handle={slot.id}
+                            className={`w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-sky-500 dark:ring-white bg-white dark:bg-slate-800 cursor-pointer
+                            ${
+                                isOut ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
+                            }`}
+                        >
+                            <ChevronRightIcon
+                                className="w-5 h-5 absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 text-sky-600 dark:text-slate-400"
+                            />
+                        </div>
                     )}
                     <EllipsisHorizontalIcon
                         className={`w-4 h-4 absolute ${

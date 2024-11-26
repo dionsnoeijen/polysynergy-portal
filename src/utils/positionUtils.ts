@@ -20,7 +20,8 @@ export const calculateConnectorPositionByAttributes = (
     panPosition: { x: number; y: number },
     zoomFactor: number
 ) => {
-    const selector = `[data-type="${type}"][data-node-id="${nodeId}"][data-handle="${handle}"]`;
+    const selector = `[data-type="${type}"][data-handle="${handle}"][data-node-id="${nodeId}"], 
+            [data-type="${type}"][data-handle="${handle}"][data-group-id="${nodeId}"]`;
     const target = document.querySelector(selector) as HTMLElement;
 
     if (!target) {

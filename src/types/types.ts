@@ -11,3 +11,8 @@ export enum InOut {
 export type ListItemWithId = {
     id: string;
 };
+
+export type Position = {
+    x: number;
+    y: number;
+};

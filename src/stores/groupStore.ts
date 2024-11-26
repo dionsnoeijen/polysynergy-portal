@@ -33,9 +33,20 @@ type GroupsStore = {
     }) => void;
 };
 
+const nodesInGroupCache = new Map<string, string[]>();
+
 const getNodesInGroup = (get: () => GroupsStore) => (groupId: string): string[] => {
     const { groups } = get();
-    return groups[groupId]?.nodes || [];
+    const group = groups[groupId];
+    if (!group) return [];
+
+    const cachedNodes = nodesInGroupCache.get(groupId);
+    if (cachedNodes && cachedNodes === group.nodes) {
+        return cachedNodes;
+    }
+
+    nodesInGroupCache.set(groupId, group.nodes);
+    return group.nodes;
 };
 
 const getOpenGroups = (get: () => GroupsStore) => (): Group[] => {
@@ -102,6 +113,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     }),
 
     addNodeToGroup: (groupId, nodeId) => set((state) => {
+        nodesInGroupCache.delete(groupId);
         const group = state.groups[groupId];
         return {
             groups: {
@@ -112,6 +124,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     }),
 
     removeNodeFromGroup: (groupId, nodeId) => set((state) => {
+        nodesInGroupCache.delete(groupId);
         const group = state.groups[groupId];
         return {
             groups: {
@@ -128,6 +141,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     getGroupById: (groupId) => get().groups[groupId],
 
     updateGroup: (groupId, group) => set((state) => {
+        nodesInGroupCache.delete(groupId);
         const currentGroup = state.groups[groupId];
         return {
             groups: {

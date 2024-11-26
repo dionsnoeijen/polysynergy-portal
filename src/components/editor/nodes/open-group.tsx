@@ -12,10 +12,11 @@ import {
     DialogActions,
 } from "@/components/dialog";
 import { Button } from "@/components/button";
+import { Text } from '@/components/text';
 
 type GroupProps = { group: Group };
 
-const OpenGroup: React.FC<GroupProps> = ({ group }) => {
+const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
     const { getNodesByIds } = useNodesStore();
     const {
         findInConnectionsByNodeId,
@@ -23,13 +24,13 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
         removeConnections,
     } = useConnectionsStore();
     const { openContextMenu, setSelectedNodes, setOpenGroup } = useEditorStore();
-    const { removeGroup, closeGroup } = useGroupsStore();
+    const { removeGroup, closeGroup, updateGroup } = useGroupsStore();
     const nodes = getNodesByIds(group.nodes);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const bounds = useMemo(() => {
-        return nodes.reduce(
+        const bounds = nodes.reduce(
             (acc, node) => {
                 const nodeRight = node.view.x + node.view.width;
                 const nodeBottom = node.view.y + node.view.height;
@@ -43,6 +44,27 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
             },
             { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
         );
+
+        const centerX = bounds.minX + (bounds.maxX - bounds.minX) / 2;
+        const centerY = bounds.minY + (bounds.maxY - bounds.minY) / 2;
+
+        const groupWidth = 100;
+        const groupHeight = 100;
+
+        setTimeout(() => {
+            updateGroup(group.id, {
+                ...group,
+                view: {
+                    x: centerX - groupWidth / 2,
+                    y: centerY - groupHeight / 2,
+                    width: groupWidth,
+                    height: groupHeight,
+                },
+            });
+        }, 0);
+
+        return bounds;
+    // eslint-disable-next-line
     }, [nodes]);
 
     const width = bounds.maxX - bounds.minX;
@@ -50,26 +72,27 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
-
-        const contextMenuItems = [
-            {
-                label: "Close Group",
-                action: () => {
-                    setOpenGroup(null);
-                    setSelectedNodes([]);
-                    closeGroup(group.id);
-                }
-            },
-            {
-                label: "Dissolve Group",
-                action: () => {
-                    setSelectedNodes([]);
-                    setIsDialogOpen(true);
+        openContextMenu(
+            e.clientX,
+            e.clientY,
+            [
+                {
+                    label: "Close Group",
+                    action: () => {
+                        closeGroup(group.id);
+                        setOpenGroup(null);
+                        setSelectedNodes([]);
+                    }
                 },
-            },
-        ];
-
-        openContextMenu(e.clientX, e.clientY, contextMenuItems);
+                {
+                    label: "Dissolve Group",
+                    action: () => {
+                        setSelectedNodes([]);
+                        setIsDialogOpen(true);
+                    },
+                },
+            ]
+        );
     };
 
     const handleConfirmDissolve = () => {
@@ -88,6 +111,9 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
 
     return (
         <div className="relative">
+            <div className="absolute -top-6 inline-block whitespace-nowrap">
+                <Text>{group.name}</Text>
+            </div>
             <div
                 data-type="open-group"
                 onContextMenu={handleContextMenu}
@@ -99,8 +125,8 @@ const OpenGroup: React.FC<GroupProps> = ({ group }) => {
                     height: height + 200,
                 }}
             >
-                <ConnectorGroup in groupId={group.id} />
-                <ConnectorGroup out groupId={group.id} />
+                <ConnectorGroup in groupId={group.id}/>
+                <ConnectorGroup out groupId={group.id}/>
             </div>
 
             <Dialog size="md" className={'rounded-sm'} open={isDialogOpen} onClose={handleCancelDissolve}>

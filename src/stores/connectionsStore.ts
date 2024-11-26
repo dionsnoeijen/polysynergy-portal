@@ -11,6 +11,7 @@ export type Connection = {
     targetNodeId?: string;
     targetHandle?: string;
     collapsed?: boolean;
+    hidden?: boolean;
 };
 
 type ConnectionsStore = {
@@ -25,6 +26,8 @@ type ConnectionsStore = {
     findOutConnectionsByNodeId: (nodeId: string) => Connection[];
     findInConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact?: boolean) => Connection[];
     findOutConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact?: boolean) => Connection[];
+    hideConnectionsByIds: (connectionIds: string[]) => void;
+    showConnectionsByIds: (connectionIds: string[]) => void;
     updateConnectionEnd: (
         connectionId: string,
         endX: number,
@@ -48,8 +51,14 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
     addConnection: (connection: Connection) => {
         memoizedResults.clear();
-        set((state) => ({ connections: [...state.connections, connection] }));
+        set((state) => ({
+            connections: [
+                ...state.connections,
+                { ...connection, hidden: connection.hidden ?? false },
+            ],
+        }));
     },
+
 
     removeConnectionById: (connectionId: string) => {
         memoizedResults.clear();
@@ -128,6 +137,22 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
                     ? c.sourceHandle === handle
                     : c.sourceHandle?.startsWith(handle))
             );
+    },
+
+    hideConnectionsByIds: (connectionIds: string[]) => {
+        memoizedResults.clear();
+        set((state) => ({
+            connections: state.connections.map((c) => (
+                connectionIds.includes(c.id) ? { ...c, hidden: true } : c)),
+        }));
+    },
+
+    showConnectionsByIds: (connectionIds: string[]) => {
+        memoizedResults.clear();
+        set((state) => ({
+            connections: state.connections.map((c) => (
+                connectionIds.includes(c.id) ? { ...c, hidden: false } : c)),
+        }));
     },
 
     updateConnectionEnd: (

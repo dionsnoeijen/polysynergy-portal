@@ -30,6 +30,9 @@ export const useUpdateGroupConnectionPositions = ({
                 : findInConnectionsByNodeIdAndHandle(groupId, slotId);
 
             relevantConnections.forEach((conn: Connection) => {
+
+                if (conn.hidden) return;
+
                 const position = calculateConnectorPositionByAttributes(
                     groupId,
                     slotId,

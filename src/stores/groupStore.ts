@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from "uuid";
 import { NodeView } from "@/stores/nodesStore";
+import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
 
 export type Group = {
     id: string;
@@ -15,7 +16,7 @@ export type Group = {
 
 type GroupsStore = {
     groups: Record<string, Group>;
-    toggleGroupOpen: (groupId: string) => void;
+    openGroup: (groupId: string) => void;
     closeGroup: (groupId: string) => void;
     addGroup: (group: Partial<Group>) => string;
     removeGroup: (groupId: string) => void;
@@ -62,18 +63,40 @@ const getClosedGroups = (get: () => GroupsStore) => (): Group[] => {
 const useGroupsStore = create<GroupsStore>((set, get) => ({
     groups: {},
 
-    toggleGroupOpen: (groupId) => set((state) => {
+    openGroup: (groupId) => set((state) => {
         const group = state.groups[groupId];
+        const nodeIds = get().getNodesInGroup(groupId);
+        const nodes = [ groupId, ...nodeIds ];
+
+        const connections = nodes.reduce<Connection[]>((acc, nodeId) => {
+            const inConnections = useConnectionsStore.getState().findInConnectionsByNodeId(nodeId);
+            const outConnections = useConnectionsStore.getState().findOutConnectionsByNodeId(nodeId);
+            return [...acc, ...inConnections, ...outConnections];
+        }, []);
+
+        useConnectionsStore.getState().showConnectionsByIds(connections.map((c) => c.id));
+
         return {
             groups: {
                 ...state.groups,
-                [groupId]: { ...group, isOpen: !group.isOpen }
+                [groupId]: { ...group, isOpen: true }
             }
         };
     }),
 
     closeGroup: (groupId) => set((state) => {
         const group = state.groups[groupId];
+        const nodeIds = get().getNodesInGroup(groupId);
+        const nodes = [ groupId, ...nodeIds ];
+
+        const connections = nodes.reduce<Connection[]>((acc, nodeId) => {
+            const inConnections = useConnectionsStore.getState().findInConnectionsByNodeId(nodeId);
+            const outConnections = useConnectionsStore.getState().findOutConnectionsByNodeId(nodeId);
+            return [...acc, ...inConnections, ...outConnections];
+        }, []);
+
+        useConnectionsStore.getState().hideConnectionsByIds(connections.map((c) => c.id));
+
         return {
             groups: {
                 ...state.groups,

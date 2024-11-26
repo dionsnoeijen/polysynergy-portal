@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { InOut } from "@/types/types";
 
 export enum NodeVariableType {
     String = 'string',
@@ -14,8 +13,6 @@ export type NodeVariable = {
     value?: null | string | number | boolean | string[] | NodeVariable[];
     default_value?: null | string | number | boolean | string[] | NodeVariable[];
     type: NodeVariableType;
-    in_connections?: null|string[];
-    out_connections?: null|string[];
     has_dock?: boolean;
 };
 
@@ -43,22 +40,10 @@ type NodesStore = {
     updateNodePosition: (nodeId: string, deltaX: number, deltaY: number) => void;
     updateNodeWidth: (nodeId: string, width: number) => void;
     updateNodeHeight: (nodeId: string, height: number) => void;
-    updateConnections: (payload: {
-        connectionId: string;
-        sourceNodeId: string;
-        sourceHandle: string;
-        targetNodeId: string;
-        targetHandle: string;
-    }) => void;
-    removeConnectionFromNode: (
-        connectionId: string,
-        nodeId: string,
-        handle: string,
-        direction: InOut
-    ) => void;
     getNode: (nodeId: string) => Node | undefined;
     getNodes: () => Node[];
     getNodesByIds: (nodeIds: string[]) => Node[];
+    getNodeVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: any) => void;
 };
 
@@ -88,32 +73,24 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                             value: null,
                             default_value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{age}',
                             handle: 'age',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{id}',
                             handle: 'id',
                             value: '59027142-1a33-4d75-8ee6-231d7b4a3335',
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{space}',
                             handle: 'space',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                     ],
                     type: NodeVariableType.Array,
@@ -158,32 +135,24 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                             value: null,
                             default_value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{age}',
                             handle: 'age',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{id}',
                             handle: 'id',
                             value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{space}',
                             handle: 'space',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                     ],
                     type: NodeVariableType.Array,
@@ -215,32 +184,24 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                             value: null,
                             default_value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{age}',
                             handle: 'age',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{id}',
                             handle: 'id',
                             value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{space}',
                             handle: 'space',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                     ],
                     type: NodeVariableType.Array,
@@ -276,32 +237,24 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                             value: null,
                             default_value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{age}',
                             handle: 'age',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{id}',
                             handle: 'id',
                             value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{space}',
                             handle: 'space',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                     ],
                     type: NodeVariableType.Array,
@@ -333,32 +286,24 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                             value: null,
                             default_value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{age}',
                             handle: 'age',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{id}',
                             handle: 'id',
                             value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{space}',
                             handle: 'space',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                     ],
                     type: NodeVariableType.Array,
@@ -394,32 +339,24 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                             value: null,
                             default_value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{age}',
                             handle: 'age',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{id}',
                             handle: 'id',
                             value: 30,
                             type: NodeVariableType.String,
-                            in_connections: [],
-                            out_connections: [],
                         },
                         {
                             name: '{space}',
                             handle: 'space',
                             value: 30,
                             type: NodeVariableType.Number,
-                            in_connections: [],
-                            out_connections: [],
                         },
                     ],
                     type: NodeVariableType.Array,
@@ -506,64 +443,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    updateConnections: ({ connectionId, sourceNodeId, sourceHandle, targetNodeId, targetHandle }) => {
-        nodesByIdsCache.clear();
-        set((state) => ({
-            nodes: state.nodes.map((node) => {
-                if (node.id === sourceNodeId) {
-                    return {
-                        ...node,
-                        variables: node.variables.map((variable) =>
-                            variable.handle === sourceHandle
-                                ? {
-                                    ...variable,
-                                    out_connections: [...(variable.out_connections || []), connectionId],
-                                }
-                                : variable
-                        ),
-                    };
-                }
-                if (node.id === targetNodeId) {
-                    return {
-                        ...node,
-                        variables: node.variables.map((variable) =>
-                            variable.handle === targetHandle
-                                ? {
-                                    ...variable,
-                                    in_connections: [...(variable.in_connections || []), connectionId],
-                                }
-                                : variable
-                        ),
-                    };
-                }
-                return node;
-            }),
-        }));
-    },
-
-    removeConnectionFromNode: (connectionId, nodeId, handle, direction) => {
-        nodesByIdsCache.clear();
-        set((state) => ({
-            nodes: state.nodes.map((node) =>
-                node.id === nodeId
-                    ? {
-                        ...node,
-                        variables: node.variables.map((variable) =>
-                            variable.handle === handle
-                                ? {
-                                    ...variable,
-                                    [`${direction}_connections`]: (
-                                        variable[`${direction}_connections`] || []
-                                    ).filter((id) => id !== connectionId),
-                                }
-                                : variable
-                        ),
-                    }
-                    : node
-            ),
-        }));
-    },
-
     getNode: (nodeId) => {
         return get().nodes.find((node) => node.id === nodeId);
     },
@@ -581,6 +460,11 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         const nodes = get().nodes.filter((node) => nodeIds.includes(node.id));
         nodesByIdsCache.set(cacheKey, nodes);
         return nodes;
+    },
+
+    getNodeVariable: (nodeId, variableHandle) => {
+        const node = get().getNode(nodeId);
+        return node?.variables.find((variable) => variable.handle === variableHandle);
     },
 
     updateNodeVariable: (nodeId, variableHandle, newValue) => {

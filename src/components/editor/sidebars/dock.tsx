@@ -1,15 +1,16 @@
+import React, { useMemo } from "react";
 import clsx from "clsx";
 import Heading from "@/components/editor/sidebars/elements/heading";
-import useNodesStore, { NodeVariableType } from "@/stores/nodesStore";
+import useNodesStore, { NodeVariable, NodeVariableType } from "@/stores/nodesStore";
 import { useEditorStore } from "@/stores/editorStore";
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
 import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";
 import VariableTypeArray from "@/components/editor/sidebars/dock/variable-type-array";
-import { Divider } from "@/components/divider";
 import VariableTypeBoolean from "@/components/editor/sidebars/dock/variable-type-boolean";
 import useGroupsStore from "@/stores/groupStore";
 import GroupName from "@/components/editor/sidebars/dock/group-name";
-import React from "react";
+import { useConnectionsStore } from "@/stores/connectionsStore";
+import VariableGroup from "@/components/editor/sidebars/dock/variable-group";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -26,8 +27,35 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
     const { selectedNodes, openGroup } = useEditorStore();
     const { getGroupById } = useGroupsStore();
     const nodes = useNodesStore((state) => state.nodes);
+    const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
+    const { findInConnectionsByNodeId, findOutConnectionsByNodeId, connections } = useConnectionsStore();
+
     const group = openGroup ? getGroupById(openGroup) : null;
     const node = selectedNodes.length === 1 ? nodes.find((n) => n.id === selectedNodes[0]) : null;
+
+    const variablesForGroup = useMemo(() => {
+        if (!group) return null;
+
+        const outConnections = findInConnectionsByNodeId(group.id);
+        const inConnections = findOutConnectionsByNodeId(group.id);
+
+        const inVariables = inConnections
+            .map((connection) => ({
+                variable: getNodeVariable(connection.targetNodeId as string, connection.targetHandle as string),
+                nodeId: connection.targetNodeId,
+            }))
+            .filter((item) => item.variable !== undefined);
+
+        const outVariables = outConnections
+            .map((connection) => ({
+                variable: getNodeVariable(connection.sourceNodeId, connection.sourceHandle),
+                nodeId: connection.sourceNodeId,
+            }))
+            .filter((item) => item.variable !== undefined);
+
+        return { inVariables, outVariables };
+        // eslint-disable-next-line
+    }, [group, connections, findInConnectionsByNodeId, findOutConnectionsByNodeId, getNodeVariable]);
 
     return (
         <div
@@ -38,23 +66,63 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                 Dock: {node ? node.name : "select node"}
             </Heading>
 
-            {node && node.variables.map((variable) => {
-                const VariableComponent = VariableTypeComponents[variable.type];
-                return VariableComponent ? (
-                    <div key={variable.handle}>
-                        <VariableComponent nodeId={node.id} variable={variable} />
-                    </div>
-                ) : null;
-            })}
-
             {group && (
                 <>
-                    <Divider />
-                    <Heading>
-                        Group: {group.name}
-                    </Heading>
-                    <GroupName group={group} />
+                    <VariableGroup title={group.name}>
+                        <GroupName group={group} />
+
+
+                    {variablesForGroup?.inVariables && variablesForGroup?.inVariables.length > 0 && (
+                        <VariableGroup title="In Variables">
+                            {variablesForGroup.inVariables.map(({ variable, nodeId }) => {
+                                if (!variable) return null;
+                                const VariableComponent = VariableTypeComponents[variable.type];
+                                return VariableComponent ? (
+                                    <div key={variable.handle}>
+                                        <VariableComponent
+                                            nodeId={nodeId as string}
+                                            variable={variable}
+                                        />
+                                    </div>
+                                ) : null;
+                            })}
+                        </VariableGroup>
+                    )}
+
+                    {variablesForGroup?.outVariables && variablesForGroup?.outVariables.length > 0 && (
+                        <VariableGroup title="Out Variables">
+                            {variablesForGroup.outVariables.map(({ variable, nodeId }) => {
+                                if (!variable) return null;
+                                const VariableComponent = VariableTypeComponents[variable.type];
+                                return VariableComponent ? (
+                                    <div key={variable.handle}>
+                                        <VariableComponent
+                                            nodeId={nodeId}
+                                            variable={variable}
+                                        />
+                                    </div>
+                                ) : null;
+                            })}
+                        </VariableGroup>
+                    )}
+                    </VariableGroup>
                 </>
+            )}
+
+            {node && node.variables.length > 0 && (
+                <VariableGroup title="Node Variables">
+                    {node.variables.map((variable: NodeVariable) => {
+                        const VariableComponent = VariableTypeComponents[variable.type];
+                        return VariableComponent ? (
+                            <div key={variable.handle}>
+                                <VariableComponent
+                                    nodeId={node.id}
+                                    variable={variable}
+                                />
+                            </div>
+                        ) : null;
+                    })}
+                </VariableGroup>
             )}
         </div>
     );

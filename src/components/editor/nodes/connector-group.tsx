@@ -43,10 +43,15 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
     useEffect(() => {
         const updateConnectionIndices = () => {
             connections.forEach((connection: Connection, index) => {
-                if (connection.sourceHandle !== index.toString()) {
+                if (isIn && connection.sourceHandle !== index.toString()) {
                     updateConnection({
                         ...connection,
                         sourceHandle: index.toString(),
+                    });
+                } else if (!isIn && connection.targetHandle !== index.toString()) {
+                    updateConnection({
+                        ...connection,
+                        targetHandle: index.toString(),
                     });
                 }
             });

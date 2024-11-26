@@ -1,10 +1,8 @@
 import React, { useRef } from "react";
 import { calculateConnectorPosition } from "@/utils/positionUtils";
 import { v4 as uuidv4 } from "uuid";
-import { InOut } from "@/types/types";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useEditorStore } from "@/stores/editorStore";
-import useNodesStore from "@/stores/nodesStore";
 
 export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = false, nodeId: string, isGroup: boolean = false) => {
     const {
@@ -22,7 +20,6 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
         panPosition,
         editorPosition,
     } = useEditorStore();
-    const { updateConnections, removeConnectionFromNode } = useNodesStore();
 
     const startedFromGroup = useRef(false);
 
@@ -41,14 +38,6 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
         }
 
         const existingConnection = existingConnections[0];
-
-        removeConnectionFromNode(
-            existingConnection.id,
-            nodeId,
-            handle as string,
-            InOut.In
-        );
-
         const updatedConnection = {
             ...existingConnection,
             targetNodeId: undefined,
@@ -105,15 +94,7 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
                 );
 
                 const connection = getConnection(existingConnection.id);
-                if (connection) {
-                    updateConnections({
-                        connectionId: existingConnection.id,
-                        sourceNodeId: connection.sourceNodeId,
-                        sourceHandle: connection.sourceHandle,
-                        targetNodeId: targetNodeId,
-                        targetHandle: targetHandle,
-                    });
-                } else {
+                if (!connection) {
                     removeConnectionById(existingConnection.id);
                 }
             } else {
@@ -185,17 +166,11 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
                     panPosition,
                     zoomFactor
                 );
+                console.log("targetNodeId", targetNodeId, targetHandle);
+
                 updateConnectionEnd(id, x, y, targetNodeId, targetHandle);
                 const connection = getConnection(id);
-                if (connection) {
-                    updateConnections({
-                        connectionId: id,
-                        sourceNodeId: connection.sourceNodeId,
-                        sourceHandle: connection.sourceHandle,
-                        targetNodeId: targetNodeId,
-                        targetHandle: targetHandle,
-                    });
-                } else {
+                if (!connection) {
                     removeConnectionById(id);
                 }
             } else {

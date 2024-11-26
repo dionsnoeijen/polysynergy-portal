@@ -10,8 +10,6 @@ export type Group = {
     isOpen: boolean;
     nodes: string[];
     parentGroupId?: string;
-    inConnections?: string[];
-    outConnections?: string[];
 };
 
 type GroupsStore = {
@@ -27,11 +25,6 @@ type GroupsStore = {
     getNodesInGroup: (groupId: string) => string[];
     getGroupById: (groupId: string) => Group | undefined;
     updateGroup: (groupId: string, group: Partial<Group>) => void;
-    updateConnectionsForGroups: (payload: {
-        connectionId: string;
-        sourceGroupId?: string;
-        targetGroupId?: string;
-    }) => void;
 };
 
 const nodesInGroupCache = new Map<string, string[]>();
@@ -118,8 +111,6 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
             isOpen: group.isOpen !== undefined ? group.isOpen : true,
             parentGroupId: group.parentGroupId,
             nodes: group.nodes || [],
-            inConnections: group.inConnections || [],
-            outConnections: group.outConnections || []
         };
 
         set((state) => ({
@@ -173,42 +164,6 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
             }
         };
     }),
-
-    updateConnectionsForGroups: ({
-        connectionId,
-        sourceGroupId,
-        targetGroupId,
-    }: {
-        connectionId: string;
-        sourceGroupId?: string;
-        targetGroupId?: string;
-    }) => {
-        set((state) => {
-            const updatedGroups = { ...state.groups };
-
-            if (sourceGroupId && updatedGroups[sourceGroupId]) {
-                updatedGroups[sourceGroupId] = {
-                    ...updatedGroups[sourceGroupId],
-                    outConnections: [
-                        ...(updatedGroups[sourceGroupId].outConnections || []),
-                        connectionId,
-                    ],
-                };
-            }
-
-            if (targetGroupId && updatedGroups[targetGroupId]) {
-                updatedGroups[targetGroupId] = {
-                    ...updatedGroups[targetGroupId],
-                    inConnections: [
-                        ...(updatedGroups[targetGroupId].inConnections || []),
-                        connectionId,
-                    ],
-                };
-            }
-
-            return { groups: updatedGroups };
-        });
-    },
 }));
 
 export default useGroupsStore;

@@ -1,12 +1,13 @@
 import clsx from 'clsx'
 import { Link } from './link'
+import React from "react";
 
 export function Text({ className, ...props }: React.ComponentPropsWithoutRef<'p'>) {
   return (
     <p
       data-slot="text"
       {...props}
-      className={clsx(className, 'text-base/6 text-zinc-500 sm:text-sm/6 dark:text-zinc-400')}
+      className={clsx('text-base/6 text-zinc-500 sm:text-sm/6 dark:text-zinc-400', className)}
     />
   )
 }

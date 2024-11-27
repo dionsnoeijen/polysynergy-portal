@@ -44,14 +44,14 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                 variable: getNodeVariable(connection.targetNodeId as string, connection.targetHandle as string),
                 nodeId: connection.targetNodeId,
             }))
-            .filter((item) => item.variable !== undefined);
+            .filter((item) => (item.variable !== undefined && item.variable.has_dock));
 
         const outVariables = outConnections
             .map((connection) => ({
                 variable: getNodeVariable(connection.sourceNodeId, connection.sourceHandle),
                 nodeId: connection.sourceNodeId,
             }))
-            .filter((item) => item.variable !== undefined);
+            .filter((item) => (item.variable !== undefined && item.variable.has_dock));
 
         return { inVariables, outVariables };
     // eslint-disable-next-line
@@ -74,7 +74,7 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                         {variablesForGroup?.inVariables && variablesForGroup?.inVariables.length > 0 && (
                             <VariableGroup title="In Variables">
                                 {variablesForGroup.inVariables.map(({ variable, nodeId }) => {
-                                    if (!variable) return null;
+                                    if (!variable || !variable.has_dock) return null;
                                     const VariableComponent = VariableTypeComponents[variable.type];
                                     return VariableComponent ? (
                                         <div key={variable.handle}>
@@ -91,7 +91,7 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                         {variablesForGroup?.outVariables && variablesForGroup?.outVariables.length > 0 && (
                             <VariableGroup title="Out Variables">
                                 {variablesForGroup.outVariables.map(({ variable, nodeId }) => {
-                                    if (!variable) return null;
+                                    if (!variable || !variable.has_dock) return null;
                                     const VariableComponent = VariableTypeComponents[variable.type];
                                     return VariableComponent ? (
                                         <div key={variable.handle}>
@@ -111,6 +111,7 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
             {node && node.variables.length > 0 && (
                 <VariableGroup title="Node Variables">
                     {node.variables.map((variable: NodeVariable) => {
+                        if (!variable.has_dock) return;
                         const VariableComponent = VariableTypeComponents[variable.type];
                         return VariableComponent ? (
                             <div key={variable.handle}>

@@ -111,9 +111,6 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
 
     return (
         <div className="relative">
-            <div className="absolute -top-6 inline-block whitespace-nowrap">
-                <Text>{group.name}</Text>
-            </div>
             <div
                 data-type="open-group"
                 onContextMenu={handleContextMenu}
@@ -125,12 +122,15 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
                     height: height + 200,
                 }}
             >
+                <div className="absolute select-none -top-6 inline-block whitespace-nowrap">
+                    <Text>{group.name}</Text>
+                </div>
                 <ConnectorGroup in groupId={group.id}/>
                 <ConnectorGroup out groupId={group.id}/>
             </div>
 
             <Dialog size="md" className={'rounded-sm'} open={isDialogOpen} onClose={handleCancelDissolve}>
-                <DialogTitle>Confirm Dissolve Group</DialogTitle>
+            <DialogTitle>Confirm Dissolve Group</DialogTitle>
                 <DialogDescription>
                     Are you sure you want to dissolve this group? This action cannot be undone.
                 </DialogDescription>

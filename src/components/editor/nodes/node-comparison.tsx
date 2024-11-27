@@ -12,7 +12,7 @@ type NodeProps = {
 
 const NodeComparison: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes, setSelectedNodes } = useEditorStore();
-    const { onDragMouseDown } = useDraggable();
+    const { onDragMouseDown } = useDraggable({ collisionThreshold: 50 });
 
     const handleNodeMouseDown = (e: React.MouseEvent) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");

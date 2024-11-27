@@ -3,10 +3,9 @@ import { useEditorStore } from "@/stores/editorStore";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import useNodesStore, { Node } from "@/stores/nodesStore";
 
-const collisionThreshold = 150;
 const repulsionStrength = 10;
 
-const useDraggable = () => {
+const useDraggable = ({ collisionThreshold = 150 }: { collisionThreshold?: number }) => {
     const { selectedNodes, zoomFactor, setIsDragging } = useEditorStore();
     const { updateNodePosition, getNodes } = useNodesStore();
     const { findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection } = useConnectionsStore();
@@ -41,71 +40,77 @@ const useDraggable = () => {
         [findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection]
     );
 
-    const cascadeRepulsion = (node: Node, allNodes: Node[], visited: Set<string>) => {
-        visited.add(node.id);
+    const cascadeRepulsion = useCallback(
+        (node: Node, allNodes: Node[], visited: Set<string>) => {
+            visited.add(node.id);
 
-        const radiusX = node.view.width / 2 + collisionThreshold;
-        const radiusY = node.view.height / 2 + collisionThreshold;
+            const radiusX = node.view.width / 2 + collisionThreshold;
+            const radiusY = node.view.height / 2 + collisionThreshold;
 
-        allNodes.forEach((otherNode) => {
-            if (visited.has(otherNode.id) || otherNode.id === node.id) return;
+            allNodes.forEach((otherNode) => {
+                if (visited.has(otherNode.id) || otherNode.id === node.id) return;
 
-            const dx = otherNode.view.x - node.view.x;
-            const dy = otherNode.view.y - node.view.y;
-            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+                const dx = otherNode.view.x - node.view.x;
+                const dy = otherNode.view.y - node.view.y;
+                const distance = Math.sqrt(dx * dx + dy * dy) || 1;
 
-            const isOverlapping =
-                distance < Math.max(radiusX, radiusY) &&
-                distance > 0;
+                const isOverlapping =
+                    distance < Math.max(radiusX, radiusY) &&
+                    distance > 0;
 
-            if (isOverlapping) {
-                const repulsionX = (dx / distance) * repulsionStrength;
-                const repulsionY = (dy / distance) * repulsionStrength;
+                if (isOverlapping) {
+                    const repulsionX = (dx / distance) * repulsionStrength;
+                    const repulsionY = (dy / distance) * repulsionStrength;
 
-                updateNodePosition(otherNode.id, repulsionX, repulsionY);
-                updateConnectionPositions(otherNode.id, repulsionX, repulsionY);
+                    updateNodePosition(otherNode.id, repulsionX, repulsionY);
+                    updateConnectionPositions(otherNode.id, repulsionX, repulsionY);
 
-                cascadeRepulsion(otherNode, allNodes, visited);
-            }
-        });
-    };
+                    cascadeRepulsion(otherNode, allNodes, visited);
+                }
+            });
+        },
+        [collisionThreshold, updateNodePosition, updateConnectionPositions]
+    );
 
-    const calculateRepulsion = (draggedNode: Node, deltaX: number, deltaY: number) => {
-        const allNodes = getNodes();
-        const updatedDraggedNode = {
-            ...draggedNode,
-            x: draggedNode.view.x + deltaX,
-            y: draggedNode.view.y + deltaY,
-        };
+    const calculateRepulsion = useCallback(
+        (draggedNode: Node, deltaX: number, deltaY: number) => {
+            const allNodes = getNodes();
+            const updatedDraggedNode = {
+                ...draggedNode,
+                x: draggedNode.view.x + deltaX,
+                y: draggedNode.view.y + deltaY,
+            };
 
-        const radiusX = updatedDraggedNode.view.width / 2 + collisionThreshold;
-        const radiusY = updatedDraggedNode.view.height / 2 + collisionThreshold;
+            const radiusX = updatedDraggedNode.view.width / 2 + collisionThreshold;
+            const radiusY = updatedDraggedNode.view.height / 2 + collisionThreshold;
 
-        allNodes.forEach((otherNode) => {
-            if (
-                draggedNode.id === otherNode.id ||
-                selectedNodesRef.current.includes(otherNode.id)
-            ) {
-                return;
-            }
+            allNodes.forEach((otherNode) => {
+                if (
+                    draggedNode.id === otherNode.id ||
+                    selectedNodesRef.current.includes(otherNode.id)
+                ) {
+                    return;
+                }
 
-            const dx = otherNode.view.x - updatedDraggedNode.view.x;
-            const dy = otherNode.view.y - updatedDraggedNode.view.y;
-            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+                const dx = otherNode.view.x - updatedDraggedNode.view.x;
+                const dy = otherNode.view.y - updatedDraggedNode.view.y;
+                const distance = Math.sqrt(dx * dx + dy * dy) || 1;
 
-            const isTouching = distance < Math.max(radiusX, radiusY);
+                const isTouching = distance < Math.max(radiusX, radiusY);
 
-            if (isTouching) {
-                const repulsionX = (dx / distance) * repulsionStrength;
-                const repulsionY = (dy / distance) * repulsionStrength;
+                if (isTouching) {
+                    const repulsionX = (dx / distance) * repulsionStrength;
+                    const repulsionY = (dy / distance) * repulsionStrength;
 
-                updateNodePosition(otherNode.id, repulsionX, repulsionY);
-                updateConnectionPositions(otherNode.id, repulsionX, repulsionY);
+                    updateNodePosition(otherNode.id, repulsionX, repulsionY);
+                    updateConnectionPositions(otherNode.id, repulsionX, repulsionY);
 
-                cascadeRepulsion(otherNode, allNodes, new Set([draggedNode.id]));
-            }
-        });
-    };
+                    cascadeRepulsion(otherNode, allNodes, new Set([draggedNode.id]));
+                }
+            });
+        },
+        [collisionThreshold, getNodes, updateNodePosition, updateConnectionPositions, cascadeRepulsion]
+    );
 
     const onDragMouseDown = useCallback(() => {
         setIsDragging(true);

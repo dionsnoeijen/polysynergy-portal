@@ -24,7 +24,7 @@ type NodeProps = {
 
 const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const { onDragMouseDown } = useDraggable();
+    const { onDragMouseDown } = useDraggable({ collisionThreshold: 150 });
     const { size, handleResizeMouseDown } = useResizable(node);
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
     const { selectedNodes, setSelectedNodes, openContextMenu } = useEditorStore();
@@ -121,8 +121,8 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             data-node-id={node.id}
         >
             <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">
-                <Connector in nodeId={node.id} handle={"node"} />
-                <Switch color={theme === 'light' ? 'sky' : 'dark'} />
+                <Connector in nodeId={node.id} handle={"node"}/>
+                <Switch color={theme === 'light' ? 'sky' : 'dark'}/>
                 <h3 className="font-bold truncate ml-2 text-sky-600 dark:text-white">{node.name}</h3>
             </div>
             <div className="flex flex-col w-full items-start overflow-visible">
@@ -199,7 +199,8 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                                                             handle={variable.handle + "." + item.handle}
                                                         />
                                                     )}
-                                                    <div className="flex items-center truncate text-sky-200 dark:text-white">
+                                                    <div
+                                                        className="flex items-center truncate text-sky-200 dark:text-white">
                                                         <span className="text-sky-400 dark:text-slate-400">
                                                             {index ===
                                                             ((variable.value as NodeVariable[])?.length ?? 0) - 1

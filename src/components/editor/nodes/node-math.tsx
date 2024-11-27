@@ -11,7 +11,7 @@ type NodeProps = {
 
 const NodeMath: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes, setSelectedNodes } = useEditorStore();
-    const { onDragMouseDown } = useDraggable();
+    const { onDragMouseDown } = useDraggable({ collisionThreshold: 50 });
 
     const handleNodeMouseDown = (e: React.MouseEvent) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
@@ -57,26 +57,42 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
             data-type="node"
             data-node-id={node.id}
         >
-            <Connector in nodeId={node.id} handle="a" iconClassName="text-white dark:text-white" className="-translate-y-5 ring-blue-200/50 bg-blue-400 dark:bg-blue-400" />
-            <Connector in nodeId={node.id} handle="b" iconClassName="text-white dark:text-white" className="translate-y-2 ring-blue-200/50 bg-blue-400 dark:bg-blue-400" />
+            <Connector
+                in
+                nodeId={node.id}
+                handle="a"
+                iconClassName="text-white dark:text-white"
+                className="-translate-y-5 ring-blue-200/50 bg-blue-400 dark:bg-blue-400"
+            />
+            <Connector
+                in
+                nodeId={node.id}
+                handle="b"
+                iconClassName="text-white dark:text-white"
+                className="translate-y-2 ring-blue-200/50 bg-blue-400 dark:bg-blue-400"
+            />
 
+            {/* Node inhoud */}
             {node.type === NodeMathType.Add && (
                 <Strong className="text-white dark:text-white">+</Strong>
             )}
-
             {node.type === NodeMathType.Subtract && (
                 <Strong className="text-white dark:text-white">-</Strong>
             )}
-
             {node.type === NodeMathType.Multiply && (
                 <Strong className="text-white dark:text-white">×</Strong>
             )}
-
             {node.type === NodeMathType.Divide && (
                 <Strong className="text-white dark:text-white">÷</Strong>
             )}
 
-            <Connector out nodeId={node.id} handle="result" iconClassName="text-white dark:text-white" className="ring-blue-200/50 bg-green-400 dark:bg-green-400" />
+            <Connector
+                out
+                nodeId={node.id}
+                handle="result"
+                iconClassName="text-white dark:text-white"
+                className="ring-blue-200/50 bg-green-400 dark:bg-green-400"
+            />
         </div>
     );
 };

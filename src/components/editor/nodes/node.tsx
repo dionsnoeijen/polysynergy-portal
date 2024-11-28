@@ -1,5 +1,5 @@
 import React from "react";
-import { Node as NodeStore, NodeType } from "@/stores/nodesStore";
+import { Node as NodeStore, NodeType } from "@/types/types";
 import NodeRows from "@/components/editor/nodes/node-rows";
 import NodeComparison from "@/components/editor/nodes/node-comparison";
 import NodeMath from "@/components/editor/nodes/node-math";

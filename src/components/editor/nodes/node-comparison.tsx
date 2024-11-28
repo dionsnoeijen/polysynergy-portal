@@ -1,4 +1,4 @@
-import { Node as NodeType, NodeComparisonType } from "@/stores/nodesStore";
+import { Node as NodeType, NodeComparisonType } from "@/types/types";
 import React from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import { ChevronRightIcon } from "@heroicons/react/16/solid";
@@ -12,7 +12,7 @@ type NodeProps = {
 
 const NodeComparison: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes, setSelectedNodes } = useEditorStore();
-    const { onDragMouseDown } = useDraggable({ collisionThreshold: 50 });
+    const { onDragMouseDown, getOvalDimensions } = useDraggable();
 
     const handleNodeMouseDown = (e: React.MouseEvent) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");

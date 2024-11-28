@@ -1,6 +1,6 @@
 import React from "react";
 
-import { NodeVariable, NodeVariableType } from "@/stores/nodesStore";
+import { NodeVariable, NodeVariableType } from "@/types/types";
 import { Text } from "@/components/text";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table";
 import { PencilIcon } from "@heroicons/react/16/solid";

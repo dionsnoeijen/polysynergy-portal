@@ -26,7 +26,7 @@ export default function RouteTree(): ReactElement {
                 <>
                     <a href={`/project/${activeProjectId}/route/${route.id}`}
                        title={`${route.method}}: /${formatSegments(route.segments)}`}
-                       className={`block flex-1 truncate dark:hover:text-zinc-300 pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
+                       className={`block flex-1 truncate dark:hover:text-white pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
                     >
                         <b className="dark:text-white">{route.method}</b>: /{formatSegments(route.segments)}
                     </a>

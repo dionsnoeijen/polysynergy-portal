@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import clsx from "clsx";
 import Heading from "@/components/editor/sidebars/elements/heading";
-import useNodesStore, { NodeVariable, NodeVariableType } from "@/stores/nodesStore";
+import { NodeVariable, NodeVariableType } from "@/types/types";
+import useNodesStore  from "@/stores/nodesStore";
 import { useEditorStore } from "@/stores/editorStore";
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
 import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";

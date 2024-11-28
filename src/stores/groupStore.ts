@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from "uuid";
-import { NodeView } from "@/stores/nodesStore";
+import { NodeView } from "@/types/types";
 import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
 
 export type Group = {

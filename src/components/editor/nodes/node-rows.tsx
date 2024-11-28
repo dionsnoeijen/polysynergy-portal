@@ -11,7 +11,8 @@ import {
     XCircleIcon
 } from "@heroicons/react/16/solid";
 import Connector from "@/components/editor/nodes/connector";
-import useNodesStore, { Node as NodeType, NodeVariable, NodeVariableType } from "@/stores/nodesStore";
+import useNodesStore from "@/stores/nodesStore";
+import { Node as NodeType, NodeVariable, NodeVariableType } from "@/types/types";
 import { Switch } from "@/components/switch";
 import { useEditorStore } from "@/stores/editorStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
@@ -24,7 +25,7 @@ type NodeProps = {
 
 const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const { onDragMouseDown } = useDraggable({ collisionThreshold: 150 });
+    const { onDragMouseDown, getOvalDimensions } = useDraggable();
     const { size, handleResizeMouseDown } = useResizable(node);
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
     const { selectedNodes, setSelectedNodes, openContextMenu } = useEditorStore();
@@ -104,6 +105,8 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
         openContextMenu(e.clientX, e.clientY, contextMenuItems);
     };
 
+    // const ovalDimensions = getOvalDimensions(node);
+
     return (
         <div
             ref={ref}
@@ -120,6 +123,27 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             data-type="node"
             data-node-id={node.id}
         >
+            {/*<svg*/}
+            {/*    width={`${ovalDimensions.radiusX * 2}`}*/}
+            {/*    height={`${ovalDimensions.radiusY * 2}`}*/}
+            {/*    style={{*/}
+            {/*        position: "absolute",*/}
+            {/*        left: `${-ovalDimensions.radiusX + node.view.width / 2}px`,*/}
+            {/*        top: `${-ovalDimensions.radiusY + node.view.height / 2}px`,*/}
+            {/*        zIndex: -1,*/}
+            {/*    }}*/}
+            {/*>*/}
+            {/*    <ellipse*/}
+            {/*        cx={ovalDimensions.radiusX}*/}
+            {/*        cy={ovalDimensions.radiusY}*/}
+            {/*        rx={ovalDimensions.radiusX}*/}
+            {/*        ry={ovalDimensions.radiusY}*/}
+            {/*        fill="none"*/}
+            {/*        stroke="red"*/}
+            {/*        strokeWidth="2"*/}
+            {/*        strokeDasharray="5,5"*/}
+            {/*    />*/}
+            {/*</svg>*/}
             <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">
                 <Connector in nodeId={node.id} handle={"node"}/>
                 <Switch color={theme === 'light' ? 'sky' : 'dark'}/>

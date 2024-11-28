@@ -1,16 +1,29 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import { useConnectionsStore } from "@/stores/connectionsStore";
-import useNodesStore, { Node } from "@/stores/nodesStore";
+import { Node } from "@/types/types";
+import useNodesStore from "@/stores/nodesStore";
 
-const repulsionStrength = 10;
+const repulsionStrength = 0.5;
+const attractionStrength = 0.05;
 
-const useDraggable = ({ collisionThreshold = 150 }: { collisionThreshold?: number }) => {
+const useDraggable = ({ enableForces = false }: { enableForces?: boolean } = {}) => {
     const { selectedNodes, zoomFactor, setIsDragging } = useEditorStore();
     const { updateNodePosition, getNodes } = useNodesStore();
     const { findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection } = useConnectionsStore();
 
     const selectedNodesRef = useRef<string[]>(selectedNodes);
+    const originalPositions = useRef<Map<string, { x: number; y: number }>>(new Map());
+
+    const getOvalDimensions = useCallback((node: Node) => {
+        const margin = 40;
+        return {
+            x: node.view.x + node.view.width / 2, // Midden van de node in x-richting
+            y: node.view.y + node.view.height / 2, // Midden van de node in y-richting
+            radiusX: node.view.width / 2 + margin, // Halve breedte + marge
+            radiusY: node.view.height / 2 + margin, // Halve hoogte + marge
+        };
+    }, []);
 
     useEffect(() => {
         selectedNodesRef.current = selectedNodes;
@@ -40,80 +53,68 @@ const useDraggable = ({ collisionThreshold = 150 }: { collisionThreshold?: numbe
         [findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection]
     );
 
-    const cascadeRepulsion = useCallback(
-        (node: Node, allNodes: Node[], visited: Set<string>) => {
-            visited.add(node.id);
-
-            const radiusX = node.view.width / 2 + collisionThreshold;
-            const radiusY = node.view.height / 2 + collisionThreshold;
-
-            allNodes.forEach((otherNode) => {
-                if (visited.has(otherNode.id) || otherNode.id === node.id) return;
-
-                const dx = otherNode.view.x - node.view.x;
-                const dy = otherNode.view.y - node.view.y;
-                const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-
-                const isOverlapping =
-                    distance < Math.max(radiusX, radiusY) &&
-                    distance > 0;
-
-                if (isOverlapping) {
-                    const repulsionX = (dx / distance) * repulsionStrength;
-                    const repulsionY = (dy / distance) * repulsionStrength;
-
-                    updateNodePosition(otherNode.id, repulsionX, repulsionY);
-                    updateConnectionPositions(otherNode.id, repulsionX, repulsionY);
-
-                    cascadeRepulsion(otherNode, allNodes, visited);
-                }
-            });
-        },
-        [collisionThreshold, updateNodePosition, updateConnectionPositions]
-    );
-
-    const calculateRepulsion = useCallback(
+    const applyForces = useCallback(
         (draggedNode: Node, deltaX: number, deltaY: number) => {
             const allNodes = getNodes();
-            const updatedDraggedNode = {
-                ...draggedNode,
-                x: draggedNode.view.x + deltaX,
-                y: draggedNode.view.y + deltaY,
+            const updatedDraggedNodeCenter = {
+                x: draggedNode.view.x + draggedNode.view.width / 2 + deltaX,
+                y: draggedNode.view.y + draggedNode.view.height / 2 + deltaY,
             };
 
-            const radiusX = updatedDraggedNode.view.width / 2 + collisionThreshold;
-            const radiusY = updatedDraggedNode.view.height / 2 + collisionThreshold;
-
             allNodes.forEach((otherNode) => {
-                if (
-                    draggedNode.id === otherNode.id ||
-                    selectedNodesRef.current.includes(otherNode.id)
-                ) {
-                    return;
-                }
+                if (draggedNode.id === otherNode.id || selectedNodesRef.current.includes(otherNode.id)) return;
 
-                const dx = otherNode.view.x - updatedDraggedNode.view.x;
-                const dy = otherNode.view.y - updatedDraggedNode.view.y;
+                const otherNodeCenter = {
+                    x: otherNode.view.x + otherNode.view.width / 2,
+                    y: otherNode.view.y + otherNode.view.height / 2,
+                };
+
+                const dx = otherNodeCenter.x - updatedDraggedNodeCenter.x;
+                const dy = otherNodeCenter.y - updatedDraggedNodeCenter.y;
                 const distance = Math.sqrt(dx * dx + dy * dy) || 1;
 
-                const isTouching = distance < Math.max(radiusX, radiusY);
+                if (distance < 150) {
+                    const force = repulsionStrength / (distance * distance); // Sterker dichterbij
+                    const repulsionX = (dx / distance) * force;
+                    const repulsionY = (dy / distance) * force;
 
-                if (isTouching) {
-                    const repulsionX = (dx / distance) * repulsionStrength;
-                    const repulsionY = (dy / distance) * repulsionStrength;
+                    // Forceer minimale afstand (harde grens)
+                    const overlapDistance = 150 - distance;
+                    if (overlapDistance > 0) {
+                        const adjustmentX = (dx / distance) * overlapDistance;
+                        const adjustmentY = (dy / distance) * overlapDistance;
 
-                    updateNodePosition(otherNode.id, repulsionX, repulsionY);
-                    updateConnectionPositions(otherNode.id, repulsionX, repulsionY);
+                        updateNodePosition(otherNode.id, adjustmentX, adjustmentY);
+                    } else {
+                        updateNodePosition(otherNode.id, repulsionX, repulsionY);
+                    }
+                } else {
+                    // Aantrekkingskracht terug naar originele positie
+                    const originalPosition = originalPositions.current.get(otherNode.id);
+                    if (originalPosition) {
+                        const returnDx = originalPosition.x - otherNode.view.x;
+                        const returnDy = originalPosition.y - otherNode.view.y;
 
-                    cascadeRepulsion(otherNode, allNodes, new Set([draggedNode.id]));
+                        updateNodePosition(
+                            otherNode.id,
+                            returnDx * attractionStrength,
+                            returnDy * attractionStrength
+                        );
+                    }
                 }
             });
         },
-        [collisionThreshold, getNodes, updateNodePosition, updateConnectionPositions, cascadeRepulsion]
+        [getNodes, updateNodePosition, selectedNodesRef]
     );
 
     const onDragMouseDown = useCallback(() => {
         setIsDragging(true);
+
+        // Sla originele posities op bij drag-start
+        const allNodes = getNodes();
+        allNodes.forEach((node) => {
+            originalPositions.current.set(node.id, { x: node.view.x, y: node.view.y });
+        });
 
         const handleDraggableMouseMove = (moveEvent: MouseEvent) => {
             const deltaX = moveEvent.movementX / zoomFactor;
@@ -126,7 +127,9 @@ const useDraggable = ({ collisionThreshold = 150 }: { collisionThreshold?: numbe
                 updateNodePosition(nodeId, deltaX, deltaY);
                 updateConnectionPositions(nodeId, deltaX, deltaY);
 
-                calculateRepulsion(draggedNode, deltaX, deltaY);
+                if (enableForces) {
+                    applyForces(draggedNode, deltaX, deltaY);
+                }
             });
         };
 
@@ -135,13 +138,16 @@ const useDraggable = ({ collisionThreshold = 150 }: { collisionThreshold?: numbe
 
             document.removeEventListener("mousemove", handleDraggableMouseMove);
             document.removeEventListener("mouseup", handleDraggableMouseUp);
+
+            // Bevries alle node-posities
+            originalPositions.current.clear();
         };
 
         document.addEventListener("mousemove", handleDraggableMouseMove);
         document.addEventListener("mouseup", handleDraggableMouseUp);
-    }, [setIsDragging, zoomFactor, getNodes, updateNodePosition, updateConnectionPositions, calculateRepulsion]);
+    }, [setIsDragging, zoomFactor, getNodes, updateNodePosition, updateConnectionPositions, applyForces, enableForces]);
 
-    return { onDragMouseDown };
+    return { onDragMouseDown, getOvalDimensions };
 };
 
 export default useDraggable;

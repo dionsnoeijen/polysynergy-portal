@@ -1,5 +1,6 @@
 import React from "react";
-import useNodesStore, { NodeVariable } from "@/stores/nodesStore";
+import { NodeVariable } from "@/types/types";
+import useNodesStore from "@/stores/nodesStore";
 import { Input } from "@/components/input";
 import { Field, Fieldset, Label } from "@/components/fieldset";
 

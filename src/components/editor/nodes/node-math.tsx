@@ -1,4 +1,4 @@
-import { Node as NodeType, NodeMathType } from "@/stores/nodesStore";
+import { Node as NodeType, NodeMathType } from "@/types/types";
 import React from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
@@ -11,7 +11,7 @@ type NodeProps = {
 
 const NodeMath: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes, setSelectedNodes } = useEditorStore();
-    const { onDragMouseDown } = useDraggable({ collisionThreshold: 50 });
+    const { onDragMouseDown } = useDraggable();
 
     const handleNodeMouseDown = (e: React.MouseEvent) => {
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");

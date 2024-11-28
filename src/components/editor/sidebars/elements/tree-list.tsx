@@ -45,13 +45,13 @@ export default function TreeList<T extends ListItemWithId>({
             >
                 {items.map((item, index) => (
                     <li
-                        className={`flex items-center border-l bg-zinc-200 dark:bg-zinc-400/10 border-r border-sky-500 dark:border-white/20 justify-between pl-2 dark:hover:bg-sky-950 ${
+                        className={`flex items-center border-l border-r border-sky-500 dark:border-white/20 justify-between pl-2 dark:hover:bg-sky-500 dark:hover:text-white ${
                             activeItem === item.id
-                                ? "bg-zinc-300 dark:bg-slate-800"
-                                : "odd:bg-zinc-200/80 dark:odd:bg-zinc-950/20"
+                                ? "bg-zinc-300 dark:bg-zinc-950/90"
+                                : "odd:bg-zinc-200/80 dark:odd:bg-zinc-950/30"
                         } ${
                             formEditingItem === item.id
-                                ? "bg-sky-400 dark:bg-slate-950"
+                                ? "bg-sky-400 dark:bg-zinc-950"
                                 : ""
                         } transition-colors duration-200 group`}
                         key={index}
@@ -60,7 +60,7 @@ export default function TreeList<T extends ListItemWithId>({
                     </li>
                 ))}
                 {addButton && (
-                    <li className="flex items-center justify-between border-l border-b border-r border-sky-500 dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
+                    <li className="flex items-center justify-between border-l border-b border-r border-sky-500 dark:bg-zinc-900 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
                         {addButton}
                     </li>
                 )}

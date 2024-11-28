@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Connection } from "@/stores/connectionsStore";
-import { Node } from "@/stores/nodesStore";
+import { Node } from "@/types/types";
 import { Group } from "@/stores/groupStore";
 
 type HistoryEntry = {

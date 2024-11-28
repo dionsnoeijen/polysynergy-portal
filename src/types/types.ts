@@ -71,6 +71,5 @@ export type Node = {
     view: NodeView;
     enabled?: boolean;
     driven?: boolean;
-    isOpen?: boolean;
     variables: NodeVariable[];
 };

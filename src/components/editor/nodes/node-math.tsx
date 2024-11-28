@@ -74,16 +74,16 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
 
             {/* Node inhoud */}
             {node.type === NodeMathType.Add && (
-                <Strong className="text-white dark:text-white">+</Strong>
+                <Strong className="text-white text-4xl dark:text-white -mt-1">+</Strong>
             )}
             {node.type === NodeMathType.Subtract && (
-                <Strong className="text-white dark:text-white">-</Strong>
+                <Strong className="text-white text-4xl dark:text-white -mt-1">-</Strong>
             )}
             {node.type === NodeMathType.Multiply && (
-                <Strong className="text-white dark:text-white">×</Strong>
+                <Strong className="text-white text-4xl dark:text-white -mt-1">×</Strong>
             )}
             {node.type === NodeMathType.Divide && (
-                <Strong className="text-white dark:text-white">÷</Strong>
+                <Strong className="text-white text-4xl dark:text-white -mt-1">÷</Strong>
             )}
 
             <Connector

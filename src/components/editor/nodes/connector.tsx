@@ -15,13 +15,13 @@ type ConnectorProps = {
     );
 
 const Connector: React.FC<ConnectorProps> = ({
-                                                 nodeId,
-                                                 handle,
-                                                 in: isIn,
-                                                 out: isOut,
-                                                 className,
-                                                 iconClassName, // Nieuw toegevoegd
-                                             }): React.ReactElement => {
+    nodeId,
+    handle,
+    in: isIn,
+    out: isOut,
+    className,
+    iconClassName,
+}): React.ReactElement => {
     const { handleMouseDown } = useConnectorHandlers(isIn, isOut, nodeId, false);
 
     return (

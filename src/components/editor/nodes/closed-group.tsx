@@ -1,13 +1,58 @@
-import React from "react";
-import useGroupsStore, { Group } from "@/stores/groupStore";
+import React, { useEffect, useRef, useState } from "react";
 import { useEditorStore } from "@/stores/editorStore";
+import { Node, NodeVariable, NodeVariableType } from "@/types/types";
+import useGrouping from "@/hooks/editor/nodes/useGrouping";
+import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
+import { useTheme } from "next-themes";
+import ArrayVariable from "@/components/editor/nodes/rows/array-variable";
+import StringVariable from "@/components/editor/nodes/rows/string-variable";
+import NumberVariable from "@/components/editor/nodes/rows/number-variable";
+import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
+import useNodesStore from "@/stores/nodesStore";
+import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
+import useDraggable from "@/hooks/editor/nodes/useDraggable";
 
-type GroupProps = { group: Group };
+type GroupProps = { node: Node };
 
-const ClosedGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
+const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
+    const ref = useRef<HTMLDivElement>(null);
+    const { onDragMouseDown } = useDraggable();
+    const { selectedNodes, setSelectedNodes, openContextMenu } = useEditorStore();
+    const { openGroup } = useGrouping();
+    const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
+    const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
+    const { variablesForGroup } = useVariablesForGroup(node.id, false);
+    const shouldUpdateConnections = useRef(false);
+    const { updateNodeHeight } = useNodesStore();
 
-    const { openContextMenu, setOpenGroup, setSelectedNodes } = useEditorStore();
-    const { openGroup } = useGroupsStore();
+    const handleNodeMouseDown = (e: React.MouseEvent) => {
+        const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
+        if (isToggleClick) return;
+
+        e.preventDefault();
+
+        if (e.ctrlKey) {
+            if (selectedNodes.includes(node.id)) {
+                setSelectedNodes(selectedNodes.filter((id) => id !== node.id));
+            } else {
+                setSelectedNodes([...selectedNodes, node.id]);
+            }
+            return;
+        }
+
+        if (e.shiftKey) {
+            if (!selectedNodes.includes(node.id)) {
+                setSelectedNodes([...selectedNodes, node.id]);
+            }
+            return;
+        }
+
+        if (!selectedNodes.includes(node.id)) {
+            setSelectedNodes([node.id]);
+        }
+
+        onDragMouseDown();
+    };
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -18,9 +63,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
                 {
                     label: "Open Group",
                     action: () => {
-                        openGroup(group.id);
-                        setOpenGroup(group.id);
-                        setSelectedNodes([]);
+                        openGroup(node.id);
                     },
                 },
                 {
@@ -31,18 +74,134 @@ const ClosedGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
         );
     };
 
+    const handleToggle = (handle: string): (() => void) => {
+        return () => {
+            shouldUpdateConnections.current = true;
+            setIsOpenMap((prev) => ({
+                ...prev,
+                [handle]: !prev[handle],
+            }));
+        };
+    };
+
+    useEffect(() => {
+        if (ref.current) {
+            const actualHeight = ref.current.getBoundingClientRect().height;
+            if (actualHeight !== node.view.height) {
+                updateNodeHeight(node.id, actualHeight);
+            }
+        }
+    }, [node.view.height, isOpenMap, updateNodeHeight, node.id]);
+
+    useEffect(() => {
+        if (shouldUpdateConnections.current) {
+            Object.entries(isOpenMap).forEach(([handle, isOpen]) => {
+                if (isOpen) {
+                    openConnections(handle);
+                } else {
+                    collapseConnections(handle);
+                }
+            });
+            shouldUpdateConnections.current = false;
+        }
+    }, [isOpenMap, openConnections, collapseConnections]);
+
     return (
         <div
-            className="absolute border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500/20 bg-opacity-25"
+            className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ring-2 ${
+                selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
+            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5`}
             data-type="closed-group"
+            data-node-id={node.id}
             onContextMenu={handleContextMenu}
+            onMouseDown={handleNodeMouseDown}
             style={{
-                left: group.view.x,
-                top: group.view.y,
-                width: group.view.width,
-                height: group.view.height,
+                left: node.view.x,
+                top: node.view.y,
+                width: 400,
             }}
         >
+            <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">
+                <h3 className="font-bold truncate text-sky-600 dark:text-white">{node.name}</h3>
+            </div>
+
+            <div className="flex w-full gap-4 pt-2">
+                <div className="flex-1 flex flex-col">
+                    <h4 className="font-bold text-sky-600 pl-2 dark:text-white mb-2">Inputs</h4>
+                    {variablesForGroup?.inVariables && variablesForGroup?.inVariables?.length > 0 ? (
+                        variablesForGroup.inVariables.map(({variable, nodeId}) => {
+                            if (typeof variable === 'undefined') return null;
+                            switch (variable.type) {
+                                case NodeVariableType.Array:
+                                    return (
+                                        <ArrayVariable
+                                            key={variable.handle}
+                                            variable={variable}
+                                            isOpen={isOpenMap[variable.handle] || false}
+                                            onToggle={handleToggle(variable.handle)}
+                                            nodeId={nodeId as string}
+                                            onlyIn={true}
+                                        />
+                                    );
+                                case NodeVariableType.String:
+                                    return (
+                                        <StringVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyIn={true} />
+                                    );
+                                case NodeVariableType.Number:
+                                    return (
+                                        <NumberVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyIn={true} />
+                                    );
+                                case NodeVariableType.Boolean:
+                                    return (
+                                        <BooleanVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyIn={true} />
+                                    );
+                                default:
+                                    return null;
+                            }
+                        })
+                    ) : (
+                        <p className="text-sky-400 dark:text-slate-400">No inputs</p>
+                    )}
+                </div>
+
+                <div className="flex-1 flex flex-col">
+                    <h4 className="font-bold text-sky-600 pr-2 dark:text-white mb-2">Outputs</h4>
+                    {variablesForGroup?.outVariables && variablesForGroup?.outVariables?.length > 0 ? (
+                        variablesForGroup.outVariables.map(({variable, nodeId}) => {
+                            if (typeof variable === 'undefined') return null;
+                            switch (variable.type) {
+                                case NodeVariableType.Array:
+                                    return (
+                                        <ArrayVariable
+                                            key={variable.handle}
+                                            variable={variable}
+                                            isOpen={isOpenMap[variable.handle] || false}
+                                            onToggle={handleToggle(variable.handle)}
+                                            nodeId={nodeId as string}
+                                            onlyOut={true}
+                                        />
+                                    );
+                                case NodeVariableType.String:
+                                    return (
+                                        <StringVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyOut={true} />
+                                    );
+                                case NodeVariableType.Number:
+                                    return (
+                                        <NumberVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyOut={true} />
+                                    );
+                                case NodeVariableType.Boolean:
+                                    return (
+                                        <BooleanVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyOut={true} />
+                                    );
+                                default:
+                                    return null;
+                            }
+                        })
+                    ) : (
+                        <p className="text-sky-400 dark:text-slate-400">No outputs</p>
+                    )}
+                </div>
+            </div>
         </div>
     )
 };

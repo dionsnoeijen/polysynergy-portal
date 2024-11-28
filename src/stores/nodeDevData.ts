@@ -1,7 +1,5 @@
 import { Node, NodeComparisonType, NodeMathType, NodeType, NodeVariableType } from "@/types/types";
 
-console.log(NodeType, NodeComparisonType, NodeMathType);
-
 export const nodeDevData: Node[] = [
     {
         id: "4b14bd4f-d8eb-4c4b-a3ac-163d3357e83e",
@@ -512,7 +510,7 @@ export const nodeDevData: Node[] = [
                 handle: 'name',
                 value: 'John Doe',
                 type: NodeVariableType.String,
-                has_dock: false,
+                has_dock: true,
                 has_in: true,
                 has_out: true
             },

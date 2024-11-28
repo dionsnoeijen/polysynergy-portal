@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import useGroupsStore, { Group } from "@/stores/groupStore";
 import useNodesStore from "@/stores/nodesStore";
 import { useEditorStore } from "@/stores/editorStore";
@@ -13,24 +13,31 @@ import {
 } from "@/components/dialog";
 import { Button } from "@/components/button";
 import { Text } from '@/components/text';
+import useGrouping from "@/hooks/editor/nodes/useGrouping";
+import { toScreenCoordinates } from "@/utils/positionUtils";
 
 type GroupProps = { group: Group };
 
+const margin = 100;
+
 const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
-    const { getNodesByIds } = useNodesStore();
+    const { getNodesByIds, getNode, removeNode } = useNodesStore();
     const {
         findInConnectionsByNodeId,
         findOutConnectionsByNodeId,
         removeConnections,
     } = useConnectionsStore();
-    const { openContextMenu, setSelectedNodes, setOpenGroup } = useEditorStore();
-    const { removeGroup, closeGroup, updateGroup } = useGroupsStore();
+    const { openContextMenu, setSelectedNodes, isDragging, zoomFactor, editorPosition, panPosition } = useEditorStore();
+    const { removeGroup, updateGroup } = useGroupsStore();
     const nodes = getNodesByIds(group.nodes);
+    const closedGroupNode = getNode(group.id);
+
+    const { closeGroup } = useGrouping();
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const bounds = useMemo(() => {
-        const bounds = nodes.reduce(
+        return nodes.reduce(
             (acc, node) => {
                 const nodeRight = node.view.x + node.view.width;
                 const nodeBottom = node.view.y + node.view.height;
@@ -44,34 +51,55 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
             },
             { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
         );
+    // eslint-disable-next-line
+    }, [nodes, closedGroupNode]);
+
+    useEffect(() => {
+        const closedGroupNode = document.querySelector(`[data-node-id="${group.id}"][data-type="closed-group"]`) as HTMLElement;
+        if (!closedGroupNode) return;
+
+        const boundingRect = closedGroupNode.getBoundingClientRect();
+        const x = bounds.minX - (margin + (boundingRect.width / zoomFactor)) - 45;
+        const y = bounds.minY - margin;
+
+        closedGroupNode.style.left = `${x}px`;
+        closedGroupNode.style.top = `${y}px`;
+
+    // eslint-disable-next-line
+    }, [bounds]);
+
+
+    useEffect(() => {
+
+        if (isDragging) return;
 
         const centerX = bounds.minX + (bounds.maxX - bounds.minX) / 2;
         const centerY = bounds.minY + (bounds.maxY - bounds.minY) / 2;
 
-        const groupWidth = 100;
-        const groupHeight = 100;
+        const groupWidth = bounds.maxX - bounds.minX;
+        const groupHeight = bounds.maxY - bounds.minY;
 
-        setTimeout(() => {
-            updateGroup(group.id, {
-                ...group,
-                view: {
-                    x: centerX - groupWidth / 2,
-                    y: centerY - groupHeight / 2,
-                    width: groupWidth,
-                    height: groupHeight,
-                },
-            });
-        }, 0);
-
-        return bounds;
+        updateGroup(group.id, {
+            ...group,
+            view: {
+                x: centerX - groupWidth / 2,
+                y: centerY - groupHeight / 2,
+                width: groupWidth,
+                height: groupHeight,
+            },
+        });
     // eslint-disable-next-line
-    }, [nodes]);
+    }, [isDragging]);
 
     const width = bounds.maxX - bounds.minX;
     const height = bounds.maxY - bounds.minY;
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
+
+        const centerX = bounds.minX + (bounds.maxX - bounds.minX) / 2;
+        const centerY = bounds.minY + (bounds.maxY - bounds.minY) / 2;
+
         openContextMenu(
             e.clientX,
             e.clientY,
@@ -79,9 +107,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
                 {
                     label: "Close Group",
                     action: () => {
-                        closeGroup(group.id);
-                        setOpenGroup(null);
-                        setSelectedNodes([]);
+                        closeGroup(group.id, centerX, centerY);
                     }
                 },
                 {
@@ -102,6 +128,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
 
         removeConnections(connections);
         removeGroup(group.id);
+        removeNode(group.id);
         setIsDialogOpen(false);
     };
 
@@ -116,10 +143,10 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
                 onContextMenu={handleContextMenu}
                 className="absolute border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500/20 bg-opacity-25"
                 style={{
-                    left: bounds.minX - 100,
-                    top: bounds.minY - 100,
-                    width: width + 200,
-                    height: height + 200,
+                    left: bounds.minX - margin,
+                    top: bounds.minY - margin,
+                    width: width + (margin * 2),
+                    height: height + (margin * 2),
                 }}
             >
                 <div className="absolute select-none -top-6 inline-block whitespace-nowrap">

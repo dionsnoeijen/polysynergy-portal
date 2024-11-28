@@ -9,7 +9,7 @@ const attractionStrength = 0.05;
 
 const useDraggable = ({ enableForces = false }: { enableForces?: boolean } = {}) => {
     const { selectedNodes, zoomFactor, setIsDragging } = useEditorStore();
-    const { updateNodePosition, getNodes } = useNodesStore();
+    const { updateNodePositionByDelta, getNodes } = useNodesStore();
     const { findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection } = useConnectionsStore();
 
     const selectedNodesRef = useRef<string[]>(selectedNodes);
@@ -84,9 +84,9 @@ const useDraggable = ({ enableForces = false }: { enableForces?: boolean } = {})
                         const adjustmentX = (dx / distance) * overlapDistance;
                         const adjustmentY = (dy / distance) * overlapDistance;
 
-                        updateNodePosition(otherNode.id, adjustmentX, adjustmentY);
+                        updateNodePositionByDelta(otherNode.id, adjustmentX, adjustmentY);
                     } else {
-                        updateNodePosition(otherNode.id, repulsionX, repulsionY);
+                        updateNodePositionByDelta(otherNode.id, repulsionX, repulsionY);
                     }
                 } else {
                     // Aantrekkingskracht terug naar originele positie
@@ -95,7 +95,7 @@ const useDraggable = ({ enableForces = false }: { enableForces?: boolean } = {})
                         const returnDx = originalPosition.x - otherNode.view.x;
                         const returnDy = originalPosition.y - otherNode.view.y;
 
-                        updateNodePosition(
+                        updateNodePositionByDelta(
                             otherNode.id,
                             returnDx * attractionStrength,
                             returnDy * attractionStrength
@@ -104,7 +104,7 @@ const useDraggable = ({ enableForces = false }: { enableForces?: boolean } = {})
                 }
             });
         },
-        [getNodes, updateNodePosition, selectedNodesRef]
+        [getNodes, updateNodePositionByDelta, selectedNodesRef]
     );
 
     const onDragMouseDown = useCallback(() => {
@@ -124,7 +124,7 @@ const useDraggable = ({ enableForces = false }: { enableForces?: boolean } = {})
                 const draggedNode = getNodes().find((node) => node.id === nodeId);
                 if (!draggedNode) return;
 
-                updateNodePosition(nodeId, deltaX, deltaY);
+                updateNodePositionByDelta(nodeId, deltaX, deltaY);
                 updateConnectionPositions(nodeId, deltaX, deltaY);
 
                 if (enableForces) {
@@ -145,7 +145,7 @@ const useDraggable = ({ enableForces = false }: { enableForces?: boolean } = {})
 
         document.addEventListener("mousemove", handleDraggableMouseMove);
         document.addEventListener("mouseup", handleDraggableMouseUp);
-    }, [setIsDragging, zoomFactor, getNodes, updateNodePosition, updateConnectionPositions, applyForces, enableForces]);
+    }, [setIsDragging, zoomFactor, getNodes, updateNodePositionByDelta, updateConnectionPositions, applyForces, enableForces]);
 
     return { onDragMouseDown, getOvalDimensions };
 };

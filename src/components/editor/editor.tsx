@@ -154,9 +154,9 @@ export default function Editor() {
                     <OpenGroup key={group.id} group={group} />
                 ))}
 
-                {getClosedGroups().map((group) => (
-                    <ClosedGroup key={group.id} group={group} />
-                ))}
+                {/*{getClosedGroups().map((group) => (*/}
+                {/*    <ClosedGroup key={group.id} group={group} />*/}
+                {/*))}*/}
 
                 {nodesToRender.map((node) => (
                     <Node

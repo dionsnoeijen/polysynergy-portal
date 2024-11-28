@@ -1,23 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
 import useResizable from "@/hooks/editor/nodes/useResizable";
-import {
-    CheckCircleIcon,
-    ChevronDownIcon,
-    ChevronLeftIcon,
-    DocumentTextIcon,
-    HashtagIcon,
-    Squares2X2Icon,
-    XCircleIcon
-} from "@heroicons/react/16/solid";
 import Connector from "@/components/editor/nodes/connector";
 import useNodesStore from "@/stores/nodesStore";
-import { Node as NodeType, NodeVariable, NodeVariableType } from "@/types/types";
+import { Node as NodeType, NodeVariableType } from "@/types/types";
 import { Switch } from "@/components/switch";
 import { useEditorStore } from "@/stores/editorStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
 import { useTheme } from 'next-themes';
-import { Text } from "@/components/text";
+import ArrayVariable from "@/components/editor/nodes/rows/array-variable";
+import StringVariable from "@/components/editor/nodes/rows/string-variable";
+import NumberVariable from "@/components/editor/nodes/rows/number-variable";
+import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 
 type NodeProps = {
     node: NodeType;
@@ -25,7 +19,7 @@ type NodeProps = {
 
 const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const { onDragMouseDown, getOvalDimensions } = useDraggable();
+    const { onDragMouseDown } = useDraggable();
     const { size, handleResizeMouseDown } = useResizable(node);
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
     const { selectedNodes, setSelectedNodes, openContextMenu } = useEditorStore();
@@ -63,13 +57,14 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
         onDragMouseDown();
     };
 
-    const handleToggle = (handle: string) => (e: React.MouseEvent) => {
-        e.preventDefault();
-        shouldUpdateConnections.current = true;
-        setIsOpenMap((prev) => ({
-            ...prev,
-            [handle]: !prev[handle],
-        }));
+    const handleToggle = (handle: string): (() => void) => {
+        return () => {
+            shouldUpdateConnections.current = true;
+            setIsOpenMap((prev) => ({
+                ...prev,
+                [handle]: !prev[handle],
+            }));
+        };
     };
 
     useEffect(() => {
@@ -123,27 +118,6 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             data-type="node"
             data-node-id={node.id}
         >
-            {/*<svg*/}
-            {/*    width={`${ovalDimensions.radiusX * 2}`}*/}
-            {/*    height={`${ovalDimensions.radiusY * 2}`}*/}
-            {/*    style={{*/}
-            {/*        position: "absolute",*/}
-            {/*        left: `${-ovalDimensions.radiusX + node.view.width / 2}px`,*/}
-            {/*        top: `${-ovalDimensions.radiusY + node.view.height / 2}px`,*/}
-            {/*        zIndex: -1,*/}
-            {/*    }}*/}
-            {/*>*/}
-            {/*    <ellipse*/}
-            {/*        cx={ovalDimensions.radiusX}*/}
-            {/*        cy={ovalDimensions.radiusY}*/}
-            {/*        rx={ovalDimensions.radiusX}*/}
-            {/*        ry={ovalDimensions.radiusY}*/}
-            {/*        fill="none"*/}
-            {/*        stroke="red"*/}
-            {/*        strokeWidth="2"*/}
-            {/*        strokeDasharray="5,5"*/}
-            {/*    />*/}
-            {/*</svg>*/}
             <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">
                 <Connector in nodeId={node.id} handle={"node"}/>
                 <Switch color={theme === 'light' ? 'sky' : 'dark'}/>
@@ -151,104 +125,34 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             </div>
             <div className="flex flex-col w-full items-start overflow-visible">
                 <div className="w-full">
-                    {node.variables.map((variable) => (
-                        <React.Fragment key={variable.handle}>
-                            <div
-                                className="flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative">
-                                {variable.has_in !== null && variable.has_in && (
-                                    <Connector in nodeId={node.id} handle={variable.handle}/>
-                                )}
-                                <div className="flex items-center truncate">
-                                    <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
-
-                                    {variable.type === NodeVariableType.Array && (
-                                        <Squares2X2Icon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
-                                    )}
-                                    {variable.type === NodeVariableType.String && (
-                                        <DocumentTextIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
-                                    )}
-                                    {variable.type === NodeVariableType.Number && (
-                                        <HashtagIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
-                                    )}
-                                    {variable.type === NodeVariableType.Boolean && (
-                                        variable.value ? (
-                                            <CheckCircleIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
-                                        ) : (
-                                            <XCircleIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
-                                        )
-                                    )}
-
-                                    <Text>
-                                        {(typeof variable.value === 'string' ||
-                                            typeof variable.value === 'number' ||
-                                            typeof variable.value === 'boolean') && (
-                                            <span className="ml-1">
-                                                {variable.value.toString().slice(0, 100)}
-                                                {variable.value.toString().length > 100 ? '...' : ''}
-                                            </span>
-                                        )}
-                                    </Text>
-                                </div>
-                                {variable.type === NodeVariableType.Array && (
-                                    <button
-                                        type="button"
-                                        onClick={handleToggle(variable.handle)}
-                                        data-toggle="true"
-                                    >
-                                        {isOpenMap[variable.handle] ? (
-                                            <ChevronDownIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
-                                        ) : (
-                                            <ChevronLeftIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
-                                        )}
-                                    </button>
-                                )}
-                                {variable.has_out !== null && variable.has_out && (
-                                    <Connector out nodeId={node.id} handle={variable.handle}/>
-                                )}
-                            </div>
-                            {variable.type === NodeVariableType.Array &&
-                                Array.isArray(variable.value) &&
-                                isOpenMap[variable.handle] && (
-                                    <React.Fragment>
-                                        {(variable.value as NodeVariable[]).map(
-                                            (item: NodeVariable, index: number): React.ReactNode => (
-                                                <div
-                                                    key={item.handle}
-                                                    className="flex items-center justify-between pl-5 pr-3 pt-1 relative"
-                                                >
-                                                    {item.has_in !== null && item.has_in && (
-                                                        <Connector
-                                                            in
-                                                            nodeId={node.id}
-                                                            handle={variable.handle + "." + item.handle}
-                                                        />
-                                                    )}
-                                                    <div
-                                                        className="flex items-center truncate text-sky-200 dark:text-white">
-                                                        <span className="text-sky-400 dark:text-slate-400">
-                                                            {index ===
-                                                            ((variable.value as NodeVariable[])?.length ?? 0) - 1
-                                                                ? "└─"
-                                                                : "├─"}
-                                                        </span>{" "}
-                                                        {" " + item.name}:{" "}
-                                                        {item.default_value &&
-                                                            "{default: " + item.default_value + "}"}
-                                                    </div>
-                                                    {item.has_out !== null && item.has_out && (
-                                                        <Connector
-                                                            out
-                                                            nodeId={node.id}
-                                                            handle={variable.handle + "." + item.handle}
-                                                        />
-                                                    )}
-                                                </div>
-                                            )
-                                        )}
-                                    </React.Fragment>
-                                )}
-                        </React.Fragment>
-                    ))}
+                    {node.variables.map((variable) => {
+                        switch (variable.type) {
+                            case NodeVariableType.Array:
+                                return (
+                                    <ArrayVariable
+                                        key={variable.handle}
+                                        variable={variable}
+                                        isOpen={isOpenMap[variable.handle] || false}
+                                        onToggle={handleToggle(variable.handle)}
+                                        nodeId={node.id}
+                                    />
+                                );
+                            case NodeVariableType.String:
+                                return (
+                                    <StringVariable key={variable.handle} variable={variable} nodeId={node.id} />
+                                );
+                            case NodeVariableType.Number:
+                                return (
+                                    <NumberVariable key={variable.handle} variable={variable} nodeId={node.id} />
+                                );
+                            case NodeVariableType.Boolean:
+                                return (
+                                    <BooleanVariable key={variable.handle} variable={variable} nodeId={node.id} />
+                                );
+                            default:
+                                return null;
+                        }
+                    })}
                 </div>
             </div>
             <div

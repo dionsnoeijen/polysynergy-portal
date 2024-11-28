@@ -12,6 +12,20 @@ export const calculateConnectorPosition = (
     return { x, y };
 };
 
+export const toScreenCoordinates = (
+    logicalX: number,
+    logicalY: number,
+    editorPosition: { x: number; y: number },
+    panPosition: { x: number; y: number },
+    zoomFactor: number
+) => {
+    return {
+        x: (logicalX + editorPosition.x + panPosition.x) * zoomFactor,
+        y: (logicalY + editorPosition.y + panPosition.y) * zoomFactor,
+    };
+};
+
+
 export const calculateConnectorPositionByAttributes = (
     nodeId: string,
     handle: string,

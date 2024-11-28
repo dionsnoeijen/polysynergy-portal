@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import clsx from "clsx";
 import Heading from "@/components/editor/sidebars/elements/heading";
 import { NodeVariable, NodeVariableType } from "@/types/types";
@@ -8,10 +8,9 @@ import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-
 import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";
 import VariableTypeArray from "@/components/editor/sidebars/dock/variable-type-array";
 import VariableTypeBoolean from "@/components/editor/sidebars/dock/variable-type-boolean";
-import useGroupsStore from "@/stores/groupStore";
 import GroupName from "@/components/editor/sidebars/dock/group-name";
-import { useConnectionsStore } from "@/stores/connectionsStore";
 import VariableGroup from "@/components/editor/sidebars/dock/variable-group";
+import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -26,37 +25,10 @@ const VariableTypeComponents = {
 
 const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
     const { selectedNodes, openGroup } = useEditorStore();
-    const { getGroupById } = useGroupsStore();
     const nodes = useNodesStore((state) => state.nodes);
-    const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
-    const { findInConnectionsByNodeId, findOutConnectionsByNodeId, connections } = useConnectionsStore();
+    const { group, variablesForGroup } = useVariablesForGroup(openGroup);
 
-    const group = openGroup ? getGroupById(openGroup) : null;
     const node = selectedNodes.length === 1 ? nodes.find((n) => n.id === selectedNodes[0]) : null;
-
-    const variablesForGroup = useMemo(() => {
-        if (!group) return null;
-
-        const outConnections = findInConnectionsByNodeId(group.id);
-        const inConnections = findOutConnectionsByNodeId(group.id);
-
-        const inVariables = inConnections
-            .map((connection) => ({
-                variable: getNodeVariable(connection.targetNodeId as string, connection.targetHandle as string),
-                nodeId: connection.targetNodeId,
-            }))
-            .filter((item) => (item.variable !== undefined && item.variable.has_dock));
-
-        const outVariables = outConnections
-            .map((connection) => ({
-                variable: getNodeVariable(connection.sourceNodeId, connection.sourceHandle),
-                nodeId: connection.sourceNodeId,
-            }))
-            .filter((item) => (item.variable !== undefined && item.variable.has_dock));
-
-        return { inVariables, outVariables };
-    // eslint-disable-next-line
-    }, [group, connections, findInConnectionsByNodeId, findOutConnectionsByNodeId, getNodeVariable]);
 
     return (
         <div

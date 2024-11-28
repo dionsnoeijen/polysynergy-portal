@@ -5,11 +5,13 @@ import { Node, NodeType, NodeVariable } from "@/types/types";
 
 type NodesStore = {
     nodes: Node[];
+    trackedNodeId: string | null;
     addNode: (node: Node) => void;
-    addGroupNode: (node: Node) => void;
+    addGroupNode: (node: Partial<Node>) => void;
     removeNode: (nodeId: string) => void;
     updateNode: (nodeId: string, updatedFields: Partial<Node>) => void;
-    updateNodePosition: (nodeId: string, deltaX: number, deltaY: number) => void;
+    updateNodePosition: (nodeId: string, x: number, y: number) => void;
+    updateNodePositionByDelta: (nodeId: string, deltaX: number, deltaY: number) => void;
     updateNodeWidth: (nodeId: string, width: number) => void;
     updateNodeHeight: (nodeId: string, height: number) => void;
     getNode: (nodeId: string) => Node | undefined;
@@ -17,12 +19,26 @@ type NodesStore = {
     getNodesByIds: (nodeIds: string[]) => Node[];
     getNodeVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: string | number | boolean | string[] | NodeVariable[] | null | undefined) => void;
+    getTrackedNode: () => Node | null;
 };
 
 const nodesByIdsCache = new Map<string, Node[]>();
 
+export const createDefaultNode = (overrides = {}): Node => ({
+    id: uuidv4(),
+    name: "Default Name",
+    type: 'default',
+    node_type: NodeType.Rows,
+    view: {x:0, y:0, width:200, height:200},
+    enabled: true,
+    driven: false,
+    variables: [],
+    ...overrides,
+});
+
 const useNodesStore = create<NodesStore>((set, get) => ({
     nodes: nodeDevData,
+    trackedNodeId: null,
 
     addNode: (node) => {
         nodesByIdsCache.clear();
@@ -31,15 +47,16 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    addGroupNode: (node: Node) => {
+    addGroupNode: (node: Partial<Node>) => {
         nodesByIdsCache.clear();
 
-        node.id = uuidv4();
-        node.isOpen = true;
-        node.type = NodeType.Group;
+        node.type = "group";
+        node.name = "Untitled Group";
+        node.node_type = NodeType.Group;
 
+        const defaultNode = createDefaultNode(node);
         set((state) => ({
-            nodes: [...state.nodes, node],
+            nodes: [...state.nodes, defaultNode],
         }));
     },
 
@@ -59,7 +76,25 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    updateNodePosition: (nodeId, deltaX, deltaY) => {
+    updateNodePosition: (nodeId, x, y) => {
+        nodesByIdsCache.clear();
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        view: {
+                            ...node.view,
+                            x,
+                            y,
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    updateNodePositionByDelta: (nodeId, deltaX, deltaY) => {
         nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
@@ -150,7 +185,14 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     }
                     : node
             ),
+            trackedNodeId: nodeId
         }));
+    },
+
+    getTrackedNode: () => {
+        const { nodes, trackedNodeId } = get();
+        if (!trackedNodeId) return null;
+        return nodes.find((node) => node.id === trackedNodeId) || null;
     },
 }));
 

@@ -4,8 +4,8 @@ import useNodesStore from "@/stores/nodesStore";
 
 const useGrouping = () => {
     const { selectedNodes, setSelectedNodes, setOpenGroup } = useEditorStore();
-    const { addGroup, closeGroup: closeGroupStore, openGroup: openGrounStore } = useGroupsStore();
-    const { addGroupNode, updateNodePosition } = useNodesStore();
+    const { addGroup, closeGroup: closeGroupStore, openGroup: openGroupStore } = useGroupsStore();
+    const { addGroupNode, updateNodePosition, disableAllNodesExceptByIds, enableAllNodes } = useNodesStore();
 
     const createGroup = () => {
         if (selectedNodes.length < 2) return;
@@ -13,6 +13,7 @@ const useGrouping = () => {
         setOpenGroup(groupId);
         addGroupNode({ id: groupId });
         setSelectedNodes([]);
+        disableAllNodesExceptByIds(selectedNodes);
     };
 
     const closeGroup = (groupId: string, x: number, y: number) => {
@@ -20,10 +21,11 @@ const useGrouping = () => {
         setOpenGroup(null);
         updateNodePosition(groupId, x, y);
         setSelectedNodes([]);
+        enableAllNodes();
     };
 
     const openGroup = (groupId: string) => {
-        openGrounStore(groupId);
+        openGroupStore(groupId);
         setOpenGroup(groupId);
         setSelectedNodes([]);
     };

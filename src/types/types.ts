@@ -61,6 +61,7 @@ export type NodeView = {
     y: number;
     width: number;
     height: number;
+    disabled?: boolean;
 };
 
 export type Node = {

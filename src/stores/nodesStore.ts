@@ -5,6 +5,8 @@ import { Node, NodeType, NodeVariable } from "@/types/types";
 
 type NodesStore = {
     nodes: Node[];
+    enableAllNodes: () => void;
+    disableAllNodesExceptByIds: (nodeIds: string[]) => void;
     trackedNodeId: string | null;
     addNode: (node: Node) => void;
     addGroupNode: (node: Partial<Node>) => void;
@@ -39,6 +41,30 @@ export const createDefaultNode = (overrides = {}): Node => ({
 const useNodesStore = create<NodesStore>((set, get) => ({
     nodes: nodeDevData,
     trackedNodeId: null,
+
+    enableAllNodes: () => {
+        set((state) => ({
+            nodes: state.nodes.map((node) => ({
+                ...node,
+                view: {
+                    ...node.view,
+                    disabled: false,
+                },
+            })),
+        }));
+    },
+
+    disableAllNodesExceptByIds: (nodeIds) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) => ({
+                ...node,
+                view: {
+                    ...node.view,
+                    disabled: !nodeIds.includes(node.id),
+                },
+            })),
+        }));
+    },
 
     addNode: (node) => {
         nodesByIdsCache.clear();

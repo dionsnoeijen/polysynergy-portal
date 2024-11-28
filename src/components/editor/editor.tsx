@@ -16,7 +16,6 @@ import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import OpenGroup from "@/components/editor/nodes/open-group";
 import { Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle } from "@/components/dialog";
 import { Button } from "@/components/button";
-import ClosedGroup from "@/components/editor/nodes/closed-group";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -153,10 +152,6 @@ export default function Editor() {
                 {getOpenGroups().map((group) => (
                     <OpenGroup key={group.id} group={group} />
                 ))}
-
-                {/*{getClosedGroups().map((group) => (*/}
-                {/*    <ClosedGroup key={group.id} group={group} />*/}
-                {/*))}*/}
 
                 {nodesToRender.map((node) => (
                     <Node

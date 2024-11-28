@@ -12,6 +12,7 @@ export type Connection = {
     targetHandle?: string;
     collapsed?: boolean;
     hidden?: boolean;
+    disabled?: boolean;
 };
 
 type ConnectionsStore = {

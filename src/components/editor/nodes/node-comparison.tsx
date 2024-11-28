@@ -12,9 +12,11 @@ type NodeProps = {
 
 const NodeComparison: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes, setSelectedNodes } = useEditorStore();
-    const { onDragMouseDown, getOvalDimensions } = useDraggable();
+    const { onDragMouseDown } = useDraggable();
 
     const handleNodeMouseDown = (e: React.MouseEvent) => {
+        if (node.view.disabled) return;
+
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
         if (isToggleClick) return;
 
@@ -47,7 +49,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
         <div
             className={`absolute z-10 select-none flex items-center justify-center ring-2 bg-orange-400/60 backdrop-blur-lg backdrop-opacity-60 rounded-[50%] ${
                 selectedNodes.includes(node.id) ? "ring-white shadow-2xl" : "ring-orange-200/90 shadow-sm"
-            }`}
+            } ${node.view.disabled ? 'opacity-30' : 'cursor-move'}`}
             style={{
                 left: `${node.view.x}px`,
                 top: `${node.view.y}px`,
@@ -58,27 +60,27 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
             data-type="node"
             data-node-id={node.id}
         >
-            <Connector in nodeId={node.id} handle="a" iconClassName="text-white dark:text-white" className="-translate-y-5 ring-orange-200/50 bg-orange-400 dark:bg-orange-400" />
-            <Connector in nodeId={node.id} handle="b" iconClassName="text-white dark:text-white" className="translate-y-2 ring-orange-200/50 bg-orange-400 dark:bg-orange-400" />
+            <Connector in nodeId={node.id} handle="a" iconClassName="text-white dark:text-white" className={`-translate-y-5 ring-orange-200/50 bg-orange-400 dark:bg-orange-400 ${node.view.disabled && 'opacity-0'}`} />
+            <Connector in nodeId={node.id} handle="b" iconClassName="text-white dark:text-white" className={`translate-y-2 ring-orange-200/50 bg-orange-400 dark:bg-orange-400 ${node.view.disabled && 'opacity-0'}`} />
 
             {node.type === NodeComparisonType.LargerThan && (
-                <ChevronRightIcon className={`w-10 h-10`} />
+                <ChevronRightIcon className={`w-10 h-10 ${node.view.disabled && 'opacity-0'}`} />
             )}
 
             {node.type === NodeComparisonType.SmallerThan && (
-                <ChevronRightIcon className={`w-10 h-10 transform rotate-180`} />
+                <ChevronRightIcon className={`w-10 h-10 transform rotate-180 ${node.view.disabled && 'opacity-0'}`} />
             )}
 
             {node.type === NodeComparisonType.Equal && (
-                <Strong className="text-white dark:text-white">==</Strong>
+                <Strong className={`text-white dark:text-white ${node.view.disabled && 'opacity-0'}`}>==</Strong>
             )}
 
             {node.type === NodeComparisonType.NotEqual && (
-                <Strong className="text-white dark:text-white">!==</Strong>
+                <Strong className={`text-white dark:text-white ${node.view.disabled && 'opacity-0'}`}>!==</Strong>
             )}
 
-            <Connector out nodeId={node.id} handle="true" iconClassName="text-white dark:text-white" className="-translate-y-5 ring-orange-200/50 bg-green-400 dark:bg-green-400" />
-            <Connector out nodeId={node.id} handle="false" iconClassName="text-white dark:text-white" className="translate-y-2 ring-orange-200/50 bg-red-400 dark:bg-red-400" />
+            <Connector out nodeId={node.id} handle="true" iconClassName="text-white dark:text-white" className={`-translate-y-5 ring-orange-200/50 bg-green-400 dark:bg-green-400 ${node.view.disabled && 'opacity-0'}`} />
+            <Connector out nodeId={node.id} handle="false" iconClassName="text-white dark:text-white" className={`translate-y-2 ring-orange-200/50 bg-red-400 dark:bg-red-400 ${node.view.disabled && 'opacity-0'}`} />
         </div>
     );
 };

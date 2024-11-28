@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/button";
 import { Text } from '@/components/text';
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
-import { toScreenCoordinates } from "@/utils/positionUtils";
 
 type GroupProps = { group: Group };
 
@@ -27,7 +26,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
         findOutConnectionsByNodeId,
         removeConnections,
     } = useConnectionsStore();
-    const { openContextMenu, setSelectedNodes, isDragging, zoomFactor, editorPosition, panPosition } = useEditorStore();
+    const { openContextMenu, setSelectedNodes, isDragging, zoomFactor } = useEditorStore();
     const { removeGroup, updateGroup } = useGroupsStore();
     const nodes = getNodesByIds(group.nodes);
     const closedGroupNode = getNode(group.id);
@@ -67,7 +66,6 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
 
     // eslint-disable-next-line
     }, [bounds]);
-
 
     useEffect(() => {
 

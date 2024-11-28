@@ -29,6 +29,9 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const { theme } = useTheme();
 
     const handleNodeMouseDown = (e: React.MouseEvent) => {
+
+        if (node.view.disabled) return;
+
         const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
         if (isToggleClick) return;
 
@@ -100,8 +103,6 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
         openContextMenu(e.clientX, e.clientY, contextMenuItems);
     };
 
-    // const ovalDimensions = getOvalDimensions(node);
-
     return (
         <div
             ref={ref}
@@ -109,7 +110,7 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             onMouseDown={handleNodeMouseDown}
             className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ring-2 ${
                 selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
-            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5`}
+            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 ${node.view.disabled ? 'opacity-30' : 'cursor-move'}`}
             style={{
                 width: `${size.width}px`,
                 left: `${node.view.x}px`,
@@ -118,7 +119,7 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             data-type="node"
             data-node-id={node.id}
         >
-            <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">
+            <div className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'opacity-0'}`}>
                 <Connector in nodeId={node.id} handle={"node"}/>
                 <Switch color={theme === 'light' ? 'sky' : 'dark'}/>
                 <h3 className="font-bold truncate ml-2 text-sky-600 dark:text-white">{node.name}</h3>
@@ -135,19 +136,23 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                                         isOpen={isOpenMap[variable.handle] || false}
                                         onToggle={handleToggle(variable.handle)}
                                         nodeId={node.id}
+                                        disabled={node.view.disabled}
                                     />
                                 );
                             case NodeVariableType.String:
                                 return (
-                                    <StringVariable key={variable.handle} variable={variable} nodeId={node.id} />
+                                    <StringVariable key={variable.handle} variable={variable} nodeId={node.id}
+                                                    disabled={node.view.disabled} />
                                 );
                             case NodeVariableType.Number:
                                 return (
-                                    <NumberVariable key={variable.handle} variable={variable} nodeId={node.id} />
+                                    <NumberVariable key={variable.handle} variable={variable} nodeId={node.id}
+                                                    disabled={node.view.disabled} />
                                 );
                             case NodeVariableType.Boolean:
                                 return (
-                                    <BooleanVariable key={variable.handle} variable={variable} nodeId={node.id} />
+                                    <BooleanVariable key={variable.handle} variable={variable} nodeId={node.id}
+                                                     disabled={node.view.disabled} />
                                 );
                             default:
                                 return null;

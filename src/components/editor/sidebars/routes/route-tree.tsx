@@ -10,7 +10,7 @@ import {formatSegments} from "@/utils/formatters";
 export default function RouteTree(): ReactElement {
 
     const { routes, fetchDynamicRoutes } = useDynamicRoutesStore();
-    const {openForm, formEditRecordId, activeRouteId, activeProjectId} = useEditorStore();
+    const { openForm, formEditRecordId, activeRouteId, activeProjectId } = useEditorStore();
 
     useEffect(() => {
         fetchDynamicRoutes();

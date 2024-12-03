@@ -4,10 +4,9 @@ import { useTheme } from "next-themes";
 
 type Props = {
     connection: ConnectionProps;
-    isLiveUpdate?: boolean;
 };
 
-const Connection: React.FC<Props> = ({ connection, isLiveUpdate = false }) => {
+const Connection: React.FC<Props> = ({ connection }) => {
     const pathRef = useRef<SVGPathElement>(null);
     const startDotRef = useRef<HTMLDivElement>(null);
     const endDotRef = useRef<HTMLDivElement>(null);
@@ -27,7 +26,6 @@ const Connection: React.FC<Props> = ({ connection, isLiveUpdate = false }) => {
     const updatePathAndDots = useCallback(() => {
         if (!pathRef.current || !startDotRef.current || !endDotRef.current) return;
 
-        // Update path
         const controlPointX = (connection.startX + connection.endX) / 2;
         const pathData = `M ${connection.startX},${connection.startY} 
                       C ${controlPointX},${connection.startY} 
@@ -35,20 +33,16 @@ const Connection: React.FC<Props> = ({ connection, isLiveUpdate = false }) => {
                         ${connection.endX},${connection.endY}`;
         pathRef.current.setAttribute("d", pathData);
 
-        // Update start dot position
         startDotRef.current.style.left = `${connection.startX - dotRadius}px`;
         startDotRef.current.style.top = `${connection.startY - dotRadius}px`;
 
-        // Update end dot position
         endDotRef.current.style.left = `${connection.endX - dotRadius}px`;
         endDotRef.current.style.top = `${connection.endY - dotRadius}px`;
     }, [connection]);
 
     useEffect(() => {
-        if (!isLiveUpdate) {
-            updatePathAndDots();
-        }
-    }, [connection, isLiveUpdate, updatePathAndDots]);
+        updatePathAndDots();
+    }, [connection, updatePathAndDots]);
 
     return (
         <>
@@ -71,6 +65,7 @@ const Connection: React.FC<Props> = ({ connection, isLiveUpdate = false }) => {
             </svg>
             <div
                 ref={startDotRef}
+                data-connection-start-id={connection.id}
                 style={{
                     position: "absolute",
                     width: `${dotRadius * 2}px`,
@@ -83,6 +78,7 @@ const Connection: React.FC<Props> = ({ connection, isLiveUpdate = false }) => {
             />
             <div
                 ref={endDotRef}
+                data-connection-end-id={connection.id}
                 style={{
                     position: "absolute",
                     width: `${dotRadius * 2}px`,

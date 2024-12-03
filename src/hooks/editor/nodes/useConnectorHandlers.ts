@@ -1,24 +1,20 @@
 import React, { useRef } from "react";
-import { calculateConnectorPosition } from "@/utils/positionUtils";
+import { calculateConnectorPosition, globalToLocal } from "@/utils/positionUtils";
 import { v4 as uuidv4 } from "uuid";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useEditorStore } from "@/stores/editorStore";
+import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 
 export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = false, nodeId: string, isGroup: boolean = false) => {
     const {
         getConnection,
         addConnection,
-        updateConnectionEnd,
         removeConnectionById,
         findInConnectionsByNodeIdAndHandle,
         updateConnection,
     } = useConnectionsStore();
     const {
-        setIsDrawingConnection,
-        setMousePosition,
-        zoomFactor,
-        panPosition,
-        editorPosition,
+        setIsDrawingConnection
     } = useEditorStore();
 
     const startedFromGroup = useRef(false);
@@ -44,24 +40,11 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
             targetHandle: undefined,
         };
         updateConnection(updatedConnection);
-
-        const { x, y } = calculateConnectorPosition(
-            e.currentTarget as HTMLElement,
-            editorPosition,
-            panPosition,
-            zoomFactor
-        );
-
-        setMousePosition({ x, y });
-
         setIsDrawingConnection(existingConnection.id);
 
         const handleMouseMove = (moveEvent: MouseEvent) => {
-            const newX =
-                (moveEvent.clientX - editorPosition.x - panPosition.x) / zoomFactor;
-            const newY =
-                (moveEvent.clientY - editorPosition.y - panPosition.y) / zoomFactor;
-            setMousePosition({ x: newX, y: newY });
+            const position = globalToLocal(moveEvent.clientX, moveEvent.clientY);
+            updateConnectionsDirectly([existingConnection], position);
         };
 
         const handleMouseUp = (upEvent: MouseEvent) => {
@@ -72,30 +55,21 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
                 '[data-type="in"]'
             ) as HTMLElement;
 
+            console.log('target', target);
+
             if (target) {
                 const targetNodeId = !isGroup ?
                     target.getAttribute("data-node-id") as string :
                     target.getAttribute("data-group-id") as string;
                 const targetHandle = target.getAttribute("data-handle") as string;
-
-                const { x, y } = calculateConnectorPosition(
-                    target,
-                    editorPosition,
-                    panPosition,
-                    zoomFactor
-                );
-
-                updateConnectionEnd(
-                    existingConnection.id,
-                    x,
-                    y,
-                    targetNodeId,
-                    targetHandle
-                );
-
                 const connection = getConnection(existingConnection.id);
-                if (!connection) {
-                    removeConnectionById(existingConnection.id);
+                if (connection) {
+                    connection.targetHandle = targetHandle;
+                    connection.targetNodeId = targetNodeId;
+                    const updatedConnection = updateConnectionsDirectly([connection]);
+                    updatedConnection.forEach((upd) => {
+                        updateConnection({ ...connection, ...upd });
+                    });
                 }
             } else {
                 removeConnectionById(existingConnection.id);
@@ -119,15 +93,10 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
 
         const { x, y } = calculateConnectorPosition(
             e.currentTarget as HTMLElement,
-            editorPosition,
-            panPosition,
-            zoomFactor
         );
 
-        setMousePosition({ x, y });
-
         const id = uuidv4();
-        addConnection({
+        const connection = addConnection({
             id,
             startX: x,
             startY: y,
@@ -136,15 +105,13 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
             sourceNodeId: nodeId,
             sourceHandle: handle as string,
         });
-
-        setIsDrawingConnection(id);
+        setIsDrawingConnection(connection.id);
+        const position = globalToLocal(e.clientX, e.clientY);
+        updateConnectionsDirectly([connection], position);
 
         const handleMouseMove = (moveEvent: MouseEvent) => {
-            const newX =
-                (moveEvent.clientX - editorPosition.x - panPosition.x) / zoomFactor;
-            const newY =
-                (moveEvent.clientY - editorPosition.y - panPosition.y) / zoomFactor;
-            setMousePosition({ x: newX, y: newY });
+            const position = globalToLocal(moveEvent.clientX, moveEvent.clientY);
+            updateConnectionsDirectly([connection], position);
         };
 
         const handleMouseUp = (upEvent: MouseEvent) => {
@@ -159,18 +126,16 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
                 const targetNodeId = target.getAttribute("data-node-id") as string ??
                     target.getAttribute("data-group-id") as string;
                 const targetHandle = target.getAttribute("data-handle") as string;
-
-                const { x, y } = calculateConnectorPosition(
-                    target,
-                    editorPosition,
-                    panPosition,
-                    zoomFactor
-                );
-
-                updateConnectionEnd(id, x, y, targetNodeId, targetHandle);
                 const connection = getConnection(id);
-                if (!connection) {
-                    removeConnectionById(id);
+
+                if (connection) {
+                    connection.targetHandle = targetHandle;
+                    connection.targetNodeId = targetNodeId;
+                    console.log('B');
+                    const updatedConnection = updateConnectionsDirectly([connection]);
+                    updatedConnection.forEach((upd) => {
+                        updateConnection({ ...connection, ...upd });
+                    });
                 }
             } else {
                 removeConnectionById(id);

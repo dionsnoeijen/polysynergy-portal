@@ -18,7 +18,7 @@ export type Connection = {
 type ConnectionsStore = {
     connections: Connection[];
     getConnection: (connectionId: string) => Connection | undefined;
-    addConnection: (connection: Connection) => void;
+    addConnection: (connection: Connection) => Connection;
     removeConnectionById: (connectionId: string) => void;
     removeConnection: (connection: Connection) => void;
     removeConnections: (connections: Connection[]) => void;
@@ -50,7 +50,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             .find((c) => c.id === connectionId);
     },
 
-    addConnection: (connection: Connection) => {
+    addConnection: (connection: Connection): Connection => {
         memoizedResults.clear();
         set((state) => ({
             connections: [
@@ -58,6 +58,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
                 { ...connection, hidden: connection.hidden ?? false },
             ],
         }));
+        return connection;
     },
 
     removeConnectionById: (connectionId: string) => {

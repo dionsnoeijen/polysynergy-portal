@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo } from "react";
 import { ChevronRightIcon, EllipsisHorizontalIcon } from "@heroicons/react/16/solid";
 import { InOut } from "@/types/types";
-import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
+import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useConnectorHandlers } from "@/hooks/editor/nodes/useConnectorHandlers";
-import { useUpdateGroupConnectionPositions } from "@/hooks/editor/nodes/updateGroupConnectionPositions";
-import useGroupsStore from "@/stores/groupStore";
-import useNodesStore from "@/stores/nodesStore";
+import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 
 type ConnectorGroupProps = {
     groupId: string;
@@ -21,12 +19,6 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
 }) => {
 
     const { findInConnectionsByNodeId, findOutConnectionsByNodeId } = useConnectionsStore();
-    const { updateGroupConnectionPositions } = useUpdateGroupConnectionPositions({ groupId, isIn });
-    const updateConnection =
-        useConnectionsStore((state) => state.updateConnection);
-    const nodesInGroup = useGroupsStore((state) => state.getNodesInGroup(groupId));
-    const nodes = useNodesStore((state) => state.getNodesByIds(nodesInGroup));
-
     const { handleMouseDown } = useConnectorHandlers(isIn, isOut, groupId, true);
 
     const connections = isOut ?
@@ -41,32 +33,11 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
     }, [connections]);
 
     useEffect(() => {
-        const updateConnectionIndices = () => {
-            connections.forEach((connection: Connection, index) => {
-                if (isIn && connection.sourceHandle !== index.toString()) {
-                    updateConnection({
-                        ...connection,
-                        sourceHandle: index.toString(),
-                    });
-                } else if (!isIn && connection.targetHandle !== index.toString()) {
-                    updateConnection({
-                        ...connection,
-                        targetHandle: index.toString(),
-                    });
-                }
-            });
-        };
-        // updateConnectionIndices();
-        // updateGroupConnectionPositions();
+        setTimeout(() => {
+            updateConnectionsDirectly(connections);
+        }, 0);
     // eslint-disable-next-line
-    }, [connections, updateConnection]);
-
-    useEffect(() => {
-        return () => {
-            //updateGroupConnectionPositions();
-        };
-    // eslint-disable-next-line
-    }, [nodes]);
+    }, [connectorSlots]);
 
     return (
         <div
@@ -82,7 +53,7 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
                     {(isIn || isOut) && (
                         <div
                             onMouseDown={handleMouseDown}
-                            data-type={isIn ? InOut.In : InOut.Out}
+                            data-type={isIn ? InOut.Out : InOut.In}
                             data-group-id={groupId}
                             data-handle={slot.id}
                             className={`w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-sky-500 dark:ring-white bg-white dark:bg-slate-800 cursor-pointer

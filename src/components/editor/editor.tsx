@@ -6,7 +6,6 @@ import Node from "@/components/editor/nodes/node";
 import { useEditorStore } from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import Connection from "@/components/editor/nodes/connection";
-import { Connection as ConnectionProps } from "@/stores/connectionsStore";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useDeselectOnClickOutside } from "@/hooks/editor/nodes/useDeselectOnClickOutside";
 import BoxSelect from "@/components/editor/box-select";
@@ -25,8 +24,6 @@ export default function Editor() {
         setEditorPosition,
         isDragging,
         panPosition,
-        isDrawingConnection,
-        mousePosition,
         selectedNodes
     } = useEditorStore();
     const { nodes, removeNode } = useNodesStore();
@@ -56,17 +53,6 @@ export default function Editor() {
     const handleWheel = (e: React.WheelEvent) => {
         if (!contentRef.current) return;
         handleZoom(e, contentRef.current.getBoundingClientRect());
-    };
-
-    const getAdjustedConnection = (connection: ConnectionProps): ConnectionProps => {
-        if (isDrawingConnection === connection.id) {
-            return {
-                ...connection,
-                endX: mousePosition.x,
-                endY: mousePosition.y,
-            };
-        }
-        return connection;
     };
 
     useKeyBindings({
@@ -165,7 +151,7 @@ export default function Editor() {
                     .map((connection) => (
                         <Connection
                             key={connection.id}
-                            connection={getAdjustedConnection(connection)}
+                            connection={connection}
                         />
                     ))}
             </div>

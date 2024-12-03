@@ -1,7 +1,6 @@
-import { Node } from '@/stores/nodesStore';
+import { Node } from '@/types/types';
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import { calculateConnectorPositionByAttributes } from "@/utils/positionUtils";
-import { useEditorStore } from "@/stores/editorStore";
 import { InOut } from "@/types/types";
 
 const useToggleConnectionCollapse = (node: Node) => {
@@ -12,7 +11,6 @@ const useToggleConnectionCollapse = (node: Node) => {
         findOutConnectionsByNodeIdAndHandle,
         updateConnection
     } = useConnectionsStore();
-    const { editorPosition, panPosition, zoomFactor } = useEditorStore();
 
     const collapseConnections = (handle: string) => {
         const inConnections = findInConnectionsByNodeIdAndHandle(node.id, handle, false);
@@ -21,10 +19,7 @@ const useToggleConnectionCollapse = (node: Node) => {
         const connectorPosition = calculateConnectorPositionByAttributes(
             node.id,
             handle,
-            InOut.In,
-            editorPosition,
-            panPosition,
-            zoomFactor
+            InOut.In
         );
 
         inConnections.forEach((connection) => {
@@ -56,10 +51,7 @@ const useToggleConnectionCollapse = (node: Node) => {
             const endConnectorPosition = calculateConnectorPositionByAttributes(
                 connection.targetNodeId || '',
                 connection.targetHandle || '',
-                InOut.In,
-                editorPosition,
-                panPosition,
-                zoomFactor
+                InOut.In
             );
             updateConnection({
                 ...connection,
@@ -73,10 +65,7 @@ const useToggleConnectionCollapse = (node: Node) => {
             const startConnectorPosition = calculateConnectorPositionByAttributes(
                 connection.sourceNodeId,
                 connection.sourceHandle,
-                InOut.Out,
-                editorPosition,
-                panPosition,
-                zoomFactor
+                InOut.Out
             );
             updateConnection({
                 ...connection,
@@ -101,10 +90,7 @@ const useToggleConnectionCollapse = (node: Node) => {
             const endConnectorPosition = calculateConnectorPositionByAttributes(
                 connection.targetNodeId || '',
                 targetHandle || '',
-                InOut.In,
-                editorPosition,
-                panPosition,
-                zoomFactor
+                InOut.In
             );
 
             updateConnection({
@@ -122,10 +108,7 @@ const useToggleConnectionCollapse = (node: Node) => {
             const startConnectorPosition = calculateConnectorPositionByAttributes(
                 connection.sourceNodeId,
                 sourceHandle || '',
-                InOut.Out,
-                editorPosition,
-                panPosition,
-                zoomFactor
+                InOut.Out
             );
 
             updateConnection({

@@ -7,7 +7,13 @@ export const updateConnectionsDirectly = (
     connections: Array<Connection>,
     mousePosition?: Position
 ) => {
-    const updatedConnections: Array<{ id: string; startX: number; startY: number; endX: number; endY: number }> = [];
+    const updatedConnections: Array<{
+        id: string;
+        startX: number;
+        startY: number;
+        endX: number;
+        endY: number
+    }> = [];
     const { isDrawingConnection } = useEditorStore.getState();
 
     connections.forEach((connection) => {
@@ -41,6 +47,8 @@ export const updateConnectionsDirectly = (
                     InOut.In
                 );
             }
+
+            if (endPosition.x === 0 && endPosition.y === 0) return;
 
             const controlPointX = (startPosition.x + endPosition.x) / 2;
             pathElement.setAttribute(

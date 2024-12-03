@@ -33,6 +33,9 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
 
     const { closeGroup } = useGrouping();
 
+    const inConnections = findInConnectionsByNodeId(group.id);
+    const outConnections = findOutConnectionsByNodeId(group.id);
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const bounds = useMemo(() => {
@@ -51,7 +54,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
             { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
         );
     // eslint-disable-next-line
-    }, [nodes, closedGroupNode]);
+    }, [nodes, closedGroupNode, inConnections, outConnections]);
 
     useEffect(() => {
         const closedGroupNode = document.querySelector(`[data-node-id="${group.id}"][data-type="closed-group"]`) as HTMLElement;
@@ -68,7 +71,6 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
     }, [bounds]);
 
     useEffect(() => {
-
         if (isDragging) return;
 
         const centerX = bounds.minX + (bounds.maxX - bounds.minX) / 2;

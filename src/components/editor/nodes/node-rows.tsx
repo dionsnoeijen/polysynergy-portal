@@ -141,18 +141,30 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                                 );
                             case NodeVariableType.String:
                                 return (
-                                    <StringVariable key={variable.handle} variable={variable} nodeId={node.id}
-                                                    disabled={node.view.disabled} />
+                                    <StringVariable
+                                        key={variable.handle}
+                                        variable={variable}
+                                        nodeId={node.id}
+                                        disabled={node.view.disabled}
+                                    />
                                 );
                             case NodeVariableType.Number:
                                 return (
-                                    <NumberVariable key={variable.handle} variable={variable} nodeId={node.id}
-                                                    disabled={node.view.disabled} />
+                                    <NumberVariable
+                                        key={variable.handle}
+                                        variable={variable}
+                                        nodeId={node.id}
+                                        disabled={node.view.disabled}
+                                    />
                                 );
                             case NodeVariableType.Boolean:
                                 return (
-                                    <BooleanVariable key={variable.handle} variable={variable} nodeId={node.id}
-                                                     disabled={node.view.disabled} />
+                                    <BooleanVariable
+                                        key={variable.handle}
+                                        variable={variable}
+                                        nodeId={node.id}
+                                        disabled={node.view.disabled}
+                                    />
                                 );
                             default:
                                 return null;

@@ -5,7 +5,13 @@ import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 
-export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = false, nodeId: string, isGroup: boolean = false) => {
+export const useConnectorHandlers = (
+    isIn: boolean = false,
+    isOut: boolean = false,
+    nodeId: string,
+    isGroup: boolean = false,
+    disabled: boolean = false
+) => {
     const {
         getConnection,
         addConnection,
@@ -54,8 +60,6 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
             const target = (upEvent.target as HTMLElement).closest(
                 '[data-type="in"]'
             ) as HTMLElement;
-
-            console.log('target', target);
 
             if (target) {
                 const targetNodeId = !isGroup ?
@@ -123,7 +127,8 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
             ) as HTMLElement;
 
             if (target) {
-                const targetNodeId = target.getAttribute("data-node-id") as string ??
+                const targetNodeId =
+                    target.getAttribute("data-node-id") as string ??
                     target.getAttribute("data-group-id") as string;
                 const targetHandle = target.getAttribute("data-handle") as string;
                 const connection = getConnection(id);
@@ -131,7 +136,6 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
                 if (connection) {
                     connection.targetHandle = targetHandle;
                     connection.targetNodeId = targetNodeId;
-                    console.log('B');
                     const updatedConnection = updateConnectionsDirectly([connection]);
                     updatedConnection.forEach((upd) => {
                         updateConnection({ ...connection, ...upd });
@@ -149,6 +153,12 @@ export const useConnectorHandlers = (isIn: boolean = false, isOut: boolean = fal
     };
 
     const handleMouseDown = (e: React.MouseEvent) => {
+
+        const target = (e.target as HTMLElement).closest(
+            '[data-type="in"], [data-type="out"]'
+        ) as HTMLElement;
+        const enabled = target.getAttribute("data-enabled");
+        if (disabled || !enabled) return;
         if ((isIn && !isGroup) || (isOut && isGroup)) {
             handleMouseDownOnInConnector(e);
         } else {

@@ -9,6 +9,7 @@ type ConnectorProps = {
     handle?: string;
     className?: string;
     iconClassName?: string;
+    disabled?: boolean;
 } & (
     | { in: true; out?: never }
     | { out: true; in?: never }
@@ -21,8 +22,9 @@ const Connector: React.FC<ConnectorProps> = ({
     out: isOut,
     className,
     iconClassName,
+    disabled = false,
 }): React.ReactElement => {
-    const { handleMouseDown } = useConnectorHandlers(isIn, isOut, nodeId, false);
+    const { handleMouseDown } = useConnectorHandlers(isIn, isOut, nodeId, false, disabled);
 
     return (
         <div
@@ -30,6 +32,7 @@ const Connector: React.FC<ConnectorProps> = ({
             data-type={isIn ? InOut.In : InOut.Out}
             data-node-id={nodeId}
             data-handle={handle}
+            data-enabled={!disabled}
             className={clsx(
                 "w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-sky-500 dark:ring-white bg-white dark:bg-slate-800 cursor-pointer",
                 isIn ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2",

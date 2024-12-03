@@ -20,18 +20,17 @@ type GroupProps = { group: Group };
 const margin = 100;
 
 const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
-    const { getNodesByIds, getNode, removeNode } = useNodesStore();
+    const { getNodesByIds, getNode } = useNodesStore();
     const {
         findInConnectionsByNodeId,
         findOutConnectionsByNodeId,
-        removeConnections,
     } = useConnectionsStore();
     const { openContextMenu, setSelectedNodes, isDragging, zoomFactor } = useEditorStore();
-    const { removeGroup, updateGroup } = useGroupsStore();
+    const { updateGroup } = useGroupsStore();
     const nodes = getNodesByIds(group.nodes);
     const closedGroupNode = getNode(group.id);
 
-    const { closeGroup } = useGrouping();
+    const { closeGroup, dissolveGroup } = useGrouping();
 
     const inConnections = findInConnectionsByNodeId(group.id);
     const outConnections = findOutConnectionsByNodeId(group.id);
@@ -122,13 +121,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
     };
 
     const handleConfirmDissolve = () => {
-        const inConnections = findInConnectionsByNodeId(group.id);
-        const outConnections = findOutConnectionsByNodeId(group.id);
-        const connections = [...inConnections, ...outConnections];
-
-        removeConnections(connections);
-        removeGroup(group.id);
-        removeNode(group.id);
+        dissolveGroup(group.id);
         setIsDialogOpen(false);
     };
 

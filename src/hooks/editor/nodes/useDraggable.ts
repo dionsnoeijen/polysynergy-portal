@@ -1,122 +1,37 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import { useConnectionsStore } from "@/stores/connectionsStore";
-import { Node } from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
+import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 
-const repulsionStrength = 0.5;
-const attractionStrength = 0.05;
-
-const useDraggable = ({ enableForces = false }: { enableForces?: boolean } = {}) => {
-    const { selectedNodes, zoomFactor, setIsDragging } = useEditorStore();
+const useDraggable = () => {
+    const { selectedNodes, zoomFactor, setIsDragging, openGroup, panPosition, editorPosition } = useEditorStore();
     const { updateNodePositionByDelta, getNodes } = useNodesStore();
-    const { findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection } = useConnectionsStore();
+    const { findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection, getConnection } = useConnectionsStore();
 
+    // Refs voor geselecteerde nodes en lokale posities
     const selectedNodesRef = useRef<string[]>(selectedNodes);
-    const originalPositions = useRef<Map<string, { x: number; y: number }>>(new Map());
-
-    const getOvalDimensions = useCallback((node: Node) => {
-        const margin = 40;
-        return {
-            x: node.view.x + node.view.width / 2, // Midden van de node in x-richting
-            y: node.view.y + node.view.height / 2, // Midden van de node in y-richting
-            radiusX: node.view.width / 2 + margin, // Halve breedte + marge
-            radiusY: node.view.height / 2 + margin, // Halve hoogte + marge
-        };
-    }, []);
+    const localPositions = useRef<Map<string, { startX?: number; startY?: number; endX?: number; endY?: number }>>(new Map());
 
     useEffect(() => {
         selectedNodesRef.current = selectedNodes;
     }, [selectedNodes]);
 
-    const updateConnectionPositions = useCallback(
-        (nodeId: string, deltaX: number, deltaY: number) => {
-            const inConnections = findInConnectionsByNodeId(nodeId);
-            const outConnections = findOutConnectionsByNodeId(nodeId);
-
-            inConnections.forEach((connection) => {
-                updateConnection({
-                    ...connection,
-                    endX: connection.endX + deltaX,
-                    endY: connection.endY + deltaY,
-                });
-            });
-
-            outConnections.forEach((connection) => {
-                updateConnection({
-                    ...connection,
-                    startX: connection.startX + deltaX,
-                    startY: connection.startY + deltaY,
-                });
-            });
-        },
-        [findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection]
+    // Hulpfunctie om connections te updaten met groepsinformatie
+    const getUpdatedConnections = useCallback(
+        (connections: Array<any>, groupConnections: Array<any>, isOut: boolean) =>
+            connections.map((connection) => ({
+                ...connection,
+                handle: isOut ? connection.targetHandle : connection.sourceHandle,
+                node: isOut ? connection.targetNodeId : connection.sourceNodeId,
+                isGroupConnection: groupConnections.some((groupConn) => groupConn.id === connection.id),
+            })),
+        []
     );
 
-    const applyForces = useCallback(
-        (draggedNode: Node, deltaX: number, deltaY: number) => {
-            const allNodes = getNodes();
-            const updatedDraggedNodeCenter = {
-                x: draggedNode.view.x + draggedNode.view.width / 2 + deltaX,
-                y: draggedNode.view.y + draggedNode.view.height / 2 + deltaY,
-            };
-
-            allNodes.forEach((otherNode) => {
-                if (draggedNode.id === otherNode.id || selectedNodesRef.current.includes(otherNode.id)) return;
-
-                const otherNodeCenter = {
-                    x: otherNode.view.x + otherNode.view.width / 2,
-                    y: otherNode.view.y + otherNode.view.height / 2,
-                };
-
-                const dx = otherNodeCenter.x - updatedDraggedNodeCenter.x;
-                const dy = otherNodeCenter.y - updatedDraggedNodeCenter.y;
-                const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-
-                if (distance < 150) {
-                    const force = repulsionStrength / (distance * distance); // Sterker dichterbij
-                    const repulsionX = (dx / distance) * force;
-                    const repulsionY = (dy / distance) * force;
-
-                    // Forceer minimale afstand (harde grens)
-                    const overlapDistance = 150 - distance;
-                    if (overlapDistance > 0) {
-                        const adjustmentX = (dx / distance) * overlapDistance;
-                        const adjustmentY = (dy / distance) * overlapDistance;
-
-                        updateNodePositionByDelta(otherNode.id, adjustmentX, adjustmentY);
-                    } else {
-                        updateNodePositionByDelta(otherNode.id, repulsionX, repulsionY);
-                    }
-                } else {
-                    // Aantrekkingskracht terug naar originele positie
-                    const originalPosition = originalPositions.current.get(otherNode.id);
-                    if (originalPosition) {
-                        const returnDx = originalPosition.x - otherNode.view.x;
-                        const returnDy = originalPosition.y - otherNode.view.y;
-
-                        updateNodePositionByDelta(
-                            otherNode.id,
-                            returnDx * attractionStrength,
-                            returnDy * attractionStrength
-                        );
-                    }
-                }
-            });
-        },
-        [getNodes, updateNodePositionByDelta, selectedNodesRef]
-    );
-
-    const onDragMouseDown = useCallback(() => {
-        setIsDragging(true);
-
-        // Sla originele posities op bij drag-start
-        const allNodes = getNodes();
-        allNodes.forEach((node) => {
-            originalPositions.current.set(node.id, { x: node.view.x, y: node.view.y });
-        });
-
-        const handleDraggableMouseMove = (moveEvent: MouseEvent) => {
+    // Mouse move handler
+    const handleDraggableMouseMove = useCallback(
+        (moveEvent: MouseEvent) => {
             const deltaX = moveEvent.movementX / zoomFactor;
             const deltaY = moveEvent.movementY / zoomFactor;
 
@@ -124,30 +39,132 @@ const useDraggable = ({ enableForces = false }: { enableForces?: boolean } = {})
                 const draggedNode = getNodes().find((node) => node.id === nodeId);
                 if (!draggedNode) return;
 
+                // Update node-positie
                 updateNodePositionByDelta(nodeId, deltaX, deltaY);
-                updateConnectionPositions(nodeId, deltaX, deltaY);
 
-                if (enableForces) {
-                    applyForces(draggedNode, deltaX, deltaY);
-                }
+                // Haal connections op
+                const inConnections = findInConnectionsByNodeId(nodeId);
+                const outConnections = findOutConnectionsByNodeId(nodeId);
+                const groupInConnections = findInConnectionsByNodeId(openGroup as string);
+                const groupOutConnections = findOutConnectionsByNodeId(openGroup as string);
+
+                // Update connections met groepsinformatie
+                const updatedInConnections = getUpdatedConnections(inConnections, groupOutConnections, false);
+                const updatedOutConnections = getUpdatedConnections(outConnections, groupInConnections, true);
+
+                // Pas wijzigingen direct toe
+                updateConnectionsDirectly(
+                    updatedInConnections,
+                    updatedOutConnections,
+                    deltaX,
+                    deltaY,
+                    localPositions.current,
+                    editorPosition,
+                    panPosition,
+                    zoomFactor
+                );
             });
-        };
+        },
+        [
+            zoomFactor,
+            getNodes,
+            updateNodePositionByDelta,
+            findInConnectionsByNodeId,
+            findOutConnectionsByNodeId,
+            openGroup,
+            getUpdatedConnections,
+            editorPosition,
+            panPosition,
+        ]
+    );
 
-        const handleDraggableMouseUp = () => {
-            setIsDragging(false);
+    // Mouse up handler
+    const handleDraggableMouseUp = useCallback(() => {
+        setIsDragging(false);
 
-            document.removeEventListener("mousemove", handleDraggableMouseMove);
-            document.removeEventListener("mouseup", handleDraggableMouseUp);
+        const allUpdatedConnections: Array<{
+            id: string;
+            startX?: number;
+            startY?: number;
+            endX?: number;
+            endY?: number;
+        }> = [];
 
-            // Bevries alle node-posities
-            originalPositions.current.clear();
-        };
+        selectedNodesRef.current.forEach((nodeId) => {
+            const inConnections = findInConnectionsByNodeId(nodeId);
+            const outConnections = findOutConnectionsByNodeId(nodeId);
+            const groupInConnections = findInConnectionsByNodeId(openGroup as string);
+            const groupOutConnections = findOutConnectionsByNodeId(openGroup as string);
+
+            // Update connections met groepsinformatie
+            const updatedInConnections = getUpdatedConnections(inConnections, groupOutConnections, false);
+            const updatedOutConnections = getUpdatedConnections(outConnections, groupInConnections, true);
+
+            // Verzamel updates
+            const updatedConnections = updateConnectionsDirectly(
+                updatedInConnections,
+                updatedOutConnections,
+                0, // Geen delta bij mouse up
+                0,
+                localPositions.current,
+                editorPosition,
+                panPosition,
+                zoomFactor
+            );
+
+            allUpdatedConnections.push(...updatedConnections);
+        });
+
+        // Werk store bij
+        allUpdatedConnections.forEach((connection) => {
+            const existingConnection = getConnection(connection.id);
+            if (existingConnection) {
+                updateConnection({ ...existingConnection, ...connection });
+            }
+        });
+
+        // Opruimen
+        document.removeEventListener("mousemove", handleDraggableMouseMove);
+        document.removeEventListener("mouseup", handleDraggableMouseUp);
+
+        localPositions.current.clear();
+    }, [
+        setIsDragging,
+        handleDraggableMouseMove,
+        findInConnectionsByNodeId,
+        findOutConnectionsByNodeId,
+        getConnection,
+        updateConnection,
+        getUpdatedConnections,
+        editorPosition,
+        panPosition,
+        zoomFactor,
+        openGroup,
+    ]);
+
+    // Mouse down handler
+    const onDragMouseDown = useCallback(() => {
+        setIsDragging(true);
+
+        selectedNodesRef.current.forEach((nodeId) => {
+            const inConnections = findInConnectionsByNodeId(nodeId);
+            const outConnections = findOutConnectionsByNodeId(nodeId);
+
+            inConnections.concat(outConnections).forEach((connection) => {
+                localPositions.current.set(connection.id, {
+                    startX: connection.startX,
+                    startY: connection.startY,
+                    endX: connection.endX,
+                    endY: connection.endY,
+                });
+            });
+        });
 
         document.addEventListener("mousemove", handleDraggableMouseMove);
         document.addEventListener("mouseup", handleDraggableMouseUp);
-    }, [setIsDragging, zoomFactor, getNodes, updateNodePositionByDelta, updateConnectionPositions, applyForces, enableForces]);
+    }, [setIsDragging, handleDraggableMouseMove, handleDraggableMouseUp, findInConnectionsByNodeId, findOutConnectionsByNodeId]);
 
-    return { onDragMouseDown, getOvalDimensions };
+    return { onDragMouseDown };
 };
 
 export default useDraggable;

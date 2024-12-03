@@ -7,8 +7,8 @@ import clsx from "clsx";
 type ConnectorProps = {
     nodeId: string;
     handle?: string;
-    className?: string; // Custom class voor de connector container
-    iconClassName?: string; // Custom class voor de Chevron-icon
+    className?: string;
+    iconClassName?: string;
 } & (
     | { in: true; out?: never }
     | { out: true; in?: never }

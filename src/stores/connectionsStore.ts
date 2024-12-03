@@ -60,7 +60,6 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         }));
     },
 
-
     removeConnectionById: (connectionId: string) => {
         memoizedResults.clear();
         set((state) => ({
@@ -87,8 +86,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         set((state) => ({
             connections: state.connections.map((c) => {
                 if (c.id === connection.id) {
-                    const hasChanged = JSON.stringify(c) !== JSON.stringify(connection);
-                    return hasChanged ? connection : c;
+                    return { ...c, ...connection };
                 }
                 return c;
             }),

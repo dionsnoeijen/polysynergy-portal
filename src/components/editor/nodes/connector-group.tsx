@@ -56,14 +56,14 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
                 }
             });
         };
-        updateConnectionIndices();
-        updateGroupConnectionPositions();
+        // updateConnectionIndices();
+        // updateGroupConnectionPositions();
     // eslint-disable-next-line
     }, [connections, updateConnection]);
 
     useEffect(() => {
         return () => {
-            updateGroupConnectionPositions();
+            //updateGroupConnectionPositions();
         };
     // eslint-disable-next-line
     }, [nodes]);

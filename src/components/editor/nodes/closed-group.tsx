@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useEditorStore } from "@/stores/editorStore";
-import { Node, NodeVariable, NodeVariableType } from "@/types/types";
+import { Node, NodeVariableType } from "@/types/types";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
-import { useTheme } from "next-themes";
 import ArrayVariable from "@/components/editor/nodes/rows/array-variable";
 import StringVariable from "@/components/editor/nodes/rows/string-variable";
 import NumberVariable from "@/components/editor/nodes/rows/number-variable";
@@ -118,7 +117,6 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
             style={{
                 left: node.view.x,
                 top: node.view.y,
-                width: 400,
             }}
         >
             <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">

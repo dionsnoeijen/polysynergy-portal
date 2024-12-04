@@ -13,8 +13,8 @@ import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 import useGroupsStore from "@/stores/groupStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import OpenGroup from "@/components/editor/nodes/open-group";
-import { Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle } from "@/components/dialog";
-import { Button } from "@/components/button";
+import DeleteDialog from "@/components/editor/nodes/delete-dialog";
+import { useDeleteNode } from "@/hooks/editor/nodes/useDeleteNode";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -26,10 +26,11 @@ export default function Editor() {
         panPosition,
         selectedNodes
     } = useEditorStore();
-    const { nodes, removeNode } = useNodesStore();
-    const { connections, removeConnections, findInConnectionsByNodeId, findOutConnectionsByNodeId } = useConnectionsStore();
+    const { nodes } = useNodesStore();
+    const { connections } = useConnectionsStore();
     const { getOpenGroups, getClosedGroups } = useGroupsStore();
 
+    const { handleDeleteSelectedNodes } = useDeleteNode();
     const { handleZoom } = useZoom();
     const { handlePanMouseDown, handleMouseMove, handleMouseUp } = usePan();
     const { handleEditorMouseDown } = useDeselectOnClickOutside();
@@ -101,13 +102,7 @@ export default function Editor() {
     );
 
     const handleConfirmDelete = () => {
-        selectedNodes.map((nodeId) => {
-            const inConnections = findInConnectionsByNodeId(nodeId);
-            const outConnections = findOutConnectionsByNodeId(nodeId);
-            const connections = [...inConnections, ...outConnections];
-            removeConnections(connections);
-            removeNode(nodeId);
-        });
+        handleDeleteSelectedNodes(selectedNodes);
         setIsDeleteNodesDialogOpen(false);
     };
 
@@ -143,6 +138,7 @@ export default function Editor() {
                     <Node
                         key={node.id}
                         node={node}
+                        setIsDeleteNodesDialogOpen={setIsDeleteNodesDialogOpen}
                     />
                 ))}
 
@@ -158,23 +154,12 @@ export default function Editor() {
 
             <BoxSelect />
 
-            <Dialog size="md" className={'rounded-sm'} open={isDeleteNodesDialogOpen} onClose={handleCancelDelete}>
-                <DialogTitle>Confirm Delete Node{selectedNodes.length > 1 ? 's' : ''}</DialogTitle>
-                <DialogDescription>
-                    Are you sure you want to delete the node{selectedNodes.length > 1 ? 's' : ''}?
-                </DialogDescription>
-                <DialogBody>
-                    {/* Additional content can go here if needed */}
-                </DialogBody>
-                <DialogActions>
-                    <Button outline onClick={handleCancelDelete}>
-                        Cancel
-                    </Button>
-                    <Button color="red" onClick={handleConfirmDelete}>
-                        Delete
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <DeleteDialog
+                isOpen={isDeleteNodesDialogOpen}
+                onConfirm={handleConfirmDelete}
+                onCancel={handleCancelDelete}
+                itemCount={selectedNodes.length}
+            />
         </div>
     );
 }

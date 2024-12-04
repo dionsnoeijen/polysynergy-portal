@@ -26,9 +26,13 @@ const VariableTypeComponents = {
 const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
     const { selectedNodes, openGroup } = useEditorStore();
     const nodes = useNodesStore((state) => state.nodes);
-    const { group, variablesForGroup } = useVariablesForGroup(openGroup);
 
-    const node = selectedNodes.length === 1 ? nodes.find((n) => n.id === selectedNodes[0]) : null;
+    const node = selectedNodes.length === 1 ?
+        nodes.find((n) => n.id === selectedNodes[0]) : null;
+
+    const { group, variablesForGroup } = useVariablesForGroup(
+        openGroup || (node?.id ?? null)
+    );
 
     return (
         <div

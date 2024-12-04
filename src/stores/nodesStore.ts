@@ -7,6 +7,7 @@ type NodesStore = {
     nodes: Node[];
     enableAllNodes: () => void;
     disableAllNodesExceptByIds: (nodeIds: string[]) => void;
+    disableNode: (nodeId: string) => void;
     trackedNodeId: string | null;
     addNode: (node: Node) => void;
     addGroupNode: (node: Partial<Node>) => void;
@@ -63,6 +64,21 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     disabled: !nodeIds.includes(node.id),
                 },
             })),
+        }));
+    },
+
+    disableNode: (nodeId) => {
+        nodesByIdsCache.clear();
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId ? {
+                    ...node,
+                    view: {
+                        ...node.view,
+                        disabled: true,
+                    },
+                } : node
+            ),
         }));
     },
 

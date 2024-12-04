@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import useDraggable from "@/hooks/editor/nodes/useDraggable";
 import useResizable from "@/hooks/editor/nodes/useResizable";
 import Connector from "@/components/editor/nodes/connector";
 import useNodesStore from "@/stores/nodesStore";
@@ -12,53 +11,27 @@ import ArrayVariable from "@/components/editor/nodes/rows/array-variable";
 import StringVariable from "@/components/editor/nodes/rows/string-variable";
 import NumberVariable from "@/components/editor/nodes/rows/number-variable";
 import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
+import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
+import useGroupsStore from "@/stores/groupStore";
+import useGrouping from "@/hooks/editor/nodes/useGrouping";
 
 type NodeProps = {
     node: NodeType;
+    setIsDeleteNodesDialogOpen?: (isOpen: boolean) => void;
 };
 
-const NodeRows: React.FC<NodeProps> = ({ node }) => {
+const NodeRows: React.FC<NodeProps> = ({ node, setIsDeleteNodesDialogOpen }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const { onDragMouseDown } = useDraggable();
     const { size, handleResizeMouseDown } = useResizable(node);
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
-    const { selectedNodes, setSelectedNodes, openContextMenu } = useEditorStore();
+    const { selectedNodes, openContextMenu } = useEditorStore();
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
     const shouldUpdateConnections = useRef(false);
     const { updateNodeHeight } = useNodesStore();
     const { theme } = useTheme();
-
-    const handleNodeMouseDown = (e: React.MouseEvent) => {
-
-        if (node.view.disabled) return;
-
-        const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
-        if (isToggleClick) return;
-
-        e.preventDefault();
-
-        if (e.ctrlKey) {
-            if (selectedNodes.includes(node.id)) {
-                setSelectedNodes(selectedNodes.filter((id) => id !== node.id));
-            } else {
-                setSelectedNodes([...selectedNodes, node.id]);
-            }
-            return;
-        }
-
-        if (e.shiftKey) {
-            if (!selectedNodes.includes(node.id)) {
-                setSelectedNodes([...selectedNodes, node.id]);
-            }
-            return;
-        }
-
-        if (!selectedNodes.includes(node.id)) {
-            setSelectedNodes([node.id]);
-        }
-
-        onDragMouseDown();
-    };
+    const { handleNodeMouseDown } = useNodeMouseDown(node);
+    const { isNodeInGroup } = useGroupsStore();
+    const { removeNodeFromGroup } = useGrouping();
 
     const handleToggle = (handle: string): (() => void) => {
         return () => {
@@ -94,11 +67,22 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
+        if (selectedNodes.length > 1) return;
 
-        const contextMenuItems = [
-            { label: "Node-specific option", action: () => console.log("Node action") },
-            { label: "Delete Node", action: () => console.log("Delete Node") }
-        ];
+        const contextMenuItems = [];
+
+        const groupId = isNodeInGroup(node.id);
+        if (groupId) {
+            contextMenuItems.push({
+                label: "Remove from group",
+                action: () => removeNodeFromGroup(groupId, node.id)
+            });
+        }
+
+        contextMenuItems.push({
+            label: "Delete",
+            action: () => setIsDeleteNodesDialogOpen?.(true)
+        });
 
         openContextMenu(e.clientX, e.clientY, contextMenuItems);
     };

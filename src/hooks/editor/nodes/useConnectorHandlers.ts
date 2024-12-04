@@ -103,9 +103,6 @@ export const useConnectorHandlers = (
         const groupId = (e.currentTarget as HTMLElement)
             .getAttribute("data-group-id") as string;
 
-        const dataType = (e.currentTarget as HTMLElement)
-            .getAttribute("data-type") as InOut;
-
         if (!isGroup && isIn) return;
 
         startedFromGroup.current = isGroup;

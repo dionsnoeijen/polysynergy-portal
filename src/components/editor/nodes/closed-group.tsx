@@ -9,49 +9,20 @@ import NumberVariable from "@/components/editor/nodes/rows/number-variable";
 import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodesStore from "@/stores/nodesStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
-import useDraggable from "@/hooks/editor/nodes/useDraggable";
+import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 
 type GroupProps = { node: Node };
 
 const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
     const ref = useRef<HTMLDivElement>(null);
-    const { onDragMouseDown } = useDraggable();
-    const { selectedNodes, setSelectedNodes, openContextMenu } = useEditorStore();
+    const { selectedNodes, openContextMenu } = useEditorStore();
     const { openGroup } = useGrouping();
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
     const { variablesForGroup } = useVariablesForGroup(node.id, false);
     const shouldUpdateConnections = useRef(false);
     const { updateNodeHeight } = useNodesStore();
-
-    const handleNodeMouseDown = (e: React.MouseEvent) => {
-        const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
-        if (isToggleClick) return;
-
-        e.preventDefault();
-
-        if (e.ctrlKey) {
-            if (selectedNodes.includes(node.id)) {
-                setSelectedNodes(selectedNodes.filter((id) => id !== node.id));
-            } else {
-                setSelectedNodes([...selectedNodes, node.id]);
-            }
-            return;
-        }
-
-        if (e.shiftKey) {
-            if (!selectedNodes.includes(node.id)) {
-                setSelectedNodes([...selectedNodes, node.id]);
-            }
-            return;
-        }
-
-        if (!selectedNodes.includes(node.id)) {
-            setSelectedNodes([node.id]);
-        }
-
-        onDragMouseDown();
-    };
+    const { handleNodeMouseDown } = useNodeMouseDown(node);
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();

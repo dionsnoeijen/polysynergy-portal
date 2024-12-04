@@ -11,6 +11,7 @@ const useGrouping = () => {
         closeGroup: closeGroupStore,
         openGroup: openGroupStore,
         removeGroup: removeGroupStore,
+        removeNodeFromGroup: removeNodeFromGroupStore,
         getNodesInGroup,
         getGroupById
     } = useGroupsStore();
@@ -21,7 +22,8 @@ const useGrouping = () => {
         disableAllNodesExceptByIds,
         enableAllNodes,
         removeNode,
-        getNode
+        getNode,
+        disableNode
     } = useNodesStore();
     const { findInConnectionsByNodeId, findOutConnectionsByNodeId, removeConnections } = useConnectionsStore();
 
@@ -87,7 +89,28 @@ const useGrouping = () => {
         enableAllNodes();
     };
 
-    return { createGroup, closeGroup, openGroup, dissolveGroup };
+    const removeNodeFromGroup = (groupId: string, nodeId: string) => {
+        const inConnections = findInConnectionsByNodeId(nodeId);
+        const outConnections = findOutConnectionsByNodeId(nodeId);
+        const connections = [...inConnections, ...outConnections];
+        removeConnections(connections);
+        removeNodeFromGroupStore(groupId, nodeId);
+        disableNode(nodeId);
+
+        const group = getGroupById(groupId);
+        if (!group) return;
+        if (group?.nodes?.length === 1) {
+            dissolveGroup(groupId);
+        }
+    };
+
+    return {
+        createGroup,
+        closeGroup,
+        openGroup,
+        dissolveGroup,
+        removeNodeFromGroup
+    };
 };
 
 export default useGrouping;

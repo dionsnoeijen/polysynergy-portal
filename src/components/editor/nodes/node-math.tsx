@@ -2,47 +2,14 @@ import { Node as NodeType, NodeMathType } from "@/types/types";
 import React from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
-import useDraggable from "@/hooks/editor/nodes/useDraggable";
 import { Strong } from "@/components/text";
+import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 
-type NodeProps = {
-    node: NodeType;
-};
+type NodeProps = { node: NodeType; };
 
 const NodeMath: React.FC<NodeProps> = ({ node }) => {
-    const { selectedNodes, setSelectedNodes } = useEditorStore();
-    const { onDragMouseDown } = useDraggable();
-
-    const handleNodeMouseDown = (e: React.MouseEvent) => {
-        if (node.view.disabled) return;
-
-        const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
-        if (isToggleClick) return;
-
-        e.preventDefault();
-
-        if (e.ctrlKey) {
-            if (selectedNodes.includes(node.id)) {
-                setSelectedNodes(selectedNodes.filter((id) => id !== node.id));
-            } else {
-                setSelectedNodes([...selectedNodes, node.id]);
-            }
-            return;
-        }
-
-        if (e.shiftKey) {
-            if (!selectedNodes.includes(node.id)) {
-                setSelectedNodes([...selectedNodes, node.id]);
-            }
-            return;
-        }
-
-        if (!selectedNodes.includes(node.id)) {
-            setSelectedNodes([node.id]);
-        }
-
-        onDragMouseDown();
-    };
+    const { selectedNodes } = useEditorStore();
+    const { handleNodeMouseDown } = useNodeMouseDown(node);
 
     return (
         <div
@@ -76,7 +43,6 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
                 disabled={node.view.disabled}
             />
 
-            {/* Node inhoud */}
             {node.type === NodeMathType.Add && (
                 <Strong className={`text-white text-4xl dark:text-white -mt-1 ${node.view.disabled && 'select-none opacity-0'}`}>+</Strong>
             )}

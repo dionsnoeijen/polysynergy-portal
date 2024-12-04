@@ -16,6 +16,7 @@ export type Group = {
 type GroupsStore = {
     groups: Record<string, Group>;
     openGroup: (groupId: string) => void;
+    isNodeInGroup: (nodeId: string) => string | null;
     closeGroup: (groupId: string) => void;
     addGroup: (group: Partial<Group>) => string;
     removeGroup: (groupId: string) => void;
@@ -77,6 +78,16 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
             }
         };
     }),
+
+    isNodeInGroup: (nodeId) => {
+        const groups = get().groups;
+        for (const groupId in groups) {
+            if (groups[groupId].nodes.includes(nodeId)) {
+                return groupId;
+            }
+        }
+        return null;
+    },
 
     closeGroup: (groupId) => set((state) => {
         const group = state.groups[groupId];

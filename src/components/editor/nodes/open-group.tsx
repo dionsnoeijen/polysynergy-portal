@@ -156,7 +156,6 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
                     Are you sure you want to dissolve this group? This action cannot be undone.
                 </DialogDescription>
                 <DialogBody>
-                    {/* Additional content can go here if needed */}
                 </DialogBody>
                 <DialogActions>
                     <Button outline onClick={handleCancelDissolve}>

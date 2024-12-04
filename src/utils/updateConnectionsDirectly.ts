@@ -42,7 +42,7 @@ export const updateConnectionsDirectly = (
                 endPosition = mousePosition;
             } else if (connection.targetNodeId && connection.targetHandle) {
                 endPosition = calculateConnectorPositionByAttributes(
-                    connection.targetNodeId,
+                    connection.targetGroupId ?? connection.targetNodeId,
                     connection.targetHandle,
                     InOut.In
                 );

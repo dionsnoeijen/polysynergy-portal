@@ -12,12 +12,10 @@ import {
     DialogActions,
 } from "@/components/dialog";
 import { Button } from "@/components/button";
-import { Text } from '@/components/text';
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
+import { MARGIN } from "@/utils/constants";
 
 type GroupProps = { group: Group };
-
-const margin = 100;
 
 const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
     const { getNodesByIds, getNode } = useNodesStore();
@@ -60,8 +58,8 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
         if (!closedGroupNode) return;
 
         const boundingRect = closedGroupNode.getBoundingClientRect();
-        const x = bounds.minX - (margin + (boundingRect.width / zoomFactor)) - 45;
-        const y = bounds.minY - margin;
+        const x = bounds.minX - (MARGIN + (boundingRect.width / zoomFactor)) - 45;
+        const y = bounds.minY - MARGIN;
 
         closedGroupNode.style.left = `${x}px`;
         closedGroupNode.style.top = `${y}px`;
@@ -96,8 +94,14 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
 
-        const centerX = bounds.minX + (bounds.maxX - bounds.minX) / 2;
-        const centerY = bounds.minY + (bounds.maxY - bounds.minY) / 2;
+        const closedGroupNode = getNode(group.id);
+        if (!closedGroupNode) return;
+
+        const closedGroupNodeWidth = closedGroupNode.view.width / 2;
+        const closedGroupNodeHeight = closedGroupNode.view.height / 2;
+
+        const centerX = (bounds.minX + (bounds.maxX - bounds.minX) / 2) - closedGroupNodeWidth;
+        const centerY = (bounds.minY + (bounds.maxY - bounds.minY) / 2) - closedGroupNodeHeight;
 
         openContextMenu(
             e.clientX,
@@ -136,15 +140,12 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
                 onContextMenu={handleContextMenu}
                 className="absolute border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500/20 bg-opacity-25"
                 style={{
-                    left: bounds.minX - margin,
-                    top: bounds.minY - margin,
-                    width: width + (margin * 2),
-                    height: height + (margin * 2),
+                    left: bounds.minX - MARGIN,
+                    top: bounds.minY - MARGIN,
+                    width: width + (MARGIN * 2),
+                    height: height + (MARGIN * 2),
                 }}
             >
-                <div className="absolute select-none -top-6 inline-block whitespace-nowrap">
-                    <Text>{group.name}</Text>
-                </div>
                 <ConnectorGroup in groupId={group.id}/>
                 <ConnectorGroup out groupId={group.id}/>
             </div>

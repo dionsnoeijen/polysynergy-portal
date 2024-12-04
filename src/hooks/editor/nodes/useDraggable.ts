@@ -19,8 +19,8 @@ const useDraggable = () => {
         const allConnections: Array<Connection> = [];
 
         selectedNodesRef.current.forEach((nodeId) => {
-            const inConnections = findInConnectionsByNodeId(nodeId);
-            const outConnections = findOutConnectionsByNodeId(nodeId);
+            const inConnections = findInConnectionsByNodeId(nodeId, true);
+            const outConnections = findOutConnectionsByNodeId(nodeId, true);
 
             allConnections.push(...inConnections, ...outConnections);
         });
@@ -53,6 +53,7 @@ const useDraggable = () => {
                 );
             });
         },
+        // eslint-disable-next-line
         [zoomFactor, getNodes, updateNodePositionByDelta, collectConnections, editorPosition, panPosition]
     );
 

@@ -109,7 +109,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
         <div
             className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ring-2 ${
                 selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
-            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5`}
+            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5  ${node.view.disabled ? 'select-none opacity-30' : 'cursor-move'}`}
             data-type="closed-group"
             data-node-id={node.id}
             onContextMenu={handleContextMenu}
@@ -139,19 +139,42 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             onToggle={handleToggle(variable.handle)}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
                                         />
                                     );
                                 case NodeVariableType.String:
                                     return (
-                                        <StringVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyIn={true} />
+                                        <StringVariable
+                                            key={variable.handle}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyIn={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
                                     );
                                 case NodeVariableType.Number:
                                     return (
-                                        <NumberVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyIn={true} />
+                                        <NumberVariable
+                                            key={variable.handle}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyIn={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
                                     );
                                 case NodeVariableType.Boolean:
                                     return (
-                                        <BooleanVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyIn={true} />
+                                        <BooleanVariable
+                                            key={variable.handle}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyIn={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
                                     );
                                 default:
                                     return null;
@@ -177,19 +200,42 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             onToggle={handleToggle(variable.handle)}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
                                         />
                                     );
                                 case NodeVariableType.String:
                                     return (
-                                        <StringVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyOut={true} />
+                                        <StringVariable
+                                            key={variable.handle}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyOut={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
                                     );
                                 case NodeVariableType.Number:
                                     return (
-                                        <NumberVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyOut={true} />
+                                        <NumberVariable
+                                            key={variable.handle}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyOut={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
                                     );
                                 case NodeVariableType.Boolean:
                                     return (
-                                        <BooleanVariable key={variable.handle} variable={variable} nodeId={nodeId as string} onlyOut={true} />
+                                        <BooleanVariable
+                                            key={variable.handle}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyOut={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
                                     );
                                 default:
                                     return null;

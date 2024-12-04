@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { ConnectionType } from "@/types/types";
 
 export type Connection = {
     id: string;
@@ -13,6 +14,9 @@ export type Connection = {
     collapsed?: boolean;
     hidden?: boolean;
     disabled?: boolean;
+    targetGroupId?: string;
+    sourceGroupId?: string;
+    connectionType?: ConnectionType;
 };
 
 type ConnectionsStore = {
@@ -23,8 +27,8 @@ type ConnectionsStore = {
     removeConnection: (connection: Connection) => void;
     removeConnections: (connections: Connection[]) => void;
     updateConnection: (connection: Connection) => void;
-    findInConnectionsByNodeId: (nodeId: string) => Connection[];
-    findOutConnectionsByNodeId: (nodeId: string) => Connection[];
+    findInConnectionsByNodeId: (nodeId: string, includeGroupId?: boolean) => Connection[];
+    findOutConnectionsByNodeId: (nodeId: string, includeGroupId?: boolean) => Connection[];
     findInConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact?: boolean) => Connection[];
     findOutConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact?: boolean) => Connection[];
     hideConnectionsByIds: (connectionIds: string[]) => void;
@@ -55,7 +59,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         set((state) => ({
             connections: [
                 ...state.connections,
-                { ...connection, hidden: connection.hidden ?? false },
+                { ...connection, hidden: connection.hidden ?? false, connectionType: connection.connectionType ?? ConnectionType.NodeToNode },
             ],
         }));
         return connection;
@@ -94,37 +98,72 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         }));
     },
 
-    findInConnectionsByNodeId: (nodeId: string): Connection[] => {
-        const key = `in-${nodeId}`;
+    findInConnectionsByNodeId: (
+        nodeId: string,
+        includeGroupId: boolean = false
+    ): Connection[] => {
+        const key = `in-${nodeId}-${includeGroupId}`;
         if (!memoizedResults.has(key)) {
             const result = get()
                 .connections
-                .filter((c) => c.targetNodeId === nodeId);
+                .filter((c) => {
+                    if (!includeGroupId) {
+                        return c.targetNodeId === nodeId
+                    }
+                    return c.targetNodeId === nodeId || c.targetGroupId === nodeId;
+                });
             memoizedResults.set(key, result);
         }
         return memoizedResults.get(key);
     },
 
-    findOutConnectionsByNodeId: (nodeId: string): Connection[] => {
-        const key = `out-${nodeId}`;
+    findOutConnectionsByNodeId: (
+        nodeId: string,
+        includeGroupId: boolean = false
+    ): Connection[] => {
+        const key = `out-${nodeId}-${includeGroupId}`;
         if (!memoizedResults.has(key)) {
             const result = get()
                 .connections
-                .filter((c) => c.sourceNodeId === nodeId);
+                .filter((c) => {
+                    if (!includeGroupId) {
+                        return c.sourceNodeId === nodeId;
+                    }
+                    return c.sourceNodeId === nodeId || c.sourceGroupId === nodeId;
+                });
             memoizedResults.set(key, result);
         }
         return memoizedResults.get(key);
     },
 
-    findInConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact: boolean = true): Connection[] => {
+    findInConnectionsByNodeIdAndHandle: (
+        nodeId: string,
+        handle: string,
+        matchExact: boolean = true
+    ): Connection[] => {
         return get()
             .connections
-            .filter((c) =>
-                c.targetNodeId === nodeId &&
-                (matchExact
-                    ? c.targetHandle === handle
-                    : c.targetHandle?.startsWith(handle))
-            );
+            .filter((c) => {
+                if (c.connectionType !== ConnectionType.NodeToNode) return;
+
+                // Als de connectie een targetGroupId heeft, alleen daarop matchen
+                if (c.targetGroupId) {
+                    return (
+                        c.targetGroupId === nodeId &&
+                        (matchExact
+                            ? c.targetHandle === handle
+                            : c.targetHandle?.startsWith(handle))
+                    );
+                }
+
+                // Als geen targetGroupId, val terug op targetNodeId
+                return (
+                    c.targetNodeId === nodeId &&
+                    (matchExact
+                        ? c.targetHandle === handle
+                        : c.targetHandle?.startsWith(handle))
+                );
+            });
     },
 
     findOutConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact: boolean = true): Connection[] => {

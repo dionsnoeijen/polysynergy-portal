@@ -110,7 +110,7 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             onMouseDown={handleNodeMouseDown}
             className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ring-2 ${
                 selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
-            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 ${node.view.disabled ? 'opacity-30' : 'cursor-move'}`}
+            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 ${node.view.disabled ? 'select-none opacity-30' : 'cursor-move'}`}
             style={{
                 width: `${size.width}px`,
                 left: `${node.view.x}px`,
@@ -119,7 +119,7 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             data-type="node"
             data-node-id={node.id}
         >
-            <div className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'opacity-0'}`}>
+            <div className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'select-none opacity-0'}`}>
                 <Connector in nodeId={node.id} handle={"node"}/>
                 <Switch color={theme === 'light' ? 'sky' : 'dark'}/>
                 <h3 className="font-bold truncate ml-2 text-sky-600 dark:text-white">{node.name}</h3>

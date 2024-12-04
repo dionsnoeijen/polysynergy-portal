@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { v4 as uuidv4 } from "uuid";
 import { NodeView } from "@/types/types";
 import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
+import useNodesStore from "@/stores/nodesStore";
 
 export type Group = {
     id: string;
@@ -157,6 +158,12 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     updateGroup: (groupId, group) => set((state) => {
         nodesInGroupCache.delete(groupId);
         const currentGroup = state.groups[groupId];
+
+        // if name is updated, sync with node
+        if (group.name && currentGroup.name !== group.name) {
+            useNodesStore.getState().updateNode(groupId, {name: group.name});
+        }
+
         return {
             groups: {
                 ...state.groups,

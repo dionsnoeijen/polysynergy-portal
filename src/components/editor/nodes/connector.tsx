@@ -10,6 +10,7 @@ type ConnectorProps = {
     className?: string;
     iconClassName?: string;
     disabled?: boolean;
+    groupId?: string;
 } & (
     | { in: true; out?: never }
     | { out: true; in?: never }
@@ -23,6 +24,7 @@ const Connector: React.FC<ConnectorProps> = ({
     className,
     iconClassName,
     disabled = false,
+    groupId
 }): React.ReactElement => {
     const { handleMouseDown } = useConnectorHandlers(isIn, isOut, nodeId, false, disabled);
 
@@ -31,6 +33,7 @@ const Connector: React.FC<ConnectorProps> = ({
             onMouseDown={handleMouseDown}
             data-type={isIn ? InOut.In : InOut.Out}
             data-node-id={nodeId}
+            data-group-id={groupId}
             data-handle={handle}
             data-enabled={!disabled}
             className={clsx(

@@ -1,3 +1,9 @@
+export enum ConnectionType {
+    GroupIn = 'groupIn',
+    GroupOut = 'groupOut',
+    NodeToNode = 'nodeToNode',
+}
+
 export enum FormType {
     AddRoute = 'addRoute',
     EditRoute = 'editRoute',

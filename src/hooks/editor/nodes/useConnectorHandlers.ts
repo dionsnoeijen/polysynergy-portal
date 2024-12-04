@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
+import { ConnectionType, InOut } from "@/types/types";
 
 export const useConnectorHandlers = (
     isIn: boolean = false,
@@ -29,9 +30,11 @@ export const useConnectorHandlers = (
         e.stopPropagation();
 
         const handle = (e.currentTarget as HTMLElement).getAttribute("data-handle") as string;
+        const groupId = (e.currentTarget as HTMLElement).getAttribute("data-group-id") as string;
 
+        const id = groupId ?? nodeId;
         const existingConnections = findInConnectionsByNodeIdAndHandle(
-            nodeId,
+            id,
             handle as string
         );
 
@@ -66,10 +69,17 @@ export const useConnectorHandlers = (
                     target.getAttribute("data-node-id") as string :
                     target.getAttribute("data-group-id") as string;
                 const targetHandle = target.getAttribute("data-handle") as string;
+
+                const nodeGroupTarget = target.closest('[data-type="closed-group"]');
+
                 const connection = getConnection(existingConnection.id);
                 if (connection) {
                     connection.targetHandle = targetHandle;
                     connection.targetNodeId = targetNodeId;
+                    if (nodeGroupTarget) {
+                        connection.targetGroupId = nodeGroupTarget.getAttribute("data-node-id") as string;
+                        connection.connectionType = ConnectionType.NodeToNode;
+                    }
                     const updatedConnection = updateConnectionsDirectly([connection]);
                     updatedConnection.forEach((upd) => {
                         updateConnection({ ...connection, ...upd });
@@ -89,11 +99,23 @@ export const useConnectorHandlers = (
     const handleMouseDownOnOutConnector = (e: React.MouseEvent) => {
         e.stopPropagation();
 
-        const handle = (e.currentTarget as HTMLElement).getAttribute("data-handle") as string;
+        const handle = (e.currentTarget as HTMLElement)
+            .getAttribute("data-handle") as string;
+
+        const groupId = (e.currentTarget as HTMLElement)
+            .getAttribute("data-group-id") as string;
+
+        const dataType = (e.currentTarget as HTMLElement)
+            .getAttribute("data-type") as InOut;
 
         if (!isGroup && isIn) return;
 
         startedFromGroup.current = isGroup;
+
+        let connectionType = ConnectionType.NodeToNode;
+        if (groupId && dataType === InOut.Out) {
+            connectionType = ConnectionType.GroupIn;
+        }
 
         const { x, y } = calculateConnectorPosition(
             e.currentTarget as HTMLElement,
@@ -108,6 +130,7 @@ export const useConnectorHandlers = (
             endY: y,
             sourceNodeId: nodeId,
             sourceHandle: handle as string,
+            connectionType: connectionType as ConnectionType,
         });
         setIsDrawingConnection(connection.id);
         const position = globalToLocal(e.clientX, e.clientY);
@@ -131,11 +154,38 @@ export const useConnectorHandlers = (
                     target.getAttribute("data-node-id") as string ??
                     target.getAttribute("data-group-id") as string;
                 const targetHandle = target.getAttribute("data-handle") as string;
+                const targetGroupId = (target as HTMLElement)
+                    .getAttribute("data-group-id") as string;
+
+                const dataType = (target as HTMLElement)
+                    .getAttribute("data-type") as InOut;
+
                 const connection = getConnection(id);
+
+                if (groupId && dataType === InOut.In) {
+                    connectionType = ConnectionType.GroupOut;
+                }
+                const nodeGroupTarget = target.closest('[data-type="closed-group"]');
+
+                console.log(nodeGroupTarget, targetGroupId, groupId);
 
                 if (connection) {
                     connection.targetHandle = targetHandle;
-                    connection.targetNodeId = targetNodeId;
+                    connection.targetNodeId = targetNodeId
+                    connection.connectionType = connectionType;
+                    if (nodeGroupTarget && targetGroupId && groupId) {
+                        connection.sourceGroupId = groupId;
+                        connection.targetGroupId = targetGroupId;
+                        connection.connectionType = ConnectionType.NodeToNode;
+                    }
+                    if (!nodeGroupTarget && groupId) {
+                        connection.sourceGroupId = groupId;
+                        connection.connectionType = ConnectionType.NodeToNode;
+                    }
+                    if (nodeGroupTarget && targetGroupId && groupId === null) {
+                        connection.targetGroupId = nodeGroupTarget.getAttribute("data-node-id") as string;
+                        connection.connectionType = ConnectionType.NodeToNode;
+                    }
                     const updatedConnection = updateConnectionsDirectly([connection]);
                     updatedConnection.forEach((upd) => {
                         updateConnection({ ...connection, ...upd });
@@ -153,7 +203,6 @@ export const useConnectorHandlers = (
     };
 
     const handleMouseDown = (e: React.MouseEvent) => {
-
         const target = (e.target as HTMLElement).closest(
             '[data-type="in"], [data-type="out"]'
         ) as HTMLElement;

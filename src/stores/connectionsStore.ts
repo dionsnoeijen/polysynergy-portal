@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { ConnectionType } from "@/types/types";
 
 export type Connection = {
     id: string;
@@ -16,7 +15,6 @@ export type Connection = {
     disabled?: boolean;
     targetGroupId?: string;
     sourceGroupId?: string;
-    connectionType?: ConnectionType;
 };
 
 type ConnectionsStore = {
@@ -59,7 +57,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         set((state) => ({
             connections: [
                 ...state.connections,
-                { ...connection, hidden: connection.hidden ?? false, connectionType: connection.connectionType ?? ConnectionType.NodeToNode },
+                { ...connection, hidden: connection.hidden ?? false },
             ],
         }));
         return connection;
@@ -144,9 +142,6 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         return get()
             .connections
             .filter((c) => {
-                if (c.connectionType !== ConnectionType.NodeToNode) return;
-
-                // Als de connectie een targetGroupId heeft, alleen daarop matchen
                 if (c.targetGroupId) {
                     return (
                         c.targetGroupId === nodeId &&
@@ -156,7 +151,6 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
                     );
                 }
 
-                // Als geen targetGroupId, val terug op targetNodeId
                 return (
                     c.targetNodeId === nodeId &&
                     (matchExact
@@ -166,7 +160,11 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             });
     },
 
-    findOutConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact: boolean = true): Connection[] => {
+    findOutConnectionsByNodeIdAndHandle: (
+        nodeId: string,
+        handle: string,
+        matchExact: boolean = true
+    ): Connection[] => {
         return useConnectionsStore
             .getState()
             .connections

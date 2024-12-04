@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from "uuid";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
-import { ConnectionType, InOut } from "@/types/types";
 
 export const useConnectorHandlers = (
     isIn: boolean = false,
@@ -78,7 +77,6 @@ export const useConnectorHandlers = (
                     connection.targetNodeId = targetNodeId;
                     if (nodeGroupTarget) {
                         connection.targetGroupId = nodeGroupTarget.getAttribute("data-node-id") as string;
-                        connection.connectionType = ConnectionType.NodeToNode;
                     }
                     const updatedConnection = updateConnectionsDirectly([connection]);
                     updatedConnection.forEach((upd) => {
@@ -112,11 +110,6 @@ export const useConnectorHandlers = (
 
         startedFromGroup.current = isGroup;
 
-        let connectionType = ConnectionType.NodeToNode;
-        if (groupId && dataType === InOut.Out) {
-            connectionType = ConnectionType.GroupIn;
-        }
-
         const { x, y } = calculateConnectorPosition(
             e.currentTarget as HTMLElement,
         );
@@ -130,7 +123,6 @@ export const useConnectorHandlers = (
             endY: y,
             sourceNodeId: nodeId,
             sourceHandle: handle as string,
-            connectionType: connectionType as ConnectionType,
         });
         setIsDrawingConnection(connection.id);
         const position = globalToLocal(e.clientX, e.clientY);
@@ -157,34 +149,22 @@ export const useConnectorHandlers = (
                 const targetGroupId = (target as HTMLElement)
                     .getAttribute("data-group-id") as string;
 
-                const dataType = (target as HTMLElement)
-                    .getAttribute("data-type") as InOut;
-
                 const connection = getConnection(id);
 
-                if (groupId && dataType === InOut.In) {
-                    connectionType = ConnectionType.GroupOut;
-                }
                 const nodeGroupTarget = target.closest('[data-type="closed-group"]');
-
-                console.log(nodeGroupTarget, targetGroupId, groupId);
 
                 if (connection) {
                     connection.targetHandle = targetHandle;
                     connection.targetNodeId = targetNodeId
-                    connection.connectionType = connectionType;
                     if (nodeGroupTarget && targetGroupId && groupId) {
                         connection.sourceGroupId = groupId;
                         connection.targetGroupId = targetGroupId;
-                        connection.connectionType = ConnectionType.NodeToNode;
                     }
                     if (!nodeGroupTarget && groupId) {
                         connection.sourceGroupId = groupId;
-                        connection.connectionType = ConnectionType.NodeToNode;
                     }
                     if (nodeGroupTarget && targetGroupId && groupId === null) {
                         connection.targetGroupId = nodeGroupTarget.getAttribute("data-node-id") as string;
-                        connection.connectionType = ConnectionType.NodeToNode;
                     }
                     const updatedConnection = updateConnectionsDirectly([connection]);
                     updatedConnection.forEach((upd) => {

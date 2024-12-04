@@ -108,9 +108,9 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             ref={ref}
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
-            className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ring-2 ${
+            className={`absolute overflow-visible select-none flex flex-col items-start justify-start ring-2 ${
                 selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
-            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 ${node.view.disabled ? 'select-none opacity-30' : 'cursor-move'}`}
+            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}`}
             style={{
                 width: `${size.width}px`,
                 left: `${node.view.x}px`,

@@ -107,9 +107,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
 
     return (
         <div
-            className={`absolute overflow-visible z-10 select-none flex flex-col items-start justify-start ring-2 ${
+            className={`absolute overflow-visible select-none flex flex-col items-start justify-start ring-2 ${
                 selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
-            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5  ${node.view.disabled ? 'select-none opacity-30' : 'cursor-move'}`}
+            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5 ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}`}
             data-type="closed-group"
             data-node-id={node.id}
             onContextMenu={handleContextMenu}

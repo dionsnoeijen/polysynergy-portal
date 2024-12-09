@@ -1,15 +1,17 @@
-import { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
+import { updateNodesDirectly } from "@/utils/updateNodesDirectly";
 
 const useDraggable = () => {
     const { selectedNodes, zoomFactor, setIsDragging, openGroup, panPosition, editorPosition } = useEditorStore();
-    const { updateNodePositionByDelta, getNodes } = useNodesStore();
+    const { getNode, updateNodePosition } = useNodesStore();
     const { findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection, getConnection } = useConnectionsStore();
 
     const selectedNodesRef = useRef<string[]>(selectedNodes);
+    const initialPositionsRef = useRef<{ [key: string]: { x: number; y: number } }>({});
 
     useEffect(() => {
         selectedNodesRef.current = selectedNodes;
@@ -40,21 +42,15 @@ const useDraggable = () => {
             const deltaX = moveEvent.movementX / zoomFactor;
             const deltaY = moveEvent.movementY / zoomFactor;
 
-            selectedNodesRef.current.forEach((nodeId) => {
-                const draggedNode = getNodes().find((node) => node.id === nodeId);
-                if (!draggedNode) return;
+            updateNodesDirectly(selectedNodesRef.current, deltaX, deltaY, initialPositionsRef.current);
 
-                updateNodePositionByDelta(nodeId, deltaX, deltaY);
-
-                const allConnections = collectConnections();
-
-                updateConnectionsDirectly(
-                    allConnections
-                );
-            });
+            const allConnections = collectConnections();
+            updateConnectionsDirectly(
+                allConnections
+            );
         },
         // eslint-disable-next-line
-        [zoomFactor, getNodes, updateNodePositionByDelta, collectConnections, editorPosition, panPosition]
+        [zoomFactor, collectConnections, editorPosition, panPosition]
     );
 
     const handleDraggableMouseUp = useCallback(() => {
@@ -66,6 +62,14 @@ const useDraggable = () => {
             allConnections
         );
 
+        selectedNodesRef.current.forEach((nodeId) => {
+            updateNodePosition(
+                nodeId,
+                initialPositionsRef.current[nodeId].x,
+                initialPositionsRef.current[nodeId].y
+            );
+        });
+
         updatedConnections.forEach((connection) => {
             const existingConnection = getConnection(connection.id);
             if (existingConnection) {
@@ -75,14 +79,31 @@ const useDraggable = () => {
 
         document.removeEventListener("mousemove", handleDraggableMouseMove);
         document.removeEventListener("mouseup", handleDraggableMouseUp);
-    }, [setIsDragging, handleDraggableMouseMove, collectConnections, getConnection, updateConnection]);
+    }, [setIsDragging, collectConnections, handleDraggableMouseMove, updateNodePosition, getConnection, updateConnection]);
 
-    const onDragMouseDown = useCallback(() => {
+    const onDragMouseDown = useCallback((e: React.MouseEvent) => {
         setIsDragging(true);
+
+        const jitNodeId = e.currentTarget.getAttribute("data-node-id");
+
+        // Selected nodes might not be updated in time to include the
+        // node that was immediately dragged on mouseDown. In that case
+        // add it here manually.
+        if (jitNodeId && !selectedNodesRef.current.includes(jitNodeId)) {
+            selectedNodesRef.current.push(jitNodeId);
+        }
+
+        initialPositionsRef.current = {};
+        selectedNodesRef.current.forEach((nodeId) => {
+            const node = getNode(nodeId);
+            if (node) {
+                initialPositionsRef.current[nodeId] = { x: node.view.x, y: node.view.y };
+            }
+        });
 
         document.addEventListener("mousemove", handleDraggableMouseMove);
         document.addEventListener("mouseup", handleDraggableMouseUp);
-    }, [setIsDragging, handleDraggableMouseMove, handleDraggableMouseUp]);
+    }, [setIsDragging, handleDraggableMouseMove, handleDraggableMouseUp, getNode]);
 
     return { onDragMouseDown };
 };

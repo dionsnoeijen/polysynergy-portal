@@ -251,9 +251,11 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         const uniqueConnections = new Map<string, Connection>();
 
         group.nodes.forEach((nodeId) => {
-            const inConnections = useConnectionsStore.getState()
+            const inConnections = useConnectionsStore
+                .getState()
                 .findInConnectionsByNodeId(nodeId, true);
-            const outConnections = useConnectionsStore.getState()
+            const outConnections = useConnectionsStore
+                .getState()
                 .findOutConnectionsByNodeId(nodeId, true);
 
             [...inConnections, ...outConnections].forEach((connection) => {

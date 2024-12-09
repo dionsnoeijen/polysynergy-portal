@@ -36,7 +36,7 @@ const useNodeMouseDown = (node: NodeType) => {
                 setSelectedNodes([node.id]);
             }
 
-            onDragMouseDown();
+            onDragMouseDown(e);
         },
         [node, selectedNodes, setSelectedNodes, onDragMouseDown]
     );

@@ -154,7 +154,7 @@ export const useConnectorHandlers = (
                 if (connection) {
                     connection.targetHandle = targetHandle;
                     connection.targetNodeId = targetNodeId;
-                    connection.isInGroup = openGroup;
+                    connection.isInGroup = openGroup as string;
                     if (nodeGroupTarget && targetGroupId && groupId) {
                         connection.sourceGroupId = groupId;
                         connection.targetGroupId = targetGroupId;

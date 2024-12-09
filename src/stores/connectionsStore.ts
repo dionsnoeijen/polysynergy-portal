@@ -85,10 +85,13 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         }));
     },
 
-    removeConnections: (connections: Connection[]) => {
+    removeConnections: (connectionsToRemove: Connection[]) => {
         memoizedResults.clear();
+
+        const idsToRemove = new Set(connectionsToRemove.map((conn) => conn.id));
+
         set((state) => ({
-            connections: state.connections.filter((c) => !connections.includes(c)),
+            connections: state.connections.filter((c) => !idsToRemove.has(c.id)),
         }));
     },
 

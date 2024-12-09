@@ -1,7 +1,7 @@
 import useGroupsStore from "@/stores/groupStore";
 import { useEditorStore } from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-import { useConnectionsStore } from "@/stores/connectionsStore";
+import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
 import { MARGIN } from "@/utils/constants";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 
@@ -40,12 +40,37 @@ const useGrouping = () => {
         removeConnections,
         showConnectionsInsideOpenGroup,
         showConnectionsOutsideGroup,
+        updateConnection
     } = useConnectionsStore();
 
     const createGroup = () => {
         if (selectedNodes.length < 2) return;
 
-        const groupId = addGroup({nodes: selectedNodes});
+        const groupId = addGroup({ nodes: selectedNodes });
+
+        const outsideConnections: Connection[] = [];
+        selectedNodes.forEach((nodeId) => {
+            const inCon = findInConnectionsByNodeId(nodeId);
+            const outCon = findOutConnectionsByNodeId(nodeId);
+
+            [...inCon, ...outCon].forEach((con) => {
+                updateConnection({...con, isInGroup: groupId});
+            });
+
+            const filterOutside = (connection: Connection) => {
+                const sourceInside = selectedNodes.includes(connection.sourceNodeId) || connection.sourceGroupId === groupId;
+                const targetInside = selectedNodes.includes(connection.targetNodeId as string) || connection.targetGroupId === groupId;
+
+                return !(sourceInside && targetInside);
+            };
+
+            outsideConnections.push(...inCon.filter(filterOutside), ...outCon.filter(filterOutside));
+        });
+
+        const uniqueOutsideConnections = Array.from(new Set(outsideConnections));
+
+        removeConnections(uniqueOutsideConnections);
+
         setOpenGroup(groupId);
         addGroupNode({ id: groupId });
         setSelectedNodes([]);
@@ -144,6 +169,7 @@ const useGrouping = () => {
         const inConnections = findInConnectionsByNodeId(nodeId);
         const outConnections = findOutConnectionsByNodeId(nodeId);
         const connections = [...inConnections, ...outConnections];
+
         removeConnections(connections);
         removeNodeFromGroupStore(groupId, nodeId);
         disableNode(nodeId);

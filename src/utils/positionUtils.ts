@@ -1,5 +1,6 @@
 import { InOut } from "@/types/types";
 import { useEditorStore } from "@/stores/editorStore";
+import useNodesStore from "@/stores/nodesStore";
 
 export const calculateConnectorPosition = (target: HTMLElement) => {
     const { editorPosition, panPosition, zoomFactor } = useEditorStore.getState();
@@ -37,19 +38,50 @@ export const calculateConnectorPositionByAttributes = (nodeId: string, handle: s
     return calculateConnectorPosition(target);
 };
 
-export const calculateNodeSize = (nodeId: string) => {
-    const { zoomFactor } = useEditorStore.getState();
-    const selector = `[data-type="node"][data-node-id="${nodeId}"]`;
-    const target = document.querySelector(selector) as HTMLElement;
+export const getNodeBoundsFromState = (nodeIds: string[]) => {
+    const { getNodesByIds } = useNodesStore.getState();
+    const nodes = getNodesByIds(nodeIds);
+    return nodes.reduce(
+        (acc, node) => {
+            const nodeRight = node.view.x + node.view.width;
+            const nodeBottom = node.view.y + node.view.height;
 
-    if (!target) {
-        return { width: 0, height: 0 };
-    }
+            return {
+                minX: Math.min(acc.minX, node.view.x),
+                minY: Math.min(acc.minY, node.view.y),
+                maxX: Math.max(acc.maxX, nodeRight),
+                maxY: Math.max(acc.maxY, nodeBottom),
+            };
+        },
+        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+    );
+};
 
-    const rect = target.getBoundingClientRect();
+export const getNodeBoundsFromDOM = (nodeIds: string[]) => {
+    const { editorPosition, panPosition, zoomFactor } = useEditorStore.getState();
 
-    return {
-        width: rect.width / zoomFactor,
-        height: rect.height / zoomFactor,
-    };
+    let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity;
+    let foundAny = false;
+
+    nodeIds.forEach((nodeId) => {
+        const el = document.querySelector(`[data-node-id="${nodeId}"]`);
+        if (!el) return;
+        foundAny = true;
+
+        const rect = el.getBoundingClientRect();
+        const x = (rect.left - editorPosition.x - panPosition.x) / zoomFactor;
+        const y = (rect.top - editorPosition.y - panPosition.y) / zoomFactor;
+        const right = x + (rect.width / zoomFactor);
+        const bottom = y + (rect.height / zoomFactor);
+
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (right > maxX) maxX = right;
+        if (bottom > maxY) maxY = bottom;
+    });
+
+    return { foundAny, minX, minY, maxX, maxY };
 };

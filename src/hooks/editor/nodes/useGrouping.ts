@@ -2,8 +2,9 @@ import useGroupsStore from "@/stores/groupStore";
 import { useEditorStore } from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
-import { MARGIN } from "@/utils/constants";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
+import { getNodeBoundsFromDOM, getNodeBoundsFromState } from "@/utils/positionUtils";
+import { updateNodesDirectly } from "@/utils/updateNodesDirectly";
 
 const useGrouping = () => {
     const {
@@ -58,21 +59,25 @@ const useGrouping = () => {
             });
 
             const filterOutside = (connection: Connection) => {
-                const sourceInside = selectedNodes.includes(connection.sourceNodeId) || connection.sourceGroupId === groupId;
-                const targetInside = selectedNodes.includes(connection.targetNodeId as string) || connection.targetGroupId === groupId;
+                const sourceInside = selectedNodes.includes(connection.sourceNodeId) ||
+                    connection.sourceGroupId === groupId;
+                const targetInside = selectedNodes.includes(connection.targetNodeId as string) ||
+                    connection.targetGroupId === groupId;
 
                 return !(sourceInside && targetInside);
             };
 
-            outsideConnections.push(...inCon.filter(filterOutside), ...outCon.filter(filterOutside));
+            outsideConnections.push(
+                ...inCon.filter(filterOutside),
+                ...outCon.filter(filterOutside)
+            );
         });
 
         const uniqueOutsideConnections = Array.from(new Set(outsideConnections));
-
         removeConnections(uniqueOutsideConnections);
 
         setOpenGroup(groupId);
-        addGroupNode({ id: groupId });
+        addGroupNode({id:groupId});
         setSelectedNodes([]);
         disableAllNodesExceptByIds([...selectedNodes, groupId]);
         showConnectionsInsideOpenGroup(groupId);
@@ -80,9 +85,20 @@ const useGrouping = () => {
 
     const closeGroup = (
         groupId: string,
-        x: number,
-        y: number
     ) => {
+
+        const group = getGroupById(groupId);
+        if (!group) return;
+        const bounds = getNodeBoundsFromDOM(group?.nodes);
+
+        const closedGroupNode = getNode(groupId);
+        if (!closedGroupNode) return;
+
+        const closedGroupNodeWidth = closedGroupNode.view.width / 2;
+        const closedGroupNodeHeight = closedGroupNode.view.height / 2;
+        const x = (bounds.minX + (bounds.maxX - bounds.minX) / 2) - closedGroupNodeWidth;
+        const y = (bounds.minY + (bounds.maxY - bounds.minY) / 2) - closedGroupNodeHeight;
+
         closeGroupStore(groupId);
         hideGroup(groupId);
         closeGroupEditorStore();
@@ -107,36 +123,35 @@ const useGrouping = () => {
             showConnections = showConnectionsOutsideGroup();
         }
         setTimeout(() => {
+            updateNodesDirectly([groupId], 0, 0, {[groupId]: {x, y}});
             updateConnectionsDirectly(showConnections);
         }, 0);
     };
 
     const openGroup = (groupId: string) => {
-        // replace the nodes, if the parent node is moved, the
-        // nodes in the group, had to move along, otherwise it will
-        // look as if the group opens at a different location
-        // the user would expect
         const openGroup = getGroupById(groupId);
         const closedGroup = getNode(groupId);
 
         if (!openGroup || !closedGroup) return;
 
-        const openGroupPositionX = openGroup?.view.x + MARGIN;
-        const openGroupPositionY = openGroup?.view.y + MARGIN;
-
-        const closedGroupPositionX = closedGroup?.view.x + MARGIN;
-        const closedGroupPositionY = closedGroup?.view.y + MARGIN;
-
-        const diffX = closedGroupPositionX - openGroupPositionX;
-        const diffY = closedGroupPositionY - openGroupPositionY;
+        const closedGroupCenterX = closedGroup.view.x + (closedGroup.view.width / 2);
+        const closedGroupCenterY = closedGroup.view.y + (closedGroup.view.height / 2);
 
         const nodesInGroup = getNodesInGroup(groupId);
-        nodesInGroup.map((nodeId) => {
-            const node = getNode(nodeId);
-            if (!node) return;
+        const bounds = getNodeBoundsFromState(nodesInGroup);
+
+        const width = bounds.maxX - bounds.minX;
+        const height = bounds.maxY - bounds.minY;
+
+        const nodesCenterX = bounds.minX + (width / 2);
+        const nodesCenterY = bounds.minY + (height / 2);
+
+        const diffX = closedGroupCenterX - nodesCenterX;
+        const diffY = closedGroupCenterY - nodesCenterY;
+
+        nodesInGroup.forEach((nodeId) => {
             updateNodePositionByDelta(nodeId, diffX, diffY);
         });
-
 
         if (currentOpenGroup && currentOpenGroup !== groupId) {
             hideGroup(currentOpenGroup);

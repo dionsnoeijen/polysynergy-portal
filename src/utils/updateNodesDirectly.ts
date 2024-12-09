@@ -4,7 +4,6 @@ export function updateNodesDirectly(nodes: string[], deltaX: number, deltaY: num
         x: number,
         y: number
     }> = [];
-
     nodes.forEach((nodeId: string) => {
         const el = document.querySelector(`[data-node-id="${nodeId}"]`) as HTMLElement;
         if (!el) return;

@@ -1,10 +1,11 @@
-import { Node as NodeType, NodeComparisonType } from "@/types/types";
+import { Node as NodeType, NodeComparisonType, NodeVariableType } from "@/types/types";
 import React from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import { ChevronRightIcon } from "@heroicons/react/16/solid";
 import Connector from "@/components/editor/nodes/connector";
 import { Strong } from "@/components/text";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
+import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 
 type NodeProps = {
     node: NodeType;
@@ -13,6 +14,7 @@ type NodeProps = {
 const NodeComparison: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes } = useEditorStore();
     const { handleNodeMouseDown } = useNodeMouseDown(node);
+    const { handleContextMenu } = useNodeContextMenu(node);
 
     return (
         <div
@@ -25,6 +27,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 width: `50px`,
                 height: `50px`,
             }}
+            onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
             data-type="node"
             data-node-id={node.id}
@@ -38,7 +41,8 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 disabled={node.view.disabled}
             />
             <Connector
-                in nodeId={node.id}
+                in
+                nodeId={node.id}
                 handle="b"
                 iconClassName="text-white dark:text-white"
                 className={`translate-y-2 ring-orange-200/50 bg-orange-400 dark:bg-orange-400 ${node.view.disabled && 'select-none opacity-0'}`}
@@ -65,17 +69,17 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 out
                 nodeId={node.id}
                 handle="true"
-                iconClassName="text-white dark:text-white"
-                className={`-translate-y-5 ring-orange-200/50 bg-green-400 dark:bg-green-400 ${node.view.disabled && 'select-none opacity-0'}`}
+                className={`-translate-y-5 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
+                nodeVariableType={NodeVariableType.TruePath}
             />
             <Connector
                 out
                 nodeId={node.id}
                 handle="false"
-                iconClassName="text-white dark:text-white"
-                className={`translate-y-2 ring-orange-200/50 bg-red-400 dark:bg-red-400 ${node.view.disabled && 'select-none opacity-0'}`}
+                className={`translate-y-2 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
+                nodeVariableType={NodeVariableType.FalsePath}
             />
         </div>
     );

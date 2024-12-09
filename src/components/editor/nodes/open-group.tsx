@@ -138,7 +138,9 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
             <div
                 data-type="open-group"
                 onContextMenu={handleContextMenu}
-                className="absolute z-10 border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500/20 bg-opacity-25"
+                className={`absolute border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500/20 bg-opacity-25
+                    ${group.isHidden ? 'z-1 select-none opacity-10' : 'z-10'}
+                `}
                 style={{
                     left: bounds.minX - MARGIN,
                     top: bounds.minY - MARGIN,

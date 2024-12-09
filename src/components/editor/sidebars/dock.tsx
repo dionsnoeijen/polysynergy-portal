@@ -54,7 +54,7 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                                     if (!variable || !variable.has_dock) return null;
                                     const VariableComponent = VariableTypeComponents[variable.type];
                                     return VariableComponent ? (
-                                        <div key={variable.handle}>
+                                        <div key={nodeId + '-' + variable.handle}>
                                             <VariableComponent
                                                 nodeId={nodeId as string}
                                                 variable={variable}
@@ -71,7 +71,7 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                                     if (!variable || !variable.has_dock) return null;
                                     const VariableComponent = VariableTypeComponents[variable.type];
                                     return VariableComponent ? (
-                                        <div key={variable.handle}>
+                                        <div key={nodeId + '-' + variable.handle}>
                                             <VariableComponent
                                                 nodeId={nodeId}
                                                 variable={variable}
@@ -91,7 +91,7 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                         if (!variable.has_dock) return;
                         const VariableComponent = VariableTypeComponents[variable.type];
                         return VariableComponent ? (
-                            <div key={variable.handle}>
+                            <div key={node.id + '-' + variable.handle}>
                                 <VariableComponent
                                     nodeId={node.id}
                                     variable={variable}

@@ -7,16 +7,12 @@ import ClosedGroup from "@/components/editor/nodes/closed-group";
 
 type NodeProps = {
     node: NodeStore;
-    setIsDeleteNodesDialogOpen?: (isOpen: boolean) => void;
 };
 
-const Node: React.FC<NodeProps> = ({ node, setIsDeleteNodesDialogOpen }) => {
+const Node: React.FC<NodeProps> = ({ node }) => {
     switch (node.node_type) {
         case NodeType.Rows:
-            return <NodeRows
-                node={node}
-                setIsDeleteNodesDialogOpen={setIsDeleteNodesDialogOpen}
-            />;
+            return <NodeRows node={node} />;
         case NodeType.Comparison:
             return <NodeComparison node={node} />;
         case NodeType.Math:

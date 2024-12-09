@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { useZoom } from "@/hooks/editor/useZoom";
 import { usePan } from "@/hooks/editor/usePan";
 import { Grid } from "@/components/editor/grid";
@@ -24,19 +24,19 @@ export default function Editor() {
         setEditorPosition,
         isDragging,
         panPosition,
-        selectedNodes
+        selectedNodes,
+        deleteNodesDialogOpen,
+        setDeleteNodesDialogOpen
     } = useEditorStore();
-    const { nodes } = useNodesStore();
+    const { getNodesToRender } = useNodesStore();
     const { connections } = useConnectionsStore();
-    const { getOpenGroups, getClosedGroups } = useGroupsStore();
+    const { getOpenGroups } = useGroupsStore();
 
     const { handleDeleteSelectedNodes } = useDeleteNode();
     const { handleZoom } = useZoom();
     const { handlePanMouseDown, handleMouseMove, handleMouseUp } = usePan();
     const { handleEditorMouseDown } = useDeselectOnClickOutside();
     const { createGroup } = useGrouping();
-
-    const [isDeleteNodesDialogOpen, setIsDeleteNodesDialogOpen] = useState(false);
 
     const updateEditorPosition = useCallback(() => {
         if (contentRef.current) {
@@ -59,17 +59,17 @@ export default function Editor() {
     useKeyBindings({
         'delete': () => {
             if (selectedNodes.length > 0) {
-                setIsDeleteNodesDialogOpen(true);
+                setDeleteNodesDialogOpen(true);
             }
         },
         'x': () => {
             if (selectedNodes.length > 0) {
-                setIsDeleteNodesDialogOpen(true);
+                setDeleteNodesDialogOpen(true);
             }
         },
         'backspace': () => {
             if (selectedNodes.length > 0) {
-                setIsDeleteNodesDialogOpen(true);
+                setDeleteNodesDialogOpen(true);
             }
         },
         'ctrl+shift+g': () => {
@@ -92,22 +92,13 @@ export default function Editor() {
         }
     });
 
-    const closedGroupNodeIds = useCallback(() => {
-        const closedGroups = getClosedGroups();
-        return closedGroups.flatMap((group) => group.nodes);
-    }, [getClosedGroups]);
-
-    const nodesToRender = nodes.filter(
-        (node) => !closedGroupNodeIds().includes(node.id)
-    );
-
     const handleConfirmDelete = () => {
         handleDeleteSelectedNodes(selectedNodes);
-        setIsDeleteNodesDialogOpen(false);
+        setDeleteNodesDialogOpen(false);
     };
 
     const handleCancelDelete = () => {
-        setIsDeleteNodesDialogOpen(false);
+        setDeleteNodesDialogOpen(false);
     };
 
     return (
@@ -134,12 +125,8 @@ export default function Editor() {
                     <OpenGroup key={group.id} group={group} />
                 ))}
 
-                {nodesToRender.map((node) => (
-                    <Node
-                        key={node.id}
-                        node={node}
-                        setIsDeleteNodesDialogOpen={setIsDeleteNodesDialogOpen}
-                    />
+                {getNodesToRender().map((node) => (
+                    <Node key={node.id} node={node} />
                 ))}
 
                 {connections
@@ -155,7 +142,7 @@ export default function Editor() {
             <BoxSelect />
 
             <DeleteDialog
-                isOpen={isDeleteNodesDialogOpen}
+                isOpen={deleteNodesDialogOpen}
                 onConfirm={handleConfirmDelete}
                 onCancel={handleCancelDelete}
                 itemCount={selectedNodes.length}

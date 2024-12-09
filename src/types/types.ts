@@ -21,7 +21,9 @@ export enum NodeVariableType {
     String = 'string',
     Number = 'number',
     Boolean = 'boolean',
-    Array = 'array'
+    Array = 'array',
+    TruePath = 'true_path',
+    FalsePath = 'false_path',
 }
 
 export enum NodeType {

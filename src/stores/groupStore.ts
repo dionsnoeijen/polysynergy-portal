@@ -1,14 +1,15 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from "uuid";
 import { NodeView } from "@/types/types";
-import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
+import { groupDevData } from "@/stores/nodeDevData";
 
 export type Group = {
     id: string;
     view: NodeView;
     name: string;
     isOpen: boolean;
+    isHidden: boolean;
     nodes: string[];
     parentGroupId?: string;
 };
@@ -18,6 +19,8 @@ type GroupsStore = {
     openGroup: (groupId: string) => void;
     isNodeInGroup: (nodeId: string) => string | null;
     closeGroup: (groupId: string) => void;
+    hideGroup: (groupId: string) => void;
+    showGroup: (groupId: string) => void;
     addGroup: (group: Partial<Group>) => string;
     removeGroup: (groupId: string) => void;
     addNodeToGroup: (groupId: string, nodeId: string) => void;
@@ -26,6 +29,7 @@ type GroupsStore = {
     getClosedGroups: () => Group[];
     getNodesInGroup: (groupId: string) => string[];
     getGroupById: (groupId: string) => Group | undefined;
+    getAllNodeIdsOfNodesThatAreInAClosedGroup: () => string[];
     updateGroup: (groupId: string, group: Partial<Group>) => void;
 };
 
@@ -56,21 +60,10 @@ const getClosedGroups = (get: () => GroupsStore) => (): Group[] => {
 };
 
 const useGroupsStore = create<GroupsStore>((set, get) => ({
-    groups: {},
+    groups: groupDevData,
 
     openGroup: (groupId) => set((state) => {
         const group = state.groups[groupId];
-        const nodeIds = get().getNodesInGroup(groupId);
-        const nodes = [ groupId, ...nodeIds ];
-
-        const connections = nodes.reduce<Connection[]>((acc, nodeId) => {
-            const inConnections = useConnectionsStore.getState().findInConnectionsByNodeId(nodeId);
-            const outConnections = useConnectionsStore.getState().findOutConnectionsByNodeId(nodeId);
-            return [...acc, ...inConnections, ...outConnections];
-        }, []);
-
-        useConnectionsStore.getState().showConnectionsByIds(connections.map((c) => c.id));
-
         return {
             groups: {
                 ...state.groups,
@@ -91,17 +84,6 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
 
     closeGroup: (groupId) => set((state) => {
         const group = state.groups[groupId];
-        const nodeIds = get().getNodesInGroup(groupId);
-        const nodes = [ groupId, ...nodeIds ];
-
-        const connections = nodes.reduce<Connection[]>((acc, nodeId) => {
-            const inConnections = useConnectionsStore.getState().findInConnectionsByNodeId(nodeId);
-            const outConnections = useConnectionsStore.getState().findOutConnectionsByNodeId(nodeId);
-            return [...acc, ...inConnections, ...outConnections];
-        }, []);
-
-        useConnectionsStore.getState().hideConnectionsByIds(connections.map((c) => c.id));
-
         return {
             groups: {
                 ...state.groups,
@@ -110,19 +92,35 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         };
     }),
 
+    hideGroup: (groupId) => set((state) => {
+        const group = state.groups[groupId];
+        return {
+            groups: {
+                ...state.groups,
+                [groupId]: { ...group, isHidden: true }
+            }
+        };
+    }),
+
+    showGroup: (groupId) => set((state) => {
+        const group = state.groups[groupId];
+        return {
+            groups: {
+                ...state.groups,
+                [groupId]: { ...group, isHidden: false }
+            }
+        };
+    }),
+
     addGroup: (group: Partial<Group>) => {
         const newGroup: Group = {
             id: group.id || uuidv4(),
-            view: {
-                x: 0,
-                y: 0,
-                width: 0,
-                height: 0
-            },
+            view: { x: 0, y: 0, width: 0, height: 0 },
             name: group.name || 'Untitled Group',
             isOpen: group.isOpen !== undefined ? group.isOpen : true,
             parentGroupId: group.parentGroupId,
             nodes: group.nodes || [],
+            isHidden: false,
         };
 
         set((state) => ({
@@ -165,6 +163,11 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     getNodesInGroup: getNodesInGroup(get),
 
     getGroupById: (groupId) => get().groups[groupId],
+
+    getAllNodeIdsOfNodesThatAreInAClosedGroup: (): string[] => {
+        const closedGroups = useGroupsStore.getState().getClosedGroups();
+        return closedGroups.flatMap((group) => group.nodes);
+    },
 
     updateGroup: (groupId, group) => set((state) => {
         nodesInGroupCache.delete(groupId);

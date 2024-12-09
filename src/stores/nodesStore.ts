@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { nodeDevData } from "@/stores/nodeDevData";
 import { v4 as uuidv4 } from "uuid";
 import { Node, NodeType, NodeVariable } from "@/types/types";
+import useGroupsStore from "@/stores/groupStore";
 
 type NodesStore = {
     nodes: Node[];
@@ -21,6 +22,7 @@ type NodesStore = {
     getNodes: () => Node[];
     getNodesByIds: (nodeIds: string[]) => Node[];
     getNodeVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
+    getNodesToRender: () => Node[];
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: string | number | boolean | string[] | NodeVariable[] | null | undefined) => void;
     getTrackedNode: () => Node | null;
 };
@@ -194,6 +196,16 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     getNodes: () => {
         return get().nodes;
+    },
+
+    getNodesToRender: (): Node[] => {
+        const nodeIdsOfNodesInClosedGroups = useGroupsStore
+            .getState()
+            .getAllNodeIdsOfNodesThatAreInAClosedGroup();
+
+        return get().nodes.filter(
+            (node) => !nodeIdsOfNodesInClosedGroups.includes(node.id)
+        );
     },
 
     getNodesByIds: (nodeIds) => {

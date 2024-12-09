@@ -12,7 +12,7 @@ const BoxSelect: React.FC = (): React.ReactElement => {
         panPosition,
         zoomFactor
     } = useEditorStore();
-    const { getNodes } = useNodesStore();
+    const { getNodesToRender } = useNodesStore();
     const [isSelecting, setIsSelecting] = useState(false);
     const [boxStart, setBoxStart] = useState<{ x: number; y: number } | null>(null);
     const [boxEnd, setBoxEnd] = useState<{ x: number; y: number } | null>(null);
@@ -35,7 +35,7 @@ const BoxSelect: React.FC = (): React.ReactElement => {
             const boxRight = Math.max(boxStart.x, boxEnd.x);
             const boxBottom = Math.max(boxStart.y, boxEnd.y);
 
-            const selectedNodes = getNodes().filter((node) => {
+            const selectedNodes = getNodesToRender().filter((node) => {
                 const nodeLeft = node.view.x;
                 const nodeTop = node.view.y;
                 const nodeRight = nodeLeft + node.view.width;
@@ -71,7 +71,7 @@ const BoxSelect: React.FC = (): React.ReactElement => {
         boxEnd,
         setBoxSelect,
         setSelectedNodes,
-        getNodes,
+        getNodesToRender,
         setClickSelect,
         editorPosition,
         panPosition,

@@ -40,6 +40,7 @@ const BooleanVariable: React.FC<Props> = ({
             handle={variable.handle}
             disabled={disabled}
             groupId={groupId}
+            nodeVariableType={variable.type}
         />}
     </div>
 );

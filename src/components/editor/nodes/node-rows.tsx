@@ -12,26 +12,24 @@ import StringVariable from "@/components/editor/nodes/rows/string-variable";
 import NumberVariable from "@/components/editor/nodes/rows/number-variable";
 import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
-import useGroupsStore from "@/stores/groupStore";
-import useGrouping from "@/hooks/editor/nodes/useGrouping";
+import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 
 type NodeProps = {
     node: NodeType;
-    setIsDeleteNodesDialogOpen?: (isOpen: boolean) => void;
 };
 
-const NodeRows: React.FC<NodeProps> = ({ node, setIsDeleteNodesDialogOpen }) => {
-    const ref = useRef<HTMLDivElement>(null);
+const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const { size, handleResizeMouseDown } = useResizable(node);
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
-    const { selectedNodes, openContextMenu } = useEditorStore();
+    const { selectedNodes } = useEditorStore();
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
-    const shouldUpdateConnections = useRef(false);
     const { updateNodeHeight } = useNodesStore();
     const { theme } = useTheme();
     const { handleNodeMouseDown } = useNodeMouseDown(node);
-    const { isNodeInGroup } = useGroupsStore();
-    const { removeNodeFromGroup } = useGrouping();
+    const { handleContextMenu } = useNodeContextMenu(node);
+
+    const ref = useRef<HTMLDivElement>(null);
+    const shouldUpdateConnections = useRef(false);
 
     const handleToggle = (handle: string): (() => void) => {
         return () => {
@@ -65,28 +63,6 @@ const NodeRows: React.FC<NodeProps> = ({ node, setIsDeleteNodesDialogOpen }) => 
         }
     }, [node.view.height, isOpenMap, updateNodeHeight, node.id]);
 
-    const handleContextMenu = (e: React.MouseEvent) => {
-        e.preventDefault();
-        if (selectedNodes.length > 1) return;
-
-        const contextMenuItems = [];
-
-        const groupId = isNodeInGroup(node.id);
-        if (groupId) {
-            contextMenuItems.push({
-                label: "Remove from group",
-                action: () => removeNodeFromGroup(groupId, node.id)
-            });
-        }
-
-        contextMenuItems.push({
-            label: "Delete",
-            action: () => setIsDeleteNodesDialogOpen?.(true)
-        });
-
-        openContextMenu(e.clientX, e.clientY, contextMenuItems);
-    };
-
     return (
         <div
             ref={ref}
@@ -115,7 +91,7 @@ const NodeRows: React.FC<NodeProps> = ({ node, setIsDeleteNodesDialogOpen }) => 
                             case NodeVariableType.Array:
                                 return (
                                     <ArrayVariable
-                                        key={variable.handle}
+                                        key={'dock-' + node.id + '-' + variable.handle}
                                         variable={variable}
                                         isOpen={isOpenMap[variable.handle] || false}
                                         onToggle={handleToggle(variable.handle)}
@@ -126,7 +102,7 @@ const NodeRows: React.FC<NodeProps> = ({ node, setIsDeleteNodesDialogOpen }) => 
                             case NodeVariableType.String:
                                 return (
                                     <StringVariable
-                                        key={variable.handle}
+                                        key={'dock-' + node.id + '-' + variable.handle}
                                         variable={variable}
                                         nodeId={node.id}
                                         disabled={node.view.disabled}
@@ -135,16 +111,18 @@ const NodeRows: React.FC<NodeProps> = ({ node, setIsDeleteNodesDialogOpen }) => 
                             case NodeVariableType.Number:
                                 return (
                                     <NumberVariable
-                                        key={variable.handle}
+                                        key={'dock-' + node.id + '-' + variable.handle}
                                         variable={variable}
                                         nodeId={node.id}
                                         disabled={node.view.disabled}
                                     />
                                 );
                             case NodeVariableType.Boolean:
+                            case NodeVariableType.TruePath:
+                            case NodeVariableType.FalsePath:
                                 return (
                                     <BooleanVariable
-                                        key={variable.handle}
+                                        key={'dock-' + node.id + '-' + variable.handle}
                                         variable={variable}
                                         nodeId={node.id}
                                         disabled={node.view.disabled}

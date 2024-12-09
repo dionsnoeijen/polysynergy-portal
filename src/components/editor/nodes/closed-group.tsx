@@ -104,7 +104,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                 case NodeVariableType.Array:
                                     return (
                                         <ArrayVariable
-                                            key={variable.handle}
+                                            key={'in-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             isOpen={isOpenMap[variable.handle] || false}
                                             onToggle={handleToggle(variable.handle)}
@@ -117,7 +117,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                 case NodeVariableType.String:
                                     return (
                                         <StringVariable
-                                            key={variable.handle}
+                                            key={'in-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
@@ -128,7 +128,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                 case NodeVariableType.Number:
                                     return (
                                         <NumberVariable
-                                            key={variable.handle}
+                                            key={'in-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
@@ -139,7 +139,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                 case NodeVariableType.Boolean:
                                     return (
                                         <BooleanVariable
-                                            key={variable.handle}
+                                            key={'in-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
@@ -165,7 +165,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                 case NodeVariableType.Array:
                                     return (
                                         <ArrayVariable
-                                            key={variable.handle}
+                                            key={'out-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             isOpen={isOpenMap[variable.handle] || false}
                                             onToggle={handleToggle(variable.handle)}
@@ -178,7 +178,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                 case NodeVariableType.String:
                                     return (
                                         <StringVariable
-                                            key={variable.handle}
+                                            key={'out-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
@@ -189,7 +189,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                 case NodeVariableType.Number:
                                     return (
                                         <NumberVariable
-                                            key={variable.handle}
+                                            key={'out-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
@@ -200,7 +200,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                 case NodeVariableType.Boolean:
                                     return (
                                         <BooleanVariable
-                                            key={variable.handle}
+                                            key={'out-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyOut={true}

@@ -3,17 +3,26 @@ import { useEditorStore } from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import { MARGIN } from "@/utils/constants";
+import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 
 const useGrouping = () => {
-    const { selectedNodes, setSelectedNodes, setOpenGroup } = useEditorStore();
+    const {
+        selectedNodes,
+        setSelectedNodes,
+        setOpenGroup,
+        closeGroup: closeGroupEditorStore,
+        openGroup: currentOpenGroup
+    } = useEditorStore();
     const {
         addGroup,
         closeGroup: closeGroupStore,
         openGroup: openGroupStore,
+        hideGroup,
+        showGroup,
         removeGroup: removeGroupStore,
         removeNodeFromGroup: removeNodeFromGroupStore,
         getNodesInGroup,
-        getGroupById
+        getGroupById,
     } = useGroupsStore();
     const {
         addGroupNode,
@@ -25,23 +34,56 @@ const useGrouping = () => {
         getNode,
         disableNode
     } = useNodesStore();
-    const { findInConnectionsByNodeId, findOutConnectionsByNodeId, removeConnections } = useConnectionsStore();
+    const {
+        findInConnectionsByNodeId,
+        findOutConnectionsByNodeId,
+        removeConnections,
+        showConnectionsInsideOpenGroup,
+        showConnectionsOutsideGroup,
+    } = useConnectionsStore();
 
     const createGroup = () => {
         if (selectedNodes.length < 2) return;
+
         const groupId = addGroup({nodes: selectedNodes});
         setOpenGroup(groupId);
         addGroupNode({ id: groupId });
         setSelectedNodes([]);
         disableAllNodesExceptByIds([...selectedNodes, groupId]);
+        showConnectionsInsideOpenGroup(groupId);
     };
 
-    const closeGroup = (groupId: string, x: number, y: number) => {
+    const closeGroup = (
+        groupId: string,
+        x: number,
+        y: number
+    ) => {
         closeGroupStore(groupId);
-        setOpenGroup(null);
+        hideGroup(groupId);
+        closeGroupEditorStore();
+
+        const { groupStack: newStack } = useEditorStore.getState();
+        const parentGroup = newStack[newStack.length - 1];
+        if (parentGroup) {
+            showGroup(parentGroup);
+            setOpenGroup(parentGroup);
+        } else {
+            setOpenGroup(null);
+        }
+
         updateNodePosition(groupId, x, y);
         setSelectedNodes([]);
         enableAllNodes();
+
+        let showConnections = [];
+        if (parentGroup) {
+            showConnections = showConnectionsInsideOpenGroup(parentGroup);
+        } else {
+            showConnections = showConnectionsOutsideGroup();
+        }
+        setTimeout(() => {
+            updateConnectionsDirectly(showConnections);
+        }, 0);
     };
 
     const openGroup = (groupId: string) => {
@@ -68,19 +110,28 @@ const useGrouping = () => {
             const node = getNode(nodeId);
             if (!node) return;
             updateNodePositionByDelta(nodeId, diffX, diffY);
-
         });
+
+
+        if (currentOpenGroup && currentOpenGroup !== groupId) {
+            hideGroup(currentOpenGroup);
+        }
+
         openGroupStore(groupId);
+        showGroup(groupId);
         setOpenGroup(groupId);
         setSelectedNodes([]);
 
-
         disableAllNodesExceptByIds([...nodesInGroup, groupId]);
+        const showConnections = showConnectionsInsideOpenGroup(groupId);
+        setTimeout(() => {
+            updateConnectionsDirectly(showConnections);
+        }, 0);
     };
 
     const dissolveGroup = (groupId: string) => {
-        const inConnections = findInConnectionsByNodeId(groupId);
-        const outConnections = findOutConnectionsByNodeId(groupId);
+        const inConnections = findInConnectionsByNodeId(groupId, true);
+        const outConnections = findOutConnectionsByNodeId(groupId, true);
         const connections = [...inConnections, ...outConnections];
 
         removeConnections(connections);

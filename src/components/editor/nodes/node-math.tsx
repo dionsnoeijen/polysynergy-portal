@@ -4,12 +4,14 @@ import { useEditorStore } from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
 import { Strong } from "@/components/text";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
+import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 
 type NodeProps = { node: NodeType; };
 
 const NodeMath: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes } = useEditorStore();
     const { handleNodeMouseDown } = useNodeMouseDown(node);
+    const { handleContextMenu } = useNodeContextMenu(node);
 
     return (
         <div
@@ -22,6 +24,7 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
                 width: `50px`,
                 height: `50px`,
             }}
+            onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
             data-type="node"
             data-node-id={node.id}

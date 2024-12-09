@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import useGroupsStore from "@/stores/groupStore";
+import { connectionDevData } from "@/stores/nodeDevData";
 
 export type Connection = {
     id: string;
@@ -15,6 +17,7 @@ export type Connection = {
     disabled?: boolean;
     targetGroupId?: string;
     sourceGroupId?: string;
+    isInGroup?: string;
 };
 
 type ConnectionsStore = {
@@ -29,8 +32,13 @@ type ConnectionsStore = {
     findOutConnectionsByNodeId: (nodeId: string, includeGroupId?: boolean) => Connection[];
     findInConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact?: boolean) => Connection[];
     findOutConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact?: boolean) => Connection[];
+    hideAllConnections: () => void;
+    showAllConnections: () => void;
     hideConnectionsByIds: (connectionIds: string[]) => void;
     showConnectionsByIds: (connectionIds: string[]) => void;
+    showConnectionsInsideOpenGroup: (groupId: string) => Connection[];
+    showConnectionsOutsideGroup: () => Connection[];
+    getConnectionsForOpenGroup: (groupId: string) => Connection[];
     updateConnectionEnd: (
         connectionId: string,
         endX: number,
@@ -44,7 +52,7 @@ type ConnectionsStore = {
 const memoizedResults = new Map();
 
 export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
-    connections: [],
+    connections: connectionDevData,
 
     getConnection: (connectionId: string): Connection | undefined => {
         return useConnectionsStore.getState()
@@ -176,6 +184,20 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             );
     },
 
+    hideAllConnections: () => {
+        memoizedResults.clear();
+        set((state) => ({
+            connections: state.connections.map((c) => ({ ...c, hidden: true })),
+        }));
+    },
+
+    showAllConnections: () => {
+        memoizedResults.clear();
+        set((state) => ({
+            connections: state.connections.map((c) => ({ ...c, hidden: false })),
+        }));
+    },
+
     hideConnectionsByIds: (connectionIds: string[]) => {
         memoizedResults.clear();
         set((state) => ({
@@ -190,6 +212,69 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             connections: state.connections.map((c) => (
                 connectionIds.includes(c.id) ? { ...c, hidden: false } : c)),
         }));
+    },
+
+    showConnectionsOutsideGroup: (): Connection[] => {
+        memoizedResults.clear();
+        useConnectionsStore.getState().showAllConnections();
+
+        const groups = useGroupsStore.getState().groups;
+        const allConnectionsToHide: Connection[] = [];
+
+        Object.keys(groups).forEach((groupId) => {
+            const groupConnections = useConnectionsStore.getState().getConnectionsForOpenGroup(groupId);
+            allConnectionsToHide.push(...groupConnections);
+        });
+
+        useConnectionsStore.getState().hideConnectionsByIds(allConnectionsToHide.map((c) => c.id));
+
+        const allConnections = useConnectionsStore.getState().connections;
+        return allConnections.filter(
+            (connection) => !allConnectionsToHide.some((hidden) => hidden.id === connection.id)
+        );
+    },
+
+    showConnectionsInsideOpenGroup: (groupId: string): Connection[] => {
+        memoizedResults.clear();
+        useConnectionsStore.getState().hideAllConnections();
+        const showConnections = useConnectionsStore.getState().getConnectionsForOpenGroup(groupId);
+
+        useConnectionsStore.getState().showConnectionsByIds(showConnections.map((c) => c.id));
+        return showConnections;
+    },
+
+    getConnectionsForOpenGroup: (groupId: string): Connection[] => {
+        memoizedResults.clear();
+        const group = useGroupsStore.getState().getGroupById(groupId);
+        if (!group) return [];
+
+        const uniqueConnections = new Map<string, Connection>();
+
+        group.nodes.forEach((nodeId) => {
+            const inConnections = useConnectionsStore.getState()
+                .findInConnectionsByNodeId(nodeId, true);
+            const outConnections = useConnectionsStore.getState()
+                .findOutConnectionsByNodeId(nodeId, true);
+
+            [...inConnections, ...outConnections].forEach((connection) => {
+                const key = `${connection.sourceNodeId}-${connection.targetNodeId}-${connection.id}`;
+                if (!uniqueConnections.has(key)) {
+                    uniqueConnections.set(key, connection);
+                }
+            });
+        });
+
+        const allConnections = Array.from(uniqueConnections.values());
+
+        const connectionsInOpenGroup = allConnections.filter((connection) => (
+            connection.isInGroup === groupId
+        ));
+
+        if (!connectionsInOpenGroup || connectionsInOpenGroup.length === 0) {
+            return [];
+        }
+
+        return connectionsInOpenGroup;
     },
 
     updateConnectionEnd: (

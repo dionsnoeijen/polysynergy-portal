@@ -51,11 +51,15 @@ type EditorState = {
     contextMenu: ContextMenu;
     openContextMenu: (x: number, y: number, items: Array<{ label: string; action: () => void }>) => void;
     closeContextMenu: () => void;
+    groupStack: string[];
     openGroup: string | null;
     setOpenGroup: (groupId: string | null) => void;
+    closeGroup: () => void;
+    deleteNodesDialogOpen: boolean;
+    setDeleteNodesDialogOpen: (isOpen: boolean) => void;
 };
 
-export const useEditorStore = create<EditorState>((set) => ({
+export const useEditorStore = create<EditorState>((set, get) => ({
     zoomFactor: 1,
     setZoomFactor: (factor) => set({ zoomFactor: factor }),
     panPosition: { x: 0, y: 0 },
@@ -107,6 +111,35 @@ export const useEditorStore = create<EditorState>((set) => ({
         set({ contextMenu: { visible: true, x, y, items } }),
     closeContextMenu: () =>
         set({ contextMenu: { visible: false, x: 0, y: 0, items: [] } }),
+    groupStack: [],
     openGroup: null,
-    setOpenGroup: (groupId) => set({ openGroup: groupId }),
+    setOpenGroup: (groupId: string | null) => {
+        const { groupStack } = get();
+        if (groupId) {
+            if (groupStack[groupStack.length - 1] !== groupId) {
+                set((state) => ({
+                    groupStack: [...state.groupStack, groupId],
+                    openGroup: groupId,
+                }));
+            }
+        } else {
+            set({
+                groupStack: [],
+                openGroup: null,
+            });
+        }
+    },
+    closeGroup: () => {
+        const { groupStack } = get();
+        if (groupStack.length > 0) {
+            const newStack = [...groupStack];
+            newStack.pop();
+            set({
+                groupStack: newStack,
+                openGroup: newStack.length > 0 ? newStack[newStack.length - 1] : null,
+            });
+        }
+    },
+    deleteNodesDialogOpen: false,
+    setDeleteNodesDialogOpen: (isOpen) => set({ deleteNodesDialogOpen: isOpen }),
 }));

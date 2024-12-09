@@ -20,7 +20,8 @@ export const useConnectorHandlers = (
         updateConnection,
     } = useConnectionsStore();
     const {
-        setIsDrawingConnection
+        setIsDrawingConnection,
+        openGroup
     } = useEditorStore();
 
     const startedFromGroup = useRef(false);
@@ -72,6 +73,7 @@ export const useConnectorHandlers = (
                 const nodeGroupTarget = target.closest('[data-type="closed-group"]');
 
                 const connection = getConnection(existingConnection.id);
+
                 if (connection) {
                     connection.targetHandle = targetHandle;
                     connection.targetNodeId = targetNodeId;
@@ -147,12 +149,12 @@ export const useConnectorHandlers = (
                     .getAttribute("data-group-id") as string;
 
                 const connection = getConnection(id);
-
                 const nodeGroupTarget = target.closest('[data-type="closed-group"]');
 
                 if (connection) {
                     connection.targetHandle = targetHandle;
-                    connection.targetNodeId = targetNodeId
+                    connection.targetNodeId = targetNodeId;
+                    connection.isInGroup = openGroup;
                     if (nodeGroupTarget && targetGroupId && groupId) {
                         connection.sourceGroupId = groupId;
                         connection.targetGroupId = targetGroupId;
@@ -160,8 +162,8 @@ export const useConnectorHandlers = (
                     if (!nodeGroupTarget && groupId) {
                         connection.sourceGroupId = groupId;
                     }
-                    if (nodeGroupTarget && targetGroupId && groupId === null) {
-                        connection.targetGroupId = nodeGroupTarget.getAttribute("data-node-id") as string;
+                    if (targetGroupId && groupId === null) {
+                        connection.targetGroupId = targetGroupId;
                     }
                     const updatedConnection = updateConnectionsDirectly([connection]);
                     updatedConnection.forEach((upd) => {

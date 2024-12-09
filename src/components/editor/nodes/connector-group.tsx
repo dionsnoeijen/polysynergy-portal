@@ -62,7 +62,7 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
                             data-group-id={groupId}
                             data-handle={slot.id}
                             data-enabled={true}
-                            className={`w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-sky-500 dark:ring-white bg-white dark:bg-slate-800 cursor-pointer
+                            className={`w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-sky-500 dark:ring-white bg-white dark:bg-slate-800 cursor-pointer 
                             ${
                                 isOut ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
                             }`}

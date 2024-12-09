@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useLayoutEffect, useState } from "react";
+import React, { useRef, useCallback, useLayoutEffect, useState } from "react";
 import { Connection as ConnectionProps } from "@/stores/connectionsStore";
 import { useTheme } from "next-themes";
 

@@ -67,7 +67,7 @@ export const getNodeBoundsFromDOM = (nodeIds: string[]) => {
     let foundAny = false;
 
     nodeIds.forEach((nodeId) => {
-        const el = document.querySelector(`[data-node-id="${nodeId}"]`);
+        const el = document.querySelector(`[data-node-id="${nodeId}"]`)
         if (!el) return;
         foundAny = true;
 

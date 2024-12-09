@@ -199,6 +199,8 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                         />
                                     );
                                 case NodeVariableType.Boolean:
+                                case NodeVariableType.TruePath:
+                                case NodeVariableType.FalsePath:
                                     return (
                                         <BooleanVariable
                                             key={'out-' + variable.handle + '-' + nodeId}

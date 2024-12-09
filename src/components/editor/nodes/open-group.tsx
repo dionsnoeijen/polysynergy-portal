@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { Group } from "@/stores/groupStore";
 import { useEditorStore } from "@/stores/editorStore";
 import ConnectorGroup from "@/components/editor/nodes/connector-group";
-import { useConnectionsStore } from "@/stores/connectionsStore";
 import {
     Dialog,
     DialogTitle,
@@ -21,13 +20,9 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
     const { openContextMenu, setSelectedNodes, isDragging, zoomFactor } = useEditorStore();
     const { closeGroup, dissolveGroup } = useGrouping();
 
-    const { findInConnectionsByNodeId, findOutConnectionsByNodeId } = useConnectionsStore();
-
-    const inConnections = findInConnectionsByNodeId(group.id);
-    const outConnections = findOutConnectionsByNodeId(group.id);
-
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [tick, setTick] = useState(0);
+    const [bounds, setBounds] = useState({ minX:0, minY:0, maxX:0, maxY:0 });
 
     const rafRef = useRef<number|null>(null);
 
@@ -47,23 +42,24 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
     // eslint-disable-next-line
     }, [isDragging]);
 
-    const getBoundsFromDOM = () => {
-        const {minX, minY, maxX, maxY, foundAny} = getNodeBoundsFromDOM(group.nodes);
-        if (!foundAny) {
-            requestAnimationFrame(() => {
-                setTick((t) => t + 1);
-            });
-            return { minX:0, minY:0, maxX:0, maxY:0 };
-        }
-        return { minX, minY, maxX, maxY };
-    };
+    useLayoutEffect(() => {
+        const frameId = requestAnimationFrame(() => {
+            const {minX, minY, maxX, maxY, foundAny} = getNodeBoundsFromDOM(group.nodes);
+            if (!foundAny) {
+                requestAnimationFrame(() => {
+                    setTick((t) => t + 1);
+                });
+            } else {
+                setBounds({ minX, minY, maxX, maxY });
+            }
+        });
 
-    const bounds = useMemo(() => {
-        return getBoundsFromDOM();
-    // eslint-disable-next-line
-    }, [tick, inConnections, outConnections]);
+        return () => {
+            cancelAnimationFrame(frameId);
+        };
+    }, [tick, group.nodes]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const closedGroupNodeEl = document.querySelector(`[data-node-id="${group.id}"][data-type="closed-group"]`) as HTMLElement;
         if (!closedGroupNodeEl) return;
 

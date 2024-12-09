@@ -21,7 +21,7 @@ type NodeProps = {
 const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const { size, handleResizeMouseDown } = useResizable(node);
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
-    const { selectedNodes } = useEditorStore();
+    const { selectedNodes, zoomFactor } = useEditorStore();
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
     const { updateNodeHeight } = useNodesStore();
     const { theme } = useTheme();
@@ -56,7 +56,7 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
 
     useEffect(() => {
         if (ref.current) {
-            const actualHeight = ref.current.getBoundingClientRect().height;
+            const actualHeight = ref.current.getBoundingClientRect().height / zoomFactor;
             if (actualHeight !== node.view.height) {
                 updateNodeHeight(node.id, actualHeight);
             }

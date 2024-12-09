@@ -141,7 +141,7 @@ const useGrouping = () => {
         const bounds = getNodeBoundsFromState(nodesInGroup);
 
         const width = bounds.maxX - bounds.minX;
-        const height = bounds.maxY - bounds.minY;
+        const height = bounds.maxY - bounds.minY;;
 
         const nodesCenterX = bounds.minX + (width / 2);
         const nodesCenterY = bounds.minY + (height / 2);

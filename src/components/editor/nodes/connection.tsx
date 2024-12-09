@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect, useCallback, useLayoutEffect, useState } from "react";
 import { Connection as ConnectionProps } from "@/stores/connectionsStore";
 import { useTheme } from "next-themes";
 
@@ -10,6 +10,8 @@ const Connection: React.FC<Props> = ({ connection }) => {
     const pathRef = useRef<SVGPathElement>(null);
     const startDotRef = useRef<HTMLDivElement>(null);
     const endDotRef = useRef<HTMLDivElement>(null);
+
+    const [isReady, setIsReady] = useState(false);
 
     const { theme } = useTheme();
 
@@ -40,8 +42,9 @@ const Connection: React.FC<Props> = ({ connection }) => {
         endDotRef.current.style.top = `${connection.endY - dotRadius}px`;
     }, [connection]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         updatePathAndDots();
+        setIsReady(true);
     }, [connection, updatePathAndDots]);
 
     return (
@@ -52,6 +55,8 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     pointerEvents: "none",
                     overflow: "visible",
                     zIndex: 1,
+                    opacity: isReady ? 1 : 0,
+                    transition: "opacity 0.2s ease-out 0.2s"
                 }}
             >
                 <path
@@ -74,6 +79,8 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     backgroundColor: color,
                     zIndex: 100,
                     pointerEvents: "none",
+                    opacity: isReady ? 1 : 0,
+                    transition: "opacity 0.2s ease-out 0.2s"
                 }}
             />
             <div
@@ -88,6 +95,8 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     zIndex: 100,
                     pointerEvents: "none",
                     cursor: "pointer",
+                    opacity: isReady ? 1 : 0,
+                    transition: "opacity 0.2s ease-out 0.2s"
                 }}
             />
         </>

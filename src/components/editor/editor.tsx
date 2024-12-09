@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import { useZoom } from "@/hooks/editor/useZoom";
 import { usePan } from "@/hooks/editor/usePan";
 import { Grid } from "@/components/editor/grid";
@@ -101,11 +101,6 @@ export default function Editor() {
         setDeleteNodesDialogOpen(false);
     };
 
-    const nodesToRender = useMemo(
-        () => getNodesToRender(),
-        [getNodesToRender]
-    );
-
     return (
         <div
             data-type="editor"
@@ -130,7 +125,7 @@ export default function Editor() {
                     <OpenGroup key={group.id} group={group} />
                 ))}
 
-                {nodesToRender.map((node) => (
+                {getNodesToRender().map((node) => (
                     <Node key={node.id} node={node} />
                 ))}
 

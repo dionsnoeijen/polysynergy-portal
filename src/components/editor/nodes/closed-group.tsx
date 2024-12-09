@@ -85,6 +85,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
             data-node-id={node.id}
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
+            onDoubleClick={() => openGroup(node.id)}
             style={{
                 left: node.view.x,
                 top: node.view.y,

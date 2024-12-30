@@ -1,3 +1,10 @@
+declare global {
+    interface Window {
+        debugMode: boolean;
+        toggleDebug: () => void;
+    }
+}
+
 export enum FormType {
     AddRoute = 'addRoute',
     EditRoute = 'editRoute',

@@ -1,11 +1,11 @@
 import useGroupsStore from "@/stores/groupStore";
-import { useEditorStore } from "@/stores/editorStore";
+import {useEditorStore} from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
-import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
-import { getNodeBoundsFromDOM, getNodeBoundsFromState } from "@/utils/positionUtils";
-import { updateNodesDirectly } from "@/utils/updateNodesDirectly";
-import { NodeType } from "@/types/types";
+import {Connection, useConnectionsStore} from "@/stores/connectionsStore";
+import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
+import {getNodeBoundsFromDOM, getNodeBoundsFromState} from "@/utils/positionUtils";
+import {updateNodesDirectly} from "@/utils/updateNodesDirectly";
+import {NodeType} from "@/types/types";
 
 const useGrouping = () => {
     const {
@@ -72,7 +72,10 @@ const useGrouping = () => {
                 const targetInside =
                     selectedNodes.includes(connection.targetNodeId as string) ||
                     connection.targetGroupId === groupId;
-                return !(sourceInside && targetInside);
+                const isGroupToNodeOrGroup =
+                    (connection.sourceGroupId && selectedNodes.includes(connection.targetNodeId as string)) ||
+                    (connection.targetGroupId && selectedNodes.includes(connection.sourceNodeId));
+                return !(sourceInside && targetInside) && !isGroupToNodeOrGroup;
             };
             connectionsToRemove.push(
                 ...inCon.filter(filterOutside),
@@ -102,7 +105,6 @@ const useGrouping = () => {
         addGroupNode({id:groupId});
         setSelectedNodes([]);
         disableAllNodesExceptByIds([...selectedNodes, groupId]);
-        showConnectionsInsideOpenGroup(groupId);
     };
 
     const closeGroup = (

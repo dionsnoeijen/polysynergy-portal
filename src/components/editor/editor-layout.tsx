@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import ItemManager from "@/components/editor/sidebars/item-manager";
 import Dock from "@/components/editor/sidebars/dock";
-import { ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon } from "@heroicons/react/16/solid";
-import { useEditorStore } from "@/stores/editorStore";
+import {ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon} from "@heroicons/react/16/solid";
+import {useEditorStore} from "@/stores/editorStore";
 import Form from "@/components/editor/form";
 import SelectionsMenu from "@/components/editor/editormenus/selections-menu";
 import UndoRedoMenu from "@/components/editor/editormenus/undo-redo-menu";
@@ -92,6 +92,14 @@ export function EditorLayout({
     );
 
     useEffect(() => {
+        if (typeof window !== "undefined") {
+            window.debugMode = false;
+            window.toggleDebug = function () {
+                window.debugMode = !window.debugMode;
+                console.log("Debug mode is:", window.debugMode);
+            };
+        }
+
         if (resizing) {
             document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', stopResizing);

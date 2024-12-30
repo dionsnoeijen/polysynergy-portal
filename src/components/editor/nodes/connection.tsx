@@ -76,17 +76,20 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     fill="none"
                     strokeDasharray={dashArray}
                 />
-                <text
-                    x={middle.x}
-                    y={middle.y}
-                    fill={color}
-                    dominantBaseline="middle"
-                    textAnchor="middle"
-                    style={{pointerEvents: "none"}}
-                >
-                    {connection.id}
-                </text>
-            </svg>
+                {window.debugMode && (
+                    <text
+                        x={middle.x}
+                        y={middle.y}
+                        fill={color}
+                        dominantBaseline="middle"
+                        textAnchor="middle"
+                        className={'relative z-[100]'}
+                        style={{pointerEvents: "none"}}
+                    >
+                        {connection.id}
+                    </text>
+                )}
+        </svg>
             <div
                 ref={startDotRef}
                 data-connection-start-id={connection.id}

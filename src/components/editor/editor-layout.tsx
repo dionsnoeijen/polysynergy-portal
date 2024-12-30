@@ -1,14 +1,20 @@
+'use client';
+
 import React, { useCallback, useEffect, useState } from 'react';
 import ItemManager from "@/components/editor/sidebars/item-manager";
 import Dock from "@/components/editor/sidebars/dock";
 import { ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon } from "@heroicons/react/16/solid";
-import Editor from "@/components/editor/editor";
 import { useEditorStore } from "@/stores/editorStore";
 import Form from "@/components/editor/form";
 import SelectionsMenu from "@/components/editor/editormenus/selections-menu";
 import UndoRedoMenu from "@/components/editor/editormenus/undo-redo-menu";
 import BottomBar from "@/components/editor/bottombars/bottom-bar";
 import ContextMenu from "@/components/editor/context-menu";
+import dynamic from 'next/dynamic';
+
+const Editor = dynamic(() => import('@/components/editor/editor'), {
+  ssr: false
+});
 
 export function EditorLayout({
     projectUuid = null,

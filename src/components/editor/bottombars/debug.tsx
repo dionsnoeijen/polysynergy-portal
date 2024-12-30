@@ -1,9 +1,13 @@
+'use client';
+
 import React, { useEffect, useState } from "react";
 import useNodesStore from "@/stores/nodesStore";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import useGroupsStore from "@/stores/groupStore";
-import ReactJson from "react-json-view";
 import { useTheme } from 'next-themes';
+import dynamic from "next/dynamic";
+
+const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
 
 const Debug: React.FC = (): React.ReactElement => {
     const { nodes } = useNodesStore();
@@ -37,7 +41,7 @@ const Debug: React.FC = (): React.ReactElement => {
                         src={nodesSnapshot}
                         theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
                         collapsed={false}
-                        displayDataTypes={false}
+                        displayDataTypes={true}
                         indentWidth={2}
                     />
                 </div>
@@ -51,7 +55,7 @@ const Debug: React.FC = (): React.ReactElement => {
                         src={connectionsSnapshot}
                         theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
                         collapsed={false}
-                        displayDataTypes={false}
+                        displayDataTypes={true}
                         indentWidth={2}
                     />
                 </div>
@@ -65,7 +69,7 @@ const Debug: React.FC = (): React.ReactElement => {
                         src={groupsSnapshot}
                         theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
                         collapsed={false}
-                        displayDataTypes={false}
+                        displayDataTypes={true}
                         indentWidth={2}
                     />
                 </div>

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useRef, useEffect, useCallback } from 'react';
 import { useZoom } from "@/hooks/editor/useZoom";
 import { usePan } from "@/hooks/editor/usePan";

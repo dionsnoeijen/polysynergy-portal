@@ -5,6 +5,7 @@ import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 import { getNodeBoundsFromDOM, getNodeBoundsFromState } from "@/utils/positionUtils";
 import { updateNodesDirectly } from "@/utils/updateNodesDirectly";
+import { NodeType } from "@/types/types";
 
 const useGrouping = () => {
     const {
@@ -49,32 +50,66 @@ const useGrouping = () => {
 
         const groupId = addGroup({ nodes: selectedNodes });
 
-        const outsideConnections: Connection[] = [];
+        // 1: Remove connections that fall outside the group
+        // those are the connections that make a connection to a node that is not in the
+        // selected nodes array. If the selected node array contains a group, make sure the connections
+        // that are inside this group, are not removed. This can be done by checking the visibility status
+        // of the connection. Since an invisible connection, should not be removed.
+
+        const connectionsToRemove: Connection[] = [];
+
         selectedNodes.forEach((nodeId) => {
-            const inCon = findInConnectionsByNodeId(nodeId);
-            const outCon = findOutConnectionsByNodeId(nodeId);
-
-            [...inCon, ...outCon].forEach((con) => {
-                updateConnection({...con, isInGroup: groupId});
-            });
-
+            const inCon = findInConnectionsByNodeId(nodeId, true, false);
+            const outCon = findOutConnectionsByNodeId(nodeId, true, false);
             const filterOutside = (connection: Connection) => {
-                const sourceInside = selectedNodes.includes(connection.sourceNodeId) ||
+                const sourceInside =
+                    selectedNodes.includes(connection.sourceNodeId) ||
                     connection.sourceGroupId === groupId;
-                const targetInside = selectedNodes.includes(connection.targetNodeId as string) ||
+                const targetInside =
+                    selectedNodes.includes(connection.targetNodeId as string) ||
                     connection.targetGroupId === groupId;
-
                 return !(sourceInside && targetInside);
             };
-
-            outsideConnections.push(
+            connectionsToRemove.push(
                 ...inCon.filter(filterOutside),
                 ...outCon.filter(filterOutside)
             );
         });
 
-        const uniqueOutsideConnections = Array.from(new Set(outsideConnections));
-        removeConnections(uniqueOutsideConnections);
+        console.log('connections to remove', connectionsToRemove);
+
+        // 2: Update connections that fall inside the group with the new group id
+        // those are the remaining visible connections that are inside the group, after
+        // the removal of the outside connections
+
+        // const outsideConnections: Connection[] = [];
+        // selectedNodes.forEach((nodeId) => {
+        //     const inCon = findInConnectionsByNodeId(nodeId);
+        //     const outCon = findOutConnectionsByNodeId(nodeId);
+        //
+        //     [...inCon, ...outCon].forEach((con) => {
+        //         updateConnection({...con, isInGroup: groupId});
+        //     });
+        //
+        //     const filterOutside = (connection: Connection) => {
+        //         const sourceInside =
+        //             selectedNodes.includes(connection.sourceNodeId) ||
+        //             connection.sourceGroupId === groupId;
+        //         const targetInside =
+        //             selectedNodes.includes(connection.targetNodeId as string) ||
+        //             connection.targetGroupId === groupId;
+        //
+        //         return !(sourceInside && targetInside);
+        //     };
+        //
+        //     outsideConnections.push(
+        //         ...inCon.filter(filterOutside),
+        //         ...outCon.filter(filterOutside)
+        //     );
+        // });
+        //
+        // const uniqueOutsideConnections = Array.from(new Set(outsideConnections));
+        // removeConnections(uniqueOutsideConnections);
 
         setOpenGroup(groupId);
         addGroupNode({id:groupId});
@@ -86,7 +121,6 @@ const useGrouping = () => {
     const closeGroup = (
         groupId: string,
     ) => {
-
         const group = getGroupById(groupId);
         if (!group) return;
         const bounds = getNodeBoundsFromDOM(group?.nodes);
@@ -141,7 +175,7 @@ const useGrouping = () => {
         const bounds = getNodeBoundsFromState(nodesInGroup);
 
         const width = bounds.maxX - bounds.minX;
-        const height = bounds.maxY - bounds.minY;;
+        const height = bounds.maxY - bounds.minY;
 
         const nodesCenterX = bounds.minX + (width / 2);
         const nodesCenterY = bounds.minY + (height / 2);
@@ -196,9 +230,38 @@ const useGrouping = () => {
         }
     };
 
+    const deleteGroup = (groupId: string) => {
+        const group = getGroupById(groupId);
+        if (!group) return;
+
+        const inConnections = findInConnectionsByNodeId(groupId);
+        const outConnections = findOutConnectionsByNodeId(groupId);
+        const connections = [...inConnections, ...outConnections];
+        removeConnections(connections);
+
+        group.nodes.forEach((nodeId) => {
+            const node = getNode(nodeId);
+            if (!node) return;
+
+            const inConnections = findInConnectionsByNodeId(nodeId);
+            const outConnections = findOutConnectionsByNodeId(nodeId);
+            const connections = [...inConnections, ...outConnections];
+            removeConnections(connections);
+
+            if (node.node_type === NodeType.Group) {
+                deleteGroup(nodeId);
+            } else {
+                removeNode(nodeId);
+            }
+        });
+
+        removeGroupStore(groupId);
+    };
+
     return {
         createGroup,
         closeGroup,
+        deleteGroup,
         openGroup,
         dissolveGroup,
         removeNodeFromGroup

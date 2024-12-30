@@ -16,7 +16,7 @@ type GroupProps = { node: Node };
 const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
     const ref = useRef<HTMLDivElement>(null);
     const { selectedNodes, openContextMenu } = useEditorStore();
-    const { openGroup } = useGrouping();
+    const { openGroup, deleteGroup } = useGrouping();
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
     const { variablesForGroup } = useVariablesForGroup(node.id, false);
@@ -32,13 +32,11 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
             [
                 {
                     label: "Open Group",
-                    action: () => {
-                        openGroup(node.id);
-                    },
+                    action: () => openGroup(node.id),
                 },
                 {
                     label: "Delete Group",
-                    action: () => console.log("Delete Group"),
+                    action: () => deleteGroup(node.id),
                 },
             ]
         );

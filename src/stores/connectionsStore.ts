@@ -28,8 +28,8 @@ type ConnectionsStore = {
     removeConnection: (connection: Connection) => void;
     removeConnections: (connections: Connection[]) => void;
     updateConnection: (connection: Connection) => void;
-    findInConnectionsByNodeId: (nodeId: string, includeGroupId?: boolean) => Connection[];
-    findOutConnectionsByNodeId: (nodeId: string, includeGroupId?: boolean) => Connection[];
+    findInConnectionsByNodeId: (nodeId: string, includeGroupId?: boolean, includeHidden?: boolean) => Connection[];
+    findOutConnectionsByNodeId: (nodeId: string, includeGroupId?: boolean, includeHidden?: boolean) => Connection[];
     findInConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact?: boolean) => Connection[];
     findOutConnectionsByNodeIdAndHandle: (nodeId: string, handle: string, matchExact?: boolean) => Connection[];
     hideAllConnections: () => void;
@@ -109,18 +109,21 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
     findInConnectionsByNodeId: (
         nodeId: string,
-        includeGroupId: boolean = false
+        includeGroupId: boolean = false,
+        includeHidden: boolean = true
     ): Connection[] => {
-        const key = `in-${nodeId}-${includeGroupId}`;
+        const key = `in-${nodeId}-${includeGroupId}-${includeHidden}`;
         if (!memoizedResults.has(key)) {
-            const result = get()
-                .connections
-                .filter((c) => {
-                    if (!includeGroupId) {
-                        return c.targetNodeId === nodeId
-                    }
-                    return c.targetNodeId === nodeId || c.targetGroupId === nodeId;
-                });
+            const result = get().connections.filter((c) => {
+                const matchesNode = includeGroupId
+                    ? c.targetNodeId === nodeId || c.targetGroupId === nodeId
+                    : c.targetNodeId === nodeId;
+
+                if (!matchesNode) return false;
+
+                return !(!includeHidden && c.hidden);
+            });
+
             memoizedResults.set(key, result);
         }
         return memoizedResults.get(key);
@@ -128,20 +131,24 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
     findOutConnectionsByNodeId: (
         nodeId: string,
-        includeGroupId: boolean = false
+        includeGroupId: boolean = false,
+        includeHidden: boolean = true
     ): Connection[] => {
-        const key = `out-${nodeId}-${includeGroupId}`;
+        const key = `out-${nodeId}-${includeGroupId}-${includeHidden}`;
         if (!memoizedResults.has(key)) {
-            const result = get()
-                .connections
-                .filter((c) => {
-                    if (!includeGroupId) {
-                        return c.sourceNodeId === nodeId;
-                    }
-                    return c.sourceNodeId === nodeId || c.sourceGroupId === nodeId;
-                });
+            const result = get().connections.filter((c) => {
+                const matchesNode = includeGroupId
+                    ? (c.sourceNodeId === nodeId || c.sourceGroupId === nodeId)
+                    : (c.sourceNodeId === nodeId);
+
+                if (!matchesNode) return false;
+
+                return !(!includeHidden && c.hidden);
+            });
+
             memoizedResults.set(key, result);
         }
+
         return memoizedResults.get(key);
     },
 

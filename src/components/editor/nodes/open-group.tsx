@@ -24,6 +24,8 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
     const [tick, setTick] = useState(0);
     const [bounds, setBounds] = useState({ minX:0, minY:0, maxX:0, maxY:0 });
 
+    // @todo: This can be used for a smooth in animation,
+    //   but it;s not working as expected, so it's disabled for now.
     const [isReady, setIsReady] = useState(false);
 
     const rafRef = useRef<number|null>(null);
@@ -123,8 +125,6 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
                     top: bounds.minY - MARGIN,
                     width: width + (MARGIN * 2),
                     height: height + (MARGIN * 2),
-                    opacity: isReady ? 1 : 0,
-                    transition: "opacity 0.2s ease-out 0.2s"
                 }}
             >
                 <ConnectorGroup in groupId={group.id}/>

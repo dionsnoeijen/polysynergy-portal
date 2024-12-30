@@ -57,10 +57,14 @@ const useGrouping = () => {
         // of the connection. Since an invisible connection, should not be removed.
 
         const connectionsToRemove: Connection[] = [];
+        const connectionsToAssignToGroup: Connection[] = [];
 
         selectedNodes.forEach((nodeId) => {
             const inCon = findInConnectionsByNodeId(nodeId, true, false);
             const outCon = findOutConnectionsByNodeId(nodeId, true, false);
+
+            connectionsToAssignToGroup.push(...inCon, ...outCon);
+
             const filterOutside = (connection: Connection) => {
                 const sourceInside =
                     selectedNodes.includes(connection.sourceNodeId) ||
@@ -76,40 +80,23 @@ const useGrouping = () => {
             );
         });
 
-        console.log('connections to remove', connectionsToRemove);
+        const connectionsRemaining = Array.from(new Set(connectionsToAssignToGroup))
+            .filter(
+                (con) => !connectionsToRemove.includes(con)
+            );
+
+        removeConnections(connectionsToRemove);
 
         // 2: Update connections that fall inside the group with the new group id
         // those are the remaining visible connections that are inside the group, after
         // the removal of the outside connections
 
-        // const outsideConnections: Connection[] = [];
-        // selectedNodes.forEach((nodeId) => {
-        //     const inCon = findInConnectionsByNodeId(nodeId);
-        //     const outCon = findOutConnectionsByNodeId(nodeId);
-        //
-        //     [...inCon, ...outCon].forEach((con) => {
-        //         updateConnection({...con, isInGroup: groupId});
-        //     });
-        //
-        //     const filterOutside = (connection: Connection) => {
-        //         const sourceInside =
-        //             selectedNodes.includes(connection.sourceNodeId) ||
-        //             connection.sourceGroupId === groupId;
-        //         const targetInside =
-        //             selectedNodes.includes(connection.targetNodeId as string) ||
-        //             connection.targetGroupId === groupId;
-        //
-        //         return !(sourceInside && targetInside);
-        //     };
-        //
-        //     outsideConnections.push(
-        //         ...inCon.filter(filterOutside),
-        //         ...outCon.filter(filterOutside)
-        //     );
-        // });
-        //
-        // const uniqueOutsideConnections = Array.from(new Set(outsideConnections));
-        // removeConnections(uniqueOutsideConnections);
+        connectionsRemaining.forEach((connection) => {
+            updateConnection({
+                ...connection,
+                isInGroup: groupId
+            });
+        });
 
         setOpenGroup(groupId);
         addGroupNode({id:groupId});

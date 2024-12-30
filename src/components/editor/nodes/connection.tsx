@@ -12,6 +12,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
     const endDotRef = useRef<HTMLDivElement>(null);
 
     const [isReady, setIsReady] = useState(false);
+    const [middle, setMiddle] = useState({ x: 0, y: 0 });
 
     const { theme } = useTheme();
 
@@ -44,6 +45,14 @@ const Connection: React.FC<Props> = ({ connection }) => {
 
     useLayoutEffect(() => {
         updatePathAndDots();
+        const length = pathRef.current?.getTotalLength();
+        if (length) {
+            const midpoint = length / 2;
+            const midpointLocation = pathRef.current?.getPointAtLength(midpoint);
+            if (midpointLocation) {
+                setMiddle({ x: midpointLocation.x, y: midpointLocation.y });
+            }
+        }
         setIsReady(true);
     }, [connection, updatePathAndDots]);
 
@@ -67,6 +76,16 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     fill="none"
                     strokeDasharray={dashArray}
                 />
+                <text
+                    x={middle.x}
+                    y={middle.y}
+                    fill={color}
+                    dominantBaseline="middle"
+                    textAnchor="middle"
+                    style={{pointerEvents: "none"}}
+                >
+                    {connection.id}
+                </text>
             </svg>
             <div
                 ref={startDotRef}

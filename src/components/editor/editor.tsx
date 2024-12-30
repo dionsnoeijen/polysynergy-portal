@@ -17,6 +17,7 @@ import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import OpenGroup from "@/components/editor/nodes/open-group";
 import DeleteDialog from "@/components/editor/nodes/delete-dialog";
 import { useDeleteNode } from "@/hooks/editor/nodes/useDeleteNode";
+import AddNode from "@/components/editor/add-node";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -28,7 +29,8 @@ export default function Editor() {
         panPosition,
         selectedNodes,
         deleteNodesDialogOpen,
-        setDeleteNodesDialogOpen
+        setDeleteNodesDialogOpen,
+        setShowAddingNode
     } = useEditorStore();
     const { getNodesToRender } = useNodesStore();
     const { connections } = useConnectionsStore();
@@ -73,6 +75,9 @@ export default function Editor() {
             if (selectedNodes.length > 0) {
                 setDeleteNodesDialogOpen(true);
             }
+        },
+        'shift+a': () => {
+            setShowAddingNode(true);
         },
         'ctrl+shift+g': () => {
             console.log('DEGROUP');
@@ -142,6 +147,7 @@ export default function Editor() {
             </div>
 
             <BoxSelect />
+            <AddNode />
 
             <DeleteDialog
                 isOpen={deleteNodesDialogOpen}

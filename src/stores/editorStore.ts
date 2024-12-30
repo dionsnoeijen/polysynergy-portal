@@ -57,6 +57,10 @@ type EditorState = {
     closeGroup: () => void;
     deleteNodesDialogOpen: boolean;
     setDeleteNodesDialogOpen: (isOpen: boolean) => void;
+    addingNode: string | null;
+    setAddingNode: (nodeId: string | null) => void;
+    showAddingNode: boolean;
+    setShowAddingNode: (show: boolean) => void;
 };
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -142,4 +146,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     },
     deleteNodesDialogOpen: false,
     setDeleteNodesDialogOpen: (isOpen) => set({ deleteNodesDialogOpen: isOpen }),
+    addingNode: null,
+    setAddingNode: (nodeId: string | null) => set({ addingNode: nodeId }),
+    showAddingNode: false,
+    setShowAddingNode: (show: boolean) => set({ showAddingNode: show }),
 }));

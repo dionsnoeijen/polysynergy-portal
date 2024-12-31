@@ -14,6 +14,7 @@ type NodesStore = {
     addGroupNode: (node: Partial<Node>) => void;
     removeNode: (nodeId: string) => void;
     updateNode: (nodeId: string, updatedFields: Partial<Node>) => void;
+    setAddingStatus: (nodeId: string, adding: boolean) => void;
     updateNodePosition: (nodeId: string, x: number, y: number) => void;
     updateNodePositionByDelta: (nodeId: string, deltaX: number, deltaY: number) => void;
     updateNodeWidth: (nodeId: string, width: number) => void;
@@ -138,7 +139,16 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    updateNodePosition: (nodeId, x, y) => {
+    setAddingStatus: (nodeId: string, adding: boolean) => {
+        nodesByIdsCache.clear();
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId ? { ...node, view: { ...node.view, adding } } : node
+            ),
+        }));
+    },
+
+    updateNodePosition: (nodeId: string, x: number, y: number) => {
         nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>

@@ -1,17 +1,42 @@
 import { Node as NodeType, NodeMathType } from "@/types/types";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
 import { Strong } from "@/components/text";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
+import {globalToLocal} from "@/utils/positionUtils";
+import useNodesStore from "@/stores/nodesStore";
 
 type NodeProps = { node: NodeType; };
 
 const NodeMath: React.FC<NodeProps> = ({ node }) => {
-    const { selectedNodes } = useEditorStore();
+    const { selectedNodes, zoomFactor } = useEditorStore();
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
+    const { updateNodePosition, setAddingStatus } = useNodesStore();
+    const [position, setPosition] = useState({ x: node.view.x, y: node.view.y });
+
+    useEffect(() => {
+        if (!node.view.adding) return;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            setPosition(globalToLocal(e.clientX, e.clientY));
+        };
+
+        const handleMouseUp = () => {
+            updateNodePosition(node.id, position.x, position.y);
+            setAddingStatus(node.id, false);
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, [node.view.adding, zoomFactor, position, updateNodePosition, setAddingStatus]);
 
     return (
         <div
@@ -19,8 +44,8 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
                 selectedNodes.includes(node.id) ? "ring-white shadow-2xl" : "ring-blue-200/90 shadow-sm"
             } ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}`}
             style={{
-                left: `${node.view.x}px`,
-                top: `${node.view.y}px`,
+                left: `${position.x}px`,
+                top: `${position.y}px`,
                 width: `50px`,
                 height: `50px`,
             }}

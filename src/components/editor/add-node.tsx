@@ -6,6 +6,8 @@ import { Input, InputGroup } from "@/components/input";
 import {ChevronRightIcon, MagnifyingGlassIcon} from "@heroicons/react/16/solid";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useNodesStore from "@/stores/nodesStore";
+import {globalToLocal} from "@/utils/positionUtils";
+import {useMousePosition} from "@/hooks/editor/useMousePosition";
 
 const AddNode: React.FC = () => {
     const { showAddingNode, setShowAddingNode, setAddingNode } = useEditorStore();
@@ -22,6 +24,8 @@ const AddNode: React.FC = () => {
         getAvailableNodeById
     } = useAvailableNodeStore();
     const { addNode } = useNodesStore();
+
+    const { x: mouseX, y: mouseY } = useMousePosition();
 
     const inputRef = useRef<HTMLInputElement | null>(null);
     const modalRef = useRef<HTMLDivElement | null>(null);
@@ -62,6 +66,17 @@ const AddNode: React.FC = () => {
                 setShowAddingNode(false);
                 const node = getAvailableNodeById(filteredAvailableNodes[selectedNodeIndex].id);
                 if (!node) return;
+
+                const position = globalToLocal(mouseX, mouseY);
+                node.view = {
+                    x: position.x,
+                    y: position.y,
+                    width: 200,
+                    height: 200,
+                    disabled: false,
+                    adding: true
+                };
+
                 addNode(node);
                 resetSelectedNodeIndex();
             } else if (e.key === "Escape") {
@@ -107,11 +122,20 @@ const AddNode: React.FC = () => {
                         {filteredAvailableNodes.map((node, index) => (
                             <div
                                 key={node.id}
-                                onClick={() => {
+                                onClick={(e: React.MouseEvent) => {
                                     setAddingNode(node.id);
                                     setShowAddingNode(false);
                                     const availableNode = getAvailableNodeById(node.id);
                                     if (!availableNode) return;
+                                    const position = globalToLocal(e.clientX, e.clientY);
+                                    availableNode.view = {
+                                        x: position.x,
+                                        y: position.y,
+                                        width: 200,
+                                        height: 200,
+                                        disabled: false,
+                                        adding: true
+                                    };
                                     addNode(availableNode);
                                 }}
                                 className={`cursor-pointer p-2 rounded-md ${

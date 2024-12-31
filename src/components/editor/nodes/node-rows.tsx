@@ -3,10 +3,8 @@ import useResizable from "@/hooks/editor/nodes/useResizable";
 import Connector from "@/components/editor/nodes/connector";
 import useNodesStore from "@/stores/nodesStore";
 import {Node as NodeType, NodeEnabledConnector, NodeVariableType} from "@/types/types";
-import {Switch} from "@/components/switch";
 import {useEditorStore} from "@/stores/editorStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
-import {useTheme} from 'next-themes';
 import ArrayVariable from "@/components/editor/nodes/rows/array-variable";
 import StringVariable from "@/components/editor/nodes/rows/string-variable";
 import NumberVariable from "@/components/editor/nodes/rows/number-variable";
@@ -14,6 +12,7 @@ import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import {ThreeWaySwitch} from "@/components/three-way-switch";
+import {globalToLocal} from "@/utils/positionUtils";
 
 type NodeProps = {
     node: NodeType;
@@ -45,9 +44,10 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
     const { selectedNodes, zoomFactor } = useEditorStore();
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
-    const { updateNodeHeight } = useNodesStore();
+    const { updateNodeHeight, updateNodePosition, setAddingStatus } = useNodesStore();
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
+    const [position, setPosition] = useState({ x: node.view.x, y: node.view.y });
 
     const [switchState, setSwitchState] = useState<'disabled' | 'driven' | 'enabled'>(
         node.driven ? 'driven' : node.enabled ? 'enabled' : 'disabled'
@@ -92,6 +92,27 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
         setSwitchState(node.driven ? 'driven' : node.enabled ? 'enabled' : 'disabled');
     }, [node]);
 
+    useEffect(() => {
+        if (!node.view.adding) return;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            setPosition(globalToLocal(e.clientX, e.clientY));
+        };
+
+        const handleMouseUp = () => {
+            updateNodePosition(node.id, position.x, position.y);
+            setAddingStatus(node.id, false);
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, [node.view.adding, zoomFactor, position, updateNodePosition, setAddingStatus]);
+
     return (
         <div
             ref={ref}
@@ -99,11 +120,13 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             onMouseDown={handleNodeMouseDown}
             className={`absolute overflow-visible select-none flex flex-col items-start justify-start ring-2 ${
                 selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
-            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}`}
+            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 ${
+                node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'
+            }`}
             style={{
                 width: `${size.width}px`,
-                left: `${node.view.x}px`,
-                top: `${node.view.y}px`,
+                left: `${position.x}px`,
+                top: `${position.y}px`,
             }}
             data-type="node"
             data-node-id={node.id}

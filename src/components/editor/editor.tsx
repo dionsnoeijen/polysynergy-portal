@@ -4,19 +4,19 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import { useZoom } from "@/hooks/editor/useZoom";
 import { usePan } from "@/hooks/editor/usePan";
 import { Grid } from "@/components/editor/grid";
-import Node from "@/components/editor/nodes/node";
+import { useKeyBindings } from "@/hooks/editor/useKeyBindings";
 import { useEditorStore } from "@/stores/editorStore";
-import useNodesStore from "@/stores/nodesStore";
-import Connection from "@/components/editor/nodes/connection";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useDeselectOnClickOutside } from "@/hooks/editor/nodes/useDeselectOnClickOutside";
+import { useDeleteNode } from "@/hooks/editor/nodes/useDeleteNode";
+import Node from "@/components/editor/nodes/node";
+import useNodesStore from "@/stores/nodesStore";
+import Connection from "@/components/editor/nodes/connection";
 import BoxSelect from "@/components/editor/box-select";
-import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 import useGroupsStore from "@/stores/groupStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import OpenGroup from "@/components/editor/nodes/open-group";
 import DeleteDialog from "@/components/editor/nodes/delete-dialog";
-import { useDeleteNode } from "@/hooks/editor/nodes/useDeleteNode";
 import AddNode from "@/components/editor/add-node";
 
 export default function Editor() {
@@ -30,7 +30,8 @@ export default function Editor() {
         selectedNodes,
         deleteNodesDialogOpen,
         setDeleteNodesDialogOpen,
-        setShowAddingNode
+        setShowAddingNode,
+        openContextMenu
     } = useEditorStore();
     const { getNodesToRender } = useNodesStore();
     const { connections } = useConnectionsStore();
@@ -108,6 +109,20 @@ export default function Editor() {
         setDeleteNodesDialogOpen(false);
     };
 
+    const handleContextMenu = (e: React.MouseEvent) => {
+        e.preventDefault();
+        openContextMenu(
+            e.clientX,
+            e.clientY,
+            [
+                {
+                    label: "Add Node",
+                    action: () => setShowAddingNode(true),
+                }
+            ]
+        );
+    }
+
     return (
         <div
             data-type="editor"
@@ -120,6 +135,7 @@ export default function Editor() {
             onMouseMove={isDragging ? undefined : handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onContextMenu={handleContextMenu}
             ref={contentRef}
         >
             <Grid zoomFactor={zoomFactor} position={panPosition} />

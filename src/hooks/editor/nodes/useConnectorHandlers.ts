@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import { useConnectionsStore } from "@/stores/connectionsStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
+import {NodeEnabledConnector} from "@/types/types";
+import useNodesStore from "@/stores/nodesStore";
 
 export const useConnectorHandlers = (
     isIn: boolean = false,
@@ -23,6 +25,9 @@ export const useConnectorHandlers = (
         setIsDrawingConnection,
         openGroup
     } = useEditorStore();
+    const {
+        updateNode
+    } = useNodesStore();
 
     const startedFromGroup = useRef(false);
 
@@ -43,6 +48,15 @@ export const useConnectorHandlers = (
         }
 
         const existingConnection = existingConnections[0];
+        if (existingConnection.targetHandle === NodeEnabledConnector.Node) {
+            if (existingConnection.targetNodeId) {
+                updateNode(existingConnection.targetNodeId, {
+                    enabled: true,
+                    driven: false
+                });
+            }
+        }
+
         const updatedConnection = {
             ...existingConnection,
             targetNodeId: undefined,
@@ -123,6 +137,9 @@ export const useConnectorHandlers = (
             sourceNodeId: nodeId,
             sourceHandle: handle as string,
         });
+
+        if (!connection) return;
+
         setIsDrawingConnection(connection.id);
         const position = globalToLocal(e.clientX, e.clientY);
         updateConnectionsDirectly([connection], position);

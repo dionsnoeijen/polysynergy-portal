@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import useGroupsStore from "@/stores/groupStore";
 import { connectionDevData } from "@/stores/nodeDevData";
+import {NodeEnabledConnector} from "@/types/types";
+import useNodesStore from "@/stores/nodesStore";
 
 export type Connection = {
     id: string;
@@ -23,7 +25,7 @@ export type Connection = {
 type ConnectionsStore = {
     connections: Connection[];
     getConnection: (connectionId: string) => Connection | undefined;
-    addConnection: (connection: Connection) => Connection;
+    addConnection: (connection: Connection) => Connection | undefined;
     removeConnectionById: (connectionId: string) => void;
     removeConnection: (connection: Connection) => void;
     removeConnections: (connections: Connection[]) => void;
@@ -60,19 +62,46 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             .find((c) => c.id === connectionId);
     },
 
-    addConnection: (connection: Connection): Connection => {
+    addConnection: (connection: Connection): Connection | undefined => {
         memoizedResults.clear();
+
+        if (connection.targetHandle === NodeEnabledConnector.Node) {
+            if (!connection.targetNodeId) return;
+
+            useNodesStore.getState().updateNode(connection.targetNodeId, {
+                enabled: true,
+                driven: true
+            });
+        }
+
         set((state) => ({
             connections: [
                 ...state.connections,
                 { ...connection, hidden: connection.hidden ?? false },
             ],
         }));
+
         return connection;
     },
 
     removeConnectionById: (connectionId: string) => {
         memoizedResults.clear();
+
+        const connection = useConnectionsStore
+            .getState()
+            .connections.find((c) => c.id === connectionId);
+
+        if (!connection) return;
+        if (connection.targetHandle === NodeEnabledConnector.Node) {
+            if (!connection.targetNodeId) return;
+            useNodesStore
+                .getState()
+                .updateNode(connection.targetNodeId, {
+                    enabled: true,
+                    driven: false
+                });
+        }
+
         set((state) => ({
             connections: state.connections.filter((c) => c.id !== connectionId),
         }));
@@ -80,6 +109,18 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
     removeConnection: (connection: Connection) => {
         memoizedResults.clear();
+
+        if (connection.targetHandle === NodeEnabledConnector.Node) {
+            if (!connection.targetNodeId) return;
+
+            console.log('REMOVING CONNECTION');
+
+            useNodesStore.getState().updateNode(connection.targetNodeId, {
+                enabled: true,
+                driven: false
+            });
+        }
+
         set((state) => ({
             connections: state.connections.filter((c) => c.id !== connection.id),
         }));
@@ -90,6 +131,19 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
         const idsToRemove = new Set(connectionsToRemove.map((conn) => conn.id));
 
+        connectionsToRemove.forEach((connection: Connection) => {
+            if (connection.targetHandle === NodeEnabledConnector.Node) {
+                if (!connection.targetNodeId) return;
+
+                console.log('REMOVING CONNECTIONS');
+
+                useNodesStore.getState().updateNode(connection.targetNodeId, {
+                    enabled: true,
+                    driven: false
+                });
+            }
+        });
+
         set((state) => ({
             connections: state.connections.filter((c) => !idsToRemove.has(c.id)),
         }));
@@ -97,6 +151,16 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
     updateConnection: (connection: Connection) => {
         memoizedResults.clear();
+
+        if (connection.targetHandle === NodeEnabledConnector.Node) {
+            if (!connection.targetNodeId) return;
+
+            useNodesStore.getState().updateNode(connection.targetNodeId, {
+                enabled: true,
+                driven: true
+            });
+        }
+
         set((state) => ({
             connections: state.connections.map((c) => {
                 if (c.id === connection.id) {

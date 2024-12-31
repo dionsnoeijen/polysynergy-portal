@@ -5,6 +5,7 @@ import { useEditorStore } from "@/stores/editorStore";
 import { Input, InputGroup } from "@/components/input";
 import {ChevronRightIcon, MagnifyingGlassIcon} from "@heroicons/react/16/solid";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
+import useNodesStore from "@/stores/nodesStore";
 
 const AddNode: React.FC = () => {
     const { showAddingNode, setShowAddingNode, setAddingNode } = useEditorStore();
@@ -17,8 +18,10 @@ const AddNode: React.FC = () => {
         filterAvailableNodes,
         searchPhrase,
         fetchAvailableNodes,
-        availableNodes
+        availableNodes,
+        getAvailableNodeById
     } = useAvailableNodeStore();
+    const { addNode } = useNodesStore();
 
     const inputRef = useRef<HTMLInputElement | null>(null);
     const modalRef = useRef<HTMLDivElement | null>(null);
@@ -57,6 +60,9 @@ const AddNode: React.FC = () => {
             } else if (e.key === "Enter" && selectedNodeIndex >= 0) {
                 setAddingNode(filteredAvailableNodes[selectedNodeIndex].id);
                 setShowAddingNode(false);
+                const node = getAvailableNodeById(filteredAvailableNodes[selectedNodeIndex].id);
+                if (!node) return;
+                addNode(node);
                 resetSelectedNodeIndex();
             } else if (e.key === "Escape") {
                 setShowAddingNode(false);
@@ -104,6 +110,9 @@ const AddNode: React.FC = () => {
                                 onClick={() => {
                                     setAddingNode(node.id);
                                     setShowAddingNode(false);
+                                    const availableNode = getAvailableNodeById(node.id);
+                                    if (!availableNode) return;
+                                    addNode(availableNode);
                                 }}
                                 className={`cursor-pointer p-2 rounded-md ${
                                     index === selectedNodeIndex

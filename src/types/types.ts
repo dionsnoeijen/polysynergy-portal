@@ -5,6 +5,10 @@ declare global {
     }
 }
 
+export enum NodeEnabledConnector {
+    Node = 'node'
+}
+
 export enum FormType {
     AddRoute = 'addRoute',
     EditRoute = 'editRoute',
@@ -31,6 +35,7 @@ export enum NodeVariableType {
     Array = 'array',
     TruePath = 'true_path',
     FalsePath = 'false_path',
+    Unknown = 'unknown',
 }
 
 export enum NodeType {
@@ -70,6 +75,7 @@ export type NodeView = {
     width: number;
     height: number;
     disabled?: boolean;
+    adding?: boolean;
 };
 
 export type Node = {

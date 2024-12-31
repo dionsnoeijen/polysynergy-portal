@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { nodeDevData } from "@/stores/nodeDevData";
 import { v4 as uuidv4 } from "uuid";
-import { Node, NodeType, NodeVariable } from "@/types/types";
+import { Node, NodeType, NodeVariable, NodeView } from "@/types/types";
 import useGroupsStore from "@/stores/groupStore";
 
 type NodesStore = {
@@ -86,6 +86,24 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     addNode: (node) => {
         nodesByIdsCache.clear();
+
+        const defaultNodeView: NodeView = {
+            x: 0,
+            y: 0,
+            width: 200,
+            height: 200,
+            disabled: false,
+            adding: true
+        };
+
+        node.id = uuidv4();
+        node.enabled = true;
+        node.driven = false;
+
+        if (!node.view) {
+            node.view = defaultNodeView;
+        }
+
         set((state) => ({
             nodes: [...state.nodes, node],
         }));

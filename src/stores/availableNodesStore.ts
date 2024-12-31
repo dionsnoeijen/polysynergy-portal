@@ -8,6 +8,7 @@ type AvailableNodeStore = {
     setSelectedNodeIndex: (index: number | ((prevIndex: number) => number)) => void;
     resetSelectedNodeIndex: () => void;
     availableNodes: Node[];
+    getAvailableNodeById: (id: string) => Node | undefined;
     filteredAvailableNodes: Node[];
     searchPhrase: string;
     setSearchPhrase: (phrase: string) => void;
@@ -24,6 +25,7 @@ const useAvailableNodeStore = create<AvailableNodeStore>((set, get) => ({
     },
     resetSelectedNodeIndex: () => set({ selectedNodeIndex: -1 }),
     availableNodes: [],
+    getAvailableNodeById: (id: string) => get().availableNodes.find((node) => node.id === id),
     filteredAvailableNodes: [],
     searchPhrase: "",
     setSearchPhrase: (phrase) => set({ searchPhrase: phrase }),

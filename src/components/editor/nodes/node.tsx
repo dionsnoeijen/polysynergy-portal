@@ -10,9 +10,7 @@ type NodeProps = {
 };
 
 const Node: React.FC<NodeProps> = ({ node }) => {
-    switch (node.node_type) {
-        case NodeType.Rows:
-            return <NodeRows node={node} />;
+    switch (node.category) {
         case NodeType.Comparison:
             return <NodeComparison node={node} />;
         case NodeType.Math:
@@ -20,7 +18,7 @@ const Node: React.FC<NodeProps> = ({ node }) => {
         case NodeType.Group:
             return <ClosedGroup node={node} />;
         default:
-            return null;
+            return <NodeRows node={node} />;
     }
 };
 

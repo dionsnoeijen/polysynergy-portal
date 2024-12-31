@@ -1,22 +1,44 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import useResizable from "@/hooks/editor/nodes/useResizable";
 import Connector from "@/components/editor/nodes/connector";
 import useNodesStore from "@/stores/nodesStore";
-import { Node as NodeType, NodeVariableType } from "@/types/types";
-import { Switch } from "@/components/switch";
-import { useEditorStore } from "@/stores/editorStore";
+import {Node as NodeType, NodeEnabledConnector, NodeVariableType} from "@/types/types";
+import {Switch} from "@/components/switch";
+import {useEditorStore} from "@/stores/editorStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
-import { useTheme } from 'next-themes';
+import {useTheme} from 'next-themes';
 import ArrayVariable from "@/components/editor/nodes/rows/array-variable";
 import StringVariable from "@/components/editor/nodes/rows/string-variable";
 import NumberVariable from "@/components/editor/nodes/rows/number-variable";
 import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
+import {ThreeWaySwitch} from "@/components/three-way-switch";
 
 type NodeProps = {
     node: NodeType;
 };
+
+function interpretVariableType(type: string): { baseType: NodeVariableType; containsNone: boolean } {
+    const types = type.split('|');
+    const containsNone = types.includes('None');
+
+    if (types.includes('int') || types.includes('float')) {
+        return { baseType: NodeVariableType.Number, containsNone };
+    } else if (types.includes('str')) {
+        return { baseType: NodeVariableType.String, containsNone };
+    } else if (types.includes('bool')) {
+        return { baseType: NodeVariableType.Boolean, containsNone };
+    } else if (types.includes('array') || types.includes('dict')) {
+        return { baseType: NodeVariableType.Array, containsNone };
+    } else if (types.includes('true_path')) {
+        return { baseType: NodeVariableType.TruePath, containsNone };
+    } else if (types.includes('false_path')) {
+        return { baseType: NodeVariableType.FalsePath, containsNone };
+    }
+
+    return { baseType: NodeVariableType.Unknown, containsNone };
+}
 
 const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const { size, handleResizeMouseDown } = useResizable(node);
@@ -24,9 +46,12 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes, zoomFactor } = useEditorStore();
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
     const { updateNodeHeight } = useNodesStore();
-    const { theme } = useTheme();
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
+
+    const [switchState, setSwitchState] = useState<'disabled' | 'driven' | 'enabled'>(
+        node.driven ? 'driven' : node.enabled ? 'enabled' : 'disabled'
+    );
 
     const ref = useRef<HTMLDivElement>(null);
     const shouldUpdateConnections = useRef(false);
@@ -63,6 +88,10 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
         }
     }, [node.view.height, isOpenMap, updateNodeHeight, node.id]);
 
+    useEffect(() => {
+        setSwitchState(node.driven ? 'driven' : node.enabled ? 'enabled' : 'disabled');
+    }, [node]);
+
     return (
         <div
             ref={ref}
@@ -80,14 +109,15 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             data-node-id={node.id}
         >
             <div className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'select-none opacity-0'}`}>
-                <Connector in nodeId={node.id} handle={"node"}/>
-                <Switch color={theme === 'light' ? 'sky' : 'dark'}/>
+                <Connector in nodeId={node.id} handle={NodeEnabledConnector.Node}/>
+                <ThreeWaySwitch value={switchState} onChange={(newState) => setSwitchState(newState)} />
                 <h3 className="font-bold truncate ml-2 text-sky-600 dark:text-white">{node.name}</h3>
             </div>
             <div className="flex flex-col w-full items-start overflow-visible">
                 <div className="w-full">
                     {node.variables.map((variable) => {
-                        switch (variable.type) {
+                        const type = interpretVariableType(variable.type);
+                        switch (type.baseType) {
                             case NodeVariableType.Array:
                                 return (
                                     <ArrayVariable

@@ -32,8 +32,8 @@ const nodesByIdsCache = new Map<string, Node[]>();
 export const createDefaultNode = (overrides = {}): Node => ({
     id: uuidv4(),
     name: "Default Name",
-    type: 'default',
-    node_type: NodeType.Rows,
+    category: "hidden",
+    type: NodeType.Rows,
     view: {x:0, y:0, width:200, height:200},
     enabled: true,
     driven: false,
@@ -42,7 +42,7 @@ export const createDefaultNode = (overrides = {}): Node => ({
 });
 
 const useNodesStore = create<NodesStore>((set, get) => ({
-    nodes: nodeDevData,
+    nodes: [],
     trackedNodeId: null,
 
     enableAllNodes: () => {
@@ -95,8 +95,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         nodesByIdsCache.clear();
 
         node.type = "group";
+        node.category = "group";
         node.name = "Untitled Group";
-        node.node_type = NodeType.Group;
 
         const defaultNode = createDefaultNode(node);
         set((state) => ({

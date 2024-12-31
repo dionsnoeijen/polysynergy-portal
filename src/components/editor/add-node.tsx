@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useEffect } from "react";
+import React, {useEffect, useRef} from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import { Input, InputGroup } from "@/components/input";
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import {ChevronRightIcon, MagnifyingGlassIcon} from "@heroicons/react/16/solid";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 
 const AddNode: React.FC = () => {
@@ -14,41 +14,61 @@ const AddNode: React.FC = () => {
         setSelectedNodeIndex,
         resetSelectedNodeIndex,
         setSearchPhrase,
-        searchPhrase,
         filterAvailableNodes,
+        searchPhrase,
+        fetchAvailableNodes,
+        availableNodes
     } = useAvailableNodeStore();
 
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const modalRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (showAddingNode && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [showAddingNode]);
+
+    // Filter nodes when the search phrase changes
     useEffect(() => {
         filterAvailableNodes();
-    }, [filterAvailableNodes, searchPhrase]);
+    }, [filterAvailableNodes, searchPhrase, availableNodes]);
 
+    useEffect(() => {
+        fetchAvailableNodes();
+    }, [fetchAvailableNodes]);
+
+    // Handle keyboard navigation
     useEffect(() => {
         if (!showAddingNode) return;
 
+         const handleClickOutside = (e: MouseEvent) => {
+            if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+                setShowAddingNode(false);
+                resetSelectedNodeIndex();
+            }
+        };
+
         const handleKeyDown = (e: KeyboardEvent) => {
-
-            console.log('keydown', e.key);
-
             if (e.key === "ArrowDown") {
-                setSelectedNodeIndex((prevIndex) =>
-                    Math.min(prevIndex + 1, filteredAvailableNodes.length - 1)
-                );
+                setSelectedNodeIndex((prevIndex: number) => Math.min(prevIndex + 1, filteredAvailableNodes.length - 1));
             } else if (e.key === "ArrowUp") {
                 setSelectedNodeIndex((prevIndex) => Math.max(prevIndex - 1, 0));
             } else if (e.key === "Enter" && selectedNodeIndex >= 0) {
                 setAddingNode(filteredAvailableNodes[selectedNodeIndex].id);
                 setShowAddingNode(false);
+                resetSelectedNodeIndex();
             } else if (e.key === "Escape") {
                 setShowAddingNode(false);
                 resetSelectedNodeIndex();
             }
-
-            console.log('selected node index', selectedNodeIndex);
         };
 
+        document.addEventListener("mousedown", handleClickOutside);
         document.addEventListener("keydown", handleKeyDown);
 
         return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [
@@ -58,24 +78,26 @@ const AddNode: React.FC = () => {
         setAddingNode,
         setShowAddingNode,
         resetSelectedNodeIndex,
-        setSelectedNodeIndex
+        setSelectedNodeIndex,
     ]);
 
     return (
         <>
             {showAddingNode && (
                 <div
-                    className="absolute p-4 bg-black/90 rounded-lg shadow-lg w-[700px] h-[300px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-1/2 z-10"
-                >
+                    ref={modalRef}
+                    onWheel={(e) => e.stopPropagation()}
+                    className="absolute p-4 bg-black/90 rounded-lg shadow-lg w-[700px] h-[300px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-1/2 z-10">
                     <InputGroup>
                         <MagnifyingGlassIcon data-slot="icon" className="h-5 w-5 text-zinc-500" />
                         <Input
                             type="search"
                             placeholder="Search node"
                             onChange={(e) => setSearchPhrase(e.target.value)}
+                            ref={inputRef}
                         />
                     </InputGroup>
-                    <div className="mt-4 max-h-64 overflow-y-auto">
+                    <div className="absolute inset-4 top-16 overflow-y-auto">
                         {filteredAvailableNodes.map((node, index) => (
                             <div
                                 key={node.id}
@@ -89,7 +111,7 @@ const AddNode: React.FC = () => {
                                         : "hover:bg-zinc-800 text-gray-300"
                                 }`}
                             >
-                                {node.name} <span className="text-sm text-gray-400">{node.category}</span>
+                                <span className="text-sm text-gray-400">{node.category}</span><ChevronRightIcon className="h-5 inline text-gray-400" />{node.name}
                             </div>
                         ))}
                     </div>

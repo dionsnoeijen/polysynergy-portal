@@ -1,49 +1,53 @@
-import { create } from 'zustand';
-
-type AvailableNode = {
-    id: string;
-    name: string;
-    category: string;
-};
+import { create } from "zustand";
+import { Node } from "@/types/types";
+import {fetchAvailableNodesAPI} from "@/api/availableNodesApi";
+import {addIdsToAvailableNodes} from "@/stores/helpers/addIdsToAvailableNodes";
 
 type AvailableNodeStore = {
     selectedNodeIndex: number;
-    setSelectedNodeIndex: (index: number) => void;
+    setSelectedNodeIndex: (index: number | ((prevIndex: number) => number)) => void;
     resetSelectedNodeIndex: () => void;
-    availableNodes: AvailableNode[];
-    filteredAvailableNodes: AvailableNode[];
+    availableNodes: Node[];
+    filteredAvailableNodes: Node[];
     searchPhrase: string;
     setSearchPhrase: (phrase: string) => void;
-    addAvailableNode: (node: AvailableNode) => void;
     filterAvailableNodes: () => void;
+    fetchAvailableNodes: () => void;
 };
 
 const useAvailableNodeStore = create<AvailableNodeStore>((set, get) => ({
     selectedNodeIndex: -1,
-    setSelectedNodeIndex: (index) => set({ selectedNodeIndex: index }),
+    setSelectedNodeIndex: (update) => {
+        const currentIndex =
+            typeof update === "function" ? update(get().selectedNodeIndex) : update;
+        set({ selectedNodeIndex: currentIndex });
+    },
     resetSelectedNodeIndex: () => set({ selectedNodeIndex: -1 }),
-    availableNodes: [
-        {id: '1', name: 'Node Alpha', category: 'Category A'},
-        {id: '2', name: 'Node Beta', category: 'Category A'},
-        {id: '3', name: 'Node Gamma', category: 'Category B'},
-    ],
+    availableNodes: [],
     filteredAvailableNodes: [],
-    searchPhrase: '',
-    setSearchPhrase: (phrase) =>
-        set({searchPhrase: phrase}, false, 'setSearchPhrase'),
-    addAvailableNode: (node) =>
-        set(
-            (state) => ({availableNodes: [...state.availableNodes, node]}),
-            false,
-            'addAvailableNode'
-        ),
+    searchPhrase: "",
+    setSearchPhrase: (phrase) => set({ searchPhrase: phrase }),
     filterAvailableNodes: () => {
         const searchPhrase = get().searchPhrase.toLowerCase();
-        const availableNodes = get().availableNodes;
-        const filteredAvailableNodes = availableNodes.filter((node) =>
+        const filtered = get().availableNodes.filter((node) =>
             node.name.toLowerCase().includes(searchPhrase)
         );
-        set({filteredAvailableNodes}, false, 'filterAvailableNodes');
+        set({ filteredAvailableNodes: filtered });
+    },
+    fetchAvailableNodes: async () => {
+        try {
+            let data: Node[] = await fetchAvailableNodesAPI();
+            data = addIdsToAvailableNodes(data);
+
+            set({ availableNodes: data });
+            const searchPhrase = get().searchPhrase.toLowerCase();
+            const filtered = data.filter((node) =>
+                node.name.toLowerCase().includes(searchPhrase)
+            );
+            set({ filteredAvailableNodes: filtered });
+        } catch (error) {
+            console.error("Failed to fetch available nodes:", error);
+        }
     },
 }));
 

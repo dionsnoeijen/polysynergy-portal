@@ -58,8 +58,7 @@ export type NodeVariable = {
     name: string;
     handle: string;
     value?: null | string | number | boolean | string[] | NodeVariable[];
-    default_value?: null | string | number | boolean | string[] | NodeVariable[];
-    type: NodeVariableType;
+    type: string | NodeVariableType;
     has_dock?: boolean;
     has_in?: boolean;
     has_out?: boolean;
@@ -76,8 +75,8 @@ export type NodeView = {
 export type Node = {
     id: string;
     name: string;
+    category: string;
     type: string;
-    node_type: string;
     view: NodeView;
     enabled?: boolean;
     driven?: boolean;

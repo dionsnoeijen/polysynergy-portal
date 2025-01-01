@@ -68,10 +68,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         if (connection.targetHandle === NodeEnabledConnector.Node) {
             if (!connection.targetNodeId) return;
 
-            useNodesStore.getState().updateNode(connection.targetNodeId, {
-                enabled: true,
-                driven: true
-            });
+            useNodesStore.getState().driveNode(connection.targetNodeId);
         }
 
         set((state) => ({
@@ -96,10 +93,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             if (!connection.targetNodeId) return;
             useNodesStore
                 .getState()
-                .updateNode(connection.targetNodeId, {
-                    enabled: true,
-                    driven: false
-                });
+                .enableNode(connection.targetNodeId);
         }
 
         set((state) => ({
@@ -115,10 +109,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
             console.log('REMOVING CONNECTION');
 
-            useNodesStore.getState().updateNode(connection.targetNodeId, {
-                enabled: true,
-                driven: false
-            });
+            useNodesStore.getState().enableNode(connection.targetNodeId);
         }
 
         set((state) => ({
@@ -135,12 +126,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             if (connection.targetHandle === NodeEnabledConnector.Node) {
                 if (!connection.targetNodeId) return;
 
-                console.log('REMOVING CONNECTIONS');
-
-                useNodesStore.getState().updateNode(connection.targetNodeId, {
-                    enabled: true,
-                    driven: false
-                });
+                useNodesStore.getState().enableNode(connection.targetNodeId);
             }
         });
 
@@ -155,10 +141,7 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         if (connection.targetHandle === NodeEnabledConnector.Node) {
             if (!connection.targetNodeId) return;
 
-            useNodesStore.getState().updateNode(connection.targetNodeId, {
-                enabled: true,
-                driven: true
-            });
+            useNodesStore.getState().driveNode(connection.targetNodeId);
         }
 
         set((state) => ({

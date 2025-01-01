@@ -16,7 +16,7 @@ export const useDeleteNode = () => {
         selectedNodes.map((nodeId) => {
             const node = getNode(nodeId);
             if (!node) return;
-            if (node?.node_type === NodeType.Group) {
+            if (node?.type === NodeType.Group) {
                 deleteGroup(nodeId);
             }
             handleDeleteNode(nodeId);

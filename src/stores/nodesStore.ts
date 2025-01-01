@@ -1,14 +1,16 @@
 import { create } from 'zustand';
-import { nodeDevData } from "@/stores/nodeDevData";
 import { v4 as uuidv4 } from "uuid";
 import { Node, NodeType, NodeVariable, NodeView } from "@/types/types";
 import useGroupsStore from "@/stores/groupStore";
 
 type NodesStore = {
     nodes: Node[];
-    enableAllNodes: () => void;
-    disableAllNodesExceptByIds: (nodeIds: string[]) => void;
+    enableAllNodesView: () => void;
+    disableAllNodesViewExceptByIds: (nodeIds: string[]) => void;
+    disableNodeView: (nodeId: string) => void;
     disableNode: (nodeId: string) => void;
+    enableNode: (nodeId: string) => void;
+    driveNode: (nodeId: string) => void;
     trackedNodeId: string | null;
     addNode: (node: Node) => void;
     addGroupNode: (node: Partial<Node>) => void;
@@ -46,7 +48,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     nodes: [],
     trackedNodeId: null,
 
-    enableAllNodes: () => {
+    enableAllNodesView: () => {
         set((state) => ({
             nodes: state.nodes.map((node) => ({
                 ...node,
@@ -58,7 +60,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    disableAllNodesExceptByIds: (nodeIds) => {
+    disableAllNodesViewExceptByIds: (nodeIds) => {
         set((state) => ({
             nodes: state.nodes.map((node) => ({
                 ...node,
@@ -70,7 +72,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    disableNode: (nodeId) => {
+    disableNodeView: (nodeId) => {
         nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
@@ -81,6 +83,51 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         disabled: true,
                     },
                 } : node
+            ),
+        }));
+    },
+
+    disableNode: (nodeId: string) => {
+        nodesByIdsCache.clear();
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                          ...node,
+                          enabled: false,
+                          driven: false
+                      }
+                    : node
+            ),
+        }));
+    },
+
+    enableNode: (nodeId: string) => {
+        nodesByIdsCache.clear();
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                          ...node,
+                          enabled: true,
+                          driven: false
+                      }
+                    : node
+            ),
+        }));
+    },
+
+    driveNode: (nodeId: string) => {
+        nodesByIdsCache.clear();
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                          ...node,
+                          enabled: true,
+                          driven: true,
+                      }
+                    : node
             ),
         }));
     },

@@ -20,9 +20,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
     const { variablesForGroup } = useVariablesForGroup(node.id, false);
-    const shouldUpdateConnections = useRef(false);
     const { updateNodeHeight } = useNodesStore();
     const { handleNodeMouseDown } = useNodeMouseDown(node);
+    const shouldUpdateConnections = useRef(false);
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();

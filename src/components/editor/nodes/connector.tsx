@@ -11,7 +11,7 @@ type ConnectorProps = {
     iconClassName?: string;
     disabled?: boolean;
     groupId?: string;
-    nodeVariableType?: NodeVariableType
+    nodeVariableType?: string | NodeVariableType;
 } & (
     | { in: true; out?: never }
     | { out: true; in?: never }

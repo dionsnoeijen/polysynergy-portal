@@ -12,7 +12,7 @@ import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import {ThreeWaySwitch} from "@/components/three-way-switch";
-import {globalToLocal} from "@/utils/positionUtils";
+import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
 
 type NodeProps = {
     node: NodeType;
@@ -44,14 +44,10 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
     const { selectedNodes, zoomFactor } = useEditorStore();
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
-    const { updateNodeHeight, updateNodePosition, setAddingStatus } = useNodesStore();
+    const { updateNodeHeight } = useNodesStore();
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
-    const [position, setPosition] = useState({ x: node.view.x, y: node.view.y });
-
-    const [switchState, setSwitchState] = useState<'disabled' | 'driven' | 'enabled'>(
-        node.driven ? 'driven' : node.enabled ? 'enabled' : 'disabled'
-    );
+    const position = useNodePlacement(node);
 
     const ref = useRef<HTMLDivElement>(null);
     const shouldUpdateConnections = useRef(false);
@@ -88,30 +84,9 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
         }
     }, [node.view.height, isOpenMap, updateNodeHeight, node.id]);
 
-    useEffect(() => {
-        setSwitchState(node.driven ? 'driven' : node.enabled ? 'enabled' : 'disabled');
-    }, [node]);
-
-    useEffect(() => {
-        if (!node.view.adding) return;
-
-        const handleMouseMove = (e: MouseEvent) => {
-            setPosition(globalToLocal(e.clientX, e.clientY));
-        };
-
-        const handleMouseUp = () => {
-            updateNodePosition(node.id, position.x, position.y);
-            setAddingStatus(node.id, false);
-        };
-
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("mouseup", handleMouseUp);
-
-        return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
-        };
-    }, [node.view.adding, zoomFactor, position, updateNodePosition, setAddingStatus]);
+    // useEffect(() => {
+    //     setSwitchState(node.driven ? 'driven' : node.enabled ? 'enabled' : 'disabled');
+    // }, [node]);
 
     return (
         <div
@@ -133,7 +108,7 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
         >
             <div className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'select-none opacity-0'}`}>
                 <Connector in nodeId={node.id} handle={NodeEnabledConnector.Node}/>
-                <ThreeWaySwitch value={switchState} onChange={(newState) => setSwitchState(newState)} />
+                <ThreeWaySwitch node={node} />
                 <h3 className="font-bold truncate ml-2 text-sky-600 dark:text-white">{node.name}</h3>
             </div>
             <div className="flex flex-col w-full items-start overflow-visible">

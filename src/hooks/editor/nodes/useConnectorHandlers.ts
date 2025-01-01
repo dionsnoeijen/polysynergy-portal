@@ -26,7 +26,7 @@ export const useConnectorHandlers = (
         openGroup
     } = useEditorStore();
     const {
-        updateNode
+        enableNode
     } = useNodesStore();
 
     const startedFromGroup = useRef(false);
@@ -50,10 +50,7 @@ export const useConnectorHandlers = (
         const existingConnection = existingConnections[0];
         if (existingConnection.targetHandle === NodeEnabledConnector.Node) {
             if (existingConnection.targetNodeId) {
-                updateNode(existingConnection.targetNodeId, {
-                    enabled: true,
-                    driven: false
-                });
+                enableNode(existingConnection.targetNodeId);
             }
         }
 

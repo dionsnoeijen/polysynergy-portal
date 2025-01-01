@@ -30,11 +30,11 @@ const useGrouping = () => {
         addGroupNode,
         updateNodePosition,
         updateNodePositionByDelta,
-        disableAllNodesExceptByIds,
-        enableAllNodes,
+        disableAllNodesViewExceptByIds,
+        enableAllNodesView,
         removeNode,
         getNode,
-        disableNode
+        disableNodeView
     } = useNodesStore();
     const {
         findInConnectionsByNodeId,
@@ -104,7 +104,7 @@ const useGrouping = () => {
         setOpenGroup(groupId);
         addGroupNode({id:groupId});
         setSelectedNodes([]);
-        disableAllNodesExceptByIds([...selectedNodes, groupId]);
+        disableAllNodesViewExceptByIds([...selectedNodes, groupId]);
     };
 
     const closeGroup = (
@@ -137,7 +137,7 @@ const useGrouping = () => {
 
         updateNodePosition(groupId, x, y);
         setSelectedNodes([]);
-        enableAllNodes();
+        enableAllNodesView();
 
         let showConnections = [];
         if (parentGroup) {
@@ -185,7 +185,7 @@ const useGrouping = () => {
         setOpenGroup(groupId);
         setSelectedNodes([]);
 
-        disableAllNodesExceptByIds([...nodesInGroup, groupId]);
+        disableAllNodesViewExceptByIds([...nodesInGroup, groupId]);
         const showConnections = showConnectionsInsideOpenGroup(groupId);
         setTimeout(() => {
             updateConnectionsDirectly(showConnections);
@@ -200,7 +200,7 @@ const useGrouping = () => {
         removeConnections(connections);
         removeGroupStore(groupId);
         removeNode(groupId);
-        enableAllNodes();
+        enableAllNodesView();
     };
 
     const removeNodeFromGroup = (groupId: string, nodeId: string) => {
@@ -210,7 +210,7 @@ const useGrouping = () => {
 
         removeConnections(connections);
         removeNodeFromGroupStore(groupId, nodeId);
-        disableNode(nodeId);
+        disableNodeView(nodeId);
 
         const group = getGroupById(groupId);
         if (!group) return;
@@ -237,7 +237,7 @@ const useGrouping = () => {
             const connections = [...inConnections, ...outConnections];
             removeConnections(connections);
 
-            if (node.node_type === NodeType.Group) {
+            if (node.type === NodeType.Group) {
                 deleteGroup(nodeId);
             } else {
                 removeNode(nodeId);

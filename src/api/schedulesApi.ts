@@ -1,4 +1,3 @@
-import {Route} from "@/stores/dynamicRoutesStore";
 import {Schedule} from "@/types/types";
 
 export const fetchSchedulesAPI = async (projectId: string) => {

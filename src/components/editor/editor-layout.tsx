@@ -18,10 +18,12 @@ const Editor = dynamic(() => import('@/components/editor/editor'), {
 
 export function EditorLayout({
     projectUuid = null,
-    routeUuid = null
+    routeUuid = null,
+    scheduleUuid = null,
 }: {
     projectUuid?: null | string,
-    routeUuid?: null | string
+    routeUuid?: null | string,
+    scheduleUuid?: null | string,
 }) {
 
     enum ResizeWhat {
@@ -39,7 +41,7 @@ export function EditorLayout({
     const [dockClosed, setDockClosed] = useState(false);
     const [outputClosed, setOutputClosed] = useState(false);
 
-    const {showForm, setActiveProjectId, setActiveRouteId, closeFormMessage} = useEditorStore();
+    const {showForm, setActiveProjectId, setActiveRouteId, setActiveScheduleId, closeFormMessage} = useEditorStore();
 
     useEffect(() => {
         setHeight({horizontalEditorLayout: window.innerHeight * 0.85});
@@ -47,6 +49,9 @@ export function EditorLayout({
         setActiveProjectId(projectUuid as string);
         if (routeUuid) {
             setActiveRouteId(routeUuid as string);
+        }
+        if (scheduleUuid) {
+            setActiveScheduleId(scheduleUuid as string);
         }
         const handleResize = () => {
             setWindowHeight(window.innerHeight);
@@ -56,7 +61,8 @@ export function EditorLayout({
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [projectUuid, routeUuid, setActiveProjectId, setActiveRouteId]);
+    // eslint-disable-next-line
+    }, [projectUuid, routeUuid, scheduleUuid, setActiveProjectId, setActiveRouteId]);
 
     const startResizing = useCallback((resizeWhat: ResizeWhat) => {
         setResizing(resizeWhat);

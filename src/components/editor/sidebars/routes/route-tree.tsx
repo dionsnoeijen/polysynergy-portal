@@ -1,11 +1,12 @@
-import {PencilIcon, PlusIcon} from "@heroicons/react/16/solid";
-import {Button} from "@/components/button";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import React, {ReactElement, useEffect} from "react";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
+import {PencilIcon, PlusIcon} from "@heroicons/react/16/solid";
+import {Button} from "@/components/button";
 import {useEditorStore} from "@/stores/editorStore";
 import {FormType} from "@/types/types";
 import {formatSegments} from "@/utils/formatters";
+import Link from "next/link";
 
 export default function RouteTree(): ReactElement {
 
@@ -24,12 +25,12 @@ export default function RouteTree(): ReactElement {
             formEditingItem={formEditRecordId}
             renderItem={(route) => (
                 <>
-                    <a href={`/project/${activeProjectId}/route/${route.id}`}
+                    <Link href={`/project/${activeProjectId}/route/${route.id}`}
                        title={`${route.method}}: /${formatSegments(route.segments)}`}
                        className={`block flex-1 truncate dark:hover:text-white pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
                     >
                         <b className="dark:text-white">{route.method}</b>: /{formatSegments(route.segments)}
-                    </a>
+                    </Link>
                     <button
                         onClick={() => openForm(FormType.EditRoute, route.id)}
                         type="button"

@@ -22,7 +22,7 @@ export type RouteSegment = {
 };
 
 export type Route = ListItemWithId & {
-    id?: string;
+    id?: string | null;
     description: string;
     created_at?: string;
     updated_at?: string;

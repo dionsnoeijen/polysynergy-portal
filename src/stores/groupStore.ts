@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from "uuid";
 import useNodesStore from "@/stores/nodesStore";
-import { groupDevData } from "@/stores/nodeDevData";
 
 export type Group = {
     id: string;
@@ -57,7 +56,7 @@ const getClosedGroups = (get: () => GroupsStore) => (): Group[] => {
 };
 
 const useGroupsStore = create<GroupsStore>((set, get) => ({
-    groups: groupDevData,
+    groups: {},
 
     openGroup: (groupId) => set((state) => {
         const group = state.groups[groupId];

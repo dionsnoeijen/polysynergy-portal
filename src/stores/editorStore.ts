@@ -27,7 +27,9 @@ type EditorState = {
     formEditRecordId: string | null;
     activeProjectId: string;
     setActiveProjectId: (projectId: string) => void;
-    activeRouteId: string;
+    activeRouteId?: string;
+    activeScheduleId?: string;
+    setActiveScheduleId: (scheduleId: string) => void;
     setActiveRouteId: (routeId: string) => void;
     openForm: (type: FormType, formEditRecordId?: null | string) => void;
     closeForm: (closeFormMessage?: string | null) => void;
@@ -77,6 +79,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     setActiveProjectId: (projectId: string) => set({ activeProjectId: projectId }),
     activeRouteId: '',
     setActiveRouteId: (routeId: string) => set({ activeRouteId: routeId }),
+    activeScheduleId: '',
+    setActiveScheduleId: (scheduleId: string) => set({ activeScheduleId: scheduleId }),
     openForm: (type: FormType, formEditRecordId: null | string = null) => set({
         showForm: true,
         formType: type,

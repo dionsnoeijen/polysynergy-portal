@@ -1,9 +1,7 @@
 import React from "react";
 import clsx from "clsx";
 import Heading from "@/components/editor/sidebars/elements/heading";
-import { NodeVariable, NodeVariableType } from "@/types/types";
 import useNodesStore  from "@/stores/nodesStore";
-import { useEditorStore } from "@/stores/editorStore";
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
 import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";
 import VariableTypeArray from "@/components/editor/sidebars/dock/variable-type-array";
@@ -11,6 +9,9 @@ import VariableTypeBoolean from "@/components/editor/sidebars/dock/variable-type
 import GroupName from "@/components/editor/sidebars/dock/group-name";
 import VariableGroup from "@/components/editor/sidebars/dock/variable-group";
 import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
+import { useEditorStore } from "@/stores/editorStore";
+import { NodeVariable, NodeVariableType } from "@/types/types";
+import { interpretNodeVariableType } from "@/utils/interpretNodeVariableType";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -21,6 +22,9 @@ const VariableTypeComponents = {
     [NodeVariableType.Number]: VariableTypeNumber,
     [NodeVariableType.Array]: VariableTypeArray,
     [NodeVariableType.Boolean]: VariableTypeBoolean,
+    [NodeVariableType.TruePath]: null,
+    [NodeVariableType.FalsePath]: null,
+    [NodeVariableType.Unknown]: null,
 };
 
 const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
@@ -52,7 +56,8 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                             <VariableGroup title="In Variables">
                                 {variablesForGroup.inVariables.map(({ variable, nodeId }) => {
                                     if (!variable || !variable.has_dock) return null;
-                                    const VariableComponent = VariableTypeComponents[variable.type];
+                                    const { baseType } = interpretNodeVariableType(variable.type);
+                                    const VariableComponent = VariableTypeComponents[baseType];
                                     return VariableComponent ? (
                                         <div key={nodeId + '-' + variable.handle}>
                                             <VariableComponent
@@ -69,7 +74,8 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                             <VariableGroup title="Out Variables">
                                 {variablesForGroup.outVariables.map(({ variable, nodeId }) => {
                                     if (!variable || !variable.has_dock) return null;
-                                    const VariableComponent = VariableTypeComponents[variable.type];
+                                    const { baseType } = interpretNodeVariableType(variable.type);
+                                    const VariableComponent = VariableTypeComponents[baseType];
                                     return VariableComponent ? (
                                         <div key={nodeId + '-' + variable.handle}>
                                             <VariableComponent
@@ -89,7 +95,9 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                 <VariableGroup title="Node Variables">
                     {node.variables.map((variable: NodeVariable) => {
                         if (!variable.has_dock) return;
-                        const VariableComponent = VariableTypeComponents[variable.type];
+                        const { baseType } = interpretNodeVariableType(variable.type);
+                        const VariableComponent = VariableTypeComponents[baseType];
+
                         return VariableComponent ? (
                             <div key={node.id + '-' + variable.handle}>
                                 <VariableComponent

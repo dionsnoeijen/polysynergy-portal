@@ -12,6 +12,8 @@ export enum NodeEnabledConnector {
 export enum FormType {
     AddRoute = 'addRoute',
     EditRoute = 'editRoute',
+    AddSchedule = 'addSchedule',
+    EditSchedule = 'editSchedule',
 }
 
 export enum InOut {
@@ -20,7 +22,7 @@ export enum InOut {
 }
 
 export type ListItemWithId = {
-    id: string;
+    id?: string;
 };
 
 export type Position = {
@@ -87,4 +89,15 @@ export type Node = {
     enabled?: boolean;
     driven?: boolean;
     variables: NodeVariable[];
+};
+
+export type Schedule = {
+    id?: string;
+    name: string;
+    cron_expression: string;
+    start_time: Date;
+    end_time?: Date | null;
+    is_active: boolean;
+    created_at?: string;
+    updated_at?: string;
 };

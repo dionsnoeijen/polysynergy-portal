@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import Heading from "@/components/editor/sidebars/elements/heading";
 import RouteTree from "@/components/editor/sidebars/routes/route-tree";
 import SidebarTenantHeader from "@/components/sidebar/sidebar-tenant-header";
+import ScheduleTree from "@/components/editor/sidebars/schedules/schedule-tree";
 
 export default function ItemManager({
     className,
@@ -14,6 +15,7 @@ export default function ItemManager({
             <SidebarTenantHeader />
             <Heading arrowToLeft={false} toggleClose={toggleClose}>Item manager</Heading>
             <RouteTree />
+            <ScheduleTree />
         </div>
     );
 }

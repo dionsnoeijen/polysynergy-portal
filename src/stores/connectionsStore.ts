@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import useGroupsStore from "@/stores/groupStore";
-import { connectionDevData } from "@/stores/nodeDevData";
 import {NodeEnabledConnector} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 
@@ -54,7 +53,7 @@ type ConnectionsStore = {
 const memoizedResults = new Map();
 
 export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
-    connections: connectionDevData,
+    connections: [],
 
     getConnection: (connectionId: string): Connection | undefined => {
         return useConnectionsStore.getState()

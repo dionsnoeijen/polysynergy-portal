@@ -318,7 +318,7 @@ const DynamicRouteForm: React.FC = () => {
             </div>
 
             {showDeleteAlert && (
-                <Alert size="md" className="text-center" onClose={() => setShowDeleteAlert(false)}>
+                <Alert size="md" className="text-center" open={showDeleteAlert} onClose={() => setShowDeleteAlert(false)}>
                     <AlertTitle>Are you sure you want to delete this route?</AlertTitle>
                     <AlertDescription>This action cannot be undone.</AlertDescription>
                     <AlertActions>

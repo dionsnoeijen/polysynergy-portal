@@ -28,7 +28,7 @@ export default function TreeList<T extends ListItemWithId>({
                     isOpen ? " rounded-bl-none rounded-br-none" : ""
                 }`}
             >
-                <h3 className="text-lg font-semibold">{title}</h3>
+                <h4>{title}</h4>
                 <button type="button" onClick={() => setIsOpen(!isOpen)}>
                     {isOpen ? (
                         <ChevronDownIcon className="w-5 h-5" />

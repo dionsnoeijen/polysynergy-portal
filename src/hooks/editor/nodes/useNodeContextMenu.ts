@@ -10,6 +10,7 @@ const useNodeContextMenu = (node: Node) => {
     const { removeNodeFromGroup } = useGrouping();
 
     const handleContextMenu = (e: React.MouseEvent) => {
+        e.stopPropagation();
         e.preventDefault();
         const contextMenuItems = [];
 

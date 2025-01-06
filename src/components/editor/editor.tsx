@@ -43,6 +43,8 @@ export default function Editor() {
     const { handleEditorMouseDown } = useDeselectOnClickOutside();
     const { createGroup } = useGrouping();
 
+    const nodesToRender = getNodesToRender();
+
     const updateEditorPosition = useCallback(() => {
         if (contentRef.current) {
             const rect = contentRef.current.getBoundingClientRect();
@@ -148,7 +150,7 @@ export default function Editor() {
                     <OpenGroup key={group.id} group={group} />
                 ))}
 
-                {getNodesToRender().map((node) => (
+                {nodesToRender.map((node) => (
                     <Node key={node.id} node={node} />
                 ))}
 

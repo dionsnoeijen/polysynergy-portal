@@ -11,16 +11,18 @@ import UndoRedoMenu from "@/components/editor/editormenus/undo-redo-menu";
 import BottomBar from "@/components/editor/bottombars/bottom-bar";
 import ContextMenu from "@/components/editor/context-menu";
 import dynamic from 'next/dynamic';
+import VersionPublishedMenu from "@/components/editor/editormenus/version-published-menu";
+import useNodesStore from "@/stores/nodesStore";
 
 const Editor = dynamic(() => import('@/components/editor/editor'), {
-  ssr: false
+    ssr: false
 });
 
 export function EditorLayout({
-    projectUuid = null,
-    routeUuid = null,
-    scheduleUuid = null,
-}: {
+                                 projectUuid = null,
+                                 routeUuid = null,
+                                 scheduleUuid = null,
+                             }: {
     projectUuid?: null | string,
     routeUuid?: null | string,
     scheduleUuid?: null | string,
@@ -43,26 +45,32 @@ export function EditorLayout({
 
     const {showForm, setActiveProjectId, setActiveRouteId, setActiveScheduleId, closeFormMessage} = useEditorStore();
 
+    const {fetchDynamicRouteNodeSetupContent, currentRouteData} = useNodesStore();
+
     useEffect(() => {
         setHeight({horizontalEditorLayout: window.innerHeight * 0.85});
         setWindowHeight(window.innerHeight);
-        setActiveProjectId(projectUuid as string);
+
+        setActiveProjectId(projectUuid || '');
         if (routeUuid) {
-            setActiveRouteId(routeUuid as string);
+            setActiveRouteId(routeUuid);
+            fetchDynamicRouteNodeSetupContent(routeUuid);
         }
         if (scheduleUuid) {
-            setActiveScheduleId(scheduleUuid as string);
+            setActiveScheduleId(scheduleUuid);
+            // idem als je schedule-nodes wilt laden
+            // fetchScheduleNodeSetupContent(scheduleUuid); // als je zoiets hebt
         }
+
         const handleResize = () => {
             setWindowHeight(window.innerHeight);
         };
-
         window.addEventListener('resize', handleResize);
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    // eslint-disable-next-line
-    }, [projectUuid, routeUuid, scheduleUuid, setActiveProjectId, setActiveRouteId]);
+    }, [projectUuid, routeUuid, scheduleUuid]);
+
 
     const startResizing = useCallback((resizeWhat: ResizeWhat) => {
         setResizing(resizeWhat);
@@ -173,17 +181,24 @@ export function EditorLayout({
                         className={`absolute top-[10px] left-0 right-0 bottom-0 overflow-scroll border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-900' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {showForm ? (
-                            <Form/>
+                            <Form />
                         ) : (
                             projectUuid && routeUuid ? (
-                                <>
-                                    <Editor/>
-                                    <SelectionsMenu/>
-                                    <UndoRedoMenu/>
-                                </>
+                                currentRouteData ? (
+                                    <>
+                                        <Editor />
+                                        <SelectionsMenu />
+                                        <UndoRedoMenu />
+                                        <VersionPublishedMenu routeData={currentRouteData} />
+                                    </>
+                                ) : (
+                                    <div className="flex justify-center items-center h-full">
+                                        <p className="text-white">Loading node data...</p>
+                                    </div>
+                                )
                             ) : (
-                                <div className="flex justify-center items-center ">
-                                    <p className="text-white">Select a route to start editing nodes</p>
+                                <div className="flex justify-center items-center h-full">
+                                    <p className="text-white">Select a route or schedule to start editing nodes</p>
                                 </div>
                             )
                         )}
@@ -231,7 +246,7 @@ export function EditorLayout({
                     />
                     <div
                         className="absolute top-[10px] left-[10px] right-[10px] bottom-[10px]">
-                        <BottomBar />
+                        <BottomBar/>
                     </div>
                 </div>
             )}
@@ -246,7 +261,7 @@ export function EditorLayout({
                 </button>
             )}
 
-            <ContextMenu />
+            <ContextMenu/>
         </div>
     );
 }

@@ -6,21 +6,21 @@ import {Input} from "@/components/input";
 import {Textarea} from "@/components/textarea";
 import {Button} from "@/components/button";
 import {useEditorStore} from "@/stores/editorStore";
-import {FormType} from "@/types/types";
+import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
-import useDynamicRoutesStore, { Route, RouteSegment, RouteSegmentType } from "@/stores/dynamicRoutesStore";
 import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon} from "@heroicons/react/16/solid";
 import {Select} from "@/components/select";
 import {Checkbox, CheckboxField} from "@/components/checkbox";
 import {formatSegments} from "@/utils/formatters";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from '@/components/alert';
+import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 
 const DynamicRouteForm: React.FC = () => {
     const { closeForm, formType, formEditRecordId } = useEditorStore();
     const { getDynamicRoute, storeDynamicRoute, updateDynamicRoute } = useDynamicRoutesStore();
 
     const [description, setDescription] = useState('');
-    const [method, setMethod] = useState('GET');
+    const [method, setMethod] = useState<HttpMethod>(HttpMethod.Get);
     const [segments, setSegments] = useState<RouteSegment[]>([]);
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
@@ -157,13 +157,13 @@ const DynamicRouteForm: React.FC = () => {
                         aria-label="Method"
                         name="method"
                         value={method}
-                        onChange={(e) => setMethod(e.target.value)}
+                        onChange={(e) => setMethod(e.target.value as HttpMethod)}
                     >
-                        <option value="GET">GET</option>
-                        <option value="POST">POST</option>
-                        <option value="PUT">PUT</option>
-                        <option value="PATCH">PATCH</option>
-                        <option value="DELETE">DELETE</option>
+                        <option value={HttpMethod.Get}>GET</option>
+                        <option value={HttpMethod.Post}>POST</option>
+                        <option value={HttpMethod.Put}>PUT</option>
+                        <option value={HttpMethod.Patch}>PATCH</option>
+                        <option value={HttpMethod.Delete}>DELETE</option>
                     </Select>
                 </div>
             </section>

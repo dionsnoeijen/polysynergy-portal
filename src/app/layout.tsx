@@ -9,6 +9,10 @@ export const metadata: Metadata = {
         default: 'PolySynergy',
     },
     description: '',
+    icons: {
+        icon: "/favicon.svg",
+        apple: "/apple-touch-icon.png"
+    },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

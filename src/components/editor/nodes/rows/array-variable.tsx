@@ -73,14 +73,9 @@ const ArrayVariable: React.FC<Props> = ({
                     )}
                     <div className="flex items-center truncate text-sky-200 dark:text-white">
                         <span className="text-sky-400 dark:text-slate-400">
-                            {index === (variable.value as NodeVariable[]).length - 1 ? "└─" : "├─"}
-                        </span>{" "}
-                        {item.name}
-                        {item.default_value && (
-                            <span className="ml-1 text-sky-400">
-                                {"{default: " + item.default_value + "}"}
-                            </span>
-                        )}
+                            {index === (variable.value as NodeVariable[]).length - 1 ? "└ " : "├ "}
+                        </span>
+                        {' ' + item.handle}: {item.value as string}
                     </div>
                     {item.has_out && !disabled && !onlyIn && (
                         <Connector

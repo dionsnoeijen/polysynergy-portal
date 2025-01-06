@@ -5,30 +5,7 @@ import {
     updateDynamicRoute as updateDynamicRouteAPI,
 } from '@/api/dynamicRoutesApi';
 import { useEditorStore } from "@/stores/editorStore";
-import { ListItemWithId } from "@/types/types";
-
-export enum RouteSegmentType {
-    Static = 'static',
-    Variable = 'variable',
-}
-
-export type RouteSegment = {
-    id: string;
-    segment_order: number;
-    type: RouteSegmentType;
-    name: string;
-    default_value: null|string;
-    variable_type: null|string;
-};
-
-export type Route = ListItemWithId & {
-    id?: string | null;
-    description: string;
-    created_at?: string;
-    updated_at?: string;
-    segments: RouteSegment[];
-    method: string;
-};
+import { Route } from "@/types/types";
 
 type DynamicRoutesStore = {
     routes: Route[];

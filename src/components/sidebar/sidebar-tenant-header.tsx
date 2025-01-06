@@ -16,7 +16,7 @@ export default function SidebarTenantHeader()
         <SidebarHeader>
             <Dropdown>
                 <DropdownButton as={SidebarItem}>
-                    <Avatar src="/parsemind-nt.svg" />
+                    <Avatar src="/ps-logo-simple-color.svg" />
                     <SidebarLabel>PolySynergy</SidebarLabel>
                     <ChevronDownIcon />
                 </DropdownButton>

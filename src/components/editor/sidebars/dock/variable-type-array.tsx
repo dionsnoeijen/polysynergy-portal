@@ -1,41 +1,50 @@
 import React from "react";
 
-import { NodeVariable, NodeVariableType } from "@/types/types";
-import { Text } from "@/components/text";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table";
-import { PencilIcon } from "@heroicons/react/16/solid";
+import {FormType, NodeVariable, NodeVariableType} from "@/types/types";
+import {Text} from "@/components/text";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
+import {PencilIcon} from "@heroicons/react/16/solid";
+import {useEditorStore} from "@/stores/editorStore";
 
 type Props = {
     variable: NodeVariable;
-    onEdit?: (variableHandle: string) => void;
+    nodeId: string;
 };
 
-const VariableTypeArray: React.FC<Props> = ({ variable, onEdit }): React.ReactElement => {
+const VariableTypeArray: React.FC<Props> = ({ variable, nodeId }: Props): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
+
+    const { openForm } = useEditorStore();
+
+    const onEdit = (nodeId: string, variableHandle: string) => {
+        openForm(FormType.EditArray, nodeId, variable);
+    }
 
     return (
         <div>
             <div className="flex justify-between items-center mb-2">
                 <Text>{variable.handle}</Text>
-                {onEdit && (
-                    <button
-                        className="px-2 py-1 text-sm font-medium bg-blue-500 text-white rounded hover:bg-blue-600"
-                        onClick={() => onEdit(variable.handle)}
-                    >
-                        Edit All
-                    </button>
-                )}
             </div>
             <div className="border border-white/20 rounded-md">
                 <Table dense>
                     <TableHead>
                         <TableRow>
-                            <TableHeader className="py-2">key</TableHeader>
-                            <TableHeader className="py-2">value</TableHeader>
-                            {onEdit && <TableHeader className="py-2 text-right">Actions</TableHeader>}
+                            <TableHeader className="py-1">key</TableHeader>
+                            <TableHeader className="py-1">value</TableHeader>
                         </TableRow>
                     </TableHead>
                     <TableBody>
+
+                        {variable.value === null &&
+                            (
+                                <TableRow>
+                                    <TableCell colSpan={2} className="py-1">
+                                        <Text>No data</Text>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        }
+
                         {isArray &&
                             (variable.value as NodeVariable[]).map((item) => {
                                 if (
@@ -57,21 +66,21 @@ const VariableTypeArray: React.FC<Props> = ({ variable, onEdit }): React.ReactEl
                                             >
                                                 {item.value?.toString()}
                                             </TableCell>
-                                            {onEdit && (
-                                                <TableCell className="py-1 text-right">
-                                                    <button
-                                                        className="text-blue-500 hover:text-blue-600"
-                                                        onClick={() => onEdit(item.handle)}
-                                                    >
-                                                        <PencilIcon className="w-4 h-4 inline" />
-                                                    </button>
-                                                </TableCell>
-                                            )}
                                         </TableRow>
                                     );
                                 }
                                 return null;
                             })}
+                        <TableRow>
+                            <TableCell colSpan={2} className="border-t border-white/20 p-0 py-0 px-0">
+                                <button
+                                    className="text-slate-500 hover:text-slate-600 w-full pb-1"
+                                    onClick={() => onEdit(nodeId, variable.handle)}
+                                >
+                                    <PencilIcon className="w-4 h-4 inline"/>
+                                </button>
+                            </TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
             </div>

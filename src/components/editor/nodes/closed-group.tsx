@@ -10,6 +10,7 @@ import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodesStore from "@/stores/nodesStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
+import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 
 type GroupProps = { node: Node };
 
@@ -99,7 +100,8 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                     {variablesForGroup?.inVariables && variablesForGroup?.inVariables?.length > 0 ? (
                         variablesForGroup.inVariables.map(({variable, nodeId}) => {
                             if (typeof variable === 'undefined') return null;
-                            switch (variable.type) {
+                            const variableType = interpretNodeVariableType(variable.type).baseType;
+                            switch (variableType) {
                                 case NodeVariableType.Array:
                                     return (
                                         <ArrayVariable
@@ -160,7 +162,8 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                     {variablesForGroup?.outVariables && variablesForGroup?.outVariables?.length > 0 ? (
                         variablesForGroup.outVariables.map(({variable, nodeId}) => {
                             if (typeof variable === 'undefined') return null;
-                            switch (variable.type) {
+                            const variableType = interpretNodeVariableType(variable.type).baseType;
+                            switch (variableType) {
                                 case NodeVariableType.Array:
                                     return (
                                         <ArrayVariable

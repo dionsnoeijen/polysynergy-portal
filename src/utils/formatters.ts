@@ -1,4 +1,4 @@
-import { RouteSegment, RouteSegmentType } from "@/stores/dynamicRoutesStore";
+import { RouteSegment, RouteSegmentType } from "@/types/types";
 
 export function formatSegments(segments: RouteSegment[]): string {
     return segments

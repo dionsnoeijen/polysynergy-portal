@@ -1,10 +1,15 @@
-import { create } from 'zustand';
-import { v4 as uuidv4 } from "uuid";
-import { Node, NodeType, NodeVariable, NodeView } from "@/types/types";
+import {create} from 'zustand';
+import {v4 as uuidv4} from "uuid";
+import {Node, NodeSetupVersion, NodeType, NodeVariable, NodeView, Route} from "@/types/types";
 import useGroupsStore from "@/stores/groupStore";
+import {fetchDynamicRoute as fetchDynamicRouteAPI} from "@/api/dynamicRoutesApi";
+import {useEditorStore} from "@/stores/editorStore";
+import {useConnectionsStore} from "@/stores/connectionsStore";
 
 type NodesStore = {
     nodes: Node[];
+    currentRouteData?: Route;
+    setCurrentRouteData: (route: Route) => void;
     enableAllNodesView: () => void;
     disableAllNodesViewExceptByIds: (nodeIds: string[]) => void;
     disableNodeView: (nodeId: string) => void;
@@ -28,6 +33,7 @@ type NodesStore = {
     getNodesToRender: () => Node[];
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: string | number | boolean | string[] | NodeVariable[] | null | undefined) => void;
     getTrackedNode: () => Node | null;
+    fetchDynamicRouteNodeSetupContent: (routeId: string) => Promise<void> | undefined;
 };
 
 const nodesByIdsCache = new Map<string, Node[]>();
@@ -37,7 +43,7 @@ export const createDefaultNode = (overrides = {}): Node => ({
     name: "Default Name",
     category: "hidden",
     type: NodeType.Rows,
-    view: {x:0, y:0, width:200, height:200},
+    view: {x: 0, y: 0, width: 200, height: 200},
     enabled: true,
     driven: false,
     variables: [],
@@ -46,6 +52,10 @@ export const createDefaultNode = (overrides = {}): Node => ({
 
 const useNodesStore = create<NodesStore>((set, get) => ({
     nodes: [],
+    currentRouteData: undefined,
+    setCurrentRouteData: (route: Route) => {
+        set({currentRouteData: route});
+    },
     trackedNodeId: null,
 
     enableAllNodesView: () => {
@@ -93,10 +103,10 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
                     ? {
-                          ...node,
-                          enabled: false,
-                          driven: false
-                      }
+                        ...node,
+                        enabled: false,
+                        driven: false
+                    }
                     : node
             ),
         }));
@@ -108,10 +118,10 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
                     ? {
-                          ...node,
-                          enabled: true,
-                          driven: false
-                      }
+                        ...node,
+                        enabled: true,
+                        driven: false
+                    }
                     : node
             ),
         }));
@@ -123,10 +133,10 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
                     ? {
-                          ...node,
-                          enabled: true,
-                          driven: true,
-                      }
+                        ...node,
+                        enabled: true,
+                        driven: true,
+                    }
                     : node
             ),
         }));
@@ -160,7 +170,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     addGroupNode: (node: Partial<Node>) => {
         nodesByIdsCache.clear();
 
-        node.type = "group";
+        node.type = NodeType.Group;
         node.category = "group";
         node.name = "Untitled Group";
 
@@ -181,7 +191,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
-                node.id === nodeId ? { ...node, ...updatedFields } : node
+                node.id === nodeId ? {...node, ...updatedFields} : node
             ),
         }));
     },
@@ -190,7 +200,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
-                node.id === nodeId ? { ...node, view: { ...node.view, adding } } : node
+                node.id === nodeId ? {...node, view: {...node.view, adding}} : node
             ),
         }));
     },
@@ -308,7 +318,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         ...node,
                         variables: node.variables.map((variable) =>
                             variable.handle === variableHandle
-                                ? { ...variable, value: newValue }
+                                ? {...variable, value: newValue}
                                 : variable
                         ),
                     }
@@ -319,9 +329,86 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     getTrackedNode: () => {
-        const { nodes, trackedNodeId } = get();
+        const {nodes, trackedNodeId} = get();
         if (!trackedNodeId) return null;
         return nodes.find((node) => node.id === trackedNodeId) || null;
+    },
+
+    saveNodeSetup: async () => {
+        const {nodes} = useNodesStore.getState();
+        const {connections} = useConnectionsStore.getState();
+        const {groups} = useGroupsStore.getState();
+        const {currentRouteData} = get();
+
+        if (!currentRouteData?.node_setup) {
+            console.error('No node setup available to save.');
+            return;
+        }
+
+        const nodeSetupData = {
+            nodes,
+            connections,
+            groups,
+        };
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setups/${currentRouteData.node_setup.id}/save/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(nodeSetupData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save node setup.');
+            }
+
+            const updatedRoute: Route = await response.json();
+            set({currentRouteData: updatedRoute});
+            alert('Node setup saved successfully!');
+        } catch (error) {
+            console.error(error);
+            alert('Failed to save node setup.');
+        }
+    },
+
+    fetchDynamicRouteNodeSetupContent: async (routeId: string) => {
+        const route: Route = await fetchDynamicRouteAPI(routeId);
+        if (!route.id) {
+            console.error('Failed to fetch dynamic route:', route);
+            return;
+        }
+        set({currentRouteData: route});
+
+        const {editingRouteVersions} = useEditorStore.getState();
+        const editingCurrentRouteVersion = editingRouteVersions[route.id];
+
+        if (editingCurrentRouteVersion) {
+            const version = route.node_setup?.versions.find(
+                (v) => v.id === editingCurrentRouteVersion
+            );
+            if (version) {
+                set({nodes: version.content});
+                return;
+            }
+        }
+
+        const publishedVersion = route.node_setup?.versions.find(
+            (v: NodeSetupVersion) => v.id === route.node_setup?.published_version?.id
+        );
+        if (publishedVersion) {
+            set({nodes: publishedVersion.content});
+        } else {
+            const latestVersion = route.node_setup?.versions.reduce((prev, curr) =>
+                prev.version_number > curr.version_number ? prev : curr
+            );
+            if (latestVersion) {
+                set({nodes: latestVersion.content});
+            }
+        }
+
+        set({nodes: []});
     },
 }));
 

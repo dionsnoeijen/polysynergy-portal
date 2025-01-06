@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { FormType } from "@/types/types";
+import {create} from 'zustand';
+import {FormType, NodeVariable} from "@/types/types";
 
 export enum BottomBarView {
     Output = 'Output',
@@ -25,13 +25,8 @@ type EditorState = {
     showForm: boolean;
     formType: FormType | null;
     formEditRecordId: string | null;
-    activeProjectId: string;
-    setActiveProjectId: (projectId: string) => void;
-    activeRouteId?: string;
-    activeScheduleId?: string;
-    setActiveScheduleId: (scheduleId: string) => void;
-    setActiveRouteId: (routeId: string) => void;
-    openForm: (type: FormType, formEditRecordId?: null | string) => void;
+    formEditVariable?: NodeVariable | null;
+    openForm: (type: FormType, formEditRecordId?: null | string, variable?: NodeVariable) => void;
     closeForm: (closeFormMessage?: string | null) => void;
     closeFormMessage?: string | null;
     editorPosition: { x: number; y: number };
@@ -59,70 +54,88 @@ type EditorState = {
     closeGroup: () => void;
     deleteNodesDialogOpen: boolean;
     setDeleteNodesDialogOpen: (isOpen: boolean) => void;
+
     addingNode: string | null;
     setAddingNode: (nodeId: string | null) => void;
     showAddingNode: boolean;
     setShowAddingNode: (show: boolean) => void;
+
+    activeProjectId: string;
+    setActiveProjectId: (projectId: string) => void;
+    activeRouteId?: string;
+    setActiveRouteId: (routeId: string) => void;
+    activeScheduleId?: string;
+    setActiveScheduleId: (scheduleId: string) => void;
+
+    editingRouteVersions: { [routeId: string]: string };
+    setEditingRouteVersion: (routeId: string, versionId: string) => void;
+
+    editingScheduleVersions: { [scheduleId: string]: string };
+    setEditingScheduleVersion: (scheduleId: string, versionId: string) => void;
+
+
 };
 
 export const useEditorStore = create<EditorState>((set, get) => ({
     zoomFactor: 1,
-    setZoomFactor: (factor) => set({ zoomFactor: factor }),
-    panPosition: { x: 0, y: 0 },
-    setPanPosition: (position) => set({ panPosition: position }),
+    setZoomFactor: (factor) => set({zoomFactor: factor}),
+    panPosition: {x: 0, y: 0},
+    setPanPosition: (position) => set({panPosition: position}),
     isDragging: false,
-    setIsDragging: (dragging) => set({ isDragging: dragging }),
+    setIsDragging: (dragging) => set({isDragging: dragging}),
     showForm: false,
     formType: null,
+    formEditVariable: null,
     formEditRecordId: null,
     activeProjectId: '',
-    setActiveProjectId: (projectId: string) => set({ activeProjectId: projectId }),
+    setActiveProjectId: (projectId: string) => set({activeProjectId: projectId}),
     activeRouteId: '',
-    setActiveRouteId: (routeId: string) => set({ activeRouteId: routeId }),
+    setActiveRouteId: (routeId: string) => set({activeRouteId: routeId}),
     activeScheduleId: '',
-    setActiveScheduleId: (scheduleId: string) => set({ activeScheduleId: scheduleId }),
-    openForm: (type: FormType, formEditRecordId: null | string = null) => set({
+    setActiveScheduleId: (scheduleId: string) => set({activeScheduleId: scheduleId}),
+    openForm: (type: FormType, formEditRecordId: null | string = null, variable?: null) => set({
         showForm: true,
         formType: type,
-        formEditRecordId: formEditRecordId
+        formEditRecordId: formEditRecordId,
+        formEditVariable: variable ? variable : null
     }),
     closeForm: (closeFormMessage?: string | null) => {
-        set({ showForm: false, formType: null, closeFormMessage: closeFormMessage });
+        set({showForm: false, formType: null, closeFormMessage: closeFormMessage});
 
         if (closeFormMessage) {
             setTimeout(() => {
-                set({ closeFormMessage: null });
+                set({closeFormMessage: null});
             }, 5000);
         }
     },
     closeFormMessage: null,
     isDrawingConnection: '',
-    setIsDrawingConnection: (drawing: string) => set({ isDrawingConnection: drawing }),
-    editorPosition: { x: 0, y: 0 },
-    setEditorPosition: (position) => set({ editorPosition: position }),
-    mousePosition: { x: 0, y: 0 },
-    setMousePosition: (position) => set({ mousePosition: position }),
+    setIsDrawingConnection: (drawing: string) => set({isDrawingConnection: drawing}),
+    editorPosition: {x: 0, y: 0},
+    setEditorPosition: (position) => set({editorPosition: position}),
+    mousePosition: {x: 0, y: 0},
+    setMousePosition: (position) => set({mousePosition: position}),
     selectedNodes: [],
-    setSelectedNodes: (nodes) => set({ selectedNodes: nodes }),
+    setSelectedNodes: (nodes) => set({selectedNodes: nodes}),
     clickSelect: true,
-    setClickSelect: (clickSelect) => set({ clickSelect: clickSelect }),
+    setClickSelect: (clickSelect) => set({clickSelect: clickSelect}),
     shiftSelectMore: false,
-    setShiftSelectMore: (shiftSelectMore) => set({ shiftSelectMore: shiftSelectMore }),
+    setShiftSelectMore: (shiftSelectMore) => set({shiftSelectMore: shiftSelectMore}),
     controlDeselectOne: false,
-    setControlDeselectOne: (controlDeselectOne) => set({ controlDeselectOne: controlDeselectOne }),
+    setControlDeselectOne: (controlDeselectOne) => set({controlDeselectOne: controlDeselectOne}),
     boxSelect: false,
-    setBoxSelect: (boxSelect) => set({ boxSelect: boxSelect }),
+    setBoxSelect: (boxSelect) => set({boxSelect: boxSelect}),
     bottomBarView: BottomBarView.Debug,
-    setBottomBarView: (view) => set({ bottomBarView: view }),
-    contextMenu: { visible: false, x: 0, y: 0, items: [] },
+    setBottomBarView: (view) => set({bottomBarView: view}),
+    contextMenu: {visible: false, x: 0, y: 0, items: []},
     openContextMenu: (x, y, items) =>
-        set({ contextMenu: { visible: true, x, y, items } }),
+        set({contextMenu: {visible: true, x, y, items}}),
     closeContextMenu: () =>
-        set({ contextMenu: { visible: false, x: 0, y: 0, items: [] } }),
+        set({contextMenu: {visible: false, x: 0, y: 0, items: []}}),
     groupStack: [],
     openGroup: null,
     setOpenGroup: (groupId: string | null) => {
-        const { groupStack } = get();
+        const {groupStack} = get();
         if (groupId) {
             if (groupStack[groupStack.length - 1] !== groupId) {
                 set((state) => ({
@@ -138,7 +151,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         }
     },
     closeGroup: () => {
-        const { groupStack } = get();
+        const {groupStack} = get();
         if (groupStack.length > 0) {
             const newStack = [...groupStack];
             newStack.pop();
@@ -149,9 +162,26 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         }
     },
     deleteNodesDialogOpen: false,
-    setDeleteNodesDialogOpen: (isOpen) => set({ deleteNodesDialogOpen: isOpen }),
+    setDeleteNodesDialogOpen: (isOpen) => set({deleteNodesDialogOpen: isOpen}),
     addingNode: null,
-    setAddingNode: (nodeId: string | null) => set({ addingNode: nodeId }),
+    setAddingNode: (nodeId: string | null) => set({addingNode: nodeId}),
     showAddingNode: false,
-    setShowAddingNode: (show: boolean) => set({ showAddingNode: show }),
+    setShowAddingNode: (show: boolean) => set({showAddingNode: show}),
+    editingRouteVersions: {},
+    setEditingRouteVersion: (routeId, versionId) =>
+        set((state) => ({
+            editingRouteVersions: {
+                ...state.editingRouteVersions,
+                [routeId]: versionId,
+            },
+        })),
+
+    editingScheduleVersions: {},
+    setEditingScheduleVersion: (scheduleId, versionId) =>
+        set((state) => ({
+            editingScheduleVersions: {
+                ...state.editingScheduleVersions,
+                [scheduleId]: versionId,
+            },
+        })),
 }));

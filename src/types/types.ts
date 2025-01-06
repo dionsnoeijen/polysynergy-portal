@@ -14,6 +14,7 @@ export enum FormType {
     EditRoute = 'editRoute',
     AddSchedule = 'addSchedule',
     EditSchedule = 'editSchedule',
+    EditArray = 'editArray',
 }
 
 export enum InOut {
@@ -45,6 +46,7 @@ export enum NodeType {
     Comparison = 'comparison',
     Math = 'math',
     Group = 'group',
+    Mock = 'mock',
 }
 
 export enum NodeComparisonType {
@@ -62,7 +64,7 @@ export enum NodeMathType {
 }
 
 export type NodeVariable = {
-    name: string;
+    name?: string;
     handle: string;
     value?: null | string | number | boolean | string[] | NodeVariable[];
     type: string | NodeVariableType;
@@ -84,10 +86,11 @@ export type Node = {
     id: string;
     name: string;
     category: string;
-    type: string;
+    type: NodeType;
     view: NodeView;
     enabled?: boolean;
     driven?: boolean;
+    has_play_button?: boolean;
     variables: NodeVariable[];
 };
 
@@ -101,4 +104,53 @@ export type Schedule = {
     created_at?: string;
     updated_at?: string;
     project_id?: string;
+};
+
+export enum HttpMethod {
+    Get = 'GET',
+    Post = 'POST',
+    Put = 'PUT',
+    Patch = 'PATCH',
+    Delete ='DELETE'
+}
+
+export interface NodeSetup {
+  id: string;
+  name?: string | null;
+  deleted_at?: string | null;
+  published_version?: NodeSetupVersion | null;
+  versions: NodeSetupVersion[];
+}
+
+export interface NodeSetupVersion {
+  id: string;
+  version_number: number;
+  created_at: string;
+  content: Node[];
+  published: boolean;
+  created_by?: string | null;
+}
+
+export enum RouteSegmentType {
+    Static = 'static',
+    Variable = 'variable',
+}
+
+export type RouteSegment = {
+    id: string;
+    segment_order: number;
+    type: RouteSegmentType;
+    name: string;
+    default_value: null|string;
+    variable_type: null|string;
+};
+
+export type Route = ListItemWithId & {
+    id?: string | null;
+    description: string;
+    created_at?: string;
+    updated_at?: string;
+    segments: RouteSegment[];
+    method: HttpMethod;
+    node_setup?: NodeSetup;
 };

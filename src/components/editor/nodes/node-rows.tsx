@@ -10,13 +10,14 @@ import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
-import { Node as NodeType, NodeEnabledConnector, NodeVariableType } from "@/types/types";
+import { Node, NodeType, NodeEnabledConnector, NodeVariableType } from "@/types/types";
 import { useEditorStore } from "@/stores/editorStore";
 import { ThreeWaySwitch } from "@/components/three-way-switch";
 import { interpretNodeVariableType } from "@/utils/interpretNodeVariableType";
+import PlayButton from "@/components/editor/nodes/rows/play-button";
 
 type NodeProps = {
-    node: NodeType;
+    node: Node;
 };
 
 const NodeRows: React.FC<NodeProps> = ({ node }) => {
@@ -42,6 +43,20 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
         };
     };
 
+    const getBackgroundClass = () => {
+        if (node.category === NodeType.Mock) {
+            return "bg-orange-500/40 dark:bg-orange-500/40";
+        }
+        return "bg-sky-100 dark:bg-slate-800/60";
+    };
+
+    const className = `
+        absolute overflow-visible select-none flex flex-col items-start justify-start 
+        ring-2 ${selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm"} 
+        ${getBackgroundClass()} backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 
+        ${node.view.disabled ? "z-1 select-none opacity-30" : "z-20 cursor-move"}
+    `.trim();
+
     useEffect(() => {
         if (shouldUpdateConnections.current) {
             Object.entries(isOpenMap).forEach(([handle, isOpen]) => {
@@ -62,6 +77,7 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                 updateNodeHeight(node.id, actualHeight);
             }
         }
+    // eslint-disable-next-line
     }, [node.view.height, isOpenMap, updateNodeHeight, node.id]);
 
     return (
@@ -69,11 +85,7 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             ref={ref}
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
-            className={`absolute overflow-visible select-none flex flex-col items-start justify-start ring-2 ${
-                selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
-            } bg-sky-100 dark:bg-slate-800/60 backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 ${
-                node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'
-            }`}
+            className={className}
             style={{
                 width: `${size.width}px`,
                 left: `${position.x}px`,
@@ -136,6 +148,9 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                                 return null;
                         }
                     })}
+                    {node.has_play_button && (
+                        <PlayButton disabled={node.view.disabled} nodeId={node.id} />
+                    )}
                 </div>
             </div>
             <div

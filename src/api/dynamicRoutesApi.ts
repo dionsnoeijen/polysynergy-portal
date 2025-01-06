@@ -1,6 +1,6 @@
-import {Route} from "@/stores/dynamicRoutesStore";
+import { Route } from "@/types/types";
 
-export const fetchDynamicRoutes = async (projectId: string) => {
+export const fetchDynamicRoutes = async (projectId: string): Promise<Route[]> => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/dynamic-routes/?project_id=${projectId}`, {
         headers: {
             'Accept': 'application/json',
@@ -8,6 +8,15 @@ export const fetchDynamicRoutes = async (projectId: string) => {
     });
     return response.json();
 };
+
+export const fetchDynamicRoute = async (routeId: string): Promise<Route> => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/dynamic-routes/${routeId}/`, {
+        headers: {
+            'Accept': 'application/json',
+        },
+    });
+    return response.json();
+}
 
 export const storeDynamicRoute = async (projectId: string, route: Route) => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/dynamic-routes/`, {

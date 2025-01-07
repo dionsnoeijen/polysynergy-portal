@@ -1,17 +1,17 @@
-import React, {useEffect, useState} from "react";
-import {useEditorStore} from "@/stores/editorStore";
-import {Divider} from "@/components/divider";
-import {Button} from "@/components/button";
-import {FormType, Node, NodeVariable, NodeVariableType} from "@/types/types";
-import {Heading, Subheading} from "@/components/heading";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
+import React, { useEffect, useState } from "react";
+import { useEditorStore } from "@/stores/editorStore";
+import { Divider } from "@/components/divider";
+import { Button } from "@/components/button";
+import { FormType, Node, NodeVariable, NodeVariableType } from "@/types/types";
+import { Heading, Subheading} from "@/components/heading";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table";
+import { Select } from "@/components/select";
+import { Input } from "@/components/input";
+import { Switch } from "@/components/switch";
+import { CheckCircleIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/16/solid";
 import useNodesStore from "@/stores/nodesStore";
-import {Select} from "@/components/select";
-import {Input} from "@/components/input";
-import {Switch} from "@/components/switch";
-import {CheckCircleIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon} from "@heroicons/react/16/solid";
 
-const ArrayVariableForm: React.FC = () => {
+const DictVariableForm: React.FC = () => {
 
     const {getNode, updateNodeVariable} = useNodesStore();
     const {closeForm, formEditVariable, formEditRecordId, formType} = useEditorStore();
@@ -136,7 +136,6 @@ const ArrayVariableForm: React.FC = () => {
                             {variables &&
                                 variables.map((variable, index) =>
                                     editingIndex === index ? (
-                                        // Invoervelden voor bewerken
                                         <TableRow key={`edit-${index}`}>
                                             <TableCell>
                                                 <Switch
@@ -375,25 +374,21 @@ const ArrayVariableForm: React.FC = () => {
                             </TableRow>
                         </TableBody>
                     </Table>
-
-                    {/*<div className="flex justify-end">*/}
-                    {/*    <Button type="button" plain onClick={addRow}>Add Row</Button>*/}
-                    {/*</div>*/}
                 </div>
             </section>
 
-            <Divider className="my-10" soft bleed/>
+            <Divider className="my-10" soft bleed />
 
             <div className="flex justify-end gap-4">
                 <Button type="button" onClick={() => closeForm()} plain>
                     Cancel
                 </Button>
                 <Button type="submit">
-                    {formType === FormType.EditArray && "Save array"}
+                    {formType === FormType.EditDict && "Save array"}
                 </Button>
             </div>
         </form>
     );
 }
 
-export default ArrayVariableForm;
+export default DictVariableForm;

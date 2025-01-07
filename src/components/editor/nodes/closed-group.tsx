@@ -3,7 +3,7 @@ import { useEditorStore } from "@/stores/editorStore";
 import { Node, NodeVariableType } from "@/types/types";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
-import ArrayVariable from "@/components/editor/nodes/rows/array-variable";
+import DictVariable from "@/components/editor/nodes/rows/dict-variable";
 import StringVariable from "@/components/editor/nodes/rows/string-variable";
 import NumberVariable from "@/components/editor/nodes/rows/number-variable";
 import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
@@ -102,9 +102,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                             if (typeof variable === 'undefined') return null;
                             const variableType = interpretNodeVariableType(variable.type).baseType;
                             switch (variableType) {
-                                case NodeVariableType.Array:
+                                case NodeVariableType.Dict:
                                     return (
-                                        <ArrayVariable
+                                        <DictVariable
                                             key={'in-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             isOpen={isOpenMap[variable.handle] || false}
@@ -164,9 +164,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                             if (typeof variable === 'undefined') return null;
                             const variableType = interpretNodeVariableType(variable.type).baseType;
                             switch (variableType) {
-                                case NodeVariableType.Array:
+                                case NodeVariableType.Dict:
                                     return (
-                                        <ArrayVariable
+                                        <DictVariable
                                             key={'out-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             isOpen={isOpenMap[variable.handle] || false}

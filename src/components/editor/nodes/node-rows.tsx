@@ -3,18 +3,21 @@ import useResizable from "@/hooks/editor/nodes/useResizable";
 import Connector from "@/components/editor/nodes/connector";
 import useNodesStore from "@/stores/nodesStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
-import ArrayVariable from "@/components/editor/nodes/rows/array-variable";
+import DictVariable from "@/components/editor/nodes/rows/dict-variable";
 import StringVariable from "@/components/editor/nodes/rows/string-variable";
 import NumberVariable from "@/components/editor/nodes/rows/number-variable";
 import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
-import { Node, NodeType, NodeEnabledConnector, NodeVariableType } from "@/types/types";
-import { useEditorStore } from "@/stores/editorStore";
-import { ThreeWaySwitch } from "@/components/three-way-switch";
-import { interpretNodeVariableType } from "@/utils/interpretNodeVariableType";
+import {Node, NodeEnabledConnector, NodeType, NodeVariableType} from "@/types/types";
+import {useEditorStore} from "@/stores/editorStore";
+import {ThreeWaySwitch} from "@/components/three-way-switch";
+import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 import PlayButton from "@/components/editor/nodes/rows/play-button";
+import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
+import ListVariable from "@/components/editor/nodes/rows/list-variable";
+import BytesVariable from "@/components/editor/nodes/rows/bytes-variable";
 
 type NodeProps = {
     node: Node;
@@ -45,7 +48,7 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
 
     const getBackgroundClass = () => {
         if (node.category === NodeType.Mock) {
-            return "bg-orange-500/40 dark:bg-orange-500/40";
+            return "bg-orange-500/60 dark:bg-orange-500/60";
         }
         return "bg-sky-100 dark:bg-slate-800/60";
     };
@@ -95,8 +98,12 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             data-node-id={node.id}
         >
             <div className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'select-none opacity-0'}`}>
-                <Connector in nodeId={node.id} handle={NodeEnabledConnector.Node}/>
-                <ThreeWaySwitch node={node} />
+                {node.has_enabled_switch && (
+                    <>
+                        <Connector in nodeId={node.id} handle={NodeEnabledConnector.Node}/>
+                        <ThreeWaySwitch node={node} />
+                    </>
+                )}
                 <h3 className="font-bold truncate ml-2 text-sky-600 dark:text-white">{node.name}</h3>
             </div>
             <div className="flex flex-col w-full items-start overflow-visible">
@@ -104,9 +111,20 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                     {node.variables.map((variable) => {
                         const type = interpretNodeVariableType(variable.type);
                         switch (type.baseType) {
-                            case NodeVariableType.Array:
+                            case NodeVariableType.Dict:
                                 return (
-                                    <ArrayVariable
+                                    <DictVariable
+                                        key={'dock-' + node.id + '-' + variable.handle}
+                                        variable={variable}
+                                        isOpen={isOpenMap[variable.handle] || false}
+                                        onToggle={handleToggle(variable.handle)}
+                                        nodeId={node.id}
+                                        disabled={node.view.disabled}
+                                    />
+                                );
+                            case NodeVariableType.List:
+                                return (
+                                    <ListVariable
                                         key={'dock-' + node.id + '-' + variable.handle}
                                         variable={variable}
                                         isOpen={isOpenMap[variable.handle] || false}
@@ -124,9 +142,27 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                                         disabled={node.view.disabled}
                                     />
                                 );
+                            case NodeVariableType.Bytes:
+                                return (
+                                    <BytesVariable
+                                        key={'dock-' + node.id + '-' + variable.handle}
+                                        variable={variable}
+                                        nodeId={node.id}
+                                        disabled={node.view.disabled}
+                                    />
+                                )
                             case NodeVariableType.Number:
                                 return (
                                     <NumberVariable
+                                        key={'dock-' + node.id + '-' + variable.handle}
+                                        variable={variable}
+                                        nodeId={node.id}
+                                        disabled={node.view.disabled}
+                                    />
+                                );
+                            case NodeVariableType.DateTime:
+                                return (
+                                    <DatetimeVariable
                                         key={'dock-' + node.id + '-' + variable.handle}
                                         variable={variable}
                                         nodeId={node.id}

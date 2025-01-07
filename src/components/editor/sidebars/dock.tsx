@@ -4,7 +4,7 @@ import Heading from "@/components/editor/sidebars/elements/heading";
 import useNodesStore  from "@/stores/nodesStore";
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
 import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";
-import VariableTypeArray from "@/components/editor/sidebars/dock/variable-type-array";
+import VariableTypeDict from "@/components/editor/sidebars/dock/variable-type-dict";
 import VariableTypeBoolean from "@/components/editor/sidebars/dock/variable-type-boolean";
 import GroupName from "@/components/editor/sidebars/dock/group-name";
 import VariableGroup from "@/components/editor/sidebars/dock/variable-group";
@@ -12,6 +12,8 @@ import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
 import { useEditorStore } from "@/stores/editorStore";
 import { NodeVariable, NodeVariableType } from "@/types/types";
 import { interpretNodeVariableType } from "@/utils/interpretNodeVariableType";
+import VariableTypeList from "@/components/editor/sidebars/dock/variable-type-list";
+import VariableTypeBytes from "@/components/editor/sidebars/dock/variable-type-bytes";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -19,9 +21,12 @@ type Props = React.ComponentPropsWithoutRef<"div"> & {
 
 const VariableTypeComponents = {
     [NodeVariableType.String]: VariableTypeString,
+    [NodeVariableType.Bytes]: VariableTypeBytes,
     [NodeVariableType.Number]: VariableTypeNumber,
-    [NodeVariableType.Array]: VariableTypeArray,
+    [NodeVariableType.Dict]: VariableTypeDict,
+    [NodeVariableType.List]: VariableTypeList,
     [NodeVariableType.Boolean]: VariableTypeBoolean,
+    [NodeVariableType.DateTime]: VariableTypeString,
     [NodeVariableType.TruePath]: null,
     [NodeVariableType.FalsePath]: null,
     [NodeVariableType.Unknown]: null,

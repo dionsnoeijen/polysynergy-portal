@@ -14,7 +14,8 @@ export enum FormType {
     EditRoute = 'editRoute',
     AddSchedule = 'addSchedule',
     EditSchedule = 'editSchedule',
-    EditArray = 'editArray',
+    EditDict = 'editDict',
+    EditList = 'editList',
 }
 
 export enum InOut {
@@ -33,12 +34,15 @@ export type Position = {
 
 export enum NodeVariableType {
     String = 'string',
+    Bytes = 'bytes',
     Number = 'number',
     Boolean = 'boolean',
-    Array = 'array',
+    Dict = 'dict',
+    List = 'list',
     TruePath = 'true_path',
     FalsePath = 'false_path',
     Unknown = 'unknown',
+    DateTime = 'datetime',
 }
 
 export enum NodeType {
@@ -71,6 +75,9 @@ export type NodeVariable = {
     has_dock?: boolean;
     has_in?: boolean;
     has_out?: boolean;
+    dock_field_enabled?: boolean;
+    dock_field_secret?: boolean;
+    dock_select_values?: Record<string, string>;
 };
 
 export type NodeView = {
@@ -88,10 +95,11 @@ export type Node = {
     category: string;
     type: NodeType;
     view: NodeView;
+    variables: NodeVariable[];
     enabled?: boolean;
     driven?: boolean;
     has_play_button?: boolean;
-    variables: NodeVariable[];
+    has_enabled_switch?: boolean;
 };
 
 export type Schedule = {

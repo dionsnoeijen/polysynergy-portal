@@ -93,11 +93,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     setActiveRouteId: (routeId: string) => set({activeRouteId: routeId}),
     activeScheduleId: '',
     setActiveScheduleId: (scheduleId: string) => set({activeScheduleId: scheduleId}),
-    openForm: (type: FormType, formEditRecordId: null | string = null, variable?: null) => set({
+    openForm: (type: FormType, formEditRecordId: null | string = null, variable?: NodeVariable | null) => set({
         showForm: true,
         formType: type,
         formEditRecordId: formEditRecordId,
-        formEditVariable: variable ? variable : null
+        formEditVariable: variable ?? null
     }),
     closeForm: (closeFormMessage?: string | null) => {
         set({showForm: false, formType: null, closeFormMessage: closeFormMessage});

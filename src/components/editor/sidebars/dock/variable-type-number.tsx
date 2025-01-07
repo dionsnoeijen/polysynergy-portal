@@ -1,15 +1,16 @@
 import React from "react";
-import { NodeVariable } from "@/types/types";
+import {NodeVariable} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
-import { Field, Fieldset, Label } from "@/components/fieldset";
-import { Input } from "@/components/input";
+import {Field, Fieldset, Label} from "@/components/fieldset";
+import {Input} from "@/components/input";
+import {Select} from "@/components/select";
 
 type Props = {
     nodeId: string;
     variable: NodeVariable;
 };
 
-const VariableTypeNumber: React.FC<Props> = ({ nodeId, variable }): React.ReactElement => {
+const VariableTypeNumber: React.FC<Props> = ({nodeId, variable}): React.ReactElement => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const value =
@@ -30,13 +31,23 @@ const VariableTypeNumber: React.FC<Props> = ({ nodeId, variable }): React.ReactE
         <Fieldset>
             <Label>{variable.handle}</Label>
             <Field>
-                <Input
-                    type="number"
-                    value={value}
-                    onChange={handleChange}
-                    placeholder={variable.handle}
-                    aria-label={variable.handle}
-                />
+                {variable.dock_select_values ? (
+                    <Select onChange={handleChange} defaultValue={value}>
+                        {Object.entries(variable.dock_select_values).map(([key, v]) => (
+                            <option key={key} value={key}>
+                                {v}
+                            </option>
+                        ))}
+                    </Select>
+                ) : (
+                    <Input
+                        type="number"
+                        value={value}
+                        onChange={handleChange}
+                        placeholder={variable.handle}
+                        aria-label={variable.handle}
+                    />
+                )}
             </Field>
         </Fieldset>
     );

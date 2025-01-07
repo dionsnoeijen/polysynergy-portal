@@ -14,7 +14,7 @@ type Props = {
     groupId?: string;
 };
 
-const ArrayVariable: React.FC<Props> = ({
+const DictVariable: React.FC<Props> = ({
     variable,
     isOpen,
     onToggle,
@@ -91,4 +91,4 @@ const ArrayVariable: React.FC<Props> = ({
     </div>
 );
 
-export default ArrayVariable;
+export default DictVariable;

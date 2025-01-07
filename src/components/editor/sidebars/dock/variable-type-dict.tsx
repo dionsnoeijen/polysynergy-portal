@@ -11,13 +11,13 @@ type Props = {
     nodeId: string;
 };
 
-const VariableTypeArray: React.FC<Props> = ({ variable, nodeId }: Props): React.ReactElement => {
+const VariableTypeDict: React.FC<Props> = ({ variable, nodeId }: Props): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
 
     const { openForm } = useEditorStore();
 
-    const onEdit = (nodeId: string, variableHandle: string) => {
-        openForm(FormType.EditArray, nodeId, variable);
+    const onEdit = (nodeId: string) => {
+        openForm(FormType.EditDict, nodeId, variable);
     }
 
     return (
@@ -75,7 +75,7 @@ const VariableTypeArray: React.FC<Props> = ({ variable, nodeId }: Props): React.
                             <TableCell colSpan={2} className="border-t border-white/20 p-0 py-0 px-0">
                                 <button
                                     className="text-slate-500 hover:text-slate-600 w-full pb-1"
-                                    onClick={() => onEdit(nodeId, variable.handle)}
+                                    onClick={() => onEdit(nodeId)}
                                 >
                                     <PencilIcon className="w-4 h-4 inline"/>
                                 </button>
@@ -88,4 +88,4 @@ const VariableTypeArray: React.FC<Props> = ({ variable, nodeId }: Props): React.
     );
 };
 
-export default VariableTypeArray;
+export default VariableTypeDict;

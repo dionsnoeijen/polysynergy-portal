@@ -10,7 +10,6 @@ import { Textarea } from '@/components/textarea'
 import type { Metadata } from 'next'
 import { Address } from './address'
 import ThemeToggle from "@/components/theme-toggle";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {ApplicationLayout} from "@/app/application-layout";
 
 export const metadata: Metadata = {

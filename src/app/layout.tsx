@@ -1,7 +1,9 @@
 import '@/styles/tailwind.css';
 import type { Metadata } from 'next';
 import type React from 'react';
-import {ThemeProvider} from "@/contexts/theme-context";
+import { ThemeProvider } from "@/contexts/theme-context";
+import { AuthContextProvider } from "@/contexts/auth-context";
+import AuthWrapper from "@/components/auth/auth-wrapper";
 
 export const metadata: Metadata = {
     title: {
@@ -10,7 +12,7 @@ export const metadata: Metadata = {
     },
     description: '',
     icons: {
-        icon: "/favicon.svg",
+        icon: "/favicon.svg?v=2",
         apple: "/apple-touch-icon.png"
     },
 };
@@ -21,9 +23,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <head>
                 <link rel="preconnect" href="https://rsms.me/" />
                 <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+                <title>PolySynergy</title>
             </head>
             <body>
-                <ThemeProvider>{children}</ThemeProvider>
+                <ThemeProvider>
+                    <AuthContextProvider>
+                        <AuthWrapper>{children}</AuthWrapper>
+                    </AuthContextProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

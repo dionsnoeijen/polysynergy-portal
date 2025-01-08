@@ -1,15 +1,16 @@
 import React from "react";
-import { NodeVariable } from "@/types/types";
+import {NodeVariable} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
-import { Input } from "@/components/input";
-import { Field, Fieldset, Label } from "@/components/fieldset";
+import {Input} from "@/components/input";
+import {Field, Fieldset, Label} from "@/components/fieldset";
+import {Select} from "@/components/select";
 
 type Props = {
     nodeId: string;
     variable: NodeVariable;
 };
 
-const VariableTypeString: React.FC<Props> = ({ nodeId, variable }) => {
+const VariableTypeString: React.FC<Props> = ({nodeId, variable}) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,13 +22,26 @@ const VariableTypeString: React.FC<Props> = ({ nodeId, variable }) => {
         <Fieldset>
             <Label>{variable.handle}</Label>
             <Field>
-                <Input
-                    type="text"
-                    value={variable.value as string || ""}
-                    onChange={handleChange}
-                    placeholder={variable.handle}
-                    aria-label={variable.handle}
-                />
+                {variable.dock_select_values ? (
+                    <Select
+                        disabled={variable.dock_field_enabled === false}
+                        onChange={handleChange} defaultValue={variable.value}>
+                        {Object.entries(variable.dock_select_values).map(([key, v]) => (
+                            <option key={key} value={key}>
+                                {v}
+                            </option>
+                        ))}
+                    </Select>
+                ) : (
+                    <Input
+                        disabled={variable.dock_field_enabled === false}
+                        type="text"
+                        value={variable.value as string || ""}
+                        onChange={handleChange}
+                        placeholder={variable.handle}
+                        aria-label={variable.handle}
+                    />
+                )}
             </Field>
         </Fieldset>
     );

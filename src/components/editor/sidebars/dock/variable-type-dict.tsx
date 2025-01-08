@@ -72,14 +72,14 @@ const VariableTypeDict: React.FC<Props> = ({ variable, nodeId }: Props): React.R
                                 return null;
                             })}
                         <TableRow>
-                            <TableCell colSpan={2} className="border-t border-white/20 p-0 py-0 px-0">
+                            <td colSpan={2} className="border-t border-white/20 p-0 py-0 px-0">
                                 <button
                                     className="text-slate-500 hover:text-slate-600 w-full pb-1"
                                     onClick={() => onEdit(nodeId)}
                                 >
-                                    <PencilIcon className="w-4 h-4 inline"/>
+                                    <PencilIcon className="w-4 h-4 inline text-slate-300"/>
                                 </button>
-                            </TableCell>
+                            </td>
                         </TableRow>
                     </TableBody>
                 </Table>

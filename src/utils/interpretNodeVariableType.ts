@@ -1,13 +1,26 @@
-import { NodeVariableType } from "@/types/types";
+import {NodeVariable, NodeVariableType} from "@/types/types";
 
-export function interpretNodeVariableType(type: string): { baseType: NodeVariableType; containsNone: boolean } {
-    const types = type.split('|');
+export function interpretNodeVariableType(variable: NodeVariable): { baseType: NodeVariableType; containsNone: boolean } {
+    const types = variable.type.split('|');
     const containsNone = types.includes('None');
 
     if (types.includes('int') || types.includes('float')) {
         return { baseType: NodeVariableType.Number, containsNone };
     } else if (types.includes('str')) {
-        return {baseType: NodeVariableType.String, containsNone};
+
+        if (variable.dock_field_secret) {
+            return { baseType: NodeVariableType.SecretString, containsNone };
+        }
+
+        if (variable.dock_field_text_area) {
+            return { baseType: NodeVariableType.TextArea, containsNone };
+        }
+
+        if (variable.dock_field_rich_text_area) {
+            return { baseType: NodeVariableType.RichTextArea, containsNone };
+        }
+
+        return { baseType: NodeVariableType.String, containsNone };
     } else if (types.includes('bytes')) {
         return { baseType: NodeVariableType.Bytes, containsNone };
     } else if (types.includes('bool')) {

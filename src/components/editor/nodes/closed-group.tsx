@@ -100,7 +100,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                     {variablesForGroup?.inVariables && variablesForGroup?.inVariables?.length > 0 ? (
                         variablesForGroup.inVariables.map(({variable, nodeId}) => {
                             if (typeof variable === 'undefined') return null;
-                            const variableType = interpretNodeVariableType(variable.type).baseType;
+                            const variableType = interpretNodeVariableType(variable).baseType;
                             switch (variableType) {
                                 case NodeVariableType.Dict:
                                     return (
@@ -162,7 +162,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                     {variablesForGroup?.outVariables && variablesForGroup?.outVariables?.length > 0 ? (
                         variablesForGroup.outVariables.map(({variable, nodeId}) => {
                             if (typeof variable === 'undefined') return null;
-                            const variableType = interpretNodeVariableType(variable.type).baseType;
+                            const variableType = interpretNodeVariableType(variable).baseType;
                             switch (variableType) {
                                 case NodeVariableType.Dict:
                                     return (

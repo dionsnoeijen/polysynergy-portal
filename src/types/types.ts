@@ -36,13 +36,16 @@ export enum NodeVariableType {
     String = 'string',
     Bytes = 'bytes',
     Number = 'number',
-    Boolean = 'boolean',
     Dict = 'dict',
+    Boolean = 'boolean',
     List = 'list',
+    DateTime = 'datetime',
     TruePath = 'true_path',
     FalsePath = 'false_path',
     Unknown = 'unknown',
-    DateTime = 'datetime',
+    SecretString = 'secretstring',
+    TextArea = 'textarea',
+    RichTextArea = 'richtextarea',
 }
 
 export enum NodeType {
@@ -70,13 +73,15 @@ export enum NodeMathType {
 export type NodeVariable = {
     name?: string;
     handle: string;
-    value?: null | string | number | boolean | string[] | NodeVariable[];
+    value: null | string | number | boolean | string[] | NodeVariable[];
     type: string | NodeVariableType;
     has_dock?: boolean;
     has_in?: boolean;
     has_out?: boolean;
     dock_field_enabled?: boolean;
     dock_field_secret?: boolean;
+    dock_field_text_area?: boolean;
+    dock_field_rich_text_area?: boolean;
     dock_select_values?: Record<string, string>;
 };
 
@@ -119,24 +124,24 @@ export enum HttpMethod {
     Post = 'POST',
     Put = 'PUT',
     Patch = 'PATCH',
-    Delete ='DELETE'
+    Delete = 'DELETE'
 }
 
 export interface NodeSetup {
-  id: string;
-  name?: string | null;
-  deleted_at?: string | null;
-  published_version?: NodeSetupVersion | null;
-  versions: NodeSetupVersion[];
+    id: string;
+    name?: string | null;
+    deleted_at?: string | null;
+    published_version?: NodeSetupVersion | null;
+    versions: NodeSetupVersion[];
 }
 
 export interface NodeSetupVersion {
-  id: string;
-  version_number: number;
-  created_at: string;
-  content: Node[];
-  published: boolean;
-  created_by?: string | null;
+    id: string;
+    version_number: number;
+    created_at: string;
+    content: Node[];
+    published: boolean;
+    created_by?: string | null;
 }
 
 export enum RouteSegmentType {
@@ -149,8 +154,8 @@ export type RouteSegment = {
     segment_order: number;
     type: RouteSegmentType;
     name: string;
-    default_value: null|string;
-    variable_type: null|string;
+    default_value: null | string;
+    variable_type: null | string;
 };
 
 export type Route = ListItemWithId & {

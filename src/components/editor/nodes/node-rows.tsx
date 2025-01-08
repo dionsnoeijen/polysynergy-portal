@@ -10,14 +10,16 @@ import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
-import {Node, NodeEnabledConnector, NodeType, NodeVariableType} from "@/types/types";
-import {useEditorStore} from "@/stores/editorStore";
-import {ThreeWaySwitch} from "@/components/three-way-switch";
-import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 import PlayButton from "@/components/editor/nodes/rows/play-button";
 import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
 import ListVariable from "@/components/editor/nodes/rows/list-variable";
 import BytesVariable from "@/components/editor/nodes/rows/bytes-variable";
+import {Node, NodeEnabledConnector, NodeType, NodeVariableType} from "@/types/types";
+import {useEditorStore} from "@/stores/editorStore";
+import {ThreeWaySwitch} from "@/components/three-way-switch";
+import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
+import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
+import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
 
 type NodeProps = {
     node: Node;
@@ -54,10 +56,11 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
     };
 
     const className = `
-        absolute overflow-visible select-none flex flex-col items-start justify-start 
-        ring-2 ${selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm"} 
-        ${getBackgroundClass()} backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 
-        ${node.view.disabled ? "z-1 select-none opacity-30" : "z-20 cursor-move"}
+    absolute overflow-visible select-none flex flex-col items-start justify-start 
+    ring-2 ${selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm"} 
+    ${getBackgroundClass()} backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 
+    ${node.category === "note" ? "bg-yellow-100 dark:bg-yellow-500/60" : ""} 
+    ${node.view.disabled ? "z-1 select-none opacity-30" : "z-20 cursor-move"}
     `.trim();
 
     useEffect(() => {
@@ -104,12 +107,12 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                         <ThreeWaySwitch node={node} />
                     </>
                 )}
-                <h3 className="font-bold truncate ml-2 text-sky-600 dark:text-white">{node.name}</h3>
+                <h3 className={`font-bold truncate ${node.has_enabled_switch ? 'ml-2' : 'ml-0'} text-sky-600 dark:text-white`}>{node.name}</h3>
             </div>
             <div className="flex flex-col w-full items-start overflow-visible">
                 <div className="w-full">
                     {node.variables.map((variable) => {
-                        const type = interpretNodeVariableType(variable.type);
+                        const type = interpretNodeVariableType(variable);
                         switch (type.baseType) {
                             case NodeVariableType.Dict:
                                 return (
@@ -169,6 +172,25 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                                         disabled={node.view.disabled}
                                     />
                                 );
+                            case NodeVariableType.SecretString:
+                                return (
+                                    <SecretStringVariable
+                                        key={'dock-' + node.id + '-' + variable.handle}
+                                        variable={variable}
+                                        nodeId={node.id}
+                                        disabled={node.view.disabled}
+                                    />
+                                );
+                            case NodeVariableType.TextArea:
+                            case NodeVariableType.RichTextArea:
+                                return (
+                                    <TextAreaVariable
+                                        key={'dock-' + node.id + '-' + variable.handle}
+                                        variable={variable}
+                                        nodeId={node.id}
+                                        disabled={node.view.disabled}
+                                    />
+                                );
                             case NodeVariableType.Boolean:
                             case NodeVariableType.TruePath:
                             case NodeVariableType.FalsePath:
@@ -185,7 +207,10 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                         }
                     })}
                     {node.has_play_button && (
-                        <PlayButton disabled={node.view.disabled} nodeId={node.id} />
+                        <PlayButton
+                            disabled={node.view.disabled}
+                            nodeId={node.id}
+                        />
                     )}
                 </div>
             </div>

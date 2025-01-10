@@ -3,8 +3,8 @@
 import { Heading, Subheading } from '@/components/heading'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/table'
 import {ApplicationLayout} from "@/app/application-layout";
-import useProjectsStore from "@/stores/projectsStore";
 import {useEffect} from "react";
+import useProjectsStore from "@/stores/projectsStore";
 
 export default function Home() {
   const { projects, fetchProjects } = useProjectsStore();

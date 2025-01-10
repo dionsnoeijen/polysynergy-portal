@@ -16,10 +16,12 @@ export default function AccountDropdownMenu({ anchor }: { anchor: 'top start' | 
             const clientId = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID;
             const logoutUri = process.env.NEXT_PUBLIC_AWS_COGNITO_LOGOUT_URL;
             const cognitoDomain = process.env.NEXT_PUBLIC_AWS_COGNITO_DOMAIN;
+
+            if (!clientId || !logoutUri || cognitoDomain) return;
+
             window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
         });
     };
-
 
     return (
         <DropdownMenu className="min-w-64" anchor={anchor}>

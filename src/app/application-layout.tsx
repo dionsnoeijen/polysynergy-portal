@@ -17,7 +17,7 @@ import {
 import { SidebarLayout } from '@/components/sidebar-layout'
 import {
     ChartBarIcon,
-    TrashIcon,
+    TrashIcon, UsersIcon,
 } from '@heroicons/react/16/solid'
 import {
     Cog6ToothIcon,
@@ -62,9 +62,13 @@ export function ApplicationLayout({
                                 <HomeIcon />
                                 <SidebarLabel>Projects</SidebarLabel>
                             </SidebarItem>
-                            <SidebarItem href="/stats" current={pathname.startsWith('/orders')}>
+                            <SidebarItem href="/stats" current={pathname.startsWith('/stats')}>
                                 <ChartBarIcon />
                                 <SidebarLabel>Stats</SidebarLabel>
+                            </SidebarItem>
+                            <SidebarItem href="/accounts" current={pathname.startsWith('/accounts')}>
+                                <UsersIcon />
+                                <SidebarLabel>Accounts</SidebarLabel>
                             </SidebarItem>
                             <SidebarItem href="/settings" current={pathname.startsWith('/settings')}>
                                 <Cog6ToothIcon />

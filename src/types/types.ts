@@ -169,18 +169,36 @@ export type Route = ListItemWithId & {
 };
 
 export type Tenant = {
-
+    id: string;
+    name: string;
+    created_at: string;
+    updated_at: string;
 };
 
-export type LoggedInUser = {
+export type Role = {
+    id: string;
+    name: string;
+}
+
+export type Membership = {
+    id: string;
+    role: Role;
+}
+
+export type Account = {
     id: string;
     email: string;
     first_name: string;
     last_name: string;
     is_admin: boolean;
     single_user: boolean;
-    tenant: Tenant;
-};
+    created_at: string;
+    updated_at: string;
+    memberships: Membership[];
+    tenants: Tenant[];
+}
+
+export type LoggedInAccount = Account;
 
 export type Project = {
     id: string;

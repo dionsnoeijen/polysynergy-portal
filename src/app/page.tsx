@@ -86,7 +86,7 @@ export default function Home() {
 
     return (
         <ApplicationLayout>
-            <Heading>Good afternoon, PolySynergy</Heading>
+            <Heading>Projects</Heading>
             <div className="mt-8 flex items-end justify-between">
                 <Subheading>Overview</Subheading>
                 <div className="inline-flex rounded-md shadow-sm">
@@ -154,7 +154,7 @@ export default function Home() {
                                 ) : (
                                     <>
                                         {editProjectId === project.id ? (
-                                            <Button onClick={handleSaveEditProject}><CheckIcon /></Button>
+                                            <Button className={'mr-1'} onClick={handleSaveEditProject}><CheckIcon /></Button>
                                         ) : (
                                             <Button className={'mr-1'} onClick={() => handleEditProject(project)}><PencilIcon /></Button>
                                         )}

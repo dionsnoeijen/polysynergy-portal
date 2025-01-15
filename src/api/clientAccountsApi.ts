@@ -1,4 +1,5 @@
 import { getIdToken } from './auth/authToken';
+import {Account} from "@/types/types";
 
 export const fetchClientAccount = async (
     cognitoId: string
@@ -11,6 +12,18 @@ export const fetchClientAccount = async (
                 'Authorization': `Bearer ${idToken}`,
             },
         });
+}
+
+export const fetchClientAccounts = async (): Promise<Account[]> => {
+    const idToken = getIdToken();
+    const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/accounts/tenant/`,
+        {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        });
+    return response.json();
 }
 
 export const createClientAccount = async (

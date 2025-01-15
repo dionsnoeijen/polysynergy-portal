@@ -24,7 +24,16 @@ export default function Settings() {
           <form method="post" className="mx-auto max-w-4xl">
               <Heading>Settings</Heading>
               <Divider className="my-10 mt-6"/>
-              <ThemeToggle/>
+              <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                  <div className="space-y-1">
+                      <Subheading>Dark or Light</Subheading>
+                      <Text>Manually override dark or light mode?</Text>
+                  </div>
+                  <div>
+                      <ThemeToggle/>
+                  </div>
+              </section>
+
               <Divider className="my-10" soft/>
 
               <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">

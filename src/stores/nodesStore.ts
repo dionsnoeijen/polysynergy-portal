@@ -31,7 +31,7 @@ type NodesStore = {
     getNodesByIds: (nodeIds: string[]) => Node[];
     getNodeVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
     getNodesToRender: () => Node[];
-    updateNodeVariable: (nodeId: string, variableHandle: string, newValue: string | number | boolean | string[] | NodeVariable[] | null | undefined) => void;
+    updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => void;
     getTrackedNode: () => Node | null;
     fetchDynamicRouteNodeSetupContent: (routeId: string) => Promise<void> | undefined;
 };
@@ -309,7 +309,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         return node?.variables.find((variable) => variable.handle === variableHandle);
     },
 
-    updateNodeVariable: (nodeId, variableHandle, newValue) => {
+    updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => {
         nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
@@ -318,13 +318,16 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         ...node,
                         variables: node.variables.map((variable) =>
                             variable.handle === variableHandle
-                                ? {...variable, value: newValue}
+                                ? {
+                                    ...variable,
+                                    value: newValue as null | string | number | boolean | string[] | NodeVariable[],
+                                }
                                 : variable
                         ),
                     }
                     : node
             ),
-            trackedNodeId: nodeId
+            trackedNodeId: nodeId,
         }));
     },
 

@@ -72,8 +72,6 @@ type EditorState = {
 
     editingScheduleVersions: { [scheduleId: string]: string };
     setEditingScheduleVersion: (scheduleId: string, versionId: string) => void;
-
-
 };
 
 export const useEditorStore = create<EditorState>((set, get) => ({

@@ -1,26 +1,36 @@
-import {DropdownDivider, DropdownItem, DropdownLabel, DropdownMenu} from "@/components/dropdown";
+import {
+    DropdownDivider,
+    DropdownItem,
+    DropdownLabel,
+    DropdownMenu
+} from "@/components/dropdown";
 import {
     ArrowRightStartOnRectangleIcon,
     LightBulbIcon,
     ShieldCheckIcon,
     UserCircleIcon
 } from "@heroicons/react/16/solid";
-import {useAuth} from "react-oidc-context";
+import React from "react";
 
 export default function AccountDropdownMenu({ anchor }: { anchor: 'top start' | 'bottom end' }) {
+    const signOutRedirect = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
 
-    const auth = useAuth();
-
-    const signOutRedirect = () => {
-        auth.removeUser().then(() => {
+        try {
+            // const userManager = auth.userManager;
+            // await userManager.removeUser();
+            //
+            // console.log("User removed, redirecting manually...");
             const clientId = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID;
             const logoutUri = process.env.NEXT_PUBLIC_AWS_COGNITO_LOGOUT_URL;
             const cognitoDomain = process.env.NEXT_PUBLIC_AWS_COGNITO_DOMAIN;
 
-            if (!clientId || !logoutUri || cognitoDomain) return;
-
-            window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
-        });
+            if (clientId && logoutUri && cognitoDomain) {
+                window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+            }
+        } catch (error) {
+            console.error("Error during sign out:", error);
+        }
     };
 
     return (
@@ -39,7 +49,7 @@ export default function AccountDropdownMenu({ anchor }: { anchor: 'top start' | 
                 <DropdownLabel>Share feedback</DropdownLabel>
             </DropdownItem>
             <DropdownDivider />
-            <DropdownItem href="#" onClick={() => signOutRedirect()}>
+            <DropdownItem href="#" onClick={signOutRedirect}>
                 <ArrowRightStartOnRectangleIcon />
                 <DropdownLabel>Sign out</DropdownLabel>
             </DropdownItem>

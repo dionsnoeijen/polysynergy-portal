@@ -5,28 +5,28 @@ import {Button} from "@/components/button";
 import {FormType, Node, NodeVariable, NodeVariableType} from "@/types/types";
 import {Heading, Subheading} from "@/components/heading";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
-import useNodesStore from "@/stores/nodesStore";
 import {Select} from "@/components/select";
 import {Input} from "@/components/input";
 import {Switch} from "@/components/switch";
 import {CheckCircleIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon} from "@heroicons/react/16/solid";
+import useNodesStore from "@/stores/nodesStore";
 
 const ListVariableForm: React.FC = () => {
 
     const {getNode, updateNodeVariable} = useNodesStore();
     const {closeForm, formEditVariable, formEditRecordId, formType} = useEditorStore();
 
-    const [node, setNode] = useState<Node>();
-    const [newVariable, setNewVariable] = useState<NodeVariable>({
+    const [ node, setNode ] = useState<Node>();
+    const [ newVariable, setNewVariable ] = useState<NodeVariable>({
         type: NodeVariableType.String,
         value: "",
         has_in: false,
         has_out: false,
     });
-    const [variables, setVariables] = useState<NodeVariable[]>([]);
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
-    const [editingVariable, setEditingVariable] = useState<NodeVariable | null>(null);
+    const [ variables, setVariables ] = useState<NodeVariable[]>([]);
+    const [ errors, setErrors ] = useState<{ [key: string]: string }>({});
+    const [ editingIndex, setEditingIndex ] = useState<number | null>(null);
+    const [ editingVariable, setEditingVariable ] = useState<NodeVariable | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -133,7 +133,6 @@ const ListVariableForm: React.FC = () => {
                             {variables &&
                                 variables.map((variable, index) =>
                                     editingIndex === index ? (
-                                        // Invoervelden voor bewerken
                                         <TableRow key={`edit-${index}`}>
                                             <TableCell>
                                                 <Switch

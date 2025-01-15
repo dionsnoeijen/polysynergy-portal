@@ -1,12 +1,6 @@
 import { create } from 'zustand';
 import { fetchProjects as fetchProjectsAPI } from "@/api/projectsApi";
-
-export type Project = {
-    id: string;
-    name: string;
-    created_at: string;
-    updated_at: string;
-};
+import { Project } from "@/types/types";
 
 type ProjectsStore = {
     projects: Project[];
@@ -14,7 +8,7 @@ type ProjectsStore = {
     removeProject: (projectId: string) => void;
     getProject: (projectId: string) => Project | undefined;
     getProjects: () => Project[];
-    fetchProjects: () => Promise<void>;
+    fetchProjects: (trashed: boolean) => Promise<void>;
 };
 
 const useProjectsStore = create<ProjectsStore>((set) => ({
@@ -25,7 +19,8 @@ const useProjectsStore = create<ProjectsStore>((set) => ({
     removeProject: (projectId) =>
         set((state) => ({
             projects: state.projects.filter((project) => project.id !== projectId),
-        })),
+        })
+    ),
 
     getProject: (projectId):Project|undefined => {
         return useProjectsStore.getState().projects.find((project:Project) => project.id === projectId);
@@ -35,9 +30,9 @@ const useProjectsStore = create<ProjectsStore>((set) => ({
         return useProjectsStore.getState().projects;
     },
 
-    fetchProjects: async () => {
+    fetchProjects: async (trashed = false) => {
         try {
-            const data: Project[] = await fetchProjectsAPI();
+            const data: Project[] = await fetchProjectsAPI({ trashed });
             set({ projects: data });
         } catch (error) {
             console.error('Failed to fetch projects:', error);

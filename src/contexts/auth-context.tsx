@@ -12,5 +12,7 @@ const cognitoAuthConfig = {
 };
 
 export function AuthContextProvider({ children }: { children: React.ReactNode }) {
-    return <AuthProvider {...cognitoAuthConfig}>{children}</AuthProvider>;
+    return <AuthProvider
+        {...cognitoAuthConfig}
+    >{children}</AuthProvider>;
 }

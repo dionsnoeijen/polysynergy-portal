@@ -167,3 +167,24 @@ export type Route = ListItemWithId & {
     method: HttpMethod;
     node_setup?: NodeSetup;
 };
+
+export type Tenant = {
+
+};
+
+export type LoggedInUser = {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    is_admin: boolean;
+    single_user: boolean;
+    tenant: Tenant;
+};
+
+export type Project = {
+    id: string;
+    name: string;
+    created_at: string;
+    updated_at: string;
+};

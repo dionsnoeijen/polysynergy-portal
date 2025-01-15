@@ -19,10 +19,10 @@ const Editor = dynamic(() => import('@/components/editor/editor'), {
 });
 
 export function EditorLayout({
-                                 projectUuid = null,
-                                 routeUuid = null,
-                                 scheduleUuid = null,
-                             }: {
+    projectUuid = null,
+    routeUuid = null,
+    scheduleUuid = null,
+}: {
     projectUuid?: null | string,
     routeUuid?: null | string,
     scheduleUuid?: null | string,

@@ -62,10 +62,6 @@ export function ApplicationLayout({
                                 <HomeIcon />
                                 <SidebarLabel>Projects</SidebarLabel>
                             </SidebarItem>
-                            <SidebarItem href="/events" current={pathname.startsWith('/events')}>
-                                <TrashIcon />
-                                <SidebarLabel>Trashed</SidebarLabel>
-                            </SidebarItem>
                             <SidebarItem href="/stats" current={pathname.startsWith('/orders')}>
                                 <ChartBarIcon />
                                 <SidebarLabel>Stats</SidebarLabel>

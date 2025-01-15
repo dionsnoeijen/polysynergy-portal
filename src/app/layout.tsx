@@ -4,6 +4,7 @@ import type React from 'react';
 import { ThemeProvider } from "@/contexts/theme-context";
 import { AuthContextProvider } from "@/contexts/auth-context";
 import AuthWrapper from "@/components/auth/auth-wrapper";
+import AuthHandler from "@/components/auth/auth-handler";
 
 export const metadata: Metadata = {
     title: {
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body>
                 <ThemeProvider>
                     <AuthContextProvider>
+                        <AuthHandler />
                         <AuthWrapper>{children}</AuthWrapper>
                     </AuthContextProvider>
                 </ThemeProvider>

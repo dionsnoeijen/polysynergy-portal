@@ -6,10 +6,10 @@ import { Input } from "@/components/input";
 import { Button } from "@/components/button";
 import { Checkbox, CheckboxField } from "@/components/checkbox";
 import { Select } from "@/components/select";
-import { createClientAccount } from "@/api/clientAccountsApi";
+import {activateClientAccount, createClientAccount} from "@/api/clientAccountsApi";
 import Modal from "@/components/modal";
 
-export default function CompleteAccount() {
+export default function CompleteAccount({isAccountSynced, isAccountActive}: {isAccountSynced: boolean, isAccountActive: boolean}) {
     const auth = useAuth();
     const [tenantName, setTenantName] = useState('');
     const [firstName, setFirstName] = useState('');
@@ -42,14 +42,25 @@ export default function CompleteAccount() {
         setError(null);
 
         try {
-            const response = await createClientAccount({
-                cognito_id: auth.user.profile.sub,
-                tenant_name: accountType === 'tenant' ? tenantName : auth.user?.profile.email,
-                first_name: firstName,
-                last_name: lastName,
-                email: auth.user?.profile.email,
-                role: 'Admin'
-            });
+
+            let response: Response;
+
+            if (!isAccountSynced && isAccountActive) {
+                response = await createClientAccount({
+                    cognito_id: auth.user.profile.sub,
+                    tenant_name: accountType === 'tenant' ? tenantName : auth.user?.profile.email,
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: auth.user?.profile.email,
+                    role: 'Admin'
+                });
+            } else {
+                response = await activateClientAccount(
+                    firstName,
+                    lastName,
+                    auth.user.profile.sub
+                );
+            }
 
             if (response.ok) {
                 window.location.reload();
@@ -73,28 +84,32 @@ export default function CompleteAccount() {
             {error && <p className="text-red-600 mb-4">{error}</p>}
 
             <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2">Account Type</label>
-                    <Select
-                        value={accountType}
-                        onChange={(e) => setAccountType(e.target.value)}
-                        aria-label="Account Type"
-                    >
-                        <option value="single_user">Single User</option>
-                        <option value="tenant">Organization</option>
-                    </Select>
-                </div>
+                {!isAccountSynced && (
+                    <>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium mb-2">Account Type</label>
+                            <Select
+                                value={accountType}
+                                onChange={(e) => setAccountType(e.target.value)}
+                                aria-label="Account Type"
+                            >
+                                <option value="single_user">Single User</option>
+                                <option value="tenant">Organization</option>
+                            </Select>
+                        </div>
 
-                {accountType === 'tenant' && (
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium mb-2">Organization Name</label>
-                        <Input
-                            value={tenantName}
-                            onChange={(e) => setTenantName(e.target.value)}
-                            placeholder="Enter your company or organization name"
-                            required
-                        />
-                    </div>
+                        {accountType === 'tenant' && (
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium mb-2">Organization Name</label>
+                                <Input
+                                    value={tenantName}
+                                    onChange={(e) => setTenantName(e.target.value)}
+                                    placeholder="Enter your company or organization name"
+                                    required
+                                />
+                            </div>
+                        )}
+                    </>
                 )}
 
                 <div className="mb-4">

@@ -168,6 +168,12 @@ export type Route = ListItemWithId & {
     node_setup?: NodeSetup;
 };
 
+export enum Roles {
+    Admin = 'admin',
+    Editor = 'editor',
+    Viewer = 'viewer',
+}
+
 export type Tenant = {
     id: string;
     name: string;
@@ -194,6 +200,7 @@ export type Account = {
     single_user: boolean;
     created_at: string;
     updated_at: string;
+    active: boolean;
     memberships: Membership[];
     tenants: Tenant[];
 }

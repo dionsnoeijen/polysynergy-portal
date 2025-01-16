@@ -47,5 +47,68 @@ export const createClientAccount = async (
             },
             body: JSON.stringify(clientAccountData)
         }
+    );
+}
+
+export const inviteClientAccount = async (email: string, role: string): Promise<Response> => {
+    const idToken = getIdToken();
+    return await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/accounts/invite/`,
+        {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ email, role })
+        }
+    );
+}
+
+export const resendClientAccountInvite = async (accountId: string): Promise<Response> => {
+    const idToken = getIdToken();
+    return await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/accounts/${accountId}/resend-invitation/`,
+        {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        }
+    )
+}
+
+export const deleteClientAccount = async (accountId: string): Promise<Response> => {
+    const idToken = getIdToken();
+    return await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/accounts/${accountId}/delete/`,
+        {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        }
+    );
+}
+
+export const activateClientAccount = async (
+    firstName: string,
+    lastName: string,
+    cognitoId: string
+): Promise<Response> => {
+    const idToken = getIdToken();
+    return await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/accounts/${cognitoId}/activate/`,
+        {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({
+                first_name: firstName,
+                last_name: lastName
+            })
+        }
     )
 }

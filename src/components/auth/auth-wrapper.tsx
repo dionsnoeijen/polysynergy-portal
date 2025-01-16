@@ -10,6 +10,7 @@ import {LoggedInAccount} from "@/types/types";
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
     const auth = useAuth();
     const [isAccountSynced, setIsAccountSynced] = useState<boolean | null>(null);
+    const [isAccountActive, setIsAccountActive] = useState<boolean>(false);
     const { setLoggedInAccount } = useAccountsStore();
 
     useEffect(() => {
@@ -18,10 +19,17 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
                 const response = await fetchClientAccount(auth.user?.profile.sub as string);
                 if (response.status === 200) {
                     const user = await response.json() as LoggedInAccount;
-                    setLoggedInAccount(user);
-                    setIsAccountSynced(true);
+                    if (user.active) {
+                        setLoggedInAccount(user);
+                        setIsAccountSynced(true); // The account is in the api database
+                        setIsAccountActive(true); // The account is already activated
+                    } else {
+                        setIsAccountSynced(true); // The account is in the api database
+                        setIsAccountActive(false); // The account is not yet activated, so it must be completed
+                    }
                 } else if (response.status === 404) {
-                    setIsAccountSynced(false);
+                    setIsAccountSynced(false); // The account is not yet in the api database
+                    setIsAccountActive(true); // The account will be activated upon creation
                 } else {
                     console.error("Unexpected response from API:", response.status);
                 }
@@ -40,15 +48,15 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     }, [auth]);
 
     if (auth.isLoading || isAccountSynced === null) {
-        return <div>Loading...</div>;
+        return <div className="fixed inset-0 flex items-center justify-center bg-gray-100">Loading...</div>;
     }
 
     if (!auth.isAuthenticated) {
         return <div className="fixed inset-0 flex items-center justify-center bg-gray-100">Redirecting to login...</div>;
     }
 
-    if (!isAccountSynced) {
-        return <CompleteAccount />;
+    if (!isAccountSynced || !isAccountActive) {
+        return <CompleteAccount isAccountSynced={isAccountSynced} isAccountActive={isAccountActive} />;
     }
 
     return <>{children}</>;

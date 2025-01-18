@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import useNodesStore from "@/stores/nodesStore";
-import { useConnectionsStore } from "@/stores/connectionsStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 import useGroupsStore from "@/stores/groupStore";
 import { useTheme } from 'next-themes';
 import dynamic from "next/dynamic";

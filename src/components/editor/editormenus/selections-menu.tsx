@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { CursorArrowRaysIcon, StopIcon } from "@heroicons/react/16/solid";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 
 const SelectionsMenu: React.FC = () => {

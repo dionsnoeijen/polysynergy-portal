@@ -1,7 +1,7 @@
 import { calculateConnectorPositionByAttributes } from "@/utils/positionUtils";
 import { InOut, Position } from "@/types/types";
 import { Connection } from "@/stores/connectionsStore";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 
 export const updateConnectionsDirectly = (
     connections: Array<Connection>,
@@ -17,6 +17,7 @@ export const updateConnectionsDirectly = (
     const { isDrawingConnection } = useEditorStore.getState();
 
     connections.forEach((connection) => {
+
         const pathElement = document.querySelector(
             `path[data-connection-id="${connection.id}"]`
         ) as SVGPathElement;

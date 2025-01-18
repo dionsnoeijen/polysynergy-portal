@@ -1,6 +1,6 @@
 import { Node as NodeType, NodeComparisonType, NodeVariableType } from "@/types/types";
 import React from "react";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import { ChevronRightIcon } from "@heroicons/react/16/solid";
 import Connector from "@/components/editor/nodes/connector";
 import { Strong } from "@/components/text";

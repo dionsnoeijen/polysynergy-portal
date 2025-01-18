@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useRef} from "react";
 import useResizable from "@/hooks/editor/nodes/useResizable";
 import Connector from "@/components/editor/nodes/connector";
 import useNodesStore from "@/stores/nodesStore";
@@ -14,25 +14,31 @@ import PlayButton from "@/components/editor/nodes/rows/play-button";
 import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
 import ListVariable from "@/components/editor/nodes/rows/list-variable";
 import BytesVariable from "@/components/editor/nodes/rows/bytes-variable";
-import {Node, NodeEnabledConnector, NodeType, NodeVariableType} from "@/types/types";
-import {useEditorStore} from "@/stores/editorStore";
+import {Node, NodeCollapsedConnector, NodeEnabledConnector, NodeType, NodeVariableType} from "@/types/types";
+import useEditorStore from "@/stores/editorStore";
+import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
 import {ThreeWaySwitch} from "@/components/three-way-switch";
 import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
-import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
 import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
+import {Button} from "@/components/button";
+import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/16/solid";
 
 type NodeProps = {
     node: Node;
 };
 
-const NodeRows: React.FC<NodeProps> = ({ node }) => {
-    const { size, handleResizeMouseDown } = useResizable(node);
-    const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
-    const { selectedNodes, zoomFactor } = useEditorStore();
-    const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
-    const { updateNodeHeight } = useNodesStore();
-    const { handleNodeMouseDown } = useNodeMouseDown(node);
-    const { handleContextMenu } = useNodeContextMenu(node);
+const NodeRows: React.FC<NodeProps> = ({node}) => {
+    const {size, handleResizeMouseDown} = useResizable(node);
+    const {selectedNodes, zoomFactor} = useEditorStore();
+    const {collapseConnections, openConnections} = useToggleConnectionCollapse(node);
+    const {
+        updateNodeHeight,
+        toggleNodeVariableOpenState,
+        getNodeVariableOpenState,
+        toggleNodeViewCollapsedState
+    } = useNodesStore();
+    const {handleNodeMouseDown} = useNodeMouseDown(node);
+    const {handleContextMenu} = useNodeContextMenu(node);
     const position = useNodePlacement(node);
 
     const ref = useRef<HTMLDivElement>(null);
@@ -41,12 +47,14 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
     const handleToggle = (handle: string): (() => void) => {
         return () => {
             shouldUpdateConnections.current = true;
-            setIsOpenMap((prev) => ({
-                ...prev,
-                [handle]: !prev[handle],
-            }));
+            toggleNodeVariableOpenState(node.id, handle);
         };
     };
+
+    const handleCollapse = () => {
+        shouldUpdateConnections.current = true;
+        toggleNodeViewCollapsedState(node.id);
+    }
 
     const getBackgroundClass = () => {
         if (node.category === NodeType.Mock) {
@@ -65,16 +73,20 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
 
     useEffect(() => {
         if (shouldUpdateConnections.current) {
-            Object.entries(isOpenMap).forEach(([handle, isOpen]) => {
-                if (isOpen) {
-                    openConnections(handle);
-                } else {
-                    collapseConnections(handle);
+            node.variables.forEach((variable) => {
+                if (variable.value && (typeof variable.value === "object" && !Array.isArray(variable.value) || Array.isArray(variable.value))) {
+                    console.log(variable);
+                    const isOpen = getNodeVariableOpenState(node.id, variable.handle);
+                    if (isOpen) {
+                        openConnections(variable.handle);
+                    } else {
+                        collapseConnections(variable.handle);
+                    }
                 }
             });
             shouldUpdateConnections.current = false;
         }
-    }, [isOpenMap, openConnections, collapseConnections]);
+    }, [getNodeVariableOpenState, openConnections, collapseConnections, node.id, node.variables]);
 
     useEffect(() => {
         if (ref.current) {
@@ -84,13 +96,14 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             }
         }
     // eslint-disable-next-line
-    }, [node.view.height, isOpenMap, updateNodeHeight, node.id]);
+    }, [node.view.height, getNodeVariableOpenState, updateNodeHeight, node.id]);
 
-    return (
+    return !node.view.collapsed ? (
         <div
             ref={ref}
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
+            onDoubleClick={handleCollapse}
             className={className}
             style={{
                 width: `${size.width}px`,
@@ -100,26 +113,32 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
             data-type="node"
             data-node-id={node.id}
         >
-            <div className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'select-none opacity-0'}`}>
+            <div
+                className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'select-none opacity-0'}`}>
                 {node.has_enabled_switch && (
                     <>
                         <Connector in nodeId={node.id} handle={NodeEnabledConnector.Node}/>
-                        <ThreeWaySwitch node={node} />
+                        <ThreeWaySwitch node={node}/>
                     </>
                 )}
                 <h3 className={`font-bold truncate ${node.has_enabled_switch ? 'ml-2' : 'ml-0'} text-sky-600 dark:text-white`}>{node.name}</h3>
+                <Button
+                    onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
+                    <ChevronDownIcon style={{color: 'white'}} className={'w-4 h-4'}/>
+                </Button>
             </div>
             <div className="flex flex-col w-full items-start overflow-visible">
                 <div className="w-full">
                     {node.variables.map((variable) => {
                         const type = interpretNodeVariableType(variable);
+                        const isOpen = getNodeVariableOpenState(node.id, variable.handle);
                         switch (type.baseType) {
                             case NodeVariableType.Dict:
                                 return (
                                     <DictVariable
                                         key={'dock-' + node.id + '-' + variable.handle}
                                         variable={variable}
-                                        isOpen={isOpenMap[variable.handle] || false}
+                                        isOpen={isOpen}
                                         onToggle={handleToggle(variable.handle)}
                                         nodeId={node.id}
                                         disabled={node.view.disabled}
@@ -130,7 +149,7 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                                     <ListVariable
                                         key={'dock-' + node.id + '-' + variable.handle}
                                         variable={variable}
-                                        isOpen={isOpenMap[variable.handle] || false}
+                                        isOpen={isOpen}
                                         onToggle={handleToggle(variable.handle)}
                                         nodeId={node.id}
                                         disabled={node.view.disabled}
@@ -218,6 +237,25 @@ const NodeRows: React.FC<NodeProps> = ({ node }) => {
                 onMouseDown={handleResizeMouseDown}
                 className="absolute w-[20px] h-[20px] border-r rounded-tr-none rounded-bl-none border-b border-white/50 right-[-5px] bottom-[-5px] cursor-se-resize rounded-[10px]"
             />
+        </div>
+    ) : (
+        <div
+            ref={ref}
+            onContextMenu={handleContextMenu}
+            onMouseDown={handleNodeMouseDown}
+            onDoubleClick={handleCollapse}
+            className={className + ` rounded-[300px] p-5`}
+            style={{
+                left: `${position.x}px`,
+                top: `${position.y}px`,
+            }}
+            title={node.name}
+            data-type="node"
+            data-node-id={node.id}
+        >
+            <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
+            <GlobeAltIcon className={'w-10 h-10'} />
+            <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
         </div>
     );
 };

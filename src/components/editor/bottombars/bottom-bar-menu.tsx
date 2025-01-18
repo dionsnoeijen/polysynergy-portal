@@ -1,6 +1,6 @@
 import React from "react";
 import { CodeBracketIcon, CodeBracketSquareIcon } from "@heroicons/react/16/solid";
-import { BottomBarView, useEditorStore } from "@/stores/editorStore";
+import useEditorStore, { BottomBarView } from "@/stores/editorStore";
 
 const BottomBarMenu: React.FC = (): React.ReactElement => {
     const { bottomBarView, setBottomBarView } = useEditorStore();

@@ -1,6 +1,6 @@
 import React from "react";
 import BottomBarMenu from "@/components/editor/bottombars/bottom-bar-menu";
-import { BottomBarView, useEditorStore } from "@/stores/editorStore";
+import useEditorStore, { BottomBarView } from "@/stores/editorStore";
 import Debug from "@/components/editor/bottombars/debug";
 import Output from "@/components/editor/bottombars/output";
 

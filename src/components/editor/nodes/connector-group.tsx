@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { ChevronRightIcon, EllipsisHorizontalIcon } from "@heroicons/react/16/solid";
 import { InOut } from "@/types/types";
-import { useConnectionsStore } from "@/stores/connectionsStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 import { useConnectorHandlers } from "@/hooks/editor/nodes/useConnectorHandlers";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 

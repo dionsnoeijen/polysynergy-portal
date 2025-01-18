@@ -1,6 +1,6 @@
 import { Node as NodeType, NodeMathType } from "@/types/types";
 import React from "react";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
 import { Strong } from "@/components/text";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";

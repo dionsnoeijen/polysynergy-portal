@@ -13,7 +13,7 @@ import VariableTypeList from "@/components/editor/sidebars/dock/variable-type-li
 import VariableTypeBytes from "@/components/editor/sidebars/dock/variable-type-bytes";
 import VariableTypeRichTextArea from "@/components/editor/sidebars/dock/variable-type-rich-text-area";
 import VariableTypeSecretString from "@/components/editor/sidebars/dock/variable-type-secret-string";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import { NodeVariable, NodeVariableType } from "@/types/types";
 import { interpretNodeVariableType } from "@/utils/interpretNodeVariableType";
 import VariableTypeTextArea from "@/components/editor/sidebars/dock/variable-type-text-area";

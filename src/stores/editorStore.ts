@@ -74,7 +74,7 @@ type EditorState = {
     setEditingScheduleVersion: (scheduleId: string, versionId: string) => void;
 };
 
-export const useEditorStore = create<EditorState>((set, get) => ({
+const useEditorStore = create<EditorState>((set, get) => ({
     zoomFactor: 1,
     setZoomFactor: (factor) => set({zoomFactor: factor}),
     panPosition: {x: 0, y: 0},
@@ -183,3 +183,5 @@ export const useEditorStore = create<EditorState>((set, get) => ({
             },
         })),
 }));
+
+export default useEditorStore;

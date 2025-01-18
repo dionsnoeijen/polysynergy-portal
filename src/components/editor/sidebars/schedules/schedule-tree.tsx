@@ -2,7 +2,7 @@ import {ReactElement, useEffect} from "react";
 import useSchedulesStore from "@/stores/schedulesStore";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import Link from "next/link";
-import {useEditorStore} from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import {PencilIcon, PlusIcon} from "@heroicons/react/16/solid";
 import {FormType} from "@/types/types";
 import {Button} from "@/components/button";

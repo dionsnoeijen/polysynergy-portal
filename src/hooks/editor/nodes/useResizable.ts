@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { useEditorStore } from '@/stores/editorStore';
+import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
-import { useConnectionsStore } from '@/stores/connectionsStore';
-import { Node } from '@/stores/nodesStore';
+import useConnectionsStore from '@/stores/connectionsStore';
+import { Node } from '@/types/types';
 
 type Size = {
     width: number;

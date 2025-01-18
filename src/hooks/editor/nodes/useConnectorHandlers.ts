@@ -1,8 +1,8 @@
 import React, { useRef } from "react";
 import { calculateConnectorPosition, globalToLocal } from "@/utils/positionUtils";
 import { v4 as uuidv4 } from "uuid";
-import { useConnectionsStore } from "@/stores/connectionsStore";
-import { useEditorStore } from "@/stores/editorStore";
+import useConnectionsStore from "@/stores/connectionsStore";
+import useEditorStore from "@/stores/editorStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 import {NodeEnabledConnector} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";

@@ -61,7 +61,7 @@ const DictVariable: React.FC<Props> = ({
         {isOpen &&
             Array.isArray(variable.value) &&
             (variable.value as NodeVariable[]).map((item, index) => (
-                <div key={item.handle} className="flex items-center pl-10 pr-3 pt-1 relative">
+                <div key={item.handle} className="flex items-center pl-6 pr-6 pt-1 relative">
                     {item.has_in && !disabled && !onlyOut && (
                         <Connector
                             in
@@ -73,7 +73,16 @@ const DictVariable: React.FC<Props> = ({
                     )}
                     <div className="flex items-center truncate text-sky-200 dark:text-white">
                         <span className="text-sky-400 dark:text-slate-400">
-                            {index === (variable.value as NodeVariable[]).length - 1 ? "└ " : "├ "}
+                            {index === (variable.value as NodeVariable[]).length - 1 ? (
+                                <div className={ "w-4 h-4"}>
+                                    <div className="w-2 h-2 border-l border-b border-dotted border-white"></div>
+                                </div>
+                            ) : (
+                                <div className={"w-4 h-4"}>
+                                    <div className="w-2 h-2 border-l border-b border-dotted border-white"></div>
+                                    <div className="w-2 h-2 border-l border-dotted border-white"></div>
+                                </div>
+                            )}
                         </span>
                         {' ' + item.handle}: {item.value as string}
                     </div>

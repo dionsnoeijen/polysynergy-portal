@@ -20,7 +20,7 @@ const VariableTypeNumber: React.FC<Props> = ({nodeId, variable}): React.ReactEle
                 ? parseFloat(variable.value)
                 : "";
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement|HTMLInputElement>) => {
         const newValue = parseFloat(e.target.value);
         if (!isNaN(newValue)) {
             updateNodeVariable(nodeId, variable.handle, newValue);

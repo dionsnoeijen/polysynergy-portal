@@ -1,4 +1,4 @@
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 
 export const useZoom = () => {
     const { zoomFactor, setZoomFactor, panPosition, setPanPosition } = useEditorStore();

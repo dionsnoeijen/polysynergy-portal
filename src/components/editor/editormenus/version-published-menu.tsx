@@ -3,7 +3,7 @@
 import React, {useEffect, useState} from 'react';
 import {Select} from "@/components/select";
 import {Button} from "@/components/button";
-import {useEditorStore} from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import {Route, NodeSetupVersion} from "@/types/types";
 

@@ -4,7 +4,7 @@ import {FormType, NodeVariable, NodeVariableType} from "@/types/types";
 import {Text} from "@/components/text";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {PencilIcon} from "@heroicons/react/16/solid";
-import {useEditorStore} from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 
 type Props = {
     variable: NodeVariable;

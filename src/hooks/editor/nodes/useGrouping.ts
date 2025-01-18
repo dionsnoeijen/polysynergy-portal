@@ -1,7 +1,7 @@
 import useGroupsStore from "@/stores/groupStore";
-import {useEditorStore} from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-import {Connection, useConnectionsStore} from "@/stores/connectionsStore";
+import useConnectionsStore, {Connection} from "@/stores/connectionsStore";
 import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 import {getNodeBoundsFromDOM, getNodeBoundsFromState} from "@/utils/positionUtils";
 import {updateNodesDirectly} from "@/utils/updateNodesDirectly";

@@ -5,7 +5,7 @@ import {Text} from "@/components/text";
 import {Input} from "@/components/input";
 import {Textarea} from "@/components/textarea";
 import {Button} from "@/components/button";
-import {useEditorStore} from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon} from "@heroicons/react/16/solid";

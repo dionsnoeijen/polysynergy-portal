@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useEditorStore} from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import {Divider} from "@/components/divider";
 import {Button} from "@/components/button";
 import {FormType, Node, NodeVariable, NodeVariableType} from "@/types/types";

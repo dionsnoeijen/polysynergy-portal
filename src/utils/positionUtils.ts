@@ -1,17 +1,17 @@
-import { InOut } from "@/types/types";
-import { useEditorStore } from "@/stores/editorStore";
+import {InOut, NodeCollapsedConnector} from "@/types/types";
+import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 
 export const calculateConnectorPosition = (target: HTMLElement) => {
-    const { editorPosition, panPosition, zoomFactor } = useEditorStore.getState();
+    const {editorPosition, panPosition, zoomFactor} = useEditorStore.getState();
     const rect = target.getBoundingClientRect();
     const x = (rect.left + rect.width / 2 - editorPosition.x - panPosition.x) / zoomFactor;
     const y = (rect.top + rect.height / 2 - editorPosition.y - panPosition.y) / zoomFactor;
-    return { x, y };
+    return {x, y};
 };
 
 export const localToGlobal = (logicalX: number, logicalY: number) => {
-    const { editorPosition, panPosition, zoomFactor } = useEditorStore.getState();
+    const {editorPosition, panPosition, zoomFactor} = useEditorStore.getState();
     return {
         x: (logicalX + editorPosition.x + panPosition.x) * zoomFactor,
         y: (logicalY + editorPosition.y + panPosition.y) * zoomFactor,
@@ -19,27 +19,47 @@ export const localToGlobal = (logicalX: number, logicalY: number) => {
 };
 
 export const globalToLocal = (globalX: number, globalY: number) => {
-    const { editorPosition, panPosition, zoomFactor } = useEditorStore.getState();
+    const {editorPosition, panPosition, zoomFactor} = useEditorStore.getState();
     return {
         x: (globalX - editorPosition.x - panPosition.x) / zoomFactor,
         y: (globalY - editorPosition.y - panPosition.y) / zoomFactor,
     };
 };
 
+const buildSelector = (type: InOut, handle: string, nodeId: string) => {
+    return `[data-type="${type}"][data-handle="${handle}"][data-node-id="${nodeId}"],
+    [data-type="${type}"][data-handle="${handle}"][data-group-id="${nodeId}"]`;
+}
+
 export const calculateConnectorPositionByAttributes = (nodeId: string, handle: string, type: InOut) => {
-    const selector = `[data-type="${type}"][data-handle="${handle}"][data-node-id="${nodeId}"], 
-            [data-type="${type}"][data-handle="${handle}"][data-group-id="${nodeId}"]`;
-    const target = document.querySelector(selector) as HTMLElement;
+    let selector = buildSelector(type, handle, nodeId);
+    let target = document.querySelector(selector) as HTMLElement;
+
+    // This might be a connector, connected to a collapsed array
+    if (!target) {
+        const handleParts = handle.split('.');
+        if (handleParts.length > 1) {
+            const newHandle = handleParts[0];
+            selector = buildSelector(type, newHandle, nodeId);
+            target = document.querySelector(selector) as HTMLElement;
+        }
+    }
+
+    // No? This might be a connector, connected to a collapsed node
+    if (!target) {
+        selector = buildSelector(type, NodeCollapsedConnector.Collapsed, nodeId);
+        target = document.querySelector(selector) as HTMLElement;
+    }
 
     if (!target) {
-        return { x: 0, y: 0 };
+        return {x: 0, y: 0};
     }
 
     return calculateConnectorPosition(target);
 };
 
 export const getNodeBoundsFromState = (nodeIds: string[]) => {
-    const { getNodesByIds } = useNodesStore.getState();
+    const {getNodesByIds} = useNodesStore.getState();
     const nodes = getNodesByIds(nodeIds);
     return nodes.reduce(
         (acc, node) => {
@@ -53,12 +73,12 @@ export const getNodeBoundsFromState = (nodeIds: string[]) => {
                 maxY: Math.max(acc.maxY, nodeBottom),
             };
         },
-        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+        {minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity}
     );
 };
 
 export const getNodeBoundsFromDOM = (nodeIds: string[]) => {
-    const { editorPosition, panPosition, zoomFactor } = useEditorStore.getState();
+    const {editorPosition, panPosition, zoomFactor} = useEditorStore.getState();
 
     let minX = Infinity,
         minY = Infinity,
@@ -83,5 +103,5 @@ export const getNodeBoundsFromDOM = (nodeIds: string[]) => {
         if (bottom > maxY) maxY = bottom;
     });
 
-    return { foundAny, minX, minY, maxX, maxY };
+    return {foundAny, minX, minY, maxX, maxY};
 };

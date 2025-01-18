@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 
 export const useDeselectOnClickOutside = () => {
     const { setSelectedNodes, isDragging, setIsDragging, boxSelect } = useEditorStore();

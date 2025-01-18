@@ -1,4 +1,4 @@
-import { useConnectionsStore } from "@/stores/connectionsStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
 import { NodeType } from "@/types/types";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";

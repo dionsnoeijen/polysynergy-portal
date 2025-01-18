@@ -1,5 +1,5 @@
 import { getIdToken } from './auth/authToken';
-import {Account} from "@/types/types";
+import { Account } from "@/types/types";
 
 export const fetchClientAccount = async (
     cognitoId: string

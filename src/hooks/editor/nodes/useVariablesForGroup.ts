@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import useNodesStore from "@/stores/nodesStore";
 import useGroupsStore from "@/stores/groupStore";
-import { useConnectionsStore } from "@/stores/connectionsStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 
 const useVariablesForGroup = (groupId: string | null, checkDock = true) => {
     const { getGroupById } = useGroupsStore();

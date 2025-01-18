@@ -5,8 +5,8 @@ import { useZoom } from "@/hooks/editor/useZoom";
 import { usePan } from "@/hooks/editor/usePan";
 import { Grid } from "@/components/editor/grid";
 import { useKeyBindings } from "@/hooks/editor/useKeyBindings";
-import { useEditorStore } from "@/stores/editorStore";
-import { useConnectionsStore } from "@/stores/connectionsStore";
+import useEditorStore from "@/stores/editorStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 import { useDeselectOnClickOutside } from "@/hooks/editor/nodes/useDeselectOnClickOutside";
 import { useDeleteNode } from "@/hooks/editor/nodes/useDeleteNode";
 import Node from "@/components/editor/nodes/node";
@@ -18,6 +18,7 @@ import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import OpenGroup from "@/components/editor/nodes/open-group";
 import DeleteDialog from "@/components/editor/nodes/delete-dialog";
 import AddNode from "@/components/editor/add-node";
+import useGlobalStoreListeners from "@/hooks/editor/nodes/useGlobalStoresListener";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -42,6 +43,8 @@ export default function Editor() {
     const { handlePanMouseDown, handleMouseMove, handleMouseUp } = usePan();
     const { handleEditorMouseDown } = useDeselectOnClickOutside();
     const { createGroup } = useGrouping();
+
+    useGlobalStoreListeners();
 
     const nodesToRender = getNodesToRender();
 

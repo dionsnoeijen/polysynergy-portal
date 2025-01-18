@@ -1,5 +1,5 @@
 import { Node } from '@/types/types';
-import { useConnectionsStore } from "@/stores/connectionsStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 import { calculateConnectorPositionByAttributes } from "@/utils/positionUtils";
 import { InOut } from "@/types/types";
 

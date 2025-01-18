@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import { Node as NodeType } from "@/types/types";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
 

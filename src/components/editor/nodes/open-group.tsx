@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { Group } from "@/stores/groupStore";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import ConnectorGroup from "@/components/editor/nodes/connector-group";
 import {
     Dialog,

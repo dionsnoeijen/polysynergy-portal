@@ -4,7 +4,7 @@ import {
     storeScheduleAPI,
     updateScheduleAPI,
 } from '@/api/schedulesApi';
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import { Schedule } from '@/types/types';
 
 type SchedulesStore = {

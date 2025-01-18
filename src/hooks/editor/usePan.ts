@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 
 export const usePan = () => {
     const { panPosition, setPanPosition, boxSelect } = useEditorStore();

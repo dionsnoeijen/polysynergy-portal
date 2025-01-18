@@ -1,6 +1,6 @@
 import { Node } from '@/types/types';
 import React from "react";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import useGroupsStore from "@/stores/groupStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 

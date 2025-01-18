@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import { Node, NodeVariableType } from "@/types/types";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";

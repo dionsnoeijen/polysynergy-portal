@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 
 const BoxSelect: React.FC = (): React.ReactElement => {

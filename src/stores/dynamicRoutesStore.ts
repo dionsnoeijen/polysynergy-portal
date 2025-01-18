@@ -4,7 +4,7 @@ import {
     storeDynamicRoute as storeDynamicRouteAPI,
     updateDynamicRoute as updateDynamicRouteAPI,
 } from '@/api/dynamicRoutesApi';
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import { Route } from "@/types/types";
 
 type DynamicRoutesStore = {

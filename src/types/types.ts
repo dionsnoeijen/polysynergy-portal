@@ -9,6 +9,10 @@ export enum NodeEnabledConnector {
     Node = 'node'
 }
 
+export enum NodeCollapsedConnector {
+    Collapsed = 'collapsed',
+}
+
 export enum FormType {
     AddRoute = 'addRoute',
     EditRoute = 'editRoute',
@@ -90,15 +94,17 @@ export type NodeView = {
     y: number;
     width: number;
     height: number;
+    collapsed: boolean;
     disabled?: boolean;
     adding?: boolean;
+    isOpenMap?: { [key: string]: boolean };
 };
 
 export type Node = {
     id: string;
     name: string;
     category: string;
-    type: NodeType;
+    type: NodeType|NodeMathType|NodeComparisonType;
     view: NodeView;
     variables: NodeVariable[];
     enabled?: boolean;

@@ -24,7 +24,7 @@ export default function TreeList<T extends ListItemWithId>({
     return (
         <div className="mt-[10px]">
             <div
-                className={`flex items-center shadow-sm justify-between border-t border-l border-r border-sky-500 p-2 dark:border-white/20 dark:bg-zinc-900 rounded-md${
+                className={`flex items-center shadow-sm justify-between border-t border-l border-r border-sky-500 p-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
                     isOpen ? " rounded-bl-none rounded-br-none" : ""
                 }`}
             >
@@ -47,11 +47,11 @@ export default function TreeList<T extends ListItemWithId>({
                     <li
                         className={`flex items-center border-l border-r border-sky-500 dark:border-white/20 justify-between pl-2 dark:hover:bg-sky-500 dark:hover:text-white ${
                             activeItem === item.id
-                                ? "bg-zinc-300 dark:bg-zinc-950/90"
-                                : "odd:bg-zinc-200/80 dark:odd:bg-zinc-950/30"
+                                ? "bg-zinc-300 dark:bg-zinc-900"
+                                : "odd:bg-zinc-200/80 dark:odd:bg-zinc-900"
                         } ${
                             formEditingItem === item.id
-                                ? "bg-sky-400 dark:bg-zinc-950"
+                                ? "bg-sky-400 dark:bg-zinc-900"
                                 : ""
                         } transition-colors duration-200 group`}
                         key={index}
@@ -60,7 +60,7 @@ export default function TreeList<T extends ListItemWithId>({
                     </li>
                 ))}
                 {addButton && (
-                    <li className="flex items-center justify-between border-l border-b border-r border-sky-500 dark:bg-zinc-900 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
+                    <li className="flex items-center justify-between border-l border-b border-t border-r border-sky-500 dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
                         {addButton}
                     </li>
                 )}

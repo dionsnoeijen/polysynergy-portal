@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useRef } from "react";
-import { useEditorStore } from "@/stores/editorStore";
-import { Connection, useConnectionsStore } from "@/stores/connectionsStore";
+import useEditorStore from "@/stores/editorStore";
+import useConnectionsStore, { Connection } from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 import { updateNodesDirectly } from "@/utils/updateNodesDirectly";
@@ -45,6 +45,7 @@ const useDraggable = () => {
             updateNodesDirectly(selectedNodesRef.current, deltaX, deltaY, initialPositionsRef.current);
 
             const allConnections = collectConnections();
+
             updateConnectionsDirectly(
                 allConnections
             );

@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Heading, Subheading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Text} from "@/components/text";
-import {useEditorStore} from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import useSchedulesStore from "@/stores/schedulesStore";
 import {FormType, Schedule} from "@/types/types";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";

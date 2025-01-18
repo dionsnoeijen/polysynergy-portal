@@ -1,7 +1,7 @@
 "use client";
 
 import React, {useEffect, useRef} from "react";
-import { useEditorStore } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import { Input, InputGroup } from "@/components/input";
 import {ChevronRightIcon, MagnifyingGlassIcon} from "@heroicons/react/16/solid";
 import useAvailableNodeStore from "@/stores/availableNodesStore";

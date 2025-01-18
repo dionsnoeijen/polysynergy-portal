@@ -1,10 +1,9 @@
 import {create} from 'zustand';
 import {v4 as uuidv4} from "uuid";
 import {Node, NodeSetupVersion, NodeType, NodeVariable, NodeView, Route} from "@/types/types";
-import useGroupsStore from "@/stores/groupStore";
 import {fetchDynamicRoute as fetchDynamicRouteAPI} from "@/api/dynamicRoutesApi";
-import {useEditorStore} from "@/stores/editorStore";
-import {useConnectionsStore} from "@/stores/connectionsStore";
+import useGroupsStore from "@/stores/groupStore";
+import useEditorStore from "@/stores/editorStore";
 
 type NodesStore = {
     nodes: Node[];
@@ -17,6 +16,9 @@ type NodesStore = {
     enableNode: (nodeId: string) => void;
     driveNode: (nodeId: string) => void;
     trackedNodeId: string | null;
+    toggleNodeViewCollapsedState: (nodeId: string) => void;
+    toggleNodeVariableOpenState: (nodeId: string, variableHandle: string) => void;
+    getNodeVariableOpenState: (nodeId: string, variableHandle: string) => boolean;
     addNode: (node: Node) => void;
     addGroupNode: (node: Partial<Node>) => void;
     removeNode: (nodeId: string) => void;
@@ -43,7 +45,7 @@ export const createDefaultNode = (overrides = {}): Node => ({
     name: "Default Name",
     category: "hidden",
     type: NodeType.Rows,
-    view: {x: 0, y: 0, width: 200, height: 200},
+    view: {x: 0, y: 0, width: 200, height: 200, collapsed: false},
     enabled: true,
     driven: false,
     variables: [],
@@ -57,6 +59,46 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         set({currentRouteData: route});
     },
     trackedNodeId: null,
+
+    toggleNodeViewCollapsedState: (nodeId: string) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        view: {
+                            ...node.view,
+                            collapsed: !node.view.collapsed,
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+    
+    toggleNodeVariableOpenState: (nodeId: string, variableHandle: string) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        view: {
+                            ...node.view,
+                            isOpenMap: {
+                                ...node.view.isOpenMap,
+                                [variableHandle]: !node.view.isOpenMap?.[variableHandle],
+                            },
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    getNodeVariableOpenState: (nodeId: string, variableHandle: string): boolean => {
+        const node = get().nodes.find((node) => node.id === nodeId);
+        return node?.view.isOpenMap?.[variableHandle] || false;
+    },
 
     enableAllNodesView: () => {
         set((state) => ({
@@ -151,7 +193,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             width: 200,
             height: 200,
             disabled: false,
-            adding: true
+            adding: true,
+            collapsed: false,
         };
 
         node.id = uuidv4();
@@ -335,45 +378,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         const {nodes, trackedNodeId} = get();
         if (!trackedNodeId) return null;
         return nodes.find((node) => node.id === trackedNodeId) || null;
-    },
-
-    saveNodeSetup: async () => {
-        const {nodes} = useNodesStore.getState();
-        const {connections} = useConnectionsStore.getState();
-        const {groups} = useGroupsStore.getState();
-        const {currentRouteData} = get();
-
-        if (!currentRouteData?.node_setup) {
-            console.error('No node setup available to save.');
-            return;
-        }
-
-        const nodeSetupData = {
-            nodes,
-            connections,
-            groups,
-        };
-
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setups/${currentRouteData.node_setup.id}/save/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(nodeSetupData),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to save node setup.');
-            }
-
-            const updatedRoute: Route = await response.json();
-            set({currentRouteData: updatedRoute});
-            alert('Node setup saved successfully!');
-        } catch (error) {
-            console.error(error);
-            alert('Failed to save node setup.');
-        }
     },
 
     fetchDynamicRouteNodeSetupContent: async (routeId: string) => {

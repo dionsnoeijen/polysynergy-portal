@@ -4,7 +4,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import ItemManager from "@/components/editor/sidebars/item-manager";
 import Dock from "@/components/editor/sidebars/dock";
 import {ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon} from "@heroicons/react/16/solid";
-import {useEditorStore} from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import Form from "@/components/editor/form";
 import SelectionsMenu from "@/components/editor/editormenus/selections-menu";
 import UndoRedoMenu from "@/components/editor/editormenus/undo-redo-menu";
@@ -141,7 +141,7 @@ export function EditorLayout({
     };
 
     return (
-        <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-800">
+        <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
 
             {closeFormMessage && (
                 <>

@@ -3,7 +3,7 @@ import React, {ReactElement, useEffect} from "react";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import {PencilIcon, PlusIcon} from "@heroicons/react/16/solid";
 import {Button} from "@/components/button";
-import {useEditorStore} from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import {FormType} from "@/types/types";
 import {formatSegments} from "@/utils/formatters";
 import Link from "next/link";

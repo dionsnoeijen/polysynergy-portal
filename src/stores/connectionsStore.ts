@@ -52,7 +52,7 @@ type ConnectionsStore = {
 
 const memoizedResults = new Map();
 
-export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
+const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
     connections: [],
 
     getConnection: (connectionId: string): Connection | undefined => {
@@ -359,3 +359,5 @@ export const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         set({ connections: [] });
     },
 }));
+
+export default useConnectionsStore;

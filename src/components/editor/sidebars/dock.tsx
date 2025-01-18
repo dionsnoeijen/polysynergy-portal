@@ -14,9 +14,10 @@ import VariableTypeBytes from "@/components/editor/sidebars/dock/variable-type-b
 import VariableTypeRichTextArea from "@/components/editor/sidebars/dock/variable-type-rich-text-area";
 import VariableTypeSecretString from "@/components/editor/sidebars/dock/variable-type-secret-string";
 import useEditorStore from "@/stores/editorStore";
+import VariableTypeTextArea from "@/components/editor/sidebars/dock/variable-type-text-area";
 import { NodeVariable, NodeVariableType } from "@/types/types";
 import { interpretNodeVariableType } from "@/utils/interpretNodeVariableType";
-import VariableTypeTextArea from "@/components/editor/sidebars/dock/variable-type-text-area";
+import VariableTypeCode from "@/components/editor/sidebars/dock/variable-type-code";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -36,6 +37,7 @@ const VariableTypeComponents = {
     [NodeVariableType.SecretString]: VariableTypeSecretString,
     [NodeVariableType.TextArea]: VariableTypeTextArea,
     [NodeVariableType.RichTextArea]: VariableTypeRichTextArea,
+    [NodeVariableType.Code]: VariableTypeCode
 };
 
 const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {

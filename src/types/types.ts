@@ -20,6 +20,7 @@ export enum FormType {
     EditSchedule = 'editSchedule',
     EditDict = 'editDict',
     EditList = 'editList',
+    EditCode = 'editCode',
 }
 
 export enum InOut {
@@ -50,6 +51,7 @@ export enum NodeVariableType {
     SecretString = 'secretstring',
     TextArea = 'textarea',
     RichTextArea = 'richtextarea',
+    Code = 'code',
 }
 
 export enum NodeType {
@@ -86,6 +88,7 @@ export type NodeVariable = {
     dock_field_secret?: boolean;
     dock_field_text_area?: boolean;
     dock_field_rich_text_area?: boolean;
+    dock_field_code_editor?: boolean;
     dock_select_values?: Record<string, string>;
 };
 

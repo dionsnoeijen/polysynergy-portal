@@ -13,7 +13,7 @@ type Props = {
 const VariableTypeString: React.FC<Props> = ({nodeId, variable}) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
         const newValue = e.target.value;
         updateNodeVariable(nodeId, variable.handle, newValue);
     };
@@ -25,7 +25,7 @@ const VariableTypeString: React.FC<Props> = ({nodeId, variable}) => {
                 {variable.dock_select_values ? (
                     <Select
                         disabled={variable.dock_field_enabled === false}
-                        onChange={handleChange} defaultValue={variable.value}>
+                        onChange={handleChange} defaultValue={variable.value as string}>
                         {Object.entries(variable.dock_select_values).map(([key, v]) => (
                             <option key={key} value={key}>
                                 {v}

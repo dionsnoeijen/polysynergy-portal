@@ -6,6 +6,7 @@ import {Button} from "@/components/button";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import {Route, NodeSetupVersion} from "@/types/types";
+import {Text} from "@/components/text";
 
 type VersionPublishedMenuProps = {
     routeData?: Route;
@@ -70,8 +71,8 @@ export default function VersionPublishedMenu({routeData}: VersionPublishedMenuPr
                     );
                 })}
             </Select>
-            <Button onClick={handleSave}>Save</Button>
-            <Button onClick={handlePublish}>Publish</Button>
+            <Button onClick={handleSave}><Text>Save</Text></Button>
+            <Button onClick={handlePublish}><Text>Publish</Text></Button>
         </div>
     );
 }

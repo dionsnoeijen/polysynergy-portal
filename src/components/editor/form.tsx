@@ -4,6 +4,7 @@ import ScheduleForm from "@/components/editor/forms/schedule-form";
 import useEditorStore from "@/stores/editorStore";
 import {FormType} from "@/types/types";
 import DictVariableForm from "@/components/editor/forms/dict-variable-form";
+import CodeEditorForm from "@/components/editor/forms/code-editor-form";
 
 const Form: React.FC = () => {
     const { formType } = useEditorStore();
@@ -18,6 +19,9 @@ const Form: React.FC = () => {
             )}
             {(formType === FormType.EditDict) && (
                 <DictVariableForm />
+            )}
+            {(formType === FormType.EditCode) && (
+                <CodeEditorForm />
             )}
         </div>
     );

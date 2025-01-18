@@ -20,6 +20,10 @@ export function interpretNodeVariableType(variable: NodeVariable): { baseType: N
             return { baseType: NodeVariableType.RichTextArea, containsNone };
         }
 
+        if (variable.dock_field_code_editor) {
+            return { baseType: NodeVariableType.Code, containsNone };
+        }
+
         return { baseType: NodeVariableType.String, containsNone };
     } else if (types.includes('bytes')) {
         return { baseType: NodeVariableType.Bytes, containsNone };

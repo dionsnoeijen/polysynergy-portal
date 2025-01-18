@@ -105,6 +105,7 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
             onMouseDown={handleNodeMouseDown}
             onDoubleClick={handleCollapse}
             className={className}
+            title={node.category + ' > ' + node.name}
             style={{
                 width: `${size.width}px`,
                 left: `${position.x}px`,
@@ -249,13 +250,13 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
                 left: `${position.x}px`,
                 top: `${position.y}px`,
             }}
-            title={node.name}
+            title={node.category + ' > ' + node.name}
             data-type="node"
             data-node-id={node.id}
         >
-            <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
+            <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed} />
             <GlobeAltIcon className={'w-10 h-10'} />
-            <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
+            <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed} />
         </div>
     );
 };

@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-import { Node } from "@/types/types";
+import { FormType, Node } from "@/types/types";
 import { Heading } from "@/components/heading";
 import { Divider } from "@/components/divider";
 import Editor, { Monaco } from "@monaco-editor/react";
+import {Button} from "@/components/button";
 
 const CodeEditorForm: React.FC = () => {
     const { getNode, updateNodeVariable } = useNodesStore();
@@ -21,7 +22,7 @@ const CodeEditorForm: React.FC = () => {
     };
 
     const handleEditorChange = (value: string | undefined) => {
-        console.log(value); // Hier kun je de code opslaan of verwerken
+        console.log(value);
     };
 
     const handleEditorDidMount = (editor: any, monaco: Monaco) => {
@@ -32,10 +33,8 @@ const CodeEditorForm: React.FC = () => {
             setEditorHeight(contentHeight + 20); // Voeg wat padding toe
         };
 
-        // Stel de hoogte direct in
         updateHeight();
 
-        // Herbereken hoogte bij inhoudswijzigingen
         editor.onDidChangeModelContent(() => {
             updateHeight();
         });
@@ -59,7 +58,14 @@ const CodeEditorForm: React.FC = () => {
                     <Editor
                         height={`${editorHeight}px`}
                         defaultLanguage="python"
-                        defaultValue="# Write Python-code here"
+                        defaultValue={
+`def execute():
+    """
+    This method is mandatory
+    """
+
+    return True
+`}
                         onChange={handleEditorChange}
                         theme="vs-dark"
                         onMount={handleEditorDidMount}
@@ -70,6 +76,17 @@ const CodeEditorForm: React.FC = () => {
                     />
                 </div>
             </section>
+
+            <Divider soft bleed />
+
+            <div className="flex justify-end gap-4 p-10">
+                <Button type="button" onClick={() => closeForm()} plain>
+                    Cancel
+                </Button>
+                <Button type="submit">
+                    Save
+                </Button>
+            </div>
         </form>
     );
 };

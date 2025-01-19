@@ -23,6 +23,11 @@ const useNodeContextMenu = (node: Node) => {
         }
 
         contextMenuItems.push({
+            label: "Collapse",
+            action: () => () => {}
+        });
+
+        contextMenuItems.push({
             label: "Delete",
             action: () => setDeleteNodesDialogOpen(true)
         });

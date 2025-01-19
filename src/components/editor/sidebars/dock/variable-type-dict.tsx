@@ -3,7 +3,7 @@ import React from "react";
 import {FormType, NodeVariable, NodeVariableType} from "@/types/types";
 import {Text} from "@/components/text";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
-import {PencilIcon} from "@heroicons/react/16/solid";
+import {CheckCircleIcon, PencilIcon, XCircleIcon} from "@heroicons/react/16/solid";
 import useEditorStore from "@/stores/editorStore";
 
 type Props = {
@@ -29,8 +29,10 @@ const VariableTypeDict: React.FC<Props> = ({ variable, nodeId }: Props): React.R
                 <Table dense>
                     <TableHead>
                         <TableRow>
+                            <TableHeader className="py-1">in</TableHeader>
                             <TableHeader className="py-1">key</TableHeader>
                             <TableHeader className="py-1">value</TableHeader>
+                            <TableHeader className="py-1">out</TableHeader>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -54,6 +56,9 @@ const VariableTypeDict: React.FC<Props> = ({ variable, nodeId }: Props): React.R
                                 ) {
                                     return (
                                         <TableRow key={item.handle}>
+                                            <TableCell className="p-1">
+                                                {item.has_in ? (<CheckCircleIcon className={"w-4 h-4"}/>) : (<XCircleIcon className={'w-4 h-4'} />)}
+                                            </TableCell>
                                             <TableCell
                                                 className="py-1 truncate overflow-hidden whitespace-nowrap"
                                                 title={item.handle}
@@ -66,13 +71,16 @@ const VariableTypeDict: React.FC<Props> = ({ variable, nodeId }: Props): React.R
                                             >
                                                 {item.value?.toString()}
                                             </TableCell>
+                                            <TableCell className="p-1">
+                                                {item.has_out ? (<CheckCircleIcon className={"w-4 h-4"}/>) : (<XCircleIcon className={'w-4 h-4'} />)}
+                                            </TableCell>
                                         </TableRow>
                                     );
                                 }
                                 return null;
                             })}
                         <TableRow>
-                            <td colSpan={2} className="border-t border-white/20 p-0 py-0 px-0">
+                            <td colSpan={4} className="border-t border-white/20 p-0 py-0 px-0">
                                 <button
                                     className="text-slate-500 hover:text-slate-600 w-full pb-1"
                                     onClick={() => onEdit(nodeId)}

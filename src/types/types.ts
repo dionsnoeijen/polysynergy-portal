@@ -60,6 +60,7 @@ export enum NodeType {
     Math = 'math',
     Group = 'group',
     Mock = 'mock',
+    Note = 'note'
 }
 
 export enum NodeComparisonType {

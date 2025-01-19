@@ -35,7 +35,6 @@ export const calculateConnectorPositionByAttributes = (nodeId: string, handle: s
     let selector = buildSelector(type, handle, nodeId);
     let target = document.querySelector(selector) as HTMLElement;
 
-    // This might be a connector, connected to a collapsed array
     if (!target) {
         const handleParts = handle.split('.');
         if (handleParts.length > 1) {
@@ -45,7 +44,6 @@ export const calculateConnectorPositionByAttributes = (nodeId: string, handle: s
         }
     }
 
-    // No? This might be a connector, connected to a collapsed node
     if (!target) {
         selector = buildSelector(type, NodeCollapsedConnector.Collapsed, nodeId);
         target = document.querySelector(selector) as HTMLElement;

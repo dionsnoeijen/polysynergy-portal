@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+    font-size: 14px;
+}
+
 .default-editor-container {
     @apply rounded-md shadow-sm ring-1 bg-zinc-200 dark:bg-zinc-900 ring-white/10;
 }

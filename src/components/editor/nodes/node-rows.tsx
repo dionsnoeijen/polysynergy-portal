@@ -54,20 +54,33 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
     const handleCollapse = () => {
         shouldUpdateConnections.current = true;
         toggleNodeViewCollapsedState(node.id);
-    }
+    };
 
-    const getBackgroundClass = () => {
+    const isCollapsable = () => {
+        return node.category !== NodeType.Note;
+    };
+
+    const getColorForNodeType = () => {
+        let classList = '';
+
         if (node.category === NodeType.Mock) {
-            return "bg-orange-500/60 dark:bg-orange-500/60";
+            classList += "ring-orange-500 dark:ring-orange-500";
+        } else if (node.category === NodeType.Note) {
+            classList += "ring-yellow-500 dark:ring-yellow-500";
+        } else {
+            classList += "ring-sky-500 dark:ring-sky-500";
         }
-        return "bg-sky-100 dark:bg-slate-800/60";
+
+        if (selectedNodes.includes(node.id)) {
+            classList += " ring-2 shadow-2xl";
+        }
+
+        return classList;
     };
 
     const className = `
     absolute overflow-visible select-none flex flex-col items-start justify-start 
-    ring-2 ${selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm"} 
-    ${getBackgroundClass()} backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 
-    ${node.category === "note" ? "bg-yellow-100 dark:bg-yellow-500/60" : ""} 
+    ring-1 shadow-sm bg-zinc-800 ${getColorForNodeType()} backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 
     ${node.view.disabled ? "z-1 select-none opacity-30" : "z-20 cursor-move"}
     `.trim();
 
@@ -75,7 +88,6 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
         if (shouldUpdateConnections.current) {
             node.variables.forEach((variable) => {
                 if (variable.value && (typeof variable.value === "object" && !Array.isArray(variable.value) || Array.isArray(variable.value))) {
-                    console.log(variable);
                     const isOpen = getNodeVariableOpenState(node.id, variable.handle);
                     if (isOpen) {
                         openConnections(variable.handle);
@@ -103,7 +115,7 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
             ref={ref}
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
-            onDoubleClick={handleCollapse}
+            onDoubleClick={isCollapsable() ? handleCollapse : undefined}
             className={className}
             title={node.category + ' > ' + node.name}
             style={{
@@ -123,10 +135,12 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
                     </>
                 )}
                 <h3 className={`font-bold truncate ${node.has_enabled_switch ? 'ml-2' : 'ml-0'} text-sky-600 dark:text-white`}>{node.name}</h3>
-                <Button
-                    onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
-                    <ChevronDownIcon style={{color: 'white'}} className={'w-4 h-4'}/>
-                </Button>
+                {isCollapsable() && (
+                    <Button
+                        onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
+                        <ChevronDownIcon style={{color: 'white'}} className={'w-4 h-4'}/>
+                    </Button>
+                )}
             </div>
             <div className="flex flex-col w-full items-start overflow-visible">
                 <div className="w-full">
@@ -244,8 +258,8 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
             ref={ref}
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
-            onDoubleClick={handleCollapse}
-            className={className + ` rounded-[300px] p-5`}
+            onDoubleClick={isCollapsable() ? handleCollapse : undefined}
+            className={className + ` p-5`}
             style={{
                 left: `${position.x}px`,
                 top: `${position.y}px`,

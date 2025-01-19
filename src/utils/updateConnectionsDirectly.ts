@@ -32,7 +32,7 @@ export const updateConnectionsDirectly = (
 
         if (pathElement) {
             const startPosition = calculateConnectorPositionByAttributes(
-                connection.sourceNodeId,
+                connection.sourceGroupId ?? connection.sourceNodeId,
                 connection.sourceHandle,
                 InOut.Out
             );

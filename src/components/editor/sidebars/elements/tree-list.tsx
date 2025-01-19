@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/16/solid";
+import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/24/outline";
 import { ListItemWithId } from "@/types/types";
 
 type ListProps<T extends ListItemWithId> = {

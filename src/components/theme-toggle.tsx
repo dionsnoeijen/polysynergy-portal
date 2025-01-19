@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { MoonIcon, SunIcon } from "@heroicons/react/16/solid";
+import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
 
 export default function ThemeToggle() {
     const { theme, setTheme } = useTheme();

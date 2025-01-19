@@ -2,7 +2,7 @@
 
 import {ApplicationLayout} from "@/app/application-layout";
 import {Heading, Subheading} from "@/components/heading";
-import {ArrowPathIcon, CheckIcon, PlusIcon, TrashIcon, XMarkIcon} from "@heroicons/react/16/solid";
+import {ArrowPathIcon, CheckIcon, PlusIcon, TrashIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {Input} from "@/components/input";
 import {Button} from "@/components/button";

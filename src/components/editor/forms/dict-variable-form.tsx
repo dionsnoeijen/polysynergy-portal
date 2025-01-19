@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select } from "@/components/select";
 import { Input } from "@/components/input";
 import { Switch } from "@/components/switch";
-import { CheckCircleIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/16/solid";
+import { CheckCircleIcon, PencilIcon, PlusIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import useNodesStore from "@/stores/nodesStore";
 
 const DictVariableForm: React.FC = () => {

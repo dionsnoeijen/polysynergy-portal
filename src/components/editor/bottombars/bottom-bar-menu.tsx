@@ -1,5 +1,5 @@
 import React from "react";
-import { CodeBracketIcon, CodeBracketSquareIcon } from "@heroicons/react/16/solid";
+import { CodeBracketIcon, CodeBracketSquareIcon } from "@heroicons/react/24/outline";
 import useEditorStore, { BottomBarView } from "@/stores/editorStore";
 
 const BottomBarMenu: React.FC = (): React.ReactElement => {

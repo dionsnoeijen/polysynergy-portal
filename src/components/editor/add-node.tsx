@@ -3,7 +3,7 @@
 import React, {useEffect, useRef} from "react";
 import useEditorStore from "@/stores/editorStore";
 import { Input, InputGroup } from "@/components/input";
-import {ChevronRightIcon, MagnifyingGlassIcon} from "@heroicons/react/16/solid";
+import {ChevronRightIcon, MagnifyingGlassIcon} from "@heroicons/react/24/outline";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useNodesStore from "@/stores/nodesStore";
 import {globalToLocal} from "@/utils/positionUtils";

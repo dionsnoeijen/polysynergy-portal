@@ -1,7 +1,7 @@
 import {NodeVariable} from "@/types/types";
 import React from "react";
 import Connector from "@/components/editor/nodes/connector";
-import {CalendarIcon} from "@heroicons/react/16/solid";
+import {CalendarIcon} from "@heroicons/react/24/outline";
 
 type Props = {
     variable: NodeVariable;

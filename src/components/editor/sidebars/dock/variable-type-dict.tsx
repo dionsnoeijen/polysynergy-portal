@@ -3,7 +3,7 @@ import React from "react";
 import {FormType, NodeVariable, NodeVariableType} from "@/types/types";
 import {Text} from "@/components/text";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
-import {CheckCircleIcon, PencilIcon, XCircleIcon} from "@heroicons/react/16/solid";
+import {CheckCircleIcon, PencilIcon, XCircleIcon} from "@heroicons/react/24/outline";
 import useEditorStore from "@/stores/editorStore";
 
 type Props = {

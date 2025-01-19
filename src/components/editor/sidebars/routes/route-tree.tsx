@@ -1,7 +1,7 @@
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import React, {ReactElement, useEffect} from "react";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
-import {PencilIcon, PlusIcon} from "@heroicons/react/16/solid";
+import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import {Button} from "@/components/button";
 import useEditorStore from "@/stores/editorStore";
 import {FormType} from "@/types/types";

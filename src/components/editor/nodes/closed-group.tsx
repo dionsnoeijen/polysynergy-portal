@@ -11,7 +11,7 @@ import useNodesStore from "@/stores/nodesStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
-import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/16/solid";
+import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
 import {Button} from "@/components/button";
 import Connector from "@/components/editor/nodes/connector";
 

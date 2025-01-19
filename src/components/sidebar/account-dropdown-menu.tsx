@@ -9,7 +9,7 @@ import {
     LightBulbIcon,
     ShieldCheckIcon,
     UserCircleIcon
-} from "@heroicons/react/16/solid";
+} from "@heroicons/react/24/outline";
 import React from "react";
 
 export default function AccountDropdownMenu({ anchor }: { anchor: 'top start' | 'bottom end' }) {

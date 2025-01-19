@@ -1,6 +1,6 @@
 import {Dropdown, DropdownButton} from "@/components/dropdown";
 import {SidebarFooter, SidebarItem} from "@/components/sidebar";
-import {ChevronUpIcon} from "@heroicons/react/16/solid";
+import {ChevronUpIcon} from "@heroicons/react/24/outline";
 import AccountDropdownMenu from "@/components/sidebar/account-dropdown-menu";
 
 import { useAuth } from "react-oidc-context";

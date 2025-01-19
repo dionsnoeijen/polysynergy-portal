@@ -1,6 +1,5 @@
 import React from "react";
 import { NodeVariable } from "@/types/types";
-import { DocumentTextIcon } from "@heroicons/react/16/solid";
 import Connector from "@/components/editor/nodes/connector";
 
 type Props = {

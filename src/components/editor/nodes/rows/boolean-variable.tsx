@@ -1,6 +1,6 @@
 import React from "react";
 import { NodeVariable } from "@/types/types";
-import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/16/solid";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
 
 type Props = {

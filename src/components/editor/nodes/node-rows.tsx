@@ -21,7 +21,7 @@ import {ThreeWaySwitch} from "@/components/three-way-switch";
 import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
 import {Button} from "@/components/button";
-import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/16/solid";
+import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
 
 type NodeProps = {
     node: Node;

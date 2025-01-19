@@ -1,7 +1,7 @@
 import { Node as NodeType, NodeComparisonType, NodeVariableType } from "@/types/types";
 import React from "react";
 import useEditorStore from "@/stores/editorStore";
-import { ChevronRightIcon } from "@heroicons/react/16/solid";
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
 import { Strong } from "@/components/text";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";

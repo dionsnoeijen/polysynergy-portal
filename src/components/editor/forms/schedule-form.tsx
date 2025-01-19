@@ -10,7 +10,7 @@ import {Button} from "@/components/button";
 import {Input} from "@/components/input";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import {CalendarDateRangeIcon} from "@heroicons/react/16/solid";
+import {CalendarDateRangeIcon} from "@heroicons/react/24/outline";
 import {Switch} from "@/components/switch";
 import {Fieldset} from "@/components/fieldset";
 import {CronField} from '@/components/editor/forms/cron/cron-field';

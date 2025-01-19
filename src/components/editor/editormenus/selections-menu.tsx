@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { CursorArrowRaysIcon, StopIcon } from "@heroicons/react/16/solid";
+import { CursorArrowRaysIcon, StopIcon } from "@heroicons/react/24/outline";
 import useEditorStore from "@/stores/editorStore";
 import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 

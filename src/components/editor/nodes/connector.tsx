@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronRightIcon } from "@heroicons/react/16/solid";
-import { InOut, NodeVariableType } from "@/types/types";
+import {InOut, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
 import { useConnectorHandlers } from "@/hooks/editor/nodes/useConnectorHandlers";
 import clsx from "clsx";
 
@@ -35,20 +35,22 @@ const Connector: React.FC<ConnectorProps> = ({
 
     if (nodeVariableType === NodeVariableType.TruePath) {
         backgroundClasses = "ring-white dark:ring-white bg-green-400 dark:bg-green-400";
-        iconColorClasses = "text-white dark:text-white";
+        iconColorClasses = "text-zinc-800 dark:text-zinc-800";
     } else if (nodeVariableType === NodeVariableType.FalsePath) {
         backgroundClasses = "ring-white dark:ring-white bg-red-400 dark:bg-red-400";
-        iconColorClasses = "text-white dark:text-white";
+        iconColorClasses = "text-zinc-800 dark:text-zinc-800";
     } else {
-        backgroundClasses = "ring-sky-500 dark:ring-white bg-white dark:bg-slate-800";
-        iconColorClasses = "text-sky-600 dark:text-slate-400";
+        backgroundClasses = "ring-sky-500 dark:ring-white bg-white dark:bg-zinc-800";
+        iconColorClasses = "text-sky-600 dark:text-white";
     }
 
     const positionClasses = isIn ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2";
 
+    const isInteractive = handle !== NodeCollapsedConnector.Collapsed;
+
     return (
         <div
-            onMouseDown={handleMouseDown}
+            onMouseDown={isInteractive ? handleMouseDown : undefined}
             data-type={isIn ? InOut.In : InOut.Out}
             data-node-id={nodeId}
             data-group-id={groupId}
@@ -61,13 +63,15 @@ const Connector: React.FC<ConnectorProps> = ({
                 className
             )}
         >
-            <ChevronRightIcon
-                className={clsx(
-                    "w-5 h-5 absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2",
-                    iconColorClasses,
-                    iconClassName
-                )}
-            />
+            {isInteractive && (
+                <ChevronRightIcon
+                    className={clsx(
+                        "w-5 h-5 absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2",
+                        iconColorClasses,
+                        iconClassName
+                    )}
+                />
+            )}
         </div>
     );
 };

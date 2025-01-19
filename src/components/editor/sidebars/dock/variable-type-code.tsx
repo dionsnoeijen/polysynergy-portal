@@ -1,7 +1,7 @@
 import React from "react";
 import {FormType, NodeVariable} from "@/types/types";
 import {Field, Fieldset, Label} from "@/components/fieldset";
-import {PencilIcon} from "@heroicons/react/16/solid";
+import {PencilIcon} from "@heroicons/react/24/outline";
 import useEditorStore from "@/stores/editorStore";
 
 type Props = {

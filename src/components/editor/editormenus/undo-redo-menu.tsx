@@ -2,7 +2,7 @@ import React from "react";
 import {
     ArrowTurnDownLeftIcon,
     ArrowTurnDownRightIcon,
-} from "@heroicons/react/16/solid";
+} from "@heroicons/react/24/outline";
 
 const UndoRedoMenu: React.FC = () => {
     return (

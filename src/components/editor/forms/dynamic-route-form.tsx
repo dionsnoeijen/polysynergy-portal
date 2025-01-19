@@ -8,7 +8,7 @@ import {Button} from "@/components/button";
 import useEditorStore from "@/stores/editorStore";
 import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
-import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon} from "@heroicons/react/16/solid";
+import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon} from "@heroicons/react/24/outline";
 import {Select} from "@/components/select";
 import {Checkbox, CheckboxField} from "@/components/checkbox";
 import {formatSegments} from "@/utils/formatters";

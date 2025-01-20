@@ -20,9 +20,12 @@ import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
 import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
 import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
 
-type GroupProps = { node: Node };
+type GroupProps = {
+    node: Node,
+    isMirror?: boolean,
+};
 
-const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
+const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false }): React.ReactElement => {
     const ref = useRef<HTMLDivElement>(null);
     const { selectedNodes, openContextMenu } = useEditorStore();
     const { openGroup, deleteGroup } = useGrouping();
@@ -98,22 +101,25 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
 
     const className = `absolute overflow-visible select-none flex flex-col items-start justify-start ring-2 ${
                 selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
-            } bg-sky-100 dark:bg-zinc-800 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5 ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}`;
+            } bg-sky-100 dark:bg-zinc-800 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5 
+            ${!isMirror && node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}
+            `.trim();
 
     return !node.view.collapsed ? (
         <div
             className={className}
             data-type="closed-group"
-            data-node-id={node.id}
+            data-node-id={isMirror ? ('mirror-' + node.id) : node.id}
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
             onDoubleClick={() => openGroup(node.id)}
+            title={node.category + ' > ' + node.name + ' > ' + (isMirror ? ('mirror-' + node.id) : node.id)}
             style={{
                 left: node.view.x,
                 top: node.view.y,
             }}
         >
-            <div className="flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5">
+            <div className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
                 <h3 className="font-bold truncate text-sky-600 dark:text-white">{node.name}</h3>
                 <Button
                     onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
@@ -123,7 +129,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
 
             <div className="flex w-full gap-4 pt-2">
                 <div className="flex-1 flex flex-col">
-                    <h4 className="font-bold text-sky-600 pl-2 dark:text-white mb-2">Inputs</h4>
+                    <h4 className={`font-bold text-sky-600 pl-2 dark:text-white mb-2 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>Inputs</h4>
                     {variablesForGroup?.inVariables && variablesForGroup?.inVariables?.length > 0 ? (
                         variablesForGroup.inVariables.map(({variable, nodeId}) => {
                             if (typeof variable === 'undefined') return null;
@@ -138,8 +144,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             onToggle={handleToggle(variable.handle)}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.List:
@@ -151,8 +158,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             onToggle={handleToggle(variable.handle)}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.String:
@@ -162,8 +170,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.Bytes:
@@ -173,8 +182,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.Number:
@@ -184,8 +194,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.DateTime:
@@ -195,8 +206,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.SecretString:
@@ -206,8 +218,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.TextArea:
@@ -218,8 +231,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.Boolean:
@@ -229,8 +243,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyIn={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 default:
@@ -238,12 +253,12 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                             }
                         })
                     ) : (
-                        <p className="text-sky-400 dark:text-slate-400">No inputs</p>
+                        <p className={`text-sky-400 dark:text-slate-400 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>No inputs</p>
                     )}
                 </div>
 
                 <div className="flex-1 flex flex-col">
-                    <h4 className="font-bold text-sky-600 pr-2 dark:text-white mb-2">Outputs</h4>
+                    <h4 className={`font-bold text-sky-600 pr-2 dark:text-white mb-2 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>Outputs</h4>
                     {variablesForGroup?.outVariables && variablesForGroup?.outVariables?.length > 0 ? (
                         variablesForGroup.outVariables.map(({variable, nodeId}) => {
                             if (typeof variable === 'undefined') return null;
@@ -258,8 +273,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             onToggle={handleToggle(variable.handle)}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.List:
@@ -271,8 +287,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             onToggle={handleToggle(variable.handle)}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     )
                                 case NodeVariableType.String:
@@ -282,8 +299,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.Bytes:
@@ -293,8 +311,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                            variable={variable}
                                            nodeId={nodeId as string}
                                            onlyOut={true}
-                                           disabled={node.view.disabled}
+                                           disabled={!isMirror && node.view.disabled}
                                            groupId={node.id}
+                                           isMirror={isMirror}
                                        />
                                     );
                                 case NodeVariableType.Number:
@@ -304,8 +323,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.DateTime:
@@ -315,8 +335,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.SecretString:
@@ -326,8 +347,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.TextArea:
@@ -338,8 +360,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 case NodeVariableType.Boolean:
@@ -351,8 +374,9 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             variable={variable}
                                             nodeId={nodeId as string}
                                             onlyOut={true}
-                                            disabled={node.view.disabled}
+                                            disabled={!isMirror && node.view.disabled}
                                             groupId={node.id}
+                                            isMirror={isMirror}
                                         />
                                     );
                                 default:
@@ -360,7 +384,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                             }
                         })
                     ) : (
-                        <p className="text-sky-400 dark:text-slate-400">No outputs</p>
+                        <p className={`text-sky-400 dark:text-slate-400 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>No outputs</p>
                     )}
                 </div>
             </div>

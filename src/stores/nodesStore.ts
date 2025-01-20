@@ -10,6 +10,7 @@ type NodesStore = {
     currentRouteData?: Route;
     setCurrentRouteData: (route: Route) => void;
     enableAllNodesView: () => void;
+    enableNodesView: (nodeIds: string[]) => void;
     disableAllNodesViewExceptByIds: (nodeIds: string[]) => void;
     disableNodeView: (nodeId: string) => void;
     disableNode: (nodeId: string) => void;
@@ -109,6 +110,22 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     disabled: false,
                 },
             })),
+        }));
+    },
+
+    enableNodesView: (nodeIds: string[]) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                nodeIds.includes(node.id)
+                    ? {
+                        ...node,
+                        view: {
+                            ...node.view,
+                            disabled: false,
+                        },
+                    }
+                    : node
+            ),
         }));
     },
 

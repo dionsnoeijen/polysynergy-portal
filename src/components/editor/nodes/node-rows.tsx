@@ -80,7 +80,7 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
 
     const className = `
     absolute overflow-visible select-none flex flex-col items-start justify-start 
-    ring-1 shadow-sm bg-zinc-800 ${getColorForNodeType()} backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 
+    ring-1 bg-zinc-800 ${getColorForNodeType()} backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 
     ${node.view.disabled ? "z-1 select-none opacity-30" : "z-20 cursor-move"}
     `.trim();
 
@@ -117,7 +117,7 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
             onMouseDown={handleNodeMouseDown}
             onDoubleClick={isCollapsable() ? handleCollapse : undefined}
             className={className}
-            title={node.category + ' > ' + node.name}
+            title={node.category + ' > ' + node.name + ' ' + node.id}
             style={{
                 width: `${size.width}px`,
                 left: `${position.x}px`,

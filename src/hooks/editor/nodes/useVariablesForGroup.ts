@@ -8,6 +8,8 @@ const useVariablesForGroup = (groupId: string | null, checkDock = true) => {
     const { getTrackedNode, getNodeVariable } = useNodesStore();
     const { findInConnectionsByNodeId, findOutConnectionsByNodeId, connections } = useConnectionsStore();
 
+    groupId = groupId?.startsWith("mirror-") ? groupId.replace("mirror-", "") : groupId;
+    
     const group = groupId ? getGroupById(groupId) : null;
     const node = getTrackedNode();
 

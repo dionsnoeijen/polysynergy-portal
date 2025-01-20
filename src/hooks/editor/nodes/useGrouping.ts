@@ -25,6 +25,7 @@ const useGrouping = () => {
         removeNodeFromGroup: removeNodeFromGroupStore,
         getNodesInGroup,
         getGroupById,
+        isNodeInGroup
     } = useGroupsStore();
     const {
         addGroupNode,
@@ -32,6 +33,7 @@ const useGrouping = () => {
         updateNodePositionByDelta,
         disableAllNodesViewExceptByIds,
         enableAllNodesView,
+        enableNodesView,
         removeNode,
         getNode,
         disableNodeView
@@ -137,7 +139,18 @@ const useGrouping = () => {
 
         updateNodePosition(groupId, x, y);
         setSelectedNodes([]);
-        enableAllNodesView();
+
+        // 1: See if the group we are closing, is part of another group, if so, display
+        // the nodes in that group
+        const groupedByNode = isNodeInGroup(groupId);
+        if (groupedByNode) {
+            const nodesInGroup = getNodesInGroup(groupedByNode);
+            enableNodesView(nodesInGroup);
+        // 2: If this is not the case, and the group we are closing does not belong
+        // to another group, just enable all nodes
+        } else {
+            enableAllNodesView();
+        }
 
         let showConnections = [];
         if (parentGroup) {
@@ -185,7 +198,7 @@ const useGrouping = () => {
         setOpenGroup(groupId);
         setSelectedNodes([]);
 
-        disableAllNodesViewExceptByIds([...nodesInGroup, groupId]);
+        disableAllNodesViewExceptByIds([...nodesInGroup]);
         const showConnections = showConnectionsInsideOpenGroup(groupId);
         setTimeout(() => {
             updateConnectionsDirectly(showConnections);

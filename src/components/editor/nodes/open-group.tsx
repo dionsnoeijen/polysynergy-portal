@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { Group } from "@/stores/groupStore";
 import useEditorStore from "@/stores/editorStore";
+import useNodesStore from "@/stores/nodesStore";
 import ConnectorGroup from "@/components/editor/nodes/connector-group";
 import {
     Dialog,
@@ -13,12 +14,14 @@ import { Button } from "@/components/button";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import { MARGIN } from "@/utils/constants";
 import { getNodeBoundsFromDOM } from "@/utils/positionUtils";
+import ClosedGroup from "@/components/editor/nodes/closed-group";
 
 type GroupProps = { group: Group };
 
-const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
+const OpenGroup: React.FC<GroupProps> = ({ group }): null | React.ReactElement => {
     const { openContextMenu, setSelectedNodes, isDragging, zoomFactor } = useEditorStore();
     const { closeGroup, dissolveGroup } = useGrouping();
+    const { getNode } = useNodesStore();
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [tick, setTick] = useState(0);
@@ -46,7 +49,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
     // eslint-disable-next-line
     }, [isDragging]);
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const frameId = requestAnimationFrame(() => {
             const {minX, minY, maxX, maxY, foundAny} = getNodeBoundsFromDOM(group.nodes);
             if (!foundAny) {
@@ -62,10 +65,10 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
         return () => {
             cancelAnimationFrame(frameId);
         };
-    }, [tick, group.nodes]);
+    }, [tick, group]);
 
     useLayoutEffect(() => {
-        const closedGroupNodeEl = document.querySelector(`[data-node-id="${group.id}"][data-type="closed-group"]`) as HTMLElement;
+        const closedGroupNodeEl = document.querySelector(`[data-node-id="mirror-${group.id}"][data-type="closed-group"]`) as HTMLElement;
         if (!closedGroupNodeEl) return;
 
         const boundingRect = closedGroupNodeEl.getBoundingClientRect();
@@ -111,15 +114,20 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): React.ReactElement => {
         setIsDialogOpen(false);
     };
 
+    const node = getNode(group.id);
+    if (!node) return null;
+
     return (
         <>
+            <ClosedGroup node={node} isMirror={true} />
             <div
                 data-type="open-group"
                 onContextMenu={handleContextMenu}
-                onDoubleClick={() => closeGroup(group.id)}
+                onDoubleClick={() => !group.isHidden && closeGroup(group.id)}
                 className={`absolute border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500/20 bg-opacity-25
-                    ${group.isHidden ? 'z-1 select-none opacity-10' : 'z-10'}
+                    ${group.isHidden ? 'z-1 select-none opacity-30' : 'z-10'}
                 `}
+                title={group.id}
                 style={{
                     left: bounds.minX - MARGIN,
                     top: bounds.minY - MARGIN,

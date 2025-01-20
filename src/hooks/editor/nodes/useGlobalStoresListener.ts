@@ -21,7 +21,7 @@ export default function useGlobalStoreListenersWithImmediateSave() {
   let debounceTimeout: NodeJS.Timeout | null = null;
 
   const saveNodeSetup = () => {
-    console.log('Saving state:', latestStates);
+    // console.log('Saving state:', latestStates);
     lastSavedAt = Date.now();
   };
 

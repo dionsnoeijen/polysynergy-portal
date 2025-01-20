@@ -302,7 +302,9 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
     getConnectionsForOpenGroup: (groupId: string): Connection[] => {
         memoizedResults.clear();
         const group = useGroupsStore.getState().getGroupById(groupId);
-        if (!group) return [];
+        if (!group || !Array.isArray(group.nodes) || group.nodes.length === 0) {
+            return [];
+        }
 
         const uniqueConnections = new Map<string, Connection>();
 

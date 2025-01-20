@@ -74,7 +74,8 @@ const AddNode: React.FC = () => {
                     width: 200,
                     height: 200,
                     disabled: false,
-                    adding: true
+                    adding: true,
+                    collapsed: false
                 };
 
                 addNode(node);
@@ -134,7 +135,8 @@ const AddNode: React.FC = () => {
                                         width: 200,
                                         height: 200,
                                         disabled: false,
-                                        adding: true
+                                        adding: true,
+                                        collapsed: false
                                     };
                                     addNode(availableNode);
                                 }}

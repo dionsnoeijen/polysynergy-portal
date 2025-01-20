@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { v4 as uuidv4 } from "uuid";
+import {create} from 'zustand';
+import {v4 as uuidv4} from "uuid";
 import useNodesStore from "@/stores/nodesStore";
 
 export type Group = {
@@ -32,7 +32,7 @@ type GroupsStore = {
 const nodesInGroupCache = new Map<string, string[]>();
 
 const getNodesInGroup = (get: () => GroupsStore) => (groupId: string): string[] => {
-    const { groups } = get();
+    const {groups} = get();
     const group = groups[groupId];
     if (!group) return [];
 
@@ -46,12 +46,12 @@ const getNodesInGroup = (get: () => GroupsStore) => (groupId: string): string[] 
 };
 
 const getOpenGroups = (get: () => GroupsStore) => (): Group[] => {
-    const { groups } = get();
+    const {groups} = get();
     return Object.values(groups).filter((group) => group.isOpen);
 };
 
 const getClosedGroups = (get: () => GroupsStore) => (): Group[] => {
-    const { groups } = get();
+    const {groups} = get();
     return Object.values(groups).filter((group) => !group.isOpen);
 };
 
@@ -63,7 +63,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         return {
             groups: {
                 ...state.groups,
-                [groupId]: { ...group, isOpen: true }
+                [groupId]: {...group, isOpen: true}
             }
         };
     }),
@@ -71,7 +71,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     isNodeInGroup: (nodeId) => {
         const groups = get().groups;
         for (const groupId in groups) {
-            if (groups[groupId].nodes.includes(nodeId)) {
+            if (groups[groupId]?.nodes?.includes(nodeId)) {
                 return groupId;
             }
         }
@@ -83,7 +83,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         return {
             groups: {
                 ...state.groups,
-                [groupId]: { ...group, isOpen: false }
+                [groupId]: {...group, isOpen: false}
             }
         };
     }),
@@ -93,7 +93,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         return {
             groups: {
                 ...state.groups,
-                [groupId]: { ...group, isHidden: true }
+                [groupId]: {...group, isHidden: true}
             }
         };
     }),
@@ -103,7 +103,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         return {
             groups: {
                 ...state.groups,
-                [groupId]: { ...group, isHidden: false }
+                [groupId]: {...group, isHidden: false}
             }
         };
     }),
@@ -118,7 +118,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         };
 
         set((state) => ({
-            groups: { ...state.groups, [newGroup.id]: newGroup }
+            groups: {...state.groups, [newGroup.id]: newGroup}
         }));
 
         return newGroup.id;
@@ -126,8 +126,8 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
 
     removeGroup: (groupId) => set((state) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [groupId]: _, ...remainingGroups } = state.groups;
-        return { groups: remainingGroups };
+        const {[groupId]: _, ...remainingGroups} = state.groups;
+        return {groups: remainingGroups};
     }),
 
     addNodeToGroup: (groupId, nodeId) => set((state) => {
@@ -136,7 +136,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         return {
             groups: {
                 ...state.groups,
-                [groupId]: { ...group, nodes: [...group.nodes, nodeId] }
+                [groupId]: {...group, nodes: [...group.nodes, nodeId]}
             }
         };
     }),
@@ -147,7 +147,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         return {
             groups: {
                 ...state.groups,
-                [groupId]: { ...group, nodes: group.nodes.filter(id => id !== nodeId) }
+                [groupId]: {...group, nodes: group.nodes.filter(id => id !== nodeId)}
             }
         };
     }),
@@ -175,7 +175,7 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
         return {
             groups: {
                 ...state.groups,
-                [groupId]: { ...currentGroup, ...group }
+                [groupId]: {...currentGroup, ...group}
             }
         };
     }),

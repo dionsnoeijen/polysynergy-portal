@@ -50,7 +50,15 @@ const useGrouping = () => {
     const createGroup = () => {
         if (selectedNodes.length < 2) return;
 
-        const groupId = addGroup({ nodes: selectedNodes });
+        const bounds = getNodeBoundsFromState(selectedNodes);
+
+        const width = bounds.maxX - bounds.minX;
+        const height = bounds.maxY - bounds.minY;
+
+        const nodesCenterX = bounds.minX + (width / 2);
+        const nodesCenterY = bounds.minY + (height / 2);
+
+        const groupId = addGroup({nodes: selectedNodes});
 
         // 1: Remove connections that fall outside the group
         // those are the connections that make a connection to a node that is not in the
@@ -70,10 +78,13 @@ const useGrouping = () => {
             const filterOutside = (connection: Connection) => {
                 const sourceInside =
                     selectedNodes.includes(connection.sourceNodeId) ||
-                    connection.sourceGroupId === groupId;
+                    (connection.sourceGroupId && selectedNodes.includes(connection.sourceGroupId)) ||
+                    (connection.sourceGroupId === groupId);
+
                 const targetInside =
                     selectedNodes.includes(connection.targetNodeId as string) ||
-                    connection.targetGroupId === groupId;
+                    (connection.targetGroupId && selectedNodes.includes(connection.targetGroupId)) ||
+                    (connection.targetGroupId === groupId);
                 const isGroupToNodeOrGroup =
                     (connection.sourceGroupId && selectedNodes.includes(connection.targetNodeId as string)) ||
                     (connection.targetGroupId && selectedNodes.includes(connection.sourceNodeId));
@@ -104,9 +115,12 @@ const useGrouping = () => {
         });
 
         setOpenGroup(groupId);
-        addGroupNode({id:groupId});
+        addGroupNode({
+            id: groupId,
+            view: {x: nodesCenterX - 100, y: nodesCenterY - 100, width: 200, height: 200, collapsed: false}
+        });
         setSelectedNodes([]);
-        disableAllNodesViewExceptByIds([...selectedNodes, groupId]);
+        disableAllNodesViewExceptByIds([...selectedNodes]);
     };
 
     const closeGroup = (
@@ -128,7 +142,7 @@ const useGrouping = () => {
         hideGroup(groupId);
         closeGroupEditorStore();
 
-        const { groupStack: newStack } = useEditorStore.getState();
+        const {groupStack: newStack} = useEditorStore.getState();
         const parentGroup = newStack[newStack.length - 1];
         if (parentGroup) {
             showGroup(parentGroup);
@@ -146,8 +160,8 @@ const useGrouping = () => {
         if (groupedByNode) {
             const nodesInGroup = getNodesInGroup(groupedByNode);
             enableNodesView(nodesInGroup);
-        // 2: If this is not the case, and the group we are closing does not belong
-        // to another group, just enable all nodes
+            // 2: If this is not the case, and the group we are closing does not belong
+            // to another group, just enable all nodes
         } else {
             enableAllNodesView();
         }
@@ -252,6 +266,7 @@ const useGrouping = () => {
 
             if (node.type === NodeType.Group) {
                 deleteGroup(nodeId);
+                removeNode(nodeId);
             } else {
                 removeNode(nodeId);
             }

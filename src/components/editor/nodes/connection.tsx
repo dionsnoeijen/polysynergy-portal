@@ -91,6 +91,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
                 )}
         </svg>
             <div
+                title={connection.id}
                 ref={startDotRef}
                 data-connection-start-id={connection.id}
                 style={{
@@ -106,6 +107,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
                 }}
             />
             <div
+                title={connection.id}
                 ref={endDotRef}
                 data-connection-end-id={connection.id}
                 style={{

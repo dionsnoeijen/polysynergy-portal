@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { Group } from "@/stores/groupStore";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 import ConnectorGroup from "@/components/editor/nodes/connector-group";
 import {
     Dialog,
@@ -22,6 +23,7 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): null | React.ReactElement =
     const { openContextMenu, setSelectedNodes, isDragging, zoomFactor } = useEditorStore();
     const { closeGroup, dissolveGroup } = useGrouping();
     const { getNode } = useNodesStore();
+    const connections = useConnectionsStore((state) => state.connections);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [tick, setTick] = useState(0);
@@ -77,13 +79,15 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): null | React.ReactElement =
 
         closedGroupNodeEl.style.left = `${x}px`;
         closedGroupNodeEl.style.top = `${y}px`;
-    }, [bounds, group.id, zoomFactor]);
+    // eslint-disable-next-line
+    }, [bounds, group.id, connections]);
 
     const width = bounds.maxX - bounds.minX;
     const height = bounds.maxY - bounds.minY;
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
+        e.stopPropagation();
         openContextMenu(
             e.clientX,
             e.clientY,
@@ -119,7 +123,9 @@ const OpenGroup: React.FC<GroupProps> = ({ group }): null | React.ReactElement =
 
     return (
         <>
-            <ClosedGroup node={node} isMirror={true} />
+            {!group.isHidden && (
+                <ClosedGroup node={node} isMirror={true} />
+            )}
             <div
                 data-type="open-group"
                 onContextMenu={handleContextMenu}

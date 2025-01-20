@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import useEditorStore from "@/stores/editorStore";
 import {Node, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
@@ -14,6 +14,11 @@ import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
 import {Button} from "@/components/button";
 import Connector from "@/components/editor/nodes/connector";
+import ListVariable from "@/components/editor/nodes/rows/list-variable";
+import BytesVariable from "@/components/editor/nodes/rows/bytes-variable";
+import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
+import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
+import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
 
 type GroupProps = { node: Node };
 
@@ -137,6 +142,19 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             groupId={node.id}
                                         />
                                     );
+                                case NodeVariableType.List:
+                                    return (
+                                        <ListVariable
+                                            key={'in-' + variable.handle + '-' + nodeId}
+                                            variable={variable}
+                                            isOpen={isOpenMap[variable.handle] || false}
+                                            onToggle={handleToggle(variable.handle)}
+                                            nodeId={nodeId as string}
+                                            onlyIn={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
+                                    );
                                 case NodeVariableType.String:
                                     return (
                                         <StringVariable
@@ -148,9 +166,54 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             groupId={node.id}
                                         />
                                     );
+                                case NodeVariableType.Bytes:
+                                    return (
+                                        <BytesVariable
+                                            key={'in-' + variable.handle + '-' + nodeId}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyIn={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
+                                    );
                                 case NodeVariableType.Number:
                                     return (
                                         <NumberVariable
+                                            key={'in-' + variable.handle + '-' + nodeId}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyIn={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
+                                    );
+                                case NodeVariableType.DateTime:
+                                    return (
+                                        <DatetimeVariable
+                                            key={'in-' + variable.handle + '-' + nodeId}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyIn={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
+                                    );
+                                case NodeVariableType.SecretString:
+                                    return (
+                                        <SecretStringVariable
+                                            key={'in-' + variable.handle + '-' + nodeId}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyIn={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
+                                    );
+                                case NodeVariableType.TextArea:
+                                case NodeVariableType.RichTextArea:
+                                    return (
+                                        <TextAreaVariable
                                             key={'in-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             nodeId={nodeId as string}
@@ -199,6 +262,19 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             groupId={node.id}
                                         />
                                     );
+                                case NodeVariableType.List:
+                                    return (
+                                        <ListVariable
+                                            key={'out-' + variable.handle + '-' + nodeId}
+                                            variable={variable}
+                                            isOpen={isOpenMap[variable.handle] || false}
+                                            onToggle={handleToggle(variable.handle)}
+                                            nodeId={nodeId as string}
+                                            onlyOut={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
+                                    )
                                 case NodeVariableType.String:
                                     return (
                                         <StringVariable
@@ -210,9 +286,54 @@ const ClosedGroup: React.FC<GroupProps> = ({ node }): React.ReactElement => {
                                             groupId={node.id}
                                         />
                                     );
+                                case NodeVariableType.Bytes:
+                                    return (
+                                       <BytesVariable
+                                           key={'out-' + variable.handle + '-' + nodeId}
+                                           variable={variable}
+                                           nodeId={nodeId as string}
+                                           onlyOut={true}
+                                           disabled={node.view.disabled}
+                                           groupId={node.id}
+                                       />
+                                    );
                                 case NodeVariableType.Number:
                                     return (
                                         <NumberVariable
+                                            key={'out-' + variable.handle + '-' + nodeId}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyOut={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
+                                    );
+                                case NodeVariableType.DateTime:
+                                    return (
+                                        <DatetimeVariable
+                                            key={'out-' + variable.handle + '-' + nodeId}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyOut={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
+                                    );
+                                case NodeVariableType.SecretString:
+                                    return (
+                                        <SecretStringVariable
+                                            key={'out-' + variable.handle + '-' + nodeId}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyOut={true}
+                                            disabled={node.view.disabled}
+                                            groupId={node.id}
+                                        />
+                                    );
+                                case NodeVariableType.TextArea:
+                                case NodeVariableType.RichTextArea:
+                                    return (
+                                        <TextAreaVariable
                                             key={'out-' + variable.handle + '-' + nodeId}
                                             variable={variable}
                                             nodeId={nodeId as string}

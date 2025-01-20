@@ -19,6 +19,7 @@ import OpenGroup from "@/components/editor/nodes/open-group";
 import DeleteDialog from "@/components/editor/nodes/delete-dialog";
 import AddNode from "@/components/editor/add-node";
 import useGlobalStoreListeners from "@/hooks/editor/nodes/useGlobalStoresListener";
+import PointZeroIndicator from "@/components/editor/point-zero-indicator";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -149,6 +150,8 @@ export default function Editor() {
                 style={{ transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomFactor})` }}
                 className="absolute top-0 left-0 w-0 h-0 overflow-visible"
             >
+                <PointZeroIndicator />
+
                 {getOpenGroups().map((group) => (
                     <OpenGroup key={group.id} group={group} />
                 ))}

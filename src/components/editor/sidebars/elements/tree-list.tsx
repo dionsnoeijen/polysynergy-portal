@@ -25,7 +25,7 @@ export default function TreeList<T extends ListItemWithId>({
     return items.length > 0 ? (
         <div className="mt-[10px]">
             <div
-                className={`flex items-center shadow-sm justify-between border-t border-l border-r border-sky-500 p-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
+                className={`flex items-center shadow-sm justify-between border border-sky-500 p-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
                     isOpen ? " rounded-bl-none rounded-br-none" : ""
                 }`}
             >
@@ -49,10 +49,10 @@ export default function TreeList<T extends ListItemWithId>({
                         className={`flex items-center border-l border-r border-sky-500 dark:border-white/20 justify-between pl-2 dark:hover:bg-sky-500 dark:hover:text-white ${
                             activeItem === item.id
                                 ? "bg-zinc-300 dark:bg-zinc-900"
-                                : "odd:bg-zinc-200/80 dark:odd:bg-zinc-900"
+                                : "odd:bg-zinc-200/80 dark:bg-zinc-800 dark:odd:bg-zinc-800/50"
                         } ${
                             formEditingItem === item.id
-                                ? "bg-sky-400 dark:bg-zinc-900"
+                                ? "bg-sky-400 dark:bg-zinc-800"
                                 : ""
                         } transition-colors duration-200 group`}
                         key={index}

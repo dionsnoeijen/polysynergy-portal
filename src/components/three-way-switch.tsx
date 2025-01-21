@@ -6,12 +6,14 @@ import useNodesStore from "@/stores/nodesStore";
 
 type ThreeWaySwitchProps = {
   node: Node;
+  disabled?: boolean;
   className?: string;
 };
 
 export const ThreeWaySwitch: React.FC<ThreeWaySwitchProps> = ({
   node,
   className,
+  disabled = false
 }) => {
 
   const { enableNode, disableNode } = useNodesStore();
@@ -34,7 +36,7 @@ export const ThreeWaySwitch: React.FC<ThreeWaySwitchProps> = ({
       as="button"
       type="button"
       onClick={handleClick}
-      disabled={node.driven}
+      disabled={disabled || node.driven}
       className={clsx(
         'relative inline-flex h-6 w-11 cursor-pointer rounded-full p-1 transition-colors',
         {

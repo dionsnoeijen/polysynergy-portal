@@ -18,7 +18,7 @@ import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import OpenGroup from "@/components/editor/nodes/open-group";
 import DeleteDialog from "@/components/editor/nodes/delete-dialog";
 import AddNode from "@/components/editor/add-node";
-import useGlobalStoreListeners from "@/hooks/editor/nodes/useGlobalStoresListener";
+import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import PointZeroIndicator from "@/components/editor/point-zero-indicator";
 
 export default function Editor() {
@@ -45,7 +45,7 @@ export default function Editor() {
     const { handleEditorMouseDown } = useDeselectOnClickOutside();
     const { createGroup } = useGrouping();
 
-    useGlobalStoreListeners();
+    useGlobalStoreListenersWithImmediateSave();
 
     const nodesToRender = getNodesToRender();
 

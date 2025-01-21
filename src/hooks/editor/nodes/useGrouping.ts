@@ -51,26 +51,21 @@ const useGrouping = () => {
     const createGroup = () => {
         if (selectedNodes.length < 2) return;
 
-        // 1. Check of je in een bestaande "open" group zit
         const parentGroupId = currentOpenGroup;
         if (parentGroupId) {
-            // Haal de geselecteerde nodes uit de parent group
             selectedNodes.forEach((nodeId) => {
                 removeNodeFromGroupStore(parentGroupId, nodeId);
             });
         }
 
-        // 2. Maak de nieuwe group met de geselecteerde nodes
         const groupId = addGroup({nodes: selectedNodes});
 
-        // 3. Bepaal wat de bounding-box is van de geselecteerde nodes
         const bounds = getNodeBoundsFromState(selectedNodes);
         const width = bounds.maxX - bounds.minX;
         const height = bounds.maxY - bounds.minY;
         const nodesCenterX = bounds.minX + (width / 2);
         const nodesCenterY = bounds.minY + (height / 2);
 
-        // 4. Verwijder connecties “buiten” de nieuwe group
         const connectionsToRemove: Connection[] = [];
         const connectionsToAssignToGroup: Connection[] = [];
 
@@ -108,7 +103,6 @@ const useGrouping = () => {
 
         removeConnections(connectionsToRemove);
 
-        // 5. Update de overgebleven connecties, zodat ze bij de nieuwe group horen
         connectionsRemaining.forEach((connection) => {
             updateConnection({
                 ...connection,
@@ -116,7 +110,6 @@ const useGrouping = () => {
             });
         });
 
-        // 6. Maak het “node-object” aan dat de nieuwe group visueel vertegenwoordigt
         addGroupNode({
             id: groupId,
             view: {
@@ -130,7 +123,6 @@ const useGrouping = () => {
 
         if (parentGroupId) {
             addNodeToGroup(parentGroupId, groupId);
-            // Check of de parent nu <= 1 node heeft. Dan dissolven we 'm
             const parentGroup = getGroupById(parentGroupId);
             if (parentGroup && parentGroup.nodes.length <= 1) {
                 dissolveGroup(parentGroupId);
@@ -141,7 +133,6 @@ const useGrouping = () => {
             hideGroup(currentOpenGroup);
         }
 
-        // 7. Open de nieuwe group en disable de rest
         setOpenGroup(groupId);
         setSelectedNodes([]);
         openGroupStore(groupId);

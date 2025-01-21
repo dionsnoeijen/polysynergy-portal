@@ -1,8 +1,7 @@
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import React, {ReactElement, useEffect} from "react";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
-import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
-import {Button} from "@/components/button";
+import {PencilIcon} from "@heroicons/react/24/outline";
 import useEditorStore from "@/stores/editorStore";
 import {FormType} from "@/types/types";
 import {formatSegments} from "@/utils/formatters";
@@ -40,14 +39,7 @@ export default function RouteTree(): ReactElement {
                     </button>
                 </>
             )}
-            addButton={
-                <Button
-                    onClick={() => openForm(FormType.AddRoute)}
-                    plain
-                    className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0">
-                    <PlusIcon/>
-                </Button>
-            }
+            addButtonClick={() => openForm(FormType.AddRoute)}
         />
     )
 }

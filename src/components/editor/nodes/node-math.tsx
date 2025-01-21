@@ -1,4 +1,4 @@
-import { Node as NodeType, NodeMathType } from "@/types/types";
+import { NodeProps, NodeMathType } from "@/types/types";
 import React from "react";
 import useEditorStore from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
@@ -6,8 +6,6 @@ import { Strong } from "@/components/text";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
-
-type NodeProps = { node: NodeType; };
 
 const NodeMath: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes } = useEditorStore();

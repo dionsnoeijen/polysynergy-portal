@@ -4,16 +4,16 @@ import {Divider} from "@/components/divider";
 import {Text} from "@/components/text";
 import useEditorStore from "@/stores/editorStore";
 import useSchedulesStore from "@/stores/schedulesStore";
-import {FormType, Schedule} from "@/types/types";
-import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
-import {Button} from "@/components/button";
-import {Input} from "@/components/input";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {CalendarDateRangeIcon} from "@heroicons/react/24/outline";
 import {Switch} from "@/components/switch";
 import {Fieldset} from "@/components/fieldset";
 import {CronField} from '@/components/editor/forms/cron/cron-field';
+import {Input} from "@/components/input";
+import {Button} from "@/components/button";
+import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
+import {FormType, Schedule} from "@/types/types";
 
 const dayOfWeekLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -172,8 +172,8 @@ const ScheduleForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} method={"post"} className={"p-10"}>
-            <Heading>{formType === FormType.AddSchedule ? "Add " : "Edit "}Schedule</Heading>
-            <Divider className="my-10" soft bleed/>
+            <Heading>{formType === FormType.AddSchedule ? "Add " : "Edit "} Schedule</Heading>
+            <Divider className="my-10" soft bleed />
             {errors.length > 0 && (
                 <div className="text-red-500 mb-4">
                     {errors.map((error, idx) => (

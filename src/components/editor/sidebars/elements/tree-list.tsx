@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/24/outline";
+import {ChevronDownIcon, ChevronLeftIcon, PlusIcon} from "@heroicons/react/24/outline";
 import { ListItemWithId } from "@/types/types";
+import {Button} from "@/components/button";
 
 type ListProps<T extends ListItemWithId> = {
     items: T[];
     activeItem?: null | string;
     formEditingItem?: null | string;
     renderItem: (item: T) => React.ReactNode;
-    addButton?: React.ReactNode;
+    addButtonClick?: () => void;
     title?: string;
 };
 
@@ -16,12 +17,12 @@ export default function TreeList<T extends ListItemWithId>({
     activeItem = null,
     formEditingItem = null,
     renderItem,
-    addButton,
+    addButtonClick,
     title = "List",
 }: ListProps<T>): React.JSX.Element {
     const [isOpen, setIsOpen] = useState(true);
 
-    return (
+    return items.length > 0 ? (
         <div className="mt-[10px]">
             <div
                 className={`flex items-center shadow-sm justify-between border-t border-l border-r border-sky-500 p-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
@@ -59,12 +60,33 @@ export default function TreeList<T extends ListItemWithId>({
                         {renderItem(item)}
                     </li>
                 ))}
-                {addButton && (
+                {addButtonClick && (
                     <li className="flex items-center justify-between border-l border-b border-t border-r border-sky-500 dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
-                        {addButton}
+                        <Button
+                            onClick={addButtonClick}
+                            plain
+                            className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0"
+                        >
+                            <PlusIcon />
+                        </Button>
                     </li>
                 )}
             </ul>
         </div>
+    ) : (
+        <>
+        {addButtonClick && (
+            <div className={'mt-[10px]'}>
+                <Button
+                    onClick={addButtonClick}
+                    plain
+                    className="w-full hover:cursor-pointer p-0 border border-dotted border-white/50"
+                >
+                    {title}
+                    <PlusIcon />
+                </Button>
+            </div>
+        )}
+        </>
     );
 }

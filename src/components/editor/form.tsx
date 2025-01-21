@@ -1,6 +1,7 @@
 import React from 'react';
 import DynamicRouteForm from "@/components/editor/forms/dynamic-route-form";
 import ScheduleForm from "@/components/editor/forms/schedule-form";
+import ServiceForm from "@/components/editor/forms/service-form";
 import useEditorStore from "@/stores/editorStore";
 import {FormType} from "@/types/types";
 import DictVariableForm from "@/components/editor/forms/dict-variable-form";
@@ -22,6 +23,9 @@ const Form: React.FC = () => {
             )}
             {(formType === FormType.EditCode) && (
                 <CodeEditorForm />
+            )}
+            {(formType === FormType.AddService || formType === FormType.EditService) && (
+                <ServiceForm />
             )}
         </div>
     );

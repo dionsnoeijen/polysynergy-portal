@@ -18,6 +18,7 @@ const ListVariableForm: React.FC = () => {
 
     const [ node, setNode ] = useState<Node>();
     const [ newVariable, setNewVariable ] = useState<NodeVariable>({
+        handle: "",
         type: NodeVariableType.String,
         value: "",
         has_in: false,
@@ -39,6 +40,7 @@ const ListVariableForm: React.FC = () => {
         if (!isValidVariable(newVariable)) return;
         setVariables([...variables, newVariable]);
         setNewVariable({
+            handle: "",
             type: NodeVariableType.String,
             value: "",
             has_in: false,

@@ -1,16 +1,12 @@
-import { Node as NodeType, NodeComparisonType, NodeVariableType } from "@/types/types";
+import { NodeProps, NodeComparisonType, NodeVariableType } from "@/types/types";
 import React from "react";
 import useEditorStore from "@/stores/editorStore";
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
-import { Strong } from "@/components/text";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
-
-type NodeProps = {
-    node: NodeType;
-};
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import { Strong } from "@/components/text";
 
 const NodeComparison: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes } = useEditorStore();

@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import useEditorStore from "@/stores/editorStore";
-import {Node, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
+import {GroupProps, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
 import DictVariable from "@/components/editor/nodes/rows/dict-variable";
@@ -20,12 +20,7 @@ import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
 import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
 import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
 
-type GroupProps = {
-    node: Node,
-    isMirror?: boolean,
-};
-
-const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false }): React.ReactElement => {
+const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false, preview = false }): React.ReactElement => {
     const ref = useRef<HTMLDivElement>(null);
     const { selectedNodes, openContextMenu } = useEditorStore();
     const { openGroup, deleteGroup } = useGrouping();
@@ -99,7 +94,7 @@ const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false }): React.Re
         }
     }, [isOpenMap, openConnections, collapseConnections]);
 
-    const className = `absolute overflow-visible select-none flex flex-col items-start justify-start ring-2 ${
+    const className = `${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start ring-2 ${
                 selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
             } bg-sky-100 dark:bg-zinc-800 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5 
             ${!isMirror && node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}
@@ -115,8 +110,8 @@ const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false }): React.Re
             onDoubleClick={() => openGroup(node.id)}
             title={node.category + ' > ' + node.name + ' > ' + (isMirror ? ('mirror-' + node.id) : node.id)}
             style={{
-                left: node.view.x,
-                top: node.view.y,
+                left: preview ? '0px' : `${node.view.x}px`,
+                top: preview ? '0px' : `${node.view.y}px`,
             }}
         >
             <div className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
@@ -396,7 +391,10 @@ const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false }): React.Re
             onMouseDown={handleNodeMouseDown}
             onDoubleClick={handleCollapse}
             className={className + ` p-5`}
-            style={{ left: node.view.x, top: node.view.y }}
+            style={{
+                left: preview ? '0px' : `${node.view.x}px`,
+                top: preview ? '0px' : `${node.view.y}px`,
+            }}
             title={node.category + ' > ' + node.name}
             data-type="closed-group"
             data-node-id={node.id}

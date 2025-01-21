@@ -178,7 +178,7 @@ export function EditorLayout({
                     right: dockClosed ? 10 : width.dock
                 }}>
                     <div
-                        className={`absolute top-[10px] left-0 right-0 bottom-0 overflow-scroll border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-900' : 'bg-white dark:bg-zinc-700'}`}
+                        className={`absolute top-[10px] left-0 right-0 bottom-0 overflow-scroll border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {showForm ? (
                             <Form />

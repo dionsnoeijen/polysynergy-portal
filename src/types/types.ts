@@ -18,6 +18,8 @@ export enum FormType {
     EditRoute = 'editRoute',
     AddSchedule = 'addSchedule',
     EditSchedule = 'editSchedule',
+    AddService = 'addService',
+    EditService = 'editService',
     EditDict = 'editDict',
     EditList = 'editList',
     EditCode = 'editCode',
@@ -106,6 +108,7 @@ export type NodeView = {
 
 export type Node = {
     id: string;
+    service_id?: string;
     name: string;
     category: string;
     type: NodeType|NodeMathType|NodeComparisonType;
@@ -117,6 +120,15 @@ export type Node = {
     has_enabled_switch?: boolean;
 };
 
+export interface NodeProps {
+    node: Node;
+    preview?: boolean;
+};
+
+export interface GroupProps extends NodeProps {
+    isMirror?: boolean;
+}
+
 export type Schedule = {
     id?: string;
     name: string;
@@ -127,6 +139,14 @@ export type Schedule = {
     created_at?: string;
     updated_at?: string;
     project_id?: string;
+};
+
+export type Service = {
+    id?: string;
+    name: string;
+    icon?: string;
+    subCategory: string;
+    nodes: Node[]
 };
 
 export enum HttpMethod {
@@ -223,3 +243,9 @@ export type Project = {
     created_at: string;
     updated_at: string;
 };
+
+export interface State {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+export type StoreName = 'nodes' | 'connections' | 'groups';

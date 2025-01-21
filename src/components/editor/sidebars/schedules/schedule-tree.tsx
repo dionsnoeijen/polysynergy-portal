@@ -3,9 +3,8 @@ import useSchedulesStore from "@/stores/schedulesStore";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import Link from "next/link";
 import useEditorStore from "@/stores/editorStore";
-import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
+import {PencilIcon} from "@heroicons/react/24/outline";
 import {FormType} from "@/types/types";
-import {Button} from "@/components/button";
 
 export default function ScheduleTree(): ReactElement {
 
@@ -34,15 +33,7 @@ export default function ScheduleTree(): ReactElement {
                     </button>
                 </>
             )}
-            addButton={
-                <Button
-                    onClick={() => openForm(FormType.AddSchedule)}
-                    plain
-                    className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0"
-                >
-                    <PlusIcon />
-                </Button>
-            }
+            addButtonClick={() => openForm(FormType.AddSchedule)}
         />
     );
 }

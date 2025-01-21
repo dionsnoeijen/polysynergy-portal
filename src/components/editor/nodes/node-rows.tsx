@@ -14,7 +14,7 @@ import PlayButton from "@/components/editor/nodes/rows/play-button";
 import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
 import ListVariable from "@/components/editor/nodes/rows/list-variable";
 import BytesVariable from "@/components/editor/nodes/rows/bytes-variable";
-import {Node, NodeCollapsedConnector, NodeEnabledConnector, NodeType, NodeVariableType} from "@/types/types";
+import {NodeProps, NodeCollapsedConnector, NodeEnabledConnector, NodeType, NodeVariableType} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
 import {ThreeWaySwitch} from "@/components/three-way-switch";
@@ -23,11 +23,7 @@ import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable"
 import {Button} from "@/components/button";
 import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
 
-type NodeProps = {
-    node: Node;
-};
-
-const NodeRows: React.FC<NodeProps> = ({node}) => {
+const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {size, handleResizeMouseDown} = useResizable(node);
     const {selectedNodes, zoomFactor} = useEditorStore();
     const {collapseConnections, openConnections} = useToggleConnectionCollapse(node);
@@ -79,7 +75,7 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
     };
 
     const className = `
-    absolute overflow-visible select-none flex flex-col items-start justify-start 
+    ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start 
     ring-1 bg-zinc-800 ${getColorForNodeType()} backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 
     ${node.view.disabled ? "z-1 select-none opacity-30" : "z-20 cursor-move"}
     `.trim();
@@ -113,15 +109,15 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
     return !node.view.collapsed ? (
         <div
             ref={ref}
-            onContextMenu={handleContextMenu}
-            onMouseDown={handleNodeMouseDown}
+            onContextMenu={!preview ? handleContextMenu : () => {}}
+            onMouseDown={!preview ? handleNodeMouseDown : () => {}}
             onDoubleClick={isCollapsable() ? handleCollapse : undefined}
             className={className}
             title={node.category + ' > ' + node.name + ' ' + node.id}
             style={{
                 width: `${size.width}px`,
-                left: `${position.x}px`,
-                top: `${position.y}px`,
+                left: preview ? '0px' : `${position.x}px`,
+                top: preview ? '0px' : `${position.y}px`,
             }}
             data-type="node"
             data-node-id={node.id}
@@ -131,7 +127,7 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
                 {node.has_enabled_switch && (
                     <>
                         <Connector in nodeId={node.id} handle={NodeEnabledConnector.Node}/>
-                        <ThreeWaySwitch node={node}/>
+                        <ThreeWaySwitch disabled={preview} node={node}/>
                     </>
                 )}
                 <h3 className={`font-bold truncate ${node.has_enabled_switch ? 'ml-2' : 'ml-0'} text-sky-600 dark:text-white`}>{node.name}</h3>
@@ -259,10 +255,10 @@ const NodeRows: React.FC<NodeProps> = ({node}) => {
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
             onDoubleClick={isCollapsable() ? handleCollapse : undefined}
-            className={className + ` p-5`}
+            className={className + ` p-5 w-auto h-auto inline-block items-center justify-center cursor-pointer`}
             style={{
-                left: `${position.x}px`,
-                top: `${position.y}px`,
+                left: preview ? '0px' :`${position.x}px`,
+                top: preview ? '0px' :`${position.y}px`,
             }}
             title={node.category + ' > ' + node.name}
             data-type="node"

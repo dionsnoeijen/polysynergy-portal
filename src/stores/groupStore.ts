@@ -1,10 +1,8 @@
 import {create} from 'zustand';
 import {v4 as uuidv4} from "uuid";
-import useNodesStore from "@/stores/nodesStore";
 
 export type Group = {
     id: string;
-    name: string;
     isOpen: boolean;
     isHidden: boolean;
     nodes: string[];
@@ -111,7 +109,6 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     addGroup: (group: Partial<Group>) => {
         const newGroup: Group = {
             id: group.id || uuidv4(),
-            name: group.name || 'Untitled Group',
             isOpen: group.isOpen !== undefined ? group.isOpen : true,
             nodes: group.nodes || [],
             isHidden: false,
@@ -166,11 +163,6 @@ const useGroupsStore = create<GroupsStore>((set, get) => ({
     updateGroup: (groupId, group) => set((state) => {
         nodesInGroupCache.delete(groupId);
         const currentGroup = state.groups[groupId];
-
-        // if name is updated, sync with node
-        if (group.name && currentGroup.name !== group.name) {
-            useNodesStore.getState().updateNode(groupId, {name: group.name});
-        }
 
         return {
             groups: {

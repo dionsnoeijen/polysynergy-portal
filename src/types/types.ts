@@ -20,6 +20,8 @@ export enum FormType {
     EditSchedule = 'editSchedule',
     AddService = 'addService',
     EditService = 'editService',
+    AddBlueprint = 'addBlueprint',
+    EditBlueprint = 'editBlueprint',
     EditDict = 'editDict',
     EditList = 'editList',
     EditCode = 'editCode',
@@ -79,6 +81,15 @@ export enum NodeMathType {
     Divide = 'divide',
 }
 
+export type Dock = {
+    field_enabled?: boolean;
+    field_secret?: boolean;
+    field_text_area?: boolean;
+    field_rich_text_area?: boolean;
+    field_code_editor?: boolean;
+    select_values?: Record<string, string>;
+}
+
 export type NodeVariable = {
     name?: string;
     handle: string;
@@ -87,12 +98,7 @@ export type NodeVariable = {
     has_dock?: boolean;
     has_in?: boolean;
     has_out?: boolean;
-    dock_field_enabled?: boolean;
-    dock_field_secret?: boolean;
-    dock_field_text_area?: boolean;
-    dock_field_rich_text_area?: boolean;
-    dock_field_code_editor?: boolean;
-    dock_select_values?: Record<string, string>;
+    dock?: Dock;
 };
 
 export type NodeView = {
@@ -109,6 +115,7 @@ export type NodeView = {
 export type Node = {
     id: string;
     service_id?: string;
+    icon?: string;
     name: string;
     category: string;
     type: NodeType|NodeMathType|NodeComparisonType;
@@ -139,6 +146,14 @@ export type Schedule = {
     created_at?: string;
     updated_at?: string;
     project_id?: string;
+};
+
+export type Blueprint = {
+    id?: string;
+    name: string;
+    icon?: string;
+    category: string;
+    nodes: Node[]
 };
 
 export type Service = {

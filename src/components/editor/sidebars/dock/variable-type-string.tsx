@@ -22,11 +22,11 @@ const VariableTypeString: React.FC<Props> = ({nodeId, variable}) => {
         <Fieldset>
             <Label>{variable.handle}</Label>
             <Field>
-                {variable.dock_select_values ? (
+                {variable.dock.select_values ? (
                     <Select
-                        disabled={variable.dock_field_enabled === false}
+                        disabled={variable.dock.field_enabled === false}
                         onChange={handleChange} defaultValue={variable.value as string}>
-                        {Object.entries(variable.dock_select_values).map(([key, v]) => (
+                        {Object.entries(variable.dock.select_values).map(([key, v]) => (
                             <option key={key} value={key}>
                                 {v}
                             </option>
@@ -34,7 +34,7 @@ const VariableTypeString: React.FC<Props> = ({nodeId, variable}) => {
                     </Select>
                 ) : (
                     <Input
-                        disabled={variable.dock_field_enabled === false}
+                        disabled={variable.dock.field_enabled === false}
                         type="text"
                         value={variable.value as string || ""}
                         onChange={handleChange}

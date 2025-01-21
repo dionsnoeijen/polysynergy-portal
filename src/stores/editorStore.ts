@@ -68,6 +68,8 @@ type EditorState = {
     setActiveScheduleId: (scheduleId: string) => void;
     activeServiceId: string;
     setActiveServiceId: (serviceId: string) => void;
+    activeBlueprintId: string;
+    setActiveBlueprintId: (blueprintId: string) => void;
 
     editingRouteVersions: { [routeId: string]: string };
     setEditingRouteVersion: (routeId: string, versionId: string) => void;
@@ -95,6 +97,8 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setActiveScheduleId: (scheduleId: string) => set({activeScheduleId: scheduleId}),
     activeServiceId: '',
     setActiveServiceId: (serviceId: string) => set({activeServiceId: serviceId}),
+    activeBlueprintId: '',
+    setActiveBlueprintId: (blueprintId: string) => set({activeBlueprintId: blueprintId}),
     openForm: (type: FormType, formEditRecordId: null | string = null, variable?: NodeVariable | null) => set({
         showForm: true,
         formType: type,

@@ -22,6 +22,7 @@ import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
 import {Button} from "@/components/button";
 import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
+import NodeIcon from "@/components/editor/nodes/node-icon";
 
 const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {size, handleResizeMouseDown} = useResizable(node);
@@ -59,12 +60,16 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const getColorForNodeType = () => {
         let classList = '';
 
-        if (node.category === NodeType.Mock) {
-            classList += "ring-orange-500 dark:ring-orange-500";
-        } else if (node.category === NodeType.Note) {
-            classList += "ring-yellow-500 dark:ring-yellow-500";
+        if (node.service_id) {
+            classList += "ring-purple-500 dark:ring-purple-500";
         } else {
-            classList += "ring-sky-500 dark:ring-sky-500";
+            if (node.category === NodeType.Mock) {
+                classList += "ring-orange-500 dark:ring-orange-500";
+            } else if (node.category === NodeType.Note) {
+                classList += "ring-yellow-500 dark:ring-yellow-500";
+            } else {
+                classList += "ring-sky-500 dark:ring-sky-500";
+            }
         }
 
         if (selectedNodes.includes(node.id)) {
@@ -103,14 +108,16 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                 updateNodeHeight(node.id, actualHeight);
             }
         }
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [node.view.height, getNodeVariableOpenState, updateNodeHeight, node.id]);
 
     return !node.view.collapsed ? (
         <div
             ref={ref}
-            onContextMenu={!preview ? handleContextMenu : () => {}}
-            onMouseDown={!preview ? handleNodeMouseDown : () => {}}
+            onContextMenu={!preview ? handleContextMenu : () => {
+            }}
+            onMouseDown={!preview ? handleNodeMouseDown : () => {
+            }}
             onDoubleClick={isCollapsable() ? handleCollapse : undefined}
             className={className}
             title={node.category + ' > ' + node.name + ' ' + node.id}
@@ -130,7 +137,12 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                         <ThreeWaySwitch disabled={preview} node={node}/>
                     </>
                 )}
-                <h3 className={`font-bold truncate ${node.has_enabled_switch ? 'ml-2' : 'ml-0'} text-sky-600 dark:text-white`}>{node.name}</h3>
+                {node?.icon && (
+                    <NodeIcon icon={node.icon} className={'border bg-white border-white/50 ml-3'} />
+                )}
+                <h3 className={`font-bold truncate ${node.has_enabled_switch ? 'ml-2' : 'ml-0'} text-sky-600 dark:text-white`}>
+                    {node.name}
+                </h3>
                 {isCollapsable() && (
                     <Button
                         onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
@@ -252,21 +264,27 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     ) : (
         <div
             ref={ref}
-            onContextMenu={handleContextMenu}
-            onMouseDown={handleNodeMouseDown}
+            onContextMenu={!preview ? handleContextMenu : () => {
+            }}
+            onMouseDown={!preview ? handleNodeMouseDown : () => {
+            }}
             onDoubleClick={isCollapsable() ? handleCollapse : undefined}
             className={className + ` p-5 w-auto h-auto inline-block items-center justify-center cursor-pointer`}
             style={{
-                left: preview ? '0px' :`${position.x}px`,
-                top: preview ? '0px' :`${position.y}px`,
+                left: preview ? '0px' : `${position.x}px`,
+                top: preview ? '0px' : `${position.y}px`,
             }}
             title={node.category + ' > ' + node.name}
             data-type="node"
             data-node-id={node.id}
         >
-            <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed} />
-            <GlobeAltIcon className={'w-10 h-10'} />
-            <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed} />
+            <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
+            {node?.icon ? (
+                <NodeIcon icon={node.icon} className={'max-w-10 max-h-10'} />
+                ) : (
+                <GlobeAltIcon className={'w-10 h-10'} />
+            )}
+            <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
         </div>
     );
 };

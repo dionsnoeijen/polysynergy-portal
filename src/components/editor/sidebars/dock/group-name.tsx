@@ -2,16 +2,18 @@ import React from "react";
 
 import { Input } from "@/components/input";
 import { Field, Fieldset, Label } from "@/components/fieldset";
-import useGroupsStore, { Group } from "@/stores/groupStore";
+import useNodesStore from "@/stores/nodesStore";
 
 type Props = { group: Group };
 
 const GroupName: React.FC<Props> = ({ group }): React.ReactElement => {
-    const { updateGroup } = useGroupsStore();
+    const { updateNode, getNode } = useNodesStore();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateGroup(group.id, { name: e.target.value });
+        updateNode(group.id, { name: e.target.value });
     };
+
+    const node = getNode(group.id);
 
     return (
         <Fieldset>
@@ -19,7 +21,7 @@ const GroupName: React.FC<Props> = ({ group }): React.ReactElement => {
             <Field>
                 <Input
                     type="text"
-                    value={group.name}
+                    value={node.name}
                     onChange={handleChange}
                     placeholder="name"
                 />

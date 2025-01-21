@@ -8,19 +8,19 @@ export function interpretNodeVariableType(variable: NodeVariable): { baseType: N
         return { baseType: NodeVariableType.Number, containsNone };
     } else if (types.includes('str')) {
 
-        if (variable.dock_field_secret) {
+        if (variable?.dock.field_secret) {
             return { baseType: NodeVariableType.SecretString, containsNone };
         }
 
-        if (variable.dock_field_text_area) {
+        if (variable?.dock.field_text_area) {
             return { baseType: NodeVariableType.TextArea, containsNone };
         }
 
-        if (variable.dock_field_rich_text_area) {
+        if (variable?.dock.field_rich_text_area) {
             return { baseType: NodeVariableType.RichTextArea, containsNone };
         }
 
-        if (variable.dock_field_code_editor) {
+        if (variable?.dock.field_code_editor) {
             return { baseType: NodeVariableType.Code, containsNone };
         }
 

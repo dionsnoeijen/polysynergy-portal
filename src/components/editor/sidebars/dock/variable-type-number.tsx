@@ -31,9 +31,9 @@ const VariableTypeNumber: React.FC<Props> = ({nodeId, variable}): React.ReactEle
         <Fieldset>
             <Label>{variable.handle}</Label>
             <Field>
-                {variable.dock_select_values ? (
+                {variable.dock.select_values ? (
                     <Select onChange={handleChange} defaultValue={value}>
-                        {Object.entries(variable.dock_select_values).map(([key, v]) => (
+                        {Object.entries(variable.dock.select_values).map(([key, v]) => (
                             <option key={key} value={key}>
                                 {v}
                             </option>

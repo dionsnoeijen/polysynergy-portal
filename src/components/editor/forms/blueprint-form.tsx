@@ -5,35 +5,14 @@ import {Button} from "@/components/button";
 import {FormType} from "@/types/types";
 import {Input} from "@/components/input";
 import useEditorStore from "@/stores/editorStore";
-import useNodesStore from "@/stores/nodesStore";
 import {Text} from "@/components/text";
 import SvgSelector from "@/components/editor/forms/service/svg-selector";
-import Node from "@/components/editor/nodes/node";
 
-const ServiceForm: React.FC = () => {
+const BlueprintForm: React.FC = () => {
     const { closeForm, formType, formEditRecordId, selectedNodes } = useEditorStore();
-    const { getNode } = useNodesStore();
 
     const [name, setName] = useState("");
     const [icon, setIcon] = useState("");
-
-    // useEffect(() => {
-        const node = getNode(selectedNodes[0]);
-        const clonedNode = structuredClone(node);
-
-        clonedNode.icon = icon;
-        clonedNode.service_id = 'service';
-    // }, [getNode, icon, selectedNodes]);
-
-    if (selectedNodes.length > 1) {
-        console.log('MULTIPLE NODES SELECTED, MAKE SURE THE FORM DOES NOT LOAD AT ALL');
-        return null;
-    }
-
-    if (selectedNodes.length === 0) {
-        console.log('NO NODES SELECTED, MAKE SURE THE FORM DOES NOT LOAD AT ALL');
-        return null;
-    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,7 +20,7 @@ const ServiceForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} method={'post'} className={'p-10'}>
-            <Heading>{formType === FormType.AddService ? "Add " : "Edit "} Service</Heading>
+            <Heading>{formType === FormType.AddBlueprint ? "Add " : "Edit "} Blueprint</Heading>
 
             <Divider className="my-10" soft bleed/>
 
@@ -65,7 +44,7 @@ const ServiceForm: React.FC = () => {
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">
                     <Subheading>Category</Subheading>
-                    <Text>Give a category so your service can be found</Text>
+                    <Text>Give a category so your blueprint can be found</Text>
                 </div>
                 <div>
                     <Input
@@ -91,28 +70,16 @@ const ServiceForm: React.FC = () => {
 
             <Divider className="my-10" soft bleed/>
 
-            <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
-                <div className="space-y-1">
-                    <Subheading>Node</Subheading>
-                    <Text>Service preview</Text>
-                </div>
-                <div>
-                    <Node node={clonedNode} preview={true}/>
-                </div>
-            </section>
-
-            <Divider className="my-10" soft bleed/>
-
             <div className="flex justify-end gap-4">
                 <Button type="button" onClick={() => closeForm()} plain>
                     Cancel
                 </Button>
                 <Button type="submit">
-                    {formType === FormType.AddService ? "Create service" : "Update service"}
+                    {formType === FormType.AddBlueprint ? "Create blueprint" : "Update blueprint"}
                 </Button>
             </div>
         </form>
     );
 }
 
-export default ServiceForm;
+export default BlueprintForm;

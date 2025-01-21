@@ -5,6 +5,7 @@ import RouteTree from "@/components/editor/sidebars/routes/route-tree";
 import SidebarTenantHeader from "@/components/sidebar/sidebar-tenant-header";
 import ScheduleTree from "@/components/editor/sidebars/schedules/schedule-tree";
 import ServiceTree from "@/components/editor/sidebars/services/service-tree";
+import BlueprintTree from "@/components/editor/sidebars/blueprints/blueprint-tree";
 
 export default function ItemManager({
     className,
@@ -18,6 +19,7 @@ export default function ItemManager({
             <RouteTree />
             <ScheduleTree />
             <ServiceTree />
+            <BlueprintTree />
         </div>
     );
 }

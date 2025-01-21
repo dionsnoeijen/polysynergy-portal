@@ -8,18 +8,22 @@ import ServiceTree from "@/components/editor/sidebars/services/service-tree";
 import BlueprintTree from "@/components/editor/sidebars/blueprints/blueprint-tree";
 
 export default function ItemManager({
-    className,
-    toggleClose,
-    ...props
-}: React.ComponentPropsWithoutRef<'div'> & { toggleClose: () => void }): ReactElement {
+                                        className,
+                                        toggleClose,
+                                        ...props
+                                    }: React.ComponentPropsWithoutRef<'div'> & {
+    toggleClose: () => void
+}): ReactElement {
     return (
-        <div {...props} className={clsx(className, 'absolute left-0 top-0 right-0 bottom-0')}>
-            <SidebarTenantHeader />
-            <Heading arrowToLeft={false} toggleClose={toggleClose}>Item manager</Heading>
-            <RouteTree />
-            <ScheduleTree />
-            <ServiceTree />
-            <BlueprintTree />
+        <div {...props} className={clsx(className, 'absolute left-0 top-0 right-0 bottom-0 flex flex-col')}>
+            <div className="flex-grow overflow-y-auto">
+                <Heading arrowToLeft={false} toggleClose={toggleClose}>Item manager</Heading>
+                <RouteTree/>
+                <ScheduleTree/>
+                <ServiceTree/>
+                <BlueprintTree/>
+            </div>
+            <SidebarTenantHeader/>
         </div>
     );
 }

@@ -46,6 +46,9 @@ export const ThreeWaySwitch: React.FC<ThreeWaySwitchProps> = ({
         },
         className
       )}
+      style={{
+          minWidth: '2.75rem'
+      }}
     >
       <span
         aria-hidden="true"

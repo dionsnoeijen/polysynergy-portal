@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useRef } from "react";
 import useEditorStore from "@/stores/editorStore";
-import useConnectionsStore, { Connection } from "@/stores/connectionsStore";
+import useConnectionsStore from "@/stores/connectionsStore";
+import {Connection} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 import { updateNodesDirectly } from "@/utils/updateNodesDirectly";

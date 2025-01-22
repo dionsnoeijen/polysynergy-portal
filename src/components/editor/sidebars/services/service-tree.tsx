@@ -6,16 +6,18 @@ import useServicesStore from "@/stores/servicesStore";
 import useEditorStore from "@/stores/editorStore";
 
 export default function ServiceTree(): ReactElement {
-    const { services } = useServicesStore();
+    const { services, fetchServices } = useServicesStore();
     const { openForm, formEditRecordId, activeServiceId, selectedNodes } = useEditorStore();
 
     const [addDisabled, setAddDisabled] = React.useState(true);
 
     useEffect(() => {
         setAddDisabled(!(selectedNodes.length === 1));
-
-        // Fetch services
     }, [selectedNodes]);
+
+    useEffect(() => {
+        fetchServices();
+    }, [fetchServices]);
 
     return (
         <TreeList

@@ -5,6 +5,31 @@ declare global {
     }
 }
 
+export type Connection = {
+    id: string;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    sourceNodeId: string;
+    sourceHandle: string;
+    targetNodeId?: string;
+    targetHandle?: string;
+    collapsed?: boolean;
+    hidden?: boolean;
+    disabled?: boolean;
+    targetGroupId?: string;
+    sourceGroupId?: string;
+    isInGroup?: string;
+};
+
+export type Group = {
+    id: string;
+    isOpen: boolean;
+    isHidden: boolean;
+    nodes: string[];
+};
+
 export enum NodeEnabledConnector {
     Node = 'node'
 }
@@ -112,9 +137,16 @@ export type NodeView = {
     isOpenMap?: { [key: string]: boolean };
 };
 
+export type NodeService = {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+};
+
 export type Node = {
     id: string;
-    service_id?: string;
+    service?: NodeService;
     icon?: string;
     name: string;
     category: string;
@@ -148,10 +180,15 @@ export type Schedule = {
     project_id?: string;
 };
 
+export type Metadata = {
+    category: string;
+    description?: string;
+};
+
 export type Blueprint = {
     id?: string;
     name: string;
-    icon?: string;
+    metadata: Metadata;
     category: string;
     nodes: Node[]
 };
@@ -159,9 +196,8 @@ export type Blueprint = {
 export type Service = {
     id?: string;
     name: string;
-    icon?: string;
-    subCategory: string;
-    nodes: Node[]
+    metadata: Metadata;
+    node_setup: NodeSetup;
 };
 
 export enum HttpMethod {
@@ -177,14 +213,18 @@ export interface NodeSetup {
     name?: string | null;
     deleted_at?: string | null;
     published_version?: NodeSetupVersion | null;
-    versions: NodeSetupVersion[];
+    content: NodeSetupVersion[];
 }
 
 export interface NodeSetupVersion {
     id: string;
     version_number: number;
     created_at: string;
-    content: Node[];
+    content: {
+        nodes: Node[],
+        connections: Connection[],
+        groups: Group[],
+    };
     published: boolean;
     created_by?: string | null;
 }

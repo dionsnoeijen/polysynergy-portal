@@ -1,7 +1,8 @@
 import useGroupsStore from "@/stores/groupStore";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-import useConnectionsStore, {Connection} from "@/stores/connectionsStore";
+import useConnectionsStore from "@/stores/connectionsStore";
+import {Connection} from "@/types/types";
 import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 import {getNodeBoundsFromDOM, getNodeBoundsFromState} from "@/utils/positionUtils";
 import {updateNodesDirectly} from "@/utils/updateNodesDirectly";
@@ -139,82 +140,6 @@ const useGrouping = () => {
         showGroup(groupId);
         disableAllNodesViewExceptByIds([...selectedNodes]);
     };
-
-    // const createGroup = () => {
-    //     if (selectedNodes.length < 2) return;
-    //
-    //     const bounds = getNodeBoundsFromState(selectedNodes);
-    //
-    //     const width = bounds.maxX - bounds.minX;
-    //     const height = bounds.maxY - bounds.minY;
-    //
-    //     const nodesCenterX = bounds.minX + (width / 2);
-    //     const nodesCenterY = bounds.minY + (height / 2);
-    //
-    //     const groupId = addGroup({nodes: selectedNodes});
-    //
-    //     // 1: Remove connections that fall outside the group
-    //     // those are the connections that make a connection to a node that is not in the
-    //     // selected nodes array. If the selected node array contains a group, make sure the connections
-    //     // that are inside this group, are not removed. This can be done by checking the visibility status
-    //     // of the connection. Since an invisible connection, should not be removed.
-    //
-    //     const connectionsToRemove: Connection[] = [];
-    //     const connectionsToAssignToGroup: Connection[] = [];
-    //
-    //     selectedNodes.forEach((nodeId) => {
-    //         const inCon = findInConnectionsByNodeId(nodeId, true, false);
-    //         const outCon = findOutConnectionsByNodeId(nodeId, true, false);
-    //
-    //         connectionsToAssignToGroup.push(...inCon, ...outCon);
-    //
-    //         const filterOutside = (connection: Connection) => {
-    //             const sourceInside =
-    //                 selectedNodes.includes(connection.sourceNodeId) ||
-    //                 (connection.sourceGroupId && selectedNodes.includes(connection.sourceGroupId)) ||
-    //                 (connection.sourceGroupId === groupId);
-    //
-    //             const targetInside =
-    //                 selectedNodes.includes(connection.targetNodeId as string) ||
-    //                 (connection.targetGroupId && selectedNodes.includes(connection.targetGroupId)) ||
-    //                 (connection.targetGroupId === groupId);
-    //             const isGroupToNodeOrGroup =
-    //                 (connection.sourceGroupId && selectedNodes.includes(connection.targetNodeId as string)) ||
-    //                 (connection.targetGroupId && selectedNodes.includes(connection.sourceNodeId));
-    //             return !(sourceInside && targetInside) && !isGroupToNodeOrGroup;
-    //         };
-    //         connectionsToRemove.push(
-    //             ...inCon.filter(filterOutside),
-    //             ...outCon.filter(filterOutside)
-    //         );
-    //     });
-    //
-    //     const connectionsRemaining = Array.from(new Set(connectionsToAssignToGroup))
-    //         .filter(
-    //             (con) => !connectionsToRemove.includes(con)
-    //         );
-    //
-    //     removeConnections(connectionsToRemove);
-    //
-    //     // 2: Update connections that fall inside the group with the new group id
-    //     // those are the remaining visible connections that are inside the group, after
-    //     // the removal of the outside connections
-    //
-    //     connectionsRemaining.forEach((connection) => {
-    //         updateConnection({
-    //             ...connection,
-    //             isInGroup: groupId
-    //         });
-    //     });
-    //
-    //     setOpenGroup(groupId);
-    //     addGroupNode({
-    //         id: groupId,
-    //         view: {x: nodesCenterX - 100, y: nodesCenterY - 100, width: 200, height: 200, collapsed: false}
-    //     });
-    //     setSelectedNodes([]);
-    //     disableAllNodesViewExceptByIds([...selectedNodes]);
-    // };
 
     const closeGroup = (
         groupId: string,

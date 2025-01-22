@@ -23,6 +23,7 @@ import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable"
 import {Button} from "@/components/button";
 import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
 import NodeIcon from "@/components/editor/nodes/node-icon";
+import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
 
 const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {size, handleResizeMouseDown} = useResizable(node);
@@ -60,7 +61,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const getColorForNodeType = () => {
         let classList = '';
 
-        if (node.service_id) {
+        if (node.service && node.service.id) {
             classList += "ring-purple-500 dark:ring-purple-500";
         } else {
             if (node.category === NodeType.Mock) {
@@ -141,7 +142,9 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                     <NodeIcon icon={node.icon} className={'border bg-white border-white/50 ml-3'} />
                 )}
                 <h3 className={`font-bold truncate ${node.has_enabled_switch ? 'ml-2' : 'ml-0'} text-sky-600 dark:text-white`}>
-                    {node.name}
+                    {node.service
+                      ? (node.service.name.trim() === '' ? '...' : node.service.name)
+                      : node.name}
                 </h3>
                 {isCollapsable() && (
                     <Button
@@ -152,6 +155,9 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             </div>
             <div className="flex flex-col w-full items-start overflow-visible">
                 <div className="w-full">
+                    {node.service && node.service.id && (
+                        <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon} />
+                    )}
                     {node.variables.map((variable) => {
                         const type = interpretNodeVariableType(variable);
                         const isOpen = getNodeVariableOpenState(node.id, variable.handle);

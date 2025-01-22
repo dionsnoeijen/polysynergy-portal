@@ -1,25 +1,7 @@
 import { create } from 'zustand';
 import useGroupsStore from "@/stores/groupStore";
-import {NodeEnabledConnector} from "@/types/types";
+import {Connection, NodeEnabledConnector} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
-
-export type Connection = {
-    id: string;
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
-    sourceNodeId: string;
-    sourceHandle: string;
-    targetNodeId?: string;
-    targetHandle?: string;
-    collapsed?: boolean;
-    hidden?: boolean;
-    disabled?: boolean;
-    targetGroupId?: string;
-    sourceGroupId?: string;
-    isInGroup?: string;
-};
 
 type ConnectionsStore = {
     connections: Connection[];

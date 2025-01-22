@@ -5,7 +5,7 @@ const NodeIcon = ({ className, icon }: { className?: string; icon: string }) => 
   return (
     <div
       className={clsx(
-        "rounded flex items-center justify-center overflow-hidden max-h-6 max-w-6",
+        "rounded inline-flex items-center justify-center overflow-hidden max-h-6 max-w-6",
         className,
       )}
     >

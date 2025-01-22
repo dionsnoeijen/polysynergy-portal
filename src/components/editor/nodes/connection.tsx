@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useLayoutEffect, useState } from "react";
-import { Connection as ConnectionProps } from "@/stores/connectionsStore";
+import {Connection as ConnectionProps} from "@/types/types";
 import { useTheme } from "next-themes";
 
 type Props = {

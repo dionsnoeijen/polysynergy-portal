@@ -1,12 +1,6 @@
 import {create} from 'zustand';
 import {v4 as uuidv4} from "uuid";
-
-export type Group = {
-    id: string;
-    isOpen: boolean;
-    isHidden: boolean;
-    nodes: string[];
-};
+import {Group} from "@/types/types";
 
 type GroupsStore = {
     groups: Record<string, Group>;

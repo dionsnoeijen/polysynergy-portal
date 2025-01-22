@@ -1,7 +1,6 @@
 import { create } from 'zustand';
-import { Connection } from "@/stores/connectionsStore";
+import {Connection, Group} from "@/types/types";
 import { Node } from "@/types/types";
-import { Group } from "@/stores/groupStore";
 
 type HistoryEntry = {
     nodes: Node[];

@@ -1,7 +1,7 @@
 import { calculateConnectorPositionByAttributes } from "@/utils/positionUtils";
 import { InOut, Position } from "@/types/types";
-import { Connection } from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
+import {Connection} from "@/types/types";
 
 export const updateConnectionsDirectly = (
     connections: Array<Connection>,

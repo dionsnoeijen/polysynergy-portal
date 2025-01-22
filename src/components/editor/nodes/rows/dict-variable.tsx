@@ -27,7 +27,7 @@ const DictVariable: React.FC<Props> = ({
                                            groupId,
                                            isMirror = false,
                                        }) => (
-    <div>
+    <>
         <div
             className={`flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative ${disabled && 'select-none opacity-0'}`}>
             {variable.has_in && isMirror && !onlyOut && (
@@ -111,7 +111,7 @@ const DictVariable: React.FC<Props> = ({
                     )}
                 </div>
             ))}
-    </div>
+    </>
 );
 
 export default DictVariable;

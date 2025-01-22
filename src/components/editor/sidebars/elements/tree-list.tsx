@@ -9,6 +9,7 @@ type ListProps<T extends ListItemWithId> = {
     formEditingItem?: null | string;
     renderItem: (item: T) => React.ReactNode;
     addButtonClick?: () => void;
+    addDisabled?: boolean;
     title?: string;
 };
 
@@ -18,6 +19,7 @@ export default function TreeList<T extends ListItemWithId>({
     formEditingItem = null,
     renderItem,
     addButtonClick,
+    addDisabled = false,
     title = "List",
 }: ListProps<T>): React.JSX.Element {
     const [isOpen, setIsOpen] = useState(true);
@@ -78,6 +80,7 @@ export default function TreeList<T extends ListItemWithId>({
         {addButtonClick && (
             <div className={'mt-[10px]'}>
                 <Button
+                    disabled={addDisabled}
                     onClick={addButtonClick}
                     plain
                     className="w-full hover:cursor-pointer p-0 border border-dotted border-white/50"

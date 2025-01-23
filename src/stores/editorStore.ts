@@ -70,6 +70,8 @@ type EditorState = {
     setActiveServiceId: (serviceId: string) => void;
     activeBlueprintId: string;
     setActiveBlueprintId: (blueprintId: string) => void;
+    activeVersionId?: string;
+    setActiveVersionId: (versionId: string) => void;
 
     editingRouteVersions: { [routeId: string]: string };
     setEditingRouteVersion: (routeId: string, versionId: string) => void;
@@ -89,6 +91,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
     formType: null,
     formEditVariable: null,
     formEditRecordId: null,
+
     activeProjectId: '',
     setActiveProjectId: (projectId: string) => set({activeProjectId: projectId}),
     activeRouteId: '',
@@ -99,6 +102,9 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setActiveServiceId: (serviceId: string) => set({activeServiceId: serviceId}),
     activeBlueprintId: '',
     setActiveBlueprintId: (blueprintId: string) => set({activeBlueprintId: blueprintId}),
+    activeVersionId: '',
+    setActiveVersionId: (versionId: string) => set({activeVersionId: versionId}),
+
     openForm: (type: FormType, formEditRecordId: null | string = null, variable?: NodeVariable | null) => set({
         showForm: true,
         formType: type,

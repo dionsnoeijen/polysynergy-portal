@@ -25,7 +25,7 @@ export default function RouteTree(): ReactElement {
             renderItem={(route) => (
                 <>
                     <Link href={`/project/${activeProjectId}/route/${route.id}`}
-                       title={`${route.method}: /${formatSegments(route.segments)}`}
+                       title={`${route.method}: /${formatSegments(route.segments)} - ${route.id}`}
                        className={`block flex-1 truncate dark:hover:text-white pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
                     >
                         <b className="dark:text-white">{route.method}</b>: /{formatSegments(route.segments)}

@@ -158,7 +158,7 @@ export default function Editor() {
                     <Node key={node.id} node={node} />
                 ))}
 
-                {connections
+                {connections && connections
                     .filter((connection) => !connection.hidden)
                     .map((connection) => (
                         <Connection

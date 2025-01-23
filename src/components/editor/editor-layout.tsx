@@ -12,7 +12,7 @@ import BottomBar from "@/components/editor/bottombars/bottom-bar";
 import ContextMenu from "@/components/editor/context-menu";
 import dynamic from 'next/dynamic';
 import VersionPublishedMenu from "@/components/editor/editormenus/version-published-menu";
-import useNodesStore from "@/stores/nodesStore";
+import fetchAndApplyNodeSetup from "@/utils/fetchNodeSetup";
 
 const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
@@ -43,9 +43,14 @@ export function EditorLayout({
     const [dockClosed, setDockClosed] = useState(false);
     const [outputClosed, setOutputClosed] = useState(false);
 
-    const {showForm, setActiveProjectId, setActiveRouteId, setActiveScheduleId, closeFormMessage} = useEditorStore();
-
-    const {fetchDynamicRouteNodeSetupContent, currentRouteData} = useNodesStore();
+    const {
+        showForm,
+        setActiveProjectId,
+        setActiveRouteId,
+        setActiveScheduleId,
+        activeVersionId,
+        closeFormMessage
+    } = useEditorStore();
 
     useEffect(() => {
         setHeight({horizontalEditorLayout: window.innerHeight * 0.85});
@@ -54,7 +59,7 @@ export function EditorLayout({
         setActiveProjectId(projectUuid || '');
         if (routeUuid) {
             setActiveRouteId(routeUuid);
-            fetchDynamicRouteNodeSetupContent(routeUuid);
+            fetchAndApplyNodeSetup(routeUuid);
         }
         if (scheduleUuid) {
             setActiveScheduleId(scheduleUuid);
@@ -184,12 +189,12 @@ export function EditorLayout({
                             <Form />
                         ) : (
                             projectUuid && routeUuid ? (
-                                currentRouteData ? (
+                                activeVersionId ? (
                                     <>
                                         <Editor />
                                         <SelectionsMenu />
                                         <UndoRedoMenu />
-                                        <VersionPublishedMenu routeData={currentRouteData} />
+                                        <VersionPublishedMenu routeData={null} />
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">

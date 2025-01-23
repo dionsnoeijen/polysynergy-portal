@@ -6,9 +6,9 @@ import {updateNodeSetupVersionAPI} from "@/api/nodeSetupsApi";
 import {State, StoreName} from "@/types/types";
 
 export default function useGlobalStoreListenersWithImmediateSave() {
-    const {nodes, currentRouteData} = useNodesStore();
+    const {nodes} = useNodesStore();
     const {connections} = useConnectionsStore();
-    const {activeRouteId, activeScheduleId} = useEditorStore();
+    const {activeRouteId, activeScheduleId, activeVersionId} = useEditorStore();
     const debounceInterval = 3000;
     const latestStates: Record<StoreName, State> = {
         nodes,
@@ -19,10 +19,16 @@ export default function useGlobalStoreListenersWithImmediateSave() {
 
     const saveNodeSetup = () => {
         try {
-            if (activeRouteId) {
+            console.log('Saving node setup',
+                'activeRouteId', activeRouteId,
+                'activeVersionId', activeVersionId
+            );
+
+            if (activeRouteId && activeVersionId) {
+
                 updateNodeSetupVersionAPI(
                     activeRouteId,
-                    currentRouteData?.node_setup?.versions[0].id as string,
+                    activeVersionId,
                     latestStates,
                     'route'
                 );
@@ -64,5 +70,5 @@ export default function useGlobalStoreListenersWithImmediateSave() {
             if (debounceTimeout) clearTimeout(debounceTimeout);
         };
         // eslint-disable-next-line
-    }, []);
+    }, [activeRouteId, activeVersionId, activeScheduleId]);
 }

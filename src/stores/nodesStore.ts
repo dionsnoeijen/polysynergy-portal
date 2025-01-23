@@ -33,7 +33,7 @@ type NodesStore = {
     getNodesToRender: () => Node[];
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => void;
     getTrackedNode: () => Node | null;
-    fetchDynamicRouteNodeSetupContent: (routeId: string) => Promise<void> | undefined;
+    initNodes: (nodes: Node[]) => void;
 
     openGroup: (nodeId: string) => void;
     isNodeInGroup: (nodeId: string) => string | null;
@@ -352,6 +352,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     getNodesToRender: (): Node[] => {
+        if (!get().nodes) return [];
+
         const nodeIdsOfNodesInClosedGroups = get()
             .getAllNodeIdsOfNodesThatAreInAClosedGroup();
 
@@ -521,6 +523,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     getOpenGroups: () => {
+        if (!get().nodes) return [];
         const state = get();
         return state.nodes.filter(
             (node) => node.type === NodeType.Group && node.group?.isOpen
@@ -577,42 +580,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    fetchDynamicRouteNodeSetupContent: async (routeId: string) => {
-        const route: Route = await fetchDynamicRouteAPI(routeId);
-        if (!route.id) {
-            console.error('Failed to fetch dynamic route:', route);
-            return;
-        }
-        set({currentRouteData: route});
-
-        const {editingRouteVersions} = useEditorStore.getState();
-        const editingCurrentRouteVersion = editingRouteVersions[route.id];
-
-        if (editingCurrentRouteVersion) {
-            const version = route.node_setup?.versions.find(
-                (v) => v.id === editingCurrentRouteVersion
-            );
-            if (version) {
-                set({nodes: version.content.nodes});
-                return;
-            }
-        }
-
-        const publishedVersion = route.node_setup?.versions.find(
-            (v: NodeSetupVersion) => v.id === route.node_setup?.published_version?.id
-        );
-        if (publishedVersion) {
-            set({nodes: publishedVersion.content.nodes});
-        } else {
-            const latestVersion = route.node_setup?.versions.reduce((prev, curr) =>
-                prev.version_number > curr.version_number ? prev : curr
-            );
-            if (latestVersion) {
-                set({nodes: latestVersion.content.nodes});
-            }
-        }
-
-        set({nodes: []});
+    initNodes: (nodes: Node[]) => {
+        set({nodes});
     },
 }));
 

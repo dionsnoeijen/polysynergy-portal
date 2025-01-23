@@ -30,6 +30,7 @@ type ConnectionsStore = {
         targetHandle?: string
     ) => void;
     clearConnections: () => void;
+    initConnections: (connections: Connection[]) => void;
 };
 
 const memoizedResults = new Map();
@@ -323,6 +324,10 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
     clearConnections: () => {
         set({ connections: [] });
     },
+
+    initConnections: (connections: Connection[]) => {
+        set({ connections });
+    }
 }));
 
 export default useConnectionsStore;

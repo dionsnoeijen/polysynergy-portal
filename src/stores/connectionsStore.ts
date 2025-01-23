@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-import useGroupsStore from "@/stores/groupStore";
-import {Connection, NodeEnabledConnector} from "@/types/types";
+import {Connection, NodeEnabledConnector, Node} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 
 type ConnectionsStore = {
@@ -19,9 +18,9 @@ type ConnectionsStore = {
     showAllConnections: () => void;
     hideConnectionsByIds: (connectionIds: string[]) => void;
     showConnectionsByIds: (connectionIds: string[]) => void;
-    showConnectionsInsideOpenGroup: (groupId: string) => Connection[];
-    showConnectionsOutsideGroup: () => Connection[];
-    getConnectionsForOpenGroup: (groupId: string) => Connection[];
+    showConnectionsInsideOpenGroup: (group: Node) => Connection[];
+    showConnectionsOutsideGroup: (groupId: string) => Connection[];
+    getConnectionsForOpenGroup: (group: Node) => Connection[];
     updateConnectionEnd: (
         connectionId: string,
         endX: number,
@@ -87,8 +86,6 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
         if (connection.targetHandle === NodeEnabledConnector.Node) {
             if (!connection.targetNodeId) return;
-
-            console.log('REMOVING CONNECTION');
 
             useNodesStore.getState().enableNode(connection.targetNodeId);
         }
@@ -252,17 +249,19 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         }));
     },
 
-    showConnectionsOutsideGroup: (): Connection[] => {
+    showConnectionsOutsideGroup: (groupId: string): Connection[] => {
         memoizedResults.clear();
+
         useConnectionsStore.getState().showAllConnections();
 
-        const groups = useGroupsStore.getState().groups;
+        const group = useNodesStore.getState().getGroupById(groupId);
         const allConnectionsToHide: Connection[] = [];
+        if (!group) return [];
 
-        Object.keys(groups).forEach((groupId) => {
-            const groupConnections = useConnectionsStore.getState().getConnectionsForOpenGroup(groupId);
-            allConnectionsToHide.push(...groupConnections);
-        });
+        const groupConnections = useConnectionsStore
+            .getState()
+            .getConnectionsForOpenGroup(group);
+        allConnectionsToHide.push(...groupConnections);
 
         useConnectionsStore.getState().hideConnectionsByIds(allConnectionsToHide.map((c) => c.id));
 
@@ -272,25 +271,25 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         );
     },
 
-    showConnectionsInsideOpenGroup: (groupId: string): Connection[] => {
+    showConnectionsInsideOpenGroup: (group: Node): Connection[] => {
         memoizedResults.clear();
         useConnectionsStore.getState().hideAllConnections();
-        const showConnections = useConnectionsStore.getState().getConnectionsForOpenGroup(groupId);
+        const showConnections = useConnectionsStore
+            .getState()
+            .getConnectionsForOpenGroup(group);
 
         useConnectionsStore.getState().showConnectionsByIds(showConnections.map((c) => c.id));
         return showConnections;
     },
 
-    getConnectionsForOpenGroup: (groupId: string): Connection[] => {
+    getConnectionsForOpenGroup: (group: Node): Connection[] => {
         memoizedResults.clear();
-        const group = useGroupsStore.getState().getGroupById(groupId);
-        if (!group || !Array.isArray(group.nodes) || group.nodes.length === 0) {
-            return [];
-        }
+
+        if (!group.group || !group.group.nodes) return [];
 
         const uniqueConnections = new Map<string, Connection>();
 
-        group.nodes.forEach((nodeId) => {
+        group.group.nodes.forEach((nodeId) => {
             const inConnections = useConnectionsStore
                 .getState()
                 .findInConnectionsByNodeId(nodeId, true);
@@ -308,9 +307,10 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
         const allConnections = Array.from(uniqueConnections.values());
 
-        const connectionsInOpenGroup = allConnections.filter((connection) => (
-            connection.isInGroup === groupId
-        ));
+        const connectionsInOpenGroup =
+            allConnections.filter((connection) => (
+                connection.isInGroup === group.id
+            ));
 
         if (!connectionsInOpenGroup || connectionsInOpenGroup.length === 0) {
             return [];

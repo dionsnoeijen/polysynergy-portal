@@ -22,12 +22,18 @@ export type Connection = {
     sourceGroupId?: string;
     isInGroup?: string;
 };
+//
+// export type Group = {
+//     id: string;
+//     isOpen: boolean;
+//     isHidden: boolean;
+//     nodes: string[];
+// };
 
 export type Group = {
-    id: string;
-    isOpen: boolean;
-    isHidden: boolean;
-    nodes: string[];
+    isOpen?: boolean;
+    isHidden?: boolean;
+    nodes?: string[];
 };
 
 export enum NodeEnabledConnector {
@@ -155,6 +161,7 @@ export type Node = {
     variables: NodeVariable[];
     enabled?: boolean;
     driven?: boolean;
+    group?: Group;
     has_play_button?: boolean;
     has_enabled_switch?: boolean;
 };
@@ -213,7 +220,7 @@ export interface NodeSetup {
     name?: string | null;
     deleted_at?: string | null;
     published_version?: NodeSetupVersion | null;
-    content: NodeSetupVersion[];
+    versions: NodeSetupVersion[];
 }
 
 export interface NodeSetupVersion {
@@ -303,4 +310,4 @@ export interface State {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
-export type StoreName = 'nodes' | 'connections' | 'groups';
+export type StoreName = 'nodes' | 'connections';

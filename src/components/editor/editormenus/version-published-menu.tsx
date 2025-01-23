@@ -14,7 +14,7 @@ type VersionPublishedMenuProps = {
 
 export default function VersionPublishedMenu({routeData}: VersionPublishedMenuProps) {
     const {editingRouteVersions, setEditingRouteVersion} = useEditorStore();
-    const {fetchDynamicRouteNodeSetupContent} = useNodesStore();
+    // const {fetchDynamicRouteNodeSetupContent} = useNodesStore();
     const [selectedVersionId, setSelectedVersionId] = useState<string>('');
 
     useEffect(() => {
@@ -39,7 +39,7 @@ export default function VersionPublishedMenu({routeData}: VersionPublishedMenuPr
         setSelectedVersionId(newVersionId);
         if (!routeData || !routeData.id) return;
         setEditingRouteVersion(routeData.id, newVersionId);
-        fetchDynamicRouteNodeSetupContent(routeData.id);
+        // fetchDynamicRouteNodeSetupContent(routeData.id);
     };
 
     const handlePublish = () => {

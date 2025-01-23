@@ -13,7 +13,6 @@ import Node from "@/components/editor/nodes/node";
 import useNodesStore from "@/stores/nodesStore";
 import Connection from "@/components/editor/nodes/connection";
 import BoxSelect from "@/components/editor/box-select";
-import useGroupsStore from "@/stores/groupStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import OpenGroup from "@/components/editor/nodes/open-group";
 import DeleteDialog from "@/components/editor/nodes/delete-dialog";
@@ -35,9 +34,8 @@ export default function Editor() {
         setShowAddingNode,
         openContextMenu
     } = useEditorStore();
-    const { getNodesToRender } = useNodesStore();
+    const { getNodesToRender, getOpenGroups } = useNodesStore();
     const { connections } = useConnectionsStore();
-    const { getOpenGroups } = useGroupsStore();
 
     const { handleDeleteSelectedNodes } = useDeleteNode();
     const { handleZoom } = useZoom();
@@ -153,7 +151,7 @@ export default function Editor() {
                 <PointZeroIndicator />
 
                 {getOpenGroups().map((group) => (
-                    <OpenGroup key={group.id} group={group} />
+                    <OpenGroup key={group.id} node={group} />
                 ))}
 
                 {nodesToRender.map((node) => (

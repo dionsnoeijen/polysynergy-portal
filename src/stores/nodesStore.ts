@@ -1,14 +1,11 @@
 import {create} from 'zustand';
 import {v4 as uuidv4} from "uuid";
-import {Node, NodeSetupVersion, NodeType, NodeVariable, NodeView, Route} from "@/types/types";
+import {Group, Node, NodeSetupVersion, NodeType, NodeVariable, NodeView, Route} from "@/types/types";
 import {fetchDynamicRoute as fetchDynamicRouteAPI} from "@/api/dynamicRoutesApi";
-import useGroupsStore from "@/stores/groupStore";
 import useEditorStore from "@/stores/editorStore";
 
 type NodesStore = {
     nodes: Node[];
-    currentRouteData?: Route;
-    setCurrentRouteData: (route: Route) => void;
     enableAllNodesView: () => void;
     enableNodesView: (nodeIds: string[]) => void;
     disableAllNodesViewExceptByIds: (nodeIds: string[]) => void;
@@ -37,6 +34,21 @@ type NodesStore = {
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => void;
     getTrackedNode: () => Node | null;
     fetchDynamicRouteNodeSetupContent: (routeId: string) => Promise<void> | undefined;
+
+    openGroup: (nodeId: string) => void;
+    isNodeInGroup: (nodeId: string) => string | null;
+    closeGroup: (nodeId: string) => void;
+    hideGroup: (nodeId: string) => void;
+    showGroup: (nodeId: string) => void;
+    removeGroup: (nodeId: string) => void;
+    addNodeToGroup: (nodeId: string, nodeToAddId: string) => void;
+    removeNodeFromGroup: (nodeId: string, nodeToAddId: string) => void;
+    getOpenGroups: () => Node[];
+    getClosedGroups: () => Node[];
+    getNodesInGroup: (nodeId: string) => string[];
+    getGroupById: (nodeId: string) => Node | undefined;
+    getAllNodeIdsOfNodesThatAreInAClosedGroup: () => string[];
+    updateGroup: (nodeId: string, group: Partial<Group>) => void;
 };
 
 const nodesByIdsCache = new Map<string, Node[]>();
@@ -55,10 +67,6 @@ export const createDefaultNode = (overrides = {}): Node => ({
 
 const useNodesStore = create<NodesStore>((set, get) => ({
     nodes: [],
-    currentRouteData: undefined,
-    setCurrentRouteData: (route: Route) => {
-        set({currentRouteData: route});
-    },
     trackedNodeId: null,
 
     toggleNodeViewCollapsedState: (nodeId: string) => {
@@ -76,7 +84,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             ),
         }));
     },
-    
+
     toggleNodeVariableOpenState: (nodeId: string, variableHandle: string) => {
         set((state) => ({
             nodes: state.nodes.map((node) =>
@@ -344,8 +352,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     getNodesToRender: (): Node[] => {
-        const nodeIdsOfNodesInClosedGroups = useGroupsStore
-            .getState()
+        const nodeIdsOfNodesInClosedGroups = get()
             .getAllNodeIdsOfNodesThatAreInAClosedGroup();
 
         return get().nodes.filter(
@@ -397,6 +404,179 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         return nodes.find((node) => node.id === trackedNodeId) || null;
     },
 
+    openGroup: (nodeId: string) => {
+        set((state: NodesStore) => ({
+            nodes: state.nodes.map((node: Node) =>
+                node.id === nodeId && node.type === NodeType.Group
+                    ? {
+                        ...node,
+                        group: {
+                            ...node.group,
+                            isOpen: true,
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    isNodeInGroup: (nodeId: string): string | null => {
+        const nodes = get().nodes;
+
+        const groupNodes = nodes.filter((node) => node.type === NodeType.Group);
+
+        for (const groupNode of groupNodes) {
+            if (groupNode.group?.nodes?.includes(nodeId)) {
+                return groupNode.id;
+            }
+        }
+
+        return null;
+    },
+
+    closeGroup: (nodeId: string) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId && node.type === NodeType.Group
+                    ? {
+                        ...node,
+                        group: {
+                            ...node.group,
+                            isOpen: false,
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    hideGroup: (nodeId: string) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId && node.type === NodeType.Group
+                    ? {
+                        ...node,
+                        group: {
+                            ...node.group,
+                            isHidden: true,
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    showGroup: (nodeId: string) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId && node.type === NodeType.Group
+                    ? {
+                        ...node,
+                        group: {
+                            ...node.group,
+                            isHidden: false,
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    removeGroup: (nodeId: string) => {
+        set((state) => ({
+            nodes: state.nodes.filter((node) => node.id !== nodeId || node.type !== NodeType.Group),
+        }));
+    },
+
+    addNodeToGroup: (nodeId: string, nodeToAddId: string) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId && node.type === NodeType.Group // Controleer of het de juiste groep is
+                    ? {
+                        ...node,
+                        group: {
+                            ...node.group, // Behoud bestaande group-properties
+                            nodes: [...(node.group?.nodes || []), nodeToAddId], // Voeg nodeId toe aan de nodes-array
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    removeNodeFromGroup: (nodeId: string, nodeToAddId: string) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId && node.type === NodeType.Group // Controleer of het de juiste groep is
+                    ? {
+                        ...node,
+                        group: {
+                            ...node.group, // Behoud bestaande group-properties
+                            nodes: node.group?.nodes?.filter((id) => id !== nodeToAddId) || [], // Verwijder nodeId uit de nodes-array
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    getOpenGroups: () => {
+        const state = get();
+        return state.nodes.filter(
+            (node) => node.type === NodeType.Group && node.group?.isOpen
+        );
+    },
+
+    getClosedGroups: () => {
+        const state = get();
+        return state.nodes.filter(
+            (node) => node.type === NodeType.Group && !node.group?.isOpen
+        );
+    },
+
+    getNodesInGroup: (nodeId: string): string[] => {
+        const state = get();
+        const groupNode = state.nodes.find(
+            (node) => node.id === nodeId && node.type === NodeType.Group
+        );
+
+        if (!groupNode || !groupNode.group || !groupNode.group.nodes) return [];
+
+        return groupNode.group.nodes;
+    },
+
+    getGroupById: (nodeId: string): Node | undefined => {
+        const state = get();
+        return state.nodes.find(
+            (node) => node.id === nodeId && node.type === NodeType.Group
+        );
+    },
+
+    getAllNodeIdsOfNodesThatAreInAClosedGroup: (): string[] => {
+        const state = get(); // Haal de huidige state op
+        const closedGroups = state.nodes.filter(
+            (node) => node.type === NodeType.Group && !node.group?.isOpen // Vind gesloten groepen
+        );
+
+        return closedGroups.flatMap((group) => group.group?.nodes || []);
+    },
+
+    updateGroup: (nodeId: string, updatedGroup: Partial<Group>) => {
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId && node.type === NodeType.Group
+                    ? {
+                        ...node,
+                        group: {
+                            ...node.group,
+                            ...updatedGroup,
+                        },
+                    }
+                    : node
+            ),
+        }));
+    },
+
     fetchDynamicRouteNodeSetupContent: async (routeId: string) => {
         const route: Route = await fetchDynamicRouteAPI(routeId);
         if (!route.id) {
@@ -413,7 +593,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                 (v) => v.id === editingCurrentRouteVersion
             );
             if (version) {
-                set({nodes: version.content});
+                set({nodes: version.content.nodes});
                 return;
             }
         }
@@ -422,13 +602,13 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             (v: NodeSetupVersion) => v.id === route.node_setup?.published_version?.id
         );
         if (publishedVersion) {
-            set({nodes: publishedVersion.content});
+            set({nodes: publishedVersion.content.nodes});
         } else {
             const latestVersion = route.node_setup?.versions.reduce((prev, curr) =>
                 prev.version_number > curr.version_number ? prev : curr
             );
             if (latestVersion) {
-                set({nodes: latestVersion.content});
+                set({nodes: latestVersion.content.nodes});
             }
         }
 

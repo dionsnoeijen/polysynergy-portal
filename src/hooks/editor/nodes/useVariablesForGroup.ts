@@ -1,11 +1,9 @@
 import { useMemo } from "react";
 import useNodesStore from "@/stores/nodesStore";
-import useGroupsStore from "@/stores/groupStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 
 const useVariablesForGroup = (groupId: string | null, checkDock = true) => {
-    const { getGroupById } = useGroupsStore();
-    const { getTrackedNode, getNodeVariable } = useNodesStore();
+    const { getTrackedNode, getNodeVariable, getGroupById } = useNodesStore();
     const { findInConnectionsByNodeId, findOutConnectionsByNodeId, connections } = useConnectionsStore();
 
     groupId = groupId?.startsWith("mirror-") ? groupId.replace("mirror-", "") : groupId;

@@ -1,12 +1,12 @@
 import { Node } from '@/types/types';
 import React from "react";
 import useEditorStore from "@/stores/editorStore";
-import useGroupsStore from "@/stores/groupStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
+import useNodesStore from "@/stores/nodesStore";
 
 const useNodeContextMenu = (node: Node) => {
     const { selectedNodes, openContextMenu, setDeleteNodesDialogOpen } = useEditorStore();
-    const { isNodeInGroup} = useGroupsStore();
+    const { isNodeInGroup} = useNodesStore();
     const { removeNodeFromGroup } = useGrouping();
 
     const handleContextMenu = (e: React.MouseEvent) => {

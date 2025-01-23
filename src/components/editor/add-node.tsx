@@ -6,7 +6,6 @@ import { Input, InputGroup } from "@/components/input";
 import {ChevronRightIcon, MagnifyingGlassIcon} from "@heroicons/react/24/outline";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useNodesStore from "@/stores/nodesStore";
-import useGroupsStore from "@/stores/groupStore";
 import {globalToLocal} from "@/utils/positionUtils";
 import {useMousePosition} from "@/hooks/editor/useMousePosition";
 
@@ -28,11 +27,10 @@ const AddNode: React.FC = () => {
         searchPhrase,
         fetchAvailableNodes,
         availableNodes,
-        getAvailableNodeById
+        getAvailableNodeById,
     } = useAvailableNodeStore();
 
-    const { addNode } = useNodesStore();
-    const { addNodeToGroup } = useGroupsStore();
+    const { addNode, addNodeToGroup } = useNodesStore();
 
     const { x: mouseX, y: mouseY } = useMousePosition();
 

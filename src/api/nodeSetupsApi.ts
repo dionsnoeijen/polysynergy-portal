@@ -26,7 +26,7 @@ export const updateNodeSetupVersionAPI = (
     type: "route" | "schedule"
 ): Promise<Response> => {
     const idToken = getIdToken();
-    console.log('CONTENT', content);
+    // console.log('CONTENT', content);
     return fetch(
         `${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/${type}/${setupId}/version/${versionId}/`,
         {

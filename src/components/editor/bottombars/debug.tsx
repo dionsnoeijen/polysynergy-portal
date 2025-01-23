@@ -56,14 +56,6 @@ const Debug: React.FC = (): React.ReactElement => {
                     />
                 </div>
             </div>
-            <div className="flex-1 h-full flex flex-col">
-                <div className="border-b border-white/10 p-2">
-                    <h3>Groups</h3>
-                </div>
-                <div className="flex-1 overflow-scroll">
-
-                </div>
-            </div>
         </div>
     );
 };

@@ -154,6 +154,7 @@ const useGrouping = () => {
         groupId: string,
     ) => {
         const group = getGroupById(groupId);
+
         if (!group || !group.group || !group.group.nodes) return;
         const bounds = getNodeBoundsFromDOM(group?.group?.nodes);
 
@@ -190,15 +191,13 @@ const useGrouping = () => {
             enableAllNodesView();
         }
 
-        console.log('parentGroupId: ', parentGroupId);
-
         let showConnections = [];
         if (parentGroupId) {
             const parentGroup = getGroupById(parentGroupId);
             if (!parentGroup) return;
             showConnections = showConnectionsInsideOpenGroup(parentGroup);
         } else {
-            showConnections = showConnectionsOutsideGroup(groupId);
+            showConnections = showConnectionsOutsideGroup();
         }
         setTimeout(() => {
             updateNodesDirectly([groupId], 0, 0, {[groupId]: {x, y}});

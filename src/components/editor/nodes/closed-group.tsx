@@ -19,16 +19,18 @@ import BytesVariable from "@/components/editor/nodes/rows/bytes-variable";
 import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
 import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
 import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
+import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
+import NodeIcon from "@/components/editor/nodes/node-icon";
 
-const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false, preview = false }): React.ReactElement => {
+const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = false}): React.ReactElement => {
     const ref = useRef<HTMLDivElement>(null);
-    const { selectedNodes, openContextMenu } = useEditorStore();
-    const { openGroup, deleteGroup } = useGrouping();
-    const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
-    const [ isOpenMap, setIsOpenMap ] = useState<{ [key: string]: boolean }>({});
-    const { variablesForGroup } = useVariablesForGroup(node.id, false);
-    const { updateNodeHeight, toggleNodeViewCollapsedState } = useNodesStore();
-    const { handleNodeMouseDown } = useNodeMouseDown(node);
+    const {selectedNodes, openContextMenu} = useEditorStore();
+    const {openGroup, deleteGroup} = useGrouping();
+    const {collapseConnections, openConnections} = useToggleConnectionCollapse(node);
+    const [isOpenMap, setIsOpenMap] = useState<{ [key: string]: boolean }>({});
+    const {variablesForGroup} = useVariablesForGroup(node.id, false);
+    const {updateNodeHeight, toggleNodeViewCollapsedState} = useNodesStore();
+    const {handleNodeMouseDown} = useNodeMouseDown(node);
     const shouldUpdateConnections = useRef(false);
 
     const handleContextMenu = (e: React.MouseEvent) => {
@@ -94,34 +96,65 @@ const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false, preview = f
         }
     }, [isOpenMap, openConnections, collapseConnections]);
 
-    const className = `${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start ring-2 ${
-                selectedNodes.includes(node.id) ? "ring-sky-500/50 dark:ring-white shadow-2xl" : "ring-sky-500/50 dark:ring-white/50 shadow-sm]"
-            } bg-sky-100 dark:bg-zinc-800 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5 
-            ${!isMirror && node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}
-            `.trim();
+    const getColorForNodeType = () => {
+        let classList = '';
+
+        if (node.service && node.service.id) {
+            classList += 'ring-purple-500 dark:ring-purple-500';
+        } else {
+            classList += 'ring-sky-500/50 dark:ring-white shadow-2xl';
+        }
+
+        if (selectedNodes.includes(node.id)) {
+            classList += " ring-2 shadow-2xl";
+        }
+
+        return classList;
+    }
+
+    const className = `${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start ring-1
+        ${getColorForNodeType()} 
+        bg-sky-100 dark:bg-zinc-800 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5 
+        ${!isMirror && node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}
+        `.trim();
 
     return !node.view.collapsed ? (
         <div
             className={className}
             data-type="closed-group"
             data-node-id={isMirror ? ('mirror-' + node.id) : node.id}
-            onContextMenu={handleContextMenu}
-            onMouseDown={handleNodeMouseDown}
-            onDoubleClick={() => openGroup(node.id)}
+            onContextMenu={!preview ? handleContextMenu : () => {
+            }}
+            onMouseDown={!preview ? handleNodeMouseDown : () => {
+            }}
+            onDoubleClick={!(node.service && node.service.id) ? () => openGroup(node.id) : () => {}}
             title={node.category + ' > ' + node.name + ' > ' + (isMirror ? ('mirror-' + node.id) : node.id)}
             style={{
                 left: preview ? '0px' : `${node.view.x}px`,
                 top: preview ? '0px' : `${node.view.y}px`,
             }}
         >
-            <div className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
-                <h3 className="font-bold truncate text-sky-600 dark:text-white">{node.name}</h3>
+            <div
+                className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
+                {node?.icon && (
+                    <NodeIcon icon={node.icon} className={'border bg-white border-white/50 mr-3'} />
+                )}
+                <h3 className="font-bold truncate text-sky-600 dark:text-white">
+                    {node.service
+                      ? (node.service.name.trim() === '' ? '...' : node.service.name)
+                      : node.name}
+                </h3>
                 <Button
                     onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
                     <ChevronDownIcon style={{color: 'white'}} className={'w-4 h-4'}/>
                 </Button>
             </div>
 
+            {node.service && node.service.id && (
+                <div className="flex w-full">
+                    <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon}/>
+                </div>
+            )}
             <div className="flex w-full gap-4 pt-2">
                 <div className="flex-1 flex flex-col">
                     <h4 className={`font-bold text-sky-600 pl-2 dark:text-white mb-2 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>Inputs</h4>
@@ -248,7 +281,8 @@ const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false, preview = f
                             }
                         })
                     ) : (
-                        <p className={`text-sky-400 dark:text-slate-400 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>No inputs</p>
+                        <p className={`text-sky-400 dark:text-slate-400 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>No
+                            inputs</p>
                     )}
                 </div>
 
@@ -301,15 +335,15 @@ const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false, preview = f
                                     );
                                 case NodeVariableType.Bytes:
                                     return (
-                                       <BytesVariable
-                                           key={'out-' + variable.handle + '-' + nodeId}
-                                           variable={variable}
-                                           nodeId={nodeId as string}
-                                           onlyOut={true}
-                                           disabled={!isMirror && node.view.disabled}
-                                           groupId={node.id}
-                                           isMirror={isMirror}
-                                       />
+                                        <BytesVariable
+                                            key={'out-' + variable.handle + '-' + nodeId}
+                                            variable={variable}
+                                            nodeId={nodeId as string}
+                                            onlyOut={true}
+                                            disabled={!isMirror && node.view.disabled}
+                                            groupId={node.id}
+                                            isMirror={isMirror}
+                                        />
                                     );
                                 case NodeVariableType.Number:
                                     return (
@@ -379,7 +413,8 @@ const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false, preview = f
                             }
                         })
                     ) : (
-                        <p className={`text-sky-400 dark:text-slate-400 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>No outputs</p>
+                        <p className={`text-sky-400 dark:text-slate-400 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>No
+                            outputs</p>
                     )}
                 </div>
             </div>
@@ -387,8 +422,10 @@ const ClosedGroup: React.FC<GroupProps> = ({ node, isMirror = false, preview = f
     ) : (
         <div
             ref={ref}
-            onContextMenu={handleContextMenu}
-            onMouseDown={handleNodeMouseDown}
+            onContextMenu={!preview ? handleContextMenu : () => {
+            }}
+            onMouseDown={!preview ? handleNodeMouseDown : () => {
+            }}
             onDoubleClick={handleCollapse}
             className={className + ` p-5`}
             style={{

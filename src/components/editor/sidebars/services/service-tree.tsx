@@ -1,13 +1,13 @@
 import React, {ReactElement, useEffect} from "react";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import {FormType, Service} from "@/types/types";
-import {PencilIcon} from "@heroicons/react/24/outline";
+import {PencilIcon, PlusIcon, TrashIcon} from "@heroicons/react/24/outline";
 import useServicesStore from "@/stores/servicesStore";
 import useEditorStore from "@/stores/editorStore";
 
 export default function ServiceTree(): ReactElement {
-    const { services, fetchServices } = useServicesStore();
-    const { openForm, formEditRecordId, activeServiceId, selectedNodes } = useEditorStore();
+    const {services, fetchServices} = useServicesStore();
+    const {openForm, formEditRecordId, activeServiceId, selectedNodes} = useEditorStore();
 
     const [addDisabled, setAddDisabled] = React.useState(true);
 
@@ -26,16 +26,36 @@ export default function ServiceTree(): ReactElement {
             activeItem={activeServiceId}
             formEditingItem={formEditRecordId}
             renderItem={(service: Service) => (
-                <>
-                    {service.name}
-                    <button
-                        onClick={() => openForm(FormType.EditService, service.id)}
-                        type="button"
-                        className={`p-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : 'text-zinc-500 '}`}
-                    >
-                        <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
-                    </button>
-                </>
+                <div className="flex justify-between items-center w-full">
+                    <span>{service.name}</span>
+                    <div className="flex gap-2 mr-2">
+                        <button
+                            onClick={() => openForm(FormType.EditService, service.id)}
+                            type="button"
+                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : 'text-zinc-500 '}`}
+                        >
+                            <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
+                        </button>
+                        <button
+                            onClick={() => {
+                                console.log('DELETE')
+                            }}
+                            type="button"
+                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : 'text-zinc-500 '}`}
+                        >
+                            <TrashIcon className="w-4 h-4 transition-colors duration-200"/>
+                        </button>
+                        <button
+                            onClick={() => {
+                                console.log('ADD')
+                            }}
+                            type="button"
+                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : 'text-zinc-500 '}`}
+                        >
+                            <PlusIcon className="w-4 h-4 transition-colors duration-200"/>
+                        </button>
+                    </div>
+                </div>
             )}
             addDisabled={addDisabled}
             addButtonClick={() => openForm(FormType.AddService)}

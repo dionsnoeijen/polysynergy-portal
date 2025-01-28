@@ -194,7 +194,7 @@ export function EditorLayout({
                                         <Editor />
                                         <SelectionsMenu />
                                         <UndoRedoMenu />
-                                        <VersionPublishedMenu routeData={null} />
+                                        <VersionPublishedMenu />
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">

@@ -22,19 +22,6 @@ export type Connection = {
     sourceGroupId?: string;
     isInGroup?: string;
 };
-//
-// export type Group = {
-//     id: string;
-//     isOpen: boolean;
-//     isHidden: boolean;
-//     nodes: string[];
-// };
-
-export type Group = {
-    isOpen?: boolean;
-    isHidden?: boolean;
-    nodes?: string[];
-};
 
 export enum NodeEnabledConnector {
     Node = 'node'
@@ -143,11 +130,23 @@ export type NodeView = {
     isOpenMap?: { [key: string]: boolean };
 };
 
+export type Package = {
+    nodes: Node[];
+    connections?: Connection[];
+};
+
 export type NodeService = {
     id: string;
     name: string;
     description: string;
     category: string;
+    package?: Package;
+};
+
+export type Group = {
+    isOpen?: boolean;
+    isHidden?: boolean;
+    nodes?: string[];
 };
 
 export type Node = {

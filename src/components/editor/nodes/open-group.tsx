@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
-import { Node } from "@/types/types";
+import React, {useEffect, useState, useRef, useLayoutEffect} from "react";
+import {Node} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import ConnectorGroup from "@/components/editor/nodes/connector-group";
@@ -10,28 +10,24 @@ import {
     DialogBody,
     DialogActions,
 } from "@/components/dialog";
-import { Button } from "@/components/button";
+import {Button} from "@/components/button";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
-import { MARGIN } from "@/utils/constants";
-import { getNodeBoundsFromDOM } from "@/utils/positionUtils";
+import {MARGIN} from "@/utils/constants";
+import {getNodeBoundsFromDOM} from "@/utils/positionUtils";
 import ClosedGroup from "@/components/editor/nodes/closed-group";
 
 type GroupProps = { node: Node };
 
-const OpenGroup: React.FC<GroupProps> = ({ node }): null | React.ReactElement => {
-    const { openContextMenu, setSelectedNodes, isDragging, zoomFactor } = useEditorStore();
-    const { closeGroup, dissolveGroup } = useGrouping();
+const OpenGroup: React.FC<GroupProps> = ({node}): null | React.ReactElement => {
+    const {openContextMenu, setSelectedNodes, isDragging, zoomFactor} = useEditorStore();
+    const {closeGroup, dissolveGroup} = useGrouping();
     const connections = useConnectionsStore((state) => state.connections);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [tick, setTick] = useState(0);
-    const [bounds, setBounds] = useState({ minX:0, minY:0, maxX:0, maxY:0 });
+    const [bounds, setBounds] = useState({minX: 0, minY: 0, maxX: 0, maxY: 0});
 
-    // @todo: This can be used for a smooth in animation,
-    //   but it;s not working as expected, so it's disabled for now.
-    const [isReady, setIsReady] = useState(false);
-
-    const rafRef = useRef<number|null>(null);
+    const rafRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (isDragging) {
@@ -51,14 +47,14 @@ const OpenGroup: React.FC<GroupProps> = ({ node }): null | React.ReactElement =>
 
     useEffect(() => {
         const frameId = requestAnimationFrame(() => {
+            if (!node.group || !node.group.nodes) return;
             const {minX, minY, maxX, maxY, foundAny} = getNodeBoundsFromDOM(node.group.nodes);
             if (!foundAny) {
                 requestAnimationFrame(() => {
                     setTick((t) => t + 1);
                 });
             } else {
-                setBounds({ minX, minY, maxX, maxY });
-                setIsReady(true);
+                setBounds({minX, minY, maxX, maxY});
             }
         });
 
@@ -77,7 +73,7 @@ const OpenGroup: React.FC<GroupProps> = ({ node }): null | React.ReactElement =>
 
         closedGroupNodeEl.style.left = `${x}px`;
         closedGroupNodeEl.style.top = `${y}px`;
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [bounds, node.id, connections]);
 
     const width = bounds.maxX - bounds.minX;
@@ -121,12 +117,12 @@ const OpenGroup: React.FC<GroupProps> = ({ node }): null | React.ReactElement =>
     return (
         <>
             {!node.group.isHidden && (
-                <ClosedGroup node={node} isMirror={true} />
+                <ClosedGroup node={node} isMirror={true}/>
             )}
             <div
                 data-type="open-group"
                 onContextMenu={handleContextMenu}
-                onDoubleClick={() => !node.group.isHidden && closeGroup(node.id)}
+                onDoubleClick={() => !node.group?.isHidden && closeGroup(node.id)}
                 className={`absolute border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500/20 bg-opacity-25
                     ${node.group.isHidden ? 'z-1 select-none opacity-30' : 'z-10'}
                 `}

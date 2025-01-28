@@ -82,7 +82,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
 
     const className = `
     ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start 
-    ring-1 bg-zinc-800 ${getColorForNodeType()} backdrop-blur-lg backdrop-opacity-60 rounded-md pb-5 
+    ring-1 bg-zinc-800 ${getColorForNodeType()} rounded-md pb-5 
     ${node.view.disabled ? "z-1 select-none opacity-30" : "z-20 cursor-move"}
     `.trim();
 

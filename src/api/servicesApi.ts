@@ -1,6 +1,6 @@
 import { getIdToken } from "@/api/auth/authToken";
 import { Node } from "@/types/types";
-import {Connection} from "@/types/types";
+import { Connection } from "@/types/types";
 
 export const storeService = async (
     id: string,
@@ -60,4 +60,4 @@ export const fetchServices = async () => {
         console.error("Error fetching services:", error);
         throw error;
     }
-}
+};

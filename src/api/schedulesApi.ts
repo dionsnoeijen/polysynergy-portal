@@ -29,6 +29,17 @@ export const storeScheduleAPI = async (projectId: string, schedule: Schedule) =>
     return response.json();
 };
 
+export const fetchSchedule = async (scheduleId: string): Promise<Schedule> => {
+    const idToken = getIdToken();
+    const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        }
+    });
+    return response.json();
+};
+
 export const updateScheduleAPI = async (scheduleId: string, updatedData: Partial<Schedule>) => {
     const idToken = getIdToken();
     const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {

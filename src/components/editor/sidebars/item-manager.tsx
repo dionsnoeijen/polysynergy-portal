@@ -6,6 +6,7 @@ import SidebarTenantHeader from "@/components/sidebar/sidebar-tenant-header";
 import ScheduleTree from "@/components/editor/sidebars/schedules/schedule-tree";
 import ServiceTree from "@/components/editor/sidebars/services/service-tree";
 import BlueprintTree from "@/components/editor/sidebars/blueprints/blueprint-tree";
+import {Divider} from "@/components/divider";
 
 export default function ItemManager({
                                         className,
@@ -18,10 +19,11 @@ export default function ItemManager({
         <div {...props} className={clsx(className, 'absolute left-0 top-0 right-0 bottom-0 flex flex-col')}>
             <div className="flex-grow overflow-y-auto">
                 <Heading arrowToLeft={false} toggleClose={toggleClose}>Item manager</Heading>
-                <RouteTree/>
-                <ScheduleTree/>
-                <ServiceTree/>
-                <BlueprintTree/>
+                <RouteTree />
+                <ScheduleTree />
+                <BlueprintTree />
+                <Divider className={'mt-3 mb-1'} />
+                <ServiceTree />
             </div>
             <SidebarTenantHeader/>
         </div>

@@ -19,13 +19,15 @@ const Editor = dynamic(() => import('@/components/editor/editor'), {
 });
 
 export function EditorLayout({
-    projectUuid = null,
-    routeUuid = null,
-    scheduleUuid = null,
-}: {
-    projectUuid?: null | string,
-    routeUuid?: null | string,
-    scheduleUuid?: null | string,
+                                 projectUuid,
+                                 routeUuid,
+                                 scheduleUuid,
+                                 blueprintUuid,
+                             }: {
+    projectUuid?: string,
+    routeUuid?: string,
+    scheduleUuid?: string,
+    blueprintUuid?: string,
 }) {
 
     enum ResizeWhat {
@@ -48,6 +50,7 @@ export function EditorLayout({
         setActiveProjectId,
         setActiveRouteId,
         setActiveScheduleId,
+        setActiveBlueprintId,
         activeVersionId,
         closeFormMessage
     } = useEditorStore();
@@ -58,13 +61,22 @@ export function EditorLayout({
 
         setActiveProjectId(projectUuid || '');
         if (routeUuid) {
+            setActiveBlueprintId('');
+            setActiveScheduleId('');
             setActiveRouteId(routeUuid);
-            fetchAndApplyNodeSetup(routeUuid);
+            fetchAndApplyNodeSetup({routeId: routeUuid});
         }
         if (scheduleUuid) {
+            setActiveRouteId('');
+            setActiveBlueprintId('');
             setActiveScheduleId(scheduleUuid);
-            // idem als je schedule-nodes wilt laden
-            // fetchScheduleNodeSetupContent(scheduleUuid); // als je zoiets hebt
+            fetchAndApplyNodeSetup({scheduleId: scheduleUuid});
+        }
+        if (blueprintUuid) {
+            setActiveRouteId('');
+            setActiveScheduleId('');
+            setActiveBlueprintId(blueprintUuid);
+            fetchAndApplyNodeSetup({blueprintId: blueprintUuid});
         }
 
         const handleResize = () => {
@@ -74,7 +86,7 @@ export function EditorLayout({
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [projectUuid, routeUuid, scheduleUuid]);
+    }, [projectUuid, routeUuid, scheduleUuid, blueprintUuid]);
 
 
     const startResizing = useCallback((resizeWhat: ResizeWhat) => {
@@ -186,24 +198,26 @@ export function EditorLayout({
                         className={`absolute top-[10px] left-0 right-0 bottom-0 overflow-scroll border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {showForm ? (
-                            <Form />
+                            <Form/>
                         ) : (
-                            projectUuid && routeUuid ? (
+                            projectUuid && (routeUuid || scheduleUuid || blueprintUuid) ? (
                                 activeVersionId ? (
                                     <>
-                                        <Editor />
-                                        <SelectionsMenu />
-                                        <UndoRedoMenu />
-                                        <VersionPublishedMenu />
+                                        <Editor/>
+                                        <SelectionsMenu/>
+                                        <UndoRedoMenu/>
+                                        <VersionPublishedMenu/>
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">
-                                        <p className="text-white">Loading node data...</p>
+                                        <p className="text-white">Loading node setup...</p>
                                     </div>
                                 )
                             ) : (
                                 <div className="flex justify-center items-center h-full">
-                                    <p className="text-white">Select a route or schedule to start editing nodes</p>
+                                    <p className="text-white">
+                                        Select a route, schedule or blueprint to start editing nodes
+                                    </p>
                                 </div>
                             )
                         )}

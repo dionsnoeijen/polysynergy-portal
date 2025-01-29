@@ -13,10 +13,16 @@ const Form: React.FC = () => {
 
     return (
         <div>
-            {(formType === FormType.AddRoute || formType === FormType.EditRoute) && (
+            {(
+                formType === FormType.AddRoute ||
+                formType === FormType.EditRoute
+            ) && (
                 <DynamicRouteForm />
             )}
-            {(formType === FormType.AddSchedule || formType === FormType.EditSchedule) && (
+            {(
+                formType === FormType.AddSchedule ||
+                formType === FormType.EditSchedule
+            ) && (
                 <ScheduleForm />
             )}
             {(formType === FormType.EditDict) && (
@@ -25,10 +31,16 @@ const Form: React.FC = () => {
             {(formType === FormType.EditCode) && (
                 <CodeEditorForm />
             )}
-            {(formType === FormType.AddService || formType === FormType.EditService) && (
+            {(
+                formType === FormType.AddService ||
+                formType === FormType.EditService
+            ) && (
                 <ServiceForm />
             )}
-            {(formType === FormType.AddBlueprint || formType === FormType.EditBlueprint) && (
+            {(
+                formType === FormType.AddBlueprint ||
+                formType === FormType.EditBlueprint
+            ) && (
                 <BlueprintForm />
             )}
         </div>

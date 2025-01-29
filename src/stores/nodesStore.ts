@@ -222,7 +222,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             collapsed: false,
         };
 
-        node.id = uuidv4();
+        node.id = node.id ? node.id : uuidv4();
         node.enabled = true;
         node.driven = false;
 

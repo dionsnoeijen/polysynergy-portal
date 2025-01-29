@@ -18,7 +18,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
         <div
             className={`absolute select-none flex items-center justify-center ring-2 bg-orange-400/60 backdrop-blur-lg backdrop-opacity-60 rounded-[50%] ${
                 selectedNodes.includes(node.id) ? "ring-white shadow-2xl" : "ring-orange-200/90 shadow-sm"
-            } ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}`}
+            } ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'} ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}`}
             style={{
                 left: `${position.x}px`,
                 top: `${position.y}px`,

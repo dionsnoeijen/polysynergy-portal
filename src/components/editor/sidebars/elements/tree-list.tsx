@@ -24,6 +24,24 @@ export default function TreeList<T extends ListItemWithId>({
 }: ListProps<T>): React.JSX.Element {
     const [isOpen, setIsOpen] = useState(true);
 
+    /** Helperfunctie voor de className van een item */
+    const getItemClassName = (item: T) => {
+        const baseClasses =
+            "flex items-center border-l border-r border-sky-500 dark:border-white/20 justify-between pl-2 transition-colors duration-200 group dark:hover:bg-sky-500 dark:hover:text-white";
+
+        const isActive = activeItem === item.id;
+        const isEditing = formEditingItem === item.id;
+
+        // Achtergrond bepalen: formEditingItem > activeItem > default (odd/even)
+        const bgClass = isEditing
+            ? "bg-sky-200 dark:bg-sky-200"
+            : isActive
+            ? "bg-sky-500 dark:bg-sky-500"
+            : "odd:bg-zinc-200/80 even:bg-transparent dark:odd:bg-zinc-800 dark:even:bg-zinc-800/50";
+
+        return `${baseClasses} ${bgClass}`;
+    };
+
     return items.length > 0 ? (
         <div className="mt-[10px]">
             <div
@@ -47,18 +65,7 @@ export default function TreeList<T extends ListItemWithId>({
                 }`}
             >
                 {items.map((item, index) => (
-                    <li
-                        className={`flex items-center border-l border-r border-sky-500 dark:border-white/20 justify-between pl-2 dark:hover:bg-sky-500 dark:hover:text-white ${
-                            activeItem === item.id
-                                ? "bg-zinc-300 dark:bg-zinc-900"
-                                : "odd:bg-zinc-200/80 dark:bg-zinc-800 dark:odd:bg-zinc-800/50"
-                        } ${
-                            formEditingItem === item.id
-                                ? "bg-sky-400 dark:bg-zinc-800"
-                                : ""
-                        } transition-colors duration-200 group`}
-                        key={index}
-                    >
+                    <li className={getItemClassName(item)} key={index}>
                         {renderItem(item)}
                     </li>
                 ))}
@@ -77,19 +84,19 @@ export default function TreeList<T extends ListItemWithId>({
         </div>
     ) : (
         <>
-        {addButtonClick && (
-            <div className={'mt-[10px]'}>
-                <Button
-                    disabled={addDisabled}
-                    onClick={addButtonClick}
-                    plain
-                    className="w-full hover:cursor-pointer p-0 border border-dotted border-white/50"
-                >
-                    {title}
-                    <PlusIcon />
-                </Button>
-            </div>
-        )}
+            {addButtonClick && (
+                <div className="mt-[10px]">
+                    <Button
+                        disabled={addDisabled}
+                        onClick={addButtonClick}
+                        plain
+                        className="w-full hover:cursor-pointer p-0 border border-dotted border-white/50"
+                    >
+                        {title}
+                        <PlusIcon />
+                    </Button>
+                </div>
+            )}
         </>
     );
 }

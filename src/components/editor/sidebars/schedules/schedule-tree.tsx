@@ -19,9 +19,14 @@ export default function ScheduleTree(): ReactElement {
         <TreeList
             items={schedules}
             title={'Schedules'}
+            activeItem={activeScheduleId}
+            formEditingItem={formEditRecordId}
             renderItem={(schedule) => (
                 <>
-                    <Link href={`/project/${activeProjectId}/schedule/${schedule.id}`}>
+                    <Link href={`/project/${activeProjectId}/schedule/${schedule.id}`}
+                        title={`${schedule.name} - ${schedule.id}`}
+                        className={`block flex-1 truncate dark:hover:text-white pt-1 pb-1 ${(activeScheduleId === schedule.id || formEditRecordId === schedule.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
+                    >
                         {schedule.name}
                     </Link>
                     <button

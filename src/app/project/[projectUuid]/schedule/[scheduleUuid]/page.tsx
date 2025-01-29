@@ -5,9 +5,9 @@ import { useParams } from 'next/navigation';
 import React from "react";
 
 export default function Route() {
-    const { projectUuid, scheduleUuid } = useParams();
+    const { projectUuid, scheduleUuid } = useParams() as { projectUuid: string, scheduleUuid: string };
 
     return (
-        <EditorLayout projectUuid={projectUuid as string} routeUuid={scheduleUuid as string} />
+        <EditorLayout projectUuid={projectUuid} scheduleUuid={scheduleUuid} />
     )
 }

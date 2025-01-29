@@ -4,14 +4,15 @@ import {FormType, Blueprint} from "@/types/types";
 import {PencilIcon} from "@heroicons/react/24/outline";
 import useBlueprintsStore from "@/stores/blueprintsStore";
 import useEditorStore from "@/stores/editorStore";
+import {Link} from "@/components/link";
 
 export default function BlueprintTree(): ReactElement {
-    const { blueprints } = useBlueprintsStore();
-    const { openForm, formEditRecordId, activeBlueprintId } = useEditorStore();
+    const { blueprints, fetchBlueprints } = useBlueprintsStore();
+    const { openForm, formEditRecordId, activeBlueprintId, activeProjectId } = useEditorStore();
 
     useEffect(() => {
-        // Fetch blueprints
-    }, []);
+        fetchBlueprints();
+    }, [fetchBlueprints]);
 
     return (
         <TreeList
@@ -21,7 +22,13 @@ export default function BlueprintTree(): ReactElement {
             formEditingItem={formEditRecordId}
             renderItem={(blueprint: Blueprint) => (
                 <>
-                    {blueprint.name}
+                    <Link
+                        href={`/project/${activeProjectId}/blueprint/${blueprint.id}`}
+                        title={`${blueprint.name} - ${blueprint.id}`}
+                        className={`block flex-1 truncate dark:hover:text-white pt-1 pb-1 ${(activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
+                    >
+                        {blueprint.name}
+                    </Link>
                     <button
                         onClick={() => openForm(FormType.EditBlueprint, blueprint.id)}
                         type="button"

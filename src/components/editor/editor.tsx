@@ -90,6 +90,12 @@ export default function Editor() {
         'ctrl+g': () => {
             createGroup();
         },
+        'ctrl+d': () => {
+            console.log('Duplicate selected nodes');
+        },
+        'ctrl+x': () => {
+            console.log('Cut selected nodes');
+        },
         'ctrl+c': () => {
             console.log('Copy selected nodes');
         },

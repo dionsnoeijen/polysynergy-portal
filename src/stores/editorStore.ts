@@ -112,7 +112,13 @@ const useEditorStore = create<EditorState>((set, get) => ({
         formEditVariable: variable ?? null
     }),
     closeForm: (closeFormMessage?: string | null) => {
-        set({showForm: false, formType: null, closeFormMessage: closeFormMessage});
+        set({
+            showForm: false,
+            formType: null,
+            formEditRecordId: null,
+            formEditVariable: null,
+            closeFormMessage: closeFormMessage
+        });
 
         if (closeFormMessage) {
             setTimeout(() => {

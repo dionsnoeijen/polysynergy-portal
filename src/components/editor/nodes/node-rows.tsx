@@ -84,6 +84,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start 
     ring-1 bg-zinc-800 ${getColorForNodeType()} rounded-md pb-5 
     ${node.view.disabled ? "z-1 select-none opacity-30" : "z-20 cursor-move"}
+    ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}
     `.trim();
 
     useEffect(() => {

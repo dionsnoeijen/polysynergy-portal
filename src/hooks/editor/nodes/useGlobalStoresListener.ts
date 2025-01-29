@@ -8,7 +8,7 @@ import {State, StoreName} from "@/types/types";
 export default function useGlobalStoreListenersWithImmediateSave() {
     const {nodes} = useNodesStore();
     const {connections} = useConnectionsStore();
-    const {activeRouteId, activeScheduleId, activeVersionId} = useEditorStore();
+    const {activeRouteId, activeScheduleId, activeBlueprintId, activeVersionId} = useEditorStore();
     const debounceInterval = 3000;
     const latestStates: Record<StoreName, State> = {
         nodes,
@@ -21,20 +21,40 @@ export default function useGlobalStoreListenersWithImmediateSave() {
         try {
             console.log('Saving node setup',
                 'activeRouteId', activeRouteId,
+                'activeScheduleId', activeScheduleId,
+                'activeBlueprintId', activeBlueprintId,
                 'activeVersionId', activeVersionId
             );
 
-            if (activeRouteId && activeVersionId) {
+            if (activeVersionId) {
+                if (activeRouteId) {
+                    updateNodeSetupVersionAPI(
+                        activeRouteId,
+                        activeVersionId,
+                        latestStates,
+                        'route'
+                    );
+                }
 
-                updateNodeSetupVersionAPI(
-                    activeRouteId,
-                    activeVersionId,
-                    latestStates,
-                    'route'
-                );
-            } else if (activeScheduleId) {
-                console.log('Implement schedule saving');
+                if (activeScheduleId) {
+                    updateNodeSetupVersionAPI(
+                        activeScheduleId,
+                        activeVersionId,
+                        latestStates,
+                        'schedule'
+                    );
+                }
+
+                if (activeBlueprintId) {
+                    updateNodeSetupVersionAPI(
+                        activeBlueprintId,
+                        activeVersionId,
+                        latestStates,
+                        'blueprint'
+                    );
+                }
             }
+
             lastSavedAt = Date.now();
         } catch (error) {
             console.error("Failed to save node setup:", error);

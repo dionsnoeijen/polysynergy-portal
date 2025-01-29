@@ -1,42 +1,67 @@
-import { Connection, Node, Package } from '@/types/types';
+import {Connection, Node, NodeService, Package} from '@/types/types';
 import { v4 as uuidv4 } from 'uuid';
 
-export const makeServiceFromNode = (
+
+/**
+ * Node packaging serves multiple purposes:
+ *
+ * 1. **Creating a Reusable Service**: Packaging a node allows it to be stored and reused as a service.
+ *    This can be particularly useful for promoting nodes into higher-order abstractions or services that can be shared or used in different contexts.
+ *
+ * 2. **Copying Nodes**: By packaging a node, its entire structure, along with the connected nodes and their relevant relationships (via connections),
+ *    can be duplicated in a way that preserves the integrity of the relationships and properties of the original node.
+ *
+ * The process involves:
+ * - Recursively gathering all child nodes within the group of the parent node.
+ * - Filtering and including all connections associated with the given node group.
+ * - Resetting visual properties of the nodes to allow them to be repositioned if needed.
+ * - Assigning unique placeholders to identifiers to ensure the new package remains distinct from its source.
+ */
+
+export const promoteNodeInStateToService = (
+    node: Node,
+    name: string,
+    description: string,
+    category: string,
+    icon: string,
+) => {
+
+    const id = uuidv4();
+
+    node.service = {
+        ...node.service as NodeService,
+        id,
+        description,
+        name,
+        category,
+    };
+    node.icon = icon;
+
+    return node;
+};
+
+export const makeServiceFromNodeForStorage = (
     node: Node,
     nodes: Node[],
     connections: Connection[],
-    name: string,
-    category: string,
-    description: string,
-    icon: string,
 ): Node => {
-    const defId = uuidv4();
+    let clonedNode = JSON.parse(JSON.stringify(node));
 
-    const packagedData = packageNode(node, nodes, connections);
+    const packagedData = packageNode(clonedNode, nodes, connections);
 
     if (!packagedData) {
         throw new Error("Unable to create package from node.");
     }
 
-    node.id = '{uuid-0}';
-    node.service = {
-        ...node.service,
-        description,
-        name,
-        category,
-        package: packagedData,
-    };
-    node.icon = icon;
+    clonedNode.package = packagedData;
 
-    resetNodeView(node, packagedData.nodes);
-    const ids = gatherAllIds(node);
+    resetNodeView(clonedNode, packagedData.nodes, packagedData.connections);
+    const ids = gatherAllIds(clonedNode);
     const idMap = createIdMap(ids);
-    console.log(ids, idMap);
 
-    node = replaceIdsInJsonString(node, idMap);
-    node.service.id = defId;
+    clonedNode = replaceIdsInJsonString(clonedNode, idMap);
 
-    return node;
+    return clonedNode;
 };
 
 function replaceIdsInJsonString(originalData: Node, idMap: Record<string, string>): Node {
@@ -55,7 +80,7 @@ function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function gatherAllIds(obj: any, ids: Set<string> = new Set()): Set<string> {
+function gatherAllIds(obj: unknown, ids: Set<string> = new Set()): Set<string> {
   if (Array.isArray(obj)) {
     for (const item of obj) {
       gatherAllIds(item, ids);
@@ -86,7 +111,19 @@ function createIdMap(ids: Set<string>): Record<string, string> {
   return map;
 }
 
-export const resetNodeView = (parentNode: Node, childNodes: Node[]): void => {
+function createUuidMap(placeholders: Set<string>): Record<string, string> {
+    const map: Record<string, string> = {};
+    for (const placeholder of placeholders) {
+        map[placeholder] = uuidv4();
+    }
+    return map;
+}
+
+export const resetNodeView = (
+    parentNode: Node,
+    childNodes: Node[],
+    connections: Connection[] | undefined,
+): void => {
     const originalX = parentNode.view?.x || 0;
     const originalY = parentNode.view?.y || 0;
 
@@ -103,7 +140,41 @@ export const resetNodeView = (parentNode: Node, childNodes: Node[]): void => {
             childNode.view.y = (childNode.view.y || 0) - originalY;
         }
     });
+
+    if (connections === undefined) return;
+
+    connections.forEach((connection) => {
+        connection.startX = (connection.startX || 0) - originalX;
+        connection.endX = (connection.endX || 0) - originalX;
+    });
 };
+
+export const unpackNode = (node: Node): {
+    nodes: Node[],
+    connections: Connection[] | undefined
+} => {
+    const ids = gatherAllIds(node);
+    const idMap = createUuidMap(ids);
+
+    const clonedNode = replaceIdsInJsonString(node, idMap);
+
+    let nodes = [clonedNode];
+    let connections = undefined;
+
+    if (clonedNode.package) {
+        nodes = [
+            clonedNode,
+            ...clonedNode.package.nodes || []
+        ];
+        connections = clonedNode.package.connections || [];
+        clonedNode.package = undefined;
+    }
+
+    return {
+        nodes,
+        connections
+    }
+}
 
 export const packageNode = (
     node: Node,
@@ -120,7 +191,7 @@ export const packageNode = (
         const findNodes = (nodeToCheck: Node) => {
             if (nodeToCheck.group?.nodes?.length) {
                 const childNodes = allNodes.filter((n) =>
-                    nodeToCheck.group.nodes.includes(n.id)
+                    nodeToCheck!.group!.nodes!.includes(n.id)
                 );
                 result.push(...childNodes);
                 childNodes.forEach(findNodes);

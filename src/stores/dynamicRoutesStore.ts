@@ -41,7 +41,7 @@ const useDynamicRoutesStore = create<DynamicRoutesStore>((
             route.id = response.id;
             set((state) => ({ routes: [...state.routes, route] }));
         } catch (error) {
-            console.error('Failed to store routes:', error);
+            console.error('Failed to store route:', error);
         }
     },
 

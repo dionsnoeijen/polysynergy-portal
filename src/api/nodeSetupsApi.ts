@@ -23,7 +23,7 @@ export const updateNodeSetupVersionAPI = (
     setupId: string,
     versionId: string,
     content: Record<StoreName, State>, // Specifiek alleen voor content
-    type: "route" | "schedule"
+    type: "route" | "schedule" | "blueprint"
 ): Promise<Response> => {
     const idToken = getIdToken();
     // console.log('CONTENT', content);

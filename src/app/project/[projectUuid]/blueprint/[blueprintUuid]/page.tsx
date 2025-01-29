@@ -5,9 +5,9 @@ import { useParams } from 'next/navigation';
 import React from "react";
 
 export default function Route() {
-    const { projectUuid, routeUuid } = useParams() as { projectUuid: string, routeUuid: string };
+    const { projectUuid, blueprintUuid } = useParams() as { projectUuid: string, blueprintUuid: string };
 
     return (
-        <EditorLayout projectUuid={projectUuid} routeUuid={routeUuid} />
+        <EditorLayout projectUuid={projectUuid} blueprintUuid={blueprintUuid} />
     )
 }

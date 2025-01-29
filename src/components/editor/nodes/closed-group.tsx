@@ -21,6 +21,7 @@ import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-v
 import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
 import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
 import NodeIcon from "@/components/editor/nodes/node-icon";
+import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
 
 const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = false}): React.ReactElement => {
     const ref = useRef<HTMLDivElement>(null);
@@ -32,6 +33,7 @@ const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = fa
     const {updateNodeHeight, toggleNodeViewCollapsedState} = useNodesStore();
     const {handleNodeMouseDown} = useNodeMouseDown(node);
     const shouldUpdateConnections = useRef(false);
+    const position = useNodePlacement(node);
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -116,6 +118,7 @@ const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = fa
         ${getColorForNodeType()} 
         bg-sky-100 dark:bg-zinc-800 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5 
         ${!isMirror && node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}
+        ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}
         `.trim();
 
     return !node.view.collapsed ? (
@@ -130,8 +133,8 @@ const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = fa
             onDoubleClick={!(node.service && node.service.id) ? () => openGroup(node.id) : () => {}}
             title={node.category + ' > ' + node.name + ' > ' + (isMirror ? ('mirror-' + node.id) : node.id)}
             style={{
-                left: preview ? '0px' : `${node.view.x}px`,
-                top: preview ? '0px' : `${node.view.y}px`,
+                left: preview ? '0px' : `${position.x}px`,
+                top: preview ? '0px' : `${position.y}px`,
             }}
         >
             <div
@@ -429,8 +432,8 @@ const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = fa
             onDoubleClick={handleCollapse}
             className={className + ` p-5`}
             style={{
-                left: preview ? '0px' : `${node.view.x}px`,
-                top: preview ? '0px' : `${node.view.y}px`,
+                left: preview ? '0px' : `${position.x}px`,
+                top: preview ? '0px' : `${position.y}px`,
             }}
             title={node.category + ' > ' + node.name}
             data-type="closed-group"

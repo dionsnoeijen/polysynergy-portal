@@ -140,7 +140,6 @@ export type NodeService = {
     name: string;
     description: string;
     category: string;
-    package?: Package;
 };
 
 export type Group = {
@@ -163,6 +162,7 @@ export type Node = {
     group?: Group;
     has_play_button?: boolean;
     has_enabled_switch?: boolean;
+    package?: Package;
 };
 
 export interface NodeProps {
@@ -184,19 +184,21 @@ export type Schedule = {
     created_at?: string;
     updated_at?: string;
     project_id?: string;
+    node_setup?: NodeSetup;
 };
 
 export type Metadata = {
     category: string;
     description?: string;
+    icon?: string;
 };
 
 export type Blueprint = {
     id?: string;
     name: string;
     metadata: Metadata;
-    category: string;
-    nodes: Node[]
+    node_setup?: NodeSetup;
+    project_ids?: string[];
 };
 
 export type Service = {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useEffect, useRef} from "react";
+import React, {useCallback, useEffect, useRef} from "react";
 import useEditorStore from "@/stores/editorStore";
 import { Input, InputGroup } from "@/components/input";
 import {ChevronRightIcon, MagnifyingGlassIcon} from "@heroicons/react/24/outline";
@@ -51,7 +51,11 @@ const AddNode: React.FC = () => {
         fetchAvailableNodes();
     }, [fetchAvailableNodes]);
 
-    const handleAddNodeAtPosition = (nodeId: string, screenX: number, screenY: number) => {
+    const handleAddNodeAtPosition = useCallback((
+        nodeId: string,
+        screenX: number,
+        screenY: number
+    ) => {
         setAddingNode(nodeId);
         setShowAddingNode(false);
 
@@ -76,7 +80,7 @@ const AddNode: React.FC = () => {
         }
 
         resetSelectedNodeIndex();
-    };
+    }, []);
 
     useEffect(() => {
         if (!showAddingNode) return;

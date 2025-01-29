@@ -5,9 +5,9 @@ import { useParams } from 'next/navigation';
 import React from "react";
 
 export default function Project() {
-    const { projectUuid } = useParams();
+    const { projectUuid } = useParams() as { projectUuid: string };
 
     return (
-        <EditorLayout projectUuid={projectUuid as string} />
+        <EditorLayout projectUuid={projectUuid} />
     )
 }

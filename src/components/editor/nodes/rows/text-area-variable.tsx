@@ -32,6 +32,7 @@ const TextAreaVariable: React.FC<Props> = ({
             handle={variable.handle}
             disabled={disabled}
             groupId={groupId}
+            nodeVariableType={variable.type}
         />}
         <div className="flex items-center">
             <p className="break-words">{variable.value as string}</p>
@@ -42,6 +43,7 @@ const TextAreaVariable: React.FC<Props> = ({
             handle={variable.handle}
             disabled={disabled}
             groupId={groupId}
+            nodeVariableType={variable.type}
         />}
         {variable.has_out && isMirror && !onlyIn && (
             <FakeConnector out />

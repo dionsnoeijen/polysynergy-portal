@@ -35,6 +35,7 @@ const DatetimeVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
+                nodeVariableType={variable.type}
             />}
             <div className="flex items-center truncate">
                 <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
@@ -47,6 +48,7 @@ const DatetimeVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
+                nodeVariableType={variable.type}
             />}
             {variable.has_out && isMirror && !onlyIn && (
                 <FakeConnector out/>

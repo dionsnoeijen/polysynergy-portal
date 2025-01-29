@@ -1,9 +1,9 @@
-import React, { useRef } from "react";
-import { calculateConnectorPosition, globalToLocal } from "@/utils/positionUtils";
-import { v4 as uuidv4 } from "uuid";
+import React, {useRef} from "react";
+import {calculateConnectorPosition, globalToLocal} from "@/utils/positionUtils";
+import {v4 as uuidv4} from "uuid";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
-import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
+import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 import {NodeEnabledConnector} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 
@@ -23,13 +23,36 @@ export const useConnectorHandlers = (
     } = useConnectionsStore();
     const {
         setIsDrawingConnection,
-        openGroup
+        openGroup,
     } = useEditorStore();
     const {
         enableNode
     } = useNodesStore();
 
     const startedFromGroup = useRef(false);
+    const activeConnectorVariableTypeRef = useRef<string | null>(null);
+
+    const dimConnectors = () => {
+        const allOutConnectors = document.querySelectorAll(`[data-type="out"][data-node-id]`);
+        const invalidInConnectors = document.querySelectorAll(
+            `[data-type="in"][data-node-id]:not([data-variable-type="${activeConnectorVariableTypeRef.current}"])`
+        );
+        allOutConnectors.forEach((connector) => {
+            (connector as HTMLElement).classList.remove("opacity-50");
+            (connector as HTMLElement).classList.add("opacity-50", "pointer-events-none");
+        });
+        invalidInConnectors.forEach((connector) => {
+            (connector as HTMLElement).classList.remove("opacity-50");
+            (connector as HTMLElement).classList.add("opacity-50", "pointer-events-none");
+        });
+    };
+
+    const undimCommectors = () => {
+        const connectors = document.querySelectorAll(`[data-type="in"], [data-type="out"]`);
+        connectors.forEach((connector) => {
+            (connector as HTMLElement).classList.remove("opacity-50", "pointer-events-none");
+        });
+    };
 
     const handleMouseDownOnInConnector = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -54,6 +77,10 @@ export const useConnectorHandlers = (
             }
         }
 
+        activeConnectorVariableTypeRef.current = (e.currentTarget as HTMLElement).getAttribute('data-variable-type');
+        console.log('A', activeConnectorVariableTypeRef.current);
+        dimConnectors();
+
         const updatedConnection = {
             ...existingConnection,
             targetNodeId: undefined,
@@ -75,6 +102,10 @@ export const useConnectorHandlers = (
                 '[data-type="in"]'
             ) as HTMLElement;
 
+            undimCommectors();
+
+            console.log('HERE?!?!?');
+
             if (target) {
                 const targetNodeId = !isGroup ?
                     target.getAttribute("data-node-id") as string :
@@ -82,7 +113,6 @@ export const useConnectorHandlers = (
                 const targetHandle = target.getAttribute("data-handle") as string;
 
                 const nodeGroupTarget = target.closest('[data-type="closed-group"]');
-
                 const connection = getConnection(existingConnection.id);
 
                 if (connection) {
@@ -93,7 +123,7 @@ export const useConnectorHandlers = (
                     }
                     const updatedConnection = updateConnectionsDirectly([connection]);
                     updatedConnection.forEach((upd) => {
-                        updateConnection({ ...connection, ...upd });
+                        updateConnection({...connection, ...upd});
                     });
                 }
             } else {
@@ -116,11 +146,16 @@ export const useConnectorHandlers = (
         const groupId = (e.currentTarget as HTMLElement)
             .getAttribute("data-group-id") as string;
 
+        activeConnectorVariableTypeRef.current = (e.currentTarget as HTMLElement).getAttribute('data-variable-type');
+        if (activeConnectorVariableTypeRef.current) {
+            dimConnectors();
+        }
+
         if (!isGroup && isIn) return;
 
         startedFromGroup.current = isGroup;
 
-        const { x, y } = calculateConnectorPosition(
+        const {x, y} = calculateConnectorPosition(
             e.currentTarget as HTMLElement,
         );
 
@@ -154,6 +189,8 @@ export const useConnectorHandlers = (
                 '[data-type="in"], [data-type="out"]'
             ) as HTMLElement;
 
+            undimCommectors();
+
             if (target) {
                 const targetNodeId =
                     target.getAttribute("data-node-id") as string ??
@@ -164,6 +201,13 @@ export const useConnectorHandlers = (
 
                 const connection = getConnection(id);
                 const nodeGroupTarget = target.closest('[data-type="closed-group"]');
+
+                const variableType = target.getAttribute('data-variable-type');
+                if ((activeConnectorVariableTypeRef.current !== null && variableType !== null) && variableType !== activeConnectorVariableTypeRef.current) {
+                    removeConnectionById(id);
+                    activeConnectorVariableTypeRef.current = null;
+                    return;
+                }
 
                 if (connection) {
                     connection.targetHandle = targetHandle;
@@ -181,7 +225,7 @@ export const useConnectorHandlers = (
                     }
                     const updatedConnection = updateConnectionsDirectly([connection]);
                     updatedConnection.forEach((upd) => {
-                        updateConnection({ ...connection, ...upd });
+                        updateConnection({...connection, ...upd});
                     });
                 }
             } else {
@@ -208,5 +252,5 @@ export const useConnectorHandlers = (
         }
     };
 
-    return { handleMouseDown };
+    return {handleMouseDown};
 };

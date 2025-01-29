@@ -14,6 +14,7 @@ import {makeServiceFromNodeForStorage, promoteNodeInStateToService} from "@/util
 import useConnectionsStore from "@/stores/connectionsStore";
 import useServicesStore from "@/stores/servicesStore";
 import {storeService} from "@/api/servicesApi";
+import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 
 const ServiceForm: React.FC = () => {
     const { closeForm, formType, selectedNodes, formEditRecordId } = useEditorStore();
@@ -78,6 +79,7 @@ const ServiceForm: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [nameError, setNameError] = useState<boolean>(false);
     const [categoryError, setCategoryError] = useState<boolean>(false);
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
     const handleCancel = (e: React.FormEvent) => {
         e.preventDefault();
@@ -183,6 +185,12 @@ const ServiceForm: React.FC = () => {
         node.icon = newIcon;
     };
 
+    const handleDelete = () => {
+        closeForm('Service deleted successfully');
+        // @todo: Implement deletion
+        setShowDeleteAlert(false);
+    };
+
     return (
         <form onSubmit={handleSubmit} method="post" className="p-10">
             <Heading>{formType === FormType.AddService ? "Add " : "Edit "} Service</Heading>
@@ -274,6 +282,23 @@ const ServiceForm: React.FC = () => {
 
             <Divider className="my-10" soft bleed />
 
+            {formType === FormType.EditService && (
+                <>
+                    <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                        <div className="space-y-1">
+                            <Subheading>Delete</Subheading>
+                            <Text>After deletion, the service is not recoverable</Text>
+                        </div>
+                        <div className="flex justify-end self-center">
+                            <Button color="red" type="button" onClick={() => setShowDeleteAlert(true)}>
+                                Delete blueprint
+                            </Button>
+                        </div>
+                    </section>
+                    <Divider className="my-10" soft bleed/>
+                </>
+            )}
+
             <div className="flex justify-end gap-4">
                 {error && (
                     <div className="text-red-500">
@@ -287,6 +312,21 @@ const ServiceForm: React.FC = () => {
                     {formType === FormType.AddService ? "Create service" : "Update service"}
                 </Button>
             </div>
+
+            {showDeleteAlert && (
+                <Alert size="md" className="text-center" open={showDeleteAlert} onClose={() => setShowDeleteAlert(false)}>
+                    <AlertTitle>Are you sure you want to delete this service?</AlertTitle>
+                    <AlertDescription>This action cannot be undone.</AlertDescription>
+                    <AlertActions>
+                        <Button onClick={() => setShowDeleteAlert(false)} plain>
+                            Cancel
+                        </Button>
+                        <Button color="red" onClick={handleDelete}>
+                            Yes, delete
+                        </Button>
+                    </AlertActions>
+                </Alert>
+            )}
         </form>
     );
 };

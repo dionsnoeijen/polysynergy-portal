@@ -185,6 +185,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setAddingNode: (nodeId: string | null) => set({addingNode: nodeId}),
     showAddingNode: false,
     setShowAddingNode: (show: boolean) => set({showAddingNode: show}),
+
     editingRouteVersions: {},
     setEditingRouteVersion: (routeId, versionId) =>
         set((state) => ({

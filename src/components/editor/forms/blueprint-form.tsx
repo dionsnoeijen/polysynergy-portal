@@ -64,6 +64,7 @@ const BlueprintForm: React.FC = () => {
 
     const handleDelete = () => {
         closeForm('Blueprint deleted successfully');
+        // @todo: Implement deletion
         setShowDeleteAlert(false);
     };
 

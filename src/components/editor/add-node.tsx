@@ -8,6 +8,7 @@ import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useNodesStore from "@/stores/nodesStore";
 import {globalToLocal} from "@/utils/positionUtils";
 import {useMousePosition} from "@/hooks/editor/useMousePosition";
+import { v4 as uuidv4 } from "uuid";
 
 const AddNode: React.FC = () => {
     const {
@@ -56,13 +57,17 @@ const AddNode: React.FC = () => {
         screenX: number,
         screenY: number
     ) => {
-        setAddingNode(nodeId);
+
+        const replaceIdWith = uuidv4();
+
+        setAddingNode(replaceIdWith);
         setShowAddingNode(false);
 
         const node = getAvailableNodeById(nodeId);
         if (!node) return;
 
         const position = globalToLocal(screenX, screenY);
+        node.id = replaceIdWith;
         node.view = {
             x: position.x,
             y: position.y,

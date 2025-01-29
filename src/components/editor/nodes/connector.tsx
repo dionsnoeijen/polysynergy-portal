@@ -53,6 +53,7 @@ const Connector: React.FC<ConnectorProps> = ({
             onMouseDown={isInteractive ? handleMouseDown : undefined}
             data-type={isIn ? InOut.In : InOut.Out}
             data-node-id={nodeId}
+            data-variable-type={nodeVariableType}
             data-group-id={groupId}
             data-handle={handle}
             data-enabled={!disabled}
@@ -60,7 +61,7 @@ const Connector: React.FC<ConnectorProps> = ({
                 "w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 cursor-pointer",
                 positionClasses,
                 backgroundClasses,
-                className
+                className,
             )}
         >
             {isInteractive && (

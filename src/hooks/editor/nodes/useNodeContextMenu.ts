@@ -1,11 +1,16 @@
-import { Node } from '@/types/types';
+import {FormType, Node} from '@/types/types';
 import React from "react";
 import useEditorStore from "@/stores/editorStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import useNodesStore from "@/stores/nodesStore";
 
 const useNodeContextMenu = (node: Node) => {
-    const { selectedNodes, openContextMenu, setDeleteNodesDialogOpen } = useEditorStore();
+    const {
+        selectedNodes,
+        openContextMenu,
+        setDeleteNodesDialogOpen,
+        openForm
+    } = useEditorStore();
     const { isNodeInGroup} = useNodesStore();
     const { removeNodeFromGroup } = useGrouping();
 
@@ -24,7 +29,12 @@ const useNodeContextMenu = (node: Node) => {
 
         contextMenuItems.push({
             label: "Collapse",
-            action: () => () => {}
+            action: () => () => {console.log('IMPLEMENT COLLAPSE IN CONTEXT MENU')}
+        });
+
+        contextMenuItems.push({
+            label: "Edit Node",
+            action: () => openForm(FormType.EditNode, node.id)
         });
 
         contextMenuItems.push({

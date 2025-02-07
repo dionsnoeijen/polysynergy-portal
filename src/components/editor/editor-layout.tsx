@@ -13,6 +13,7 @@ import ContextMenu from "@/components/editor/context-menu";
 import dynamic from 'next/dynamic';
 import VersionPublishedMenu from "@/components/editor/editormenus/version-published-menu";
 import fetchAndApplyNodeSetup from "@/utils/fetchNodeSetup";
+import ClearMockViewMenu from "@/components/editor/editormenus/clear-mock-view-menu";
 
 const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
@@ -206,6 +207,7 @@ export function EditorLayout({
                                         <Editor/>
                                         <SelectionsMenu/>
                                         <UndoRedoMenu/>
+                                        <ClearMockViewMenu />
                                         <VersionPublishedMenu/>
                                     </>
                                 ) : (

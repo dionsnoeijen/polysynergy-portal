@@ -3,6 +3,7 @@ import {NodeVariable} from "@/types/types";
 import {HashtagIcon} from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
+import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 
 type Props = {
     variable: NodeVariable;
@@ -30,6 +31,8 @@ const NumberVariable: React.FC<Props> = ({
                 ? parseFloat(variable.value)
                 : "";
 
+    const type = interpretNodeVariableType(variable);
+
     return (
         <div
             className={`flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative ${disabled && 'opacity-0'}`}>
@@ -42,7 +45,7 @@ const NumberVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={variable.type}
+                nodeVariableType={type.baseType}
             />}
             <div className="flex items-center truncate">
                 <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
@@ -55,7 +58,7 @@ const NumberVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={variable.type}
+                nodeVariableType={type.baseType}
             />}
             {variable.has_out && isMirror && !onlyIn && (
                 <FakeConnector out/>

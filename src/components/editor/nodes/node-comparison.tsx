@@ -1,18 +1,21 @@
-import { NodeProps, NodeComparisonType, NodeVariableType } from "@/types/types";
+import {NodeComparisonType, NodeProps, NodeVariableType} from "@/types/types";
 import React from "react";
 import useEditorStore from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
-import { Strong } from "@/components/text";
+import {ChevronRightIcon} from "@heroicons/react/24/outline";
+import {Strong} from "@/components/text";
+import useMockStore from "@/stores/mockStore";
+import ExecutionOrder from "@/components/editor/nodes/execution-order";
 
 const NodeComparison: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes } = useEditorStore();
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);
+    const mockNode = useMockStore((state) => state.getMockNode(node.id));
 
     return (
         <div
@@ -30,6 +33,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
             data-type="node"
             data-node-id={node.id}
         >
+            {mockNode && <ExecutionOrder mockNode={mockNode} centered={true} />}
             <Connector
                 in
                 nodeId={node.id}
@@ -37,6 +41,11 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 iconClassName="text-white dark:text-white"
                 className={`-translate-y-5 ring-orange-200/50 bg-orange-400 dark:bg-orange-400 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
+                nodeVariableType={[
+                    NodeVariableType.Number,
+                    NodeVariableType.String,
+                    NodeVariableType.TruePath
+                ]}
             />
             <Connector
                 in
@@ -45,6 +54,11 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 iconClassName="text-white dark:text-white"
                 className={`translate-y-2 ring-orange-200/50 bg-orange-400 dark:bg-orange-400 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
+                nodeVariableType={[
+                    NodeVariableType.Number,
+                    NodeVariableType.String,
+                    NodeVariableType.TruePath
+                ]}
             />
 
             {node.type === NodeComparisonType.LargerThan && (
@@ -66,7 +80,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
             <Connector
                 out
                 nodeId={node.id}
-                handle="true"
+                handle={NodeVariableType.TruePath}
                 className={`-translate-y-5 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
                 nodeVariableType={NodeVariableType.TruePath}
@@ -74,7 +88,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
             <Connector
                 out
                 nodeId={node.id}
-                handle="false"
+                handle={NodeVariableType.FalsePath}
                 className={`translate-y-2 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
                 nodeVariableType={NodeVariableType.FalsePath}

@@ -24,6 +24,10 @@ import {Button} from "@/components/button";
 import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
 import NodeIcon from "@/components/editor/nodes/node-icon";
 import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
+import RichTextAreaVariable from "@/components/editor/nodes/rows/rich-text-area-variable";
+import useMockStore from "@/stores/mockStore";
+import ExecutionOrder from "@/components/editor/nodes/execution-order";
+import {getColorForNodeType} from "@/utils/getColorForNodeType";
 
 const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {size, handleResizeMouseDown} = useResizable(node);
@@ -35,12 +39,14 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
         getNodeVariableOpenState,
         toggleNodeViewCollapsedState
     } = useNodesStore();
-    const {handleNodeMouseDown} = useNodeMouseDown(node);
-    const {handleContextMenu} = useNodeContextMenu(node);
+    const { handleNodeMouseDown } = useNodeMouseDown(node);
+    const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);
-
     const ref = useRef<HTMLDivElement>(null);
     const shouldUpdateConnections = useRef(false);
+
+    const mockNode = useMockStore((state) => state.getMockNode(node.id));
+    const hasMockData = useMockStore((state) => state.hasMockData());
 
     const handleToggle = (handle: string): (() => void) => {
         return () => {
@@ -58,31 +64,9 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
         return node.category !== NodeType.Note;
     };
 
-    const getColorForNodeType = () => {
-        let classList = '';
-
-        if (node.service && node.service.id) {
-            classList += "ring-purple-500 dark:ring-purple-500";
-        } else {
-            if (node.category === NodeType.Mock) {
-                classList += "ring-orange-500 dark:ring-orange-500";
-            } else if (node.category === NodeType.Note) {
-                classList += "ring-yellow-500 dark:ring-yellow-500";
-            } else {
-                classList += "ring-sky-500 dark:ring-sky-500";
-            }
-        }
-
-        if (selectedNodes.includes(node.id)) {
-            classList += " ring-2 shadow-2xl";
-        }
-
-        return classList;
-    };
-
     const className = `
     ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start 
-    ring-1 bg-zinc-800 ${getColorForNodeType()} rounded-md pb-5 
+    ring-1 bg-zinc-800 ${getColorForNodeType(node, selectedNodes.includes(node.id), mockNode, hasMockData)} rounded-md pb-5 
     ${node.view.disabled ? "z-1 select-none opacity-30" : "z-20 cursor-move"}
     ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}
     `.trim();
@@ -110,7 +94,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                 updateNodeHeight(node.id, actualHeight);
             }
         }
-        // eslint-disable-next-line
+    // eslint-disable-next-line
     }, [node.view.height, getNodeVariableOpenState, updateNodeHeight, node.id]);
 
     return !node.view.collapsed ? (
@@ -131,11 +115,17 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             data-type="node"
             data-node-id={node.id}
         >
+            {mockNode && <ExecutionOrder mockNode={mockNode} centered={false} />}
             <div
                 className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'select-none opacity-0'}`}>
                 {node.has_enabled_switch && (
                     <>
-                        <Connector in nodeId={node.id} handle={NodeEnabledConnector.Node}/>
+                        <Connector
+                            in
+                            nodeId={node.id}
+                            handle={NodeEnabledConnector.Node}
+                            nodeVariableType={[NodeVariableType.TruePath, NodeVariableType.FalsePath]}
+                        />
                         <ThreeWaySwitch disabled={preview} node={node}/>
                     </>
                 )}
@@ -231,9 +221,17 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                                     />
                                 );
                             case NodeVariableType.TextArea:
-                            case NodeVariableType.RichTextArea:
                                 return (
                                     <TextAreaVariable
+                                        key={'dock-' + node.id + '-' + variable.handle}
+                                        variable={variable}
+                                        nodeId={node.id}
+                                        disabled={node.view.disabled}
+                                    />
+                                );
+                            case NodeVariableType.RichTextArea:
+                                return (
+                                    <RichTextAreaVariable
                                         key={'dock-' + node.id + '-' + variable.handle}
                                         variable={variable}
                                         nodeId={node.id}

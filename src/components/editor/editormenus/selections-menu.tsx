@@ -26,7 +26,7 @@ const SelectionsMenu: React.FC = () => {
     });
 
     return (
-        <div className="absolute left-5 top-24 flex flex-col items-center justify-center">
+        <div className="absolute left-5 top-20 flex flex-col items-center justify-center">
             <div className="flex flex-col items-start justify-center w-full h-full">
                 <button
                     type="button"

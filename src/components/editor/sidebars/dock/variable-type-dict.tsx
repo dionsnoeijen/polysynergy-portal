@@ -40,7 +40,7 @@ const VariableTypeDict: React.FC<Props> = ({ variable, nodeId }: Props): React.R
                         {variable.value === null &&
                             (
                                 <TableRow>
-                                    <TableCell colSpan={2} className="py-1">
+                                    <TableCell colSpan={4} className="py-1">
                                         <Text>No data</Text>
                                     </TableCell>
                                 </TableRow>

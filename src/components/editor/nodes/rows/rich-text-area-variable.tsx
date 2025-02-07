@@ -35,11 +35,7 @@ const RichTextAreaVariable: React.FC<Props> = ({
             groupId={groupId}
             nodeVariableType={variable.type}
         />}
-        <div className="flex items-center truncate">
-            <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
-            <DocumentTextIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
-            <p>{variable.value as string}</p>
-        </div>
+        <div className="note-text" dangerouslySetInnerHTML={{ __html: variable.value as string }} />
         {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
             out
             nodeId={nodeId}

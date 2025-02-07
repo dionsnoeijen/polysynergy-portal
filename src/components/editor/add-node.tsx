@@ -2,13 +2,15 @@
 
 import React, {useCallback, useEffect, useRef} from "react";
 import useEditorStore from "@/stores/editorStore";
-import { Input, InputGroup } from "@/components/input";
-import {ChevronRightIcon, MagnifyingGlassIcon} from "@heroicons/react/24/outline";
+import {Input, InputGroup} from "@/components/input";
+import {ChevronRightIcon, MagnifyingGlassIcon, PlusIcon} from "@heroicons/react/24/outline";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useNodesStore from "@/stores/nodesStore";
 import {globalToLocal} from "@/utils/positionUtils";
 import {useMousePosition} from "@/hooks/editor/useMousePosition";
-import { v4 as uuidv4 } from "uuid";
+import {v4 as uuidv4} from "uuid";
+import {Button} from "@/components/button";
+import {FormType} from "@/types/types";
 
 const AddNode: React.FC = () => {
     const {
@@ -16,6 +18,7 @@ const AddNode: React.FC = () => {
         setShowAddingNode,
         setAddingNode,
         openGroup,
+        openForm,
     } = useEditorStore();
 
     const {
@@ -87,6 +90,10 @@ const AddNode: React.FC = () => {
         resetSelectedNodeIndex();
     }, []);
 
+    const handleAddNewNode = () => {
+        openForm(FormType.AddNode);
+    };
+
     useEffect(() => {
         if (!showAddingNode) return;
 
@@ -138,7 +145,7 @@ const AddNode: React.FC = () => {
                 <div
                     ref={modalRef}
                     onWheel={(e) => e.stopPropagation()}
-                    className="absolute p-4 bg-black/90 rounded-lg shadow-lg w-[700px] h-[300px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-1/2 z-10"
+                    className="fixed p-4 bg-black/90 rounded-lg shadow-lg w-[700px] h-[395px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-2/3 z-10"
                 >
                     <InputGroup>
                         <MagnifyingGlassIcon data-slot="icon" className="h-5 w-5 text-zinc-500" />
@@ -149,7 +156,7 @@ const AddNode: React.FC = () => {
                             ref={inputRef}
                         />
                     </InputGroup>
-                    <div className="absolute inset-4 top-16 overflow-y-auto">
+                    <div className="absolute inset-4 top-16 bottom-16 overflow-y-auto">
                         {filteredAvailableNodes.map((n, index) => (
                             <div
                                 key={n.id}
@@ -165,6 +172,11 @@ const AddNode: React.FC = () => {
                                 {n.name}
                             </div>
                         ))}
+                    </div>
+                    <div className="absolute bottom-4 right-4 left-4 h-auto overflow-y-auto">
+                        <Button onClick={handleAddNewNode} className={'w-full'}>
+                            New Node <PlusIcon />
+                        </Button>
                     </div>
                 </div>
             )}

@@ -1,29 +1,26 @@
 import {NodeVariable, NodeVariableType} from "@/types/types";
 
 export function interpretNodeVariableType(variable: NodeVariable): { baseType: NodeVariableType; containsNone: boolean } {
-    const types = variable.type.split('|');
+    const types = variable.type.split('|').map((type) => type.trim());
     const containsNone = types.includes('None');
 
-    if (types.includes('int') || types.includes('float')) {
+    if (types.includes('int') || types.includes('float') || types.includes('number')) {
         return { baseType: NodeVariableType.Number, containsNone };
     } else if (types.includes('str')) {
-
-        if (variable?.dock.field_secret) {
-            return { baseType: NodeVariableType.SecretString, containsNone };
+        if (variable.dock) {
+            if (variable?.dock.field_secret) {
+                return {baseType: NodeVariableType.SecretString, containsNone};
+            }
+            if (variable?.dock.field_text_area) {
+                return {baseType: NodeVariableType.TextArea, containsNone};
+            }
+            if (variable?.dock.field_rich_text_area) {
+                return {baseType: NodeVariableType.RichTextArea, containsNone};
+            }
+            if (variable?.dock.field_code_editor) {
+                return {baseType: NodeVariableType.Code, containsNone};
+            }
         }
-
-        if (variable?.dock.field_text_area) {
-            return { baseType: NodeVariableType.TextArea, containsNone };
-        }
-
-        if (variable?.dock.field_rich_text_area) {
-            return { baseType: NodeVariableType.RichTextArea, containsNone };
-        }
-
-        if (variable?.dock.field_code_editor) {
-            return { baseType: NodeVariableType.Code, containsNone };
-        }
-
         return { baseType: NodeVariableType.String, containsNone };
     } else if (types.includes('bytes')) {
         return { baseType: NodeVariableType.Bytes, containsNone };

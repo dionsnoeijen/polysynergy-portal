@@ -2,7 +2,7 @@ import React from "react";
 import { NodeVariable } from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 import { Field, Fieldset, Label } from "@/components/fieldset";
-import {Textarea} from "@/components/textarea";
+import RichTextEditor from "@/components/rich-text-editor";
 
 type Props = {
     nodeId: string;
@@ -12,20 +12,17 @@ type Props = {
 const VariableTypeRichTextArea: React.FC<Props> = ({ nodeId, variable }) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
-        updateNodeVariable(nodeId, variable.handle, newValue);
+    const handleChange = (value: string) => {
+        updateNodeVariable(nodeId, variable.handle, value);
     };
 
     return (
         <Fieldset>
             <Label>{variable.handle}</Label>
             <Field>
-                <Textarea
-                    onChange={handleChange}
-                    placeholder={variable.handle}
-                    aria-label={variable.handle}
-                    defaultValue={variable.value as string || ""}
+                <RichTextEditor
+                    onChange={(value: string) => handleChange(value)}
+                    value={variable.value as string || ""}
                 />
             </Field>
         </Fieldset>

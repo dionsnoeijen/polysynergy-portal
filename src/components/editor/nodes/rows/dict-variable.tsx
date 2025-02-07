@@ -3,6 +3,7 @@ import {NodeVariable} from "@/types/types";
 import {ChevronDownIcon, ChevronLeftIcon, Squares2X2Icon} from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
+import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 
 type Props = {
     variable: NodeVariable;
@@ -26,8 +27,11 @@ const DictVariable: React.FC<Props> = ({
                                            disabled = false,
                                            groupId,
                                            isMirror = false,
-                                       }) => (
-    <>
+                                       }) => {
+
+    const type = interpretNodeVariableType(variable);
+
+    return <>
         <div
             className={`flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative ${disabled && 'select-none opacity-0'}`}>
             {variable.has_in && isMirror && !onlyOut && (
@@ -39,7 +43,7 @@ const DictVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={variable.type}
+                nodeVariableType={type.baseType}
             />}
             <div className="flex items-center truncate">
                 <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
@@ -65,7 +69,7 @@ const DictVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={variable.type}
+                nodeVariableType={type.baseType}
             />}
             {variable.has_out && isMirror && !onlyIn && (
                 <FakeConnector out/>
@@ -74,8 +78,10 @@ const DictVariable: React.FC<Props> = ({
 
         {isOpen &&
             Array.isArray(variable.value) &&
-            (variable.value as NodeVariable[]).map((item, index) => (
-                <div key={item.handle} className="flex items-center pl-6 pr-6 pt-1 relative">
+            (variable.value as NodeVariable[]).map((item, index) => {
+                const type = interpretNodeVariableType(item);
+
+                return <div key={item.handle} className="flex items-center pl-6 pr-6 pt-1 relative">
                     {item.has_in && isMirror && !onlyOut && (
                         <FakeConnector in/>
                     )}
@@ -85,9 +91,9 @@ const DictVariable: React.FC<Props> = ({
                         handle={`${variable.handle}.${item.handle}`}
                         disabled={disabled}
                         groupId={groupId}
-                        nodeVariableType={variable.type}
+                        nodeVariableType={type.baseType}
                     />}
-                    <div className="flex items-center truncate text-sky-200 dark:text-white">
+                    <div className="flex items-center truncate text-sky-200 dark:text-white" title={`${variable.handle}.${item.handle}`}>
                         <span className="text-sky-400 dark:text-slate-400">
                             {index === (variable.value as NodeVariable[]).length - 1 ? (
                                 <div className={"w-4 h-4"}>
@@ -108,14 +114,14 @@ const DictVariable: React.FC<Props> = ({
                         handle={`${variable.handle}.${item.handle}`}
                         disabled={disabled}
                         groupId={groupId}
-                        nodeVariableType={variable.type}
+                        nodeVariableType={type.baseType}
                     />}
                     {item.has_out && isMirror && !onlyIn && (
-                        <FakeConnector out />
+                        <FakeConnector out/>
                     )}
                 </div>
-            ))}
+            })}
     </>
-);
+};
 
 export default DictVariable;

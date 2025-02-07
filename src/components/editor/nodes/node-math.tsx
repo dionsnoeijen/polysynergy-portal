@@ -6,12 +6,15 @@ import { Strong } from "@/components/text";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
+import useMockStore from "@/stores/mockStore";
+import ExecutionOrder from "@/components/editor/nodes/execution-order";
 
 const NodeMath: React.FC<NodeProps> = ({ node }) => {
     const { selectedNodes } = useEditorStore();
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);
+    const mockNode = useMockStore((state) => state.getMockNode(node.id));
 
     return (
         <div
@@ -29,6 +32,7 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
             data-type="node"
             data-node-id={node.id}
         >
+            {mockNode && <ExecutionOrder mockNode={mockNode} centered={true} />}
             <Connector
                 in
                 nodeId={node.id}

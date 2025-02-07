@@ -29,6 +29,9 @@ importers:
       draft-js-export-html:
         specifier: ^1.4.1
         version: 1.4.1(draft-js@0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(immutable@3.7.6)
+      draft-js-import-html:
+        specifier: ^1.4.1
+        version: 1.4.1(draft-js@0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(immutable@3.7.6)
       framer-motion:
         specifier: ^11.11.10
         version: 11.11.10(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
@@ -769,6 +772,18 @@ packages:
 
   draft-js-export-html@1.4.1:
     resolution: {integrity: sha512-G4VGBSalPowktIE4wp3rFbhjs+Ln9IZ2FhXeHjsZDSw0a2+h+BjKu5Enq+mcsyVb51RW740GBK8Xbf7Iic51tw==}
+    peerDependencies:
+      draft-js: '>=0.10.0'
+      immutable: 3.x.x
+
+  draft-js-import-element@1.4.0:
+    resolution: {integrity: sha512-WmYT5PrCm47lGL5FkH6sRO3TTAcn7qNHsD3igiPqLG/RXrqyKrqN4+wBgbcT2lhna/yfWTRtgzAbQsSJoS1Meg==}
+    peerDependencies:
+      draft-js: '>=0.10.0'
+      immutable: 3.x.x
+
+  draft-js-import-html@1.4.1:
+    resolution: {integrity: sha512-KOZmtgxZriCDgg5Smr3Y09TjubvXe7rHPy/2fuLSsL+aSzwUDwH/aHDA/k47U+WfpmL4qgyg4oZhqx9TYJV0tg==}
     peerDependencies:
       draft-js: '>=0.10.0'
       immutable: 3.x.x
@@ -1810,6 +1825,9 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
+  synthetic-dom@1.4.0:
+    resolution: {integrity: sha512-mHv51ZsmZ+ShT/4s5kg+MGUIhY7Ltq4v03xpN1c8T1Krb5pScsh/lzEjyhrVD0soVDbThbd2e+4dD9vnDG4rhg==}
+
   tabbable@6.2.0:
     resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
 
@@ -2688,6 +2706,19 @@ snapshots:
     dependencies:
       draft-js: 0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
       draft-js-utils: 1.4.1(draft-js@0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(immutable@3.7.6)
+      immutable: 3.7.6
+
+  draft-js-import-element@1.4.0(draft-js@0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(immutable@3.7.6):
+    dependencies:
+      draft-js: 0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+      draft-js-utils: 1.4.1(draft-js@0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(immutable@3.7.6)
+      immutable: 3.7.6
+      synthetic-dom: 1.4.0
+
+  draft-js-import-html@1.4.1(draft-js@0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(immutable@3.7.6):
+    dependencies:
+      draft-js: 0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021)
+      draft-js-import-element: 1.4.0(draft-js@0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(immutable@3.7.6)
       immutable: 3.7.6
 
   draft-js-utils@1.4.1(draft-js@0.11.7(react-dom@19.0.0-rc-69d4b800-20241021(react@19.0.0-rc-69d4b800-20241021))(react@19.0.0-rc-69d4b800-20241021))(immutable@3.7.6):
@@ -3934,6 +3965,8 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  synthetic-dom@1.4.0: {}
 
   tabbable@6.2.0: {}
 

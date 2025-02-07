@@ -43,6 +43,8 @@ export enum FormType {
     EditDict = 'editDict',
     EditList = 'editList',
     EditCode = 'editCode',
+    EditNode = 'editNode',
+    AddNode = 'addNewNode',
 }
 
 export enum InOut {
@@ -163,6 +165,8 @@ export type Node = {
     has_play_button?: boolean;
     has_enabled_switch?: boolean;
     package?: Package;
+    path: string;
+    code: string;
 };
 
 export interface NodeProps {

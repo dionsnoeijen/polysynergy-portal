@@ -11,7 +11,7 @@ type ConnectorProps = {
     iconClassName?: string;
     disabled?: boolean;
     groupId?: string;
-    nodeVariableType?: string | NodeVariableType;
+    nodeVariableType?: string | NodeVariableType | (string | NodeVariableType)[];
 } & (
     | { in: true; out?: never }
     | { out: true; in?: never }
@@ -44,7 +44,8 @@ const Connector: React.FC<ConnectorProps> = ({
         iconColorClasses = "text-sky-600 dark:text-white";
     }
 
-    const positionClasses = isIn ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2";
+    const positionClasses = isIn ?
+        "left-0 -translate-x-1/2" : "right-0 translate-x-1/2";
 
     const isInteractive = handle !== NodeCollapsedConnector.Collapsed;
 

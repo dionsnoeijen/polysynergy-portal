@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Editor, EditorState, RichUtils } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
+import { stateFromHTML } from 'draft-js-import-html';
 import "draft-js/dist/Draft.css";
-import {BoldIcon, ItalicIcon, ListBulletIcon, NumberedListIcon, UnderlineIcon} from "@heroicons/react/24/outline";
+import { BoldIcon, ItalicIcon, ListBulletIcon, NumberedListIcon, UnderlineIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/button";
 
 interface RichTextEditorProps {
@@ -10,10 +11,9 @@ interface RichTextEditorProps {
   onChange: (html: string) => void;
 }
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
-  const [editorState, setEditorState] = useState(
-    EditorState.createEmpty()
-  );
+const RichTextEditor: React.FC<RichTextEditorProps> = ({ value = "", onChange }) => {
+  const content = stateFromHTML(value || "");
+  const [editorState, setEditorState] = useState(EditorState.createWithContent(content));
 
   const handleEditorChange = (state: EditorState) => {
     setEditorState(state);
@@ -61,7 +61,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
             toggleInlineStyle("BOLD");
           }}
         >
-          <BoldIcon className={`h-5 w-5`} />
+          <BoldIcon className="h-5 w-5" />
         </Button>
         <Button
           plain
@@ -72,7 +72,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
             toggleInlineStyle("ITALIC");
           }}
         >
-          <ItalicIcon className={`h-5 w-5`} />
+          <ItalicIcon className="h-5 w-5" />
         </Button>
         <Button
           plain
@@ -83,7 +83,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
             toggleInlineStyle("UNDERLINE");
           }}
         >
-          <UnderlineIcon className={`h-5 w-5`} />
+          <UnderlineIcon className="h-5 w-5" />
         </Button>
         <Button
           plain
@@ -94,7 +94,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
             toggleBlockType("unordered-list-item");
           }}
         >
-          <ListBulletIcon className={`h-5 w-5`} />
+          <ListBulletIcon className="h-5 w-5" />
         </Button>
         <Button
           plain
@@ -105,7 +105,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
             toggleBlockType("ordered-list-item");
           }}
         >
-          <NumberedListIcon className={`h-5 w-5`} />
+          <NumberedListIcon className="h-5 w-5" />
         </Button>
       </div>
 

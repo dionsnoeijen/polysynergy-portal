@@ -1,6 +1,7 @@
 import React, { useRef, useCallback, useLayoutEffect, useState } from "react";
 import {Connection as ConnectionProps} from "@/types/types";
 import { useTheme } from "next-themes";
+import useMockStore from "@/stores/mockStore";
 
 type Props = {
     connection: ConnectionProps;
@@ -15,11 +16,23 @@ const Connection: React.FC<Props> = ({ connection }) => {
     const [middle, setMiddle] = useState({ x: 0, y: 0 });
 
     const { theme } = useTheme();
+    const mockConnection = useMockStore(
+        (state) => state.getMockConnection(connection.id)
+    );
 
     let color = connection.collapsed ? "#cccccc" : "#ffffff";
 
     if (theme === "light") {
-        color = connection.collapsed ? "rgb(7, 89, 133)" : "rgb(14, 165, 233)";
+        color = connection.collapsed ?
+            "rgb(7, 89, 133)" :
+            "rgb(14, 165, 233)";
+    }
+
+    if (mockConnection) {
+        color = "rgb(0, 255, 0)";
+        if (mockConnection.killer) {
+            color = "red";
+        }
     }
 
     const width = 2;

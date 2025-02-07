@@ -1,8 +1,6 @@
-import {create} from 'zustand';
-import {v4 as uuidv4} from "uuid";
-import {Group, Node, NodeSetupVersion, NodeType, NodeVariable, NodeView, Route} from "@/types/types";
-import {fetchDynamicRoute as fetchDynamicRouteAPI} from "@/api/dynamicRoutesApi";
-import useEditorStore from "@/stores/editorStore";
+import { create } from 'zustand';
+import { v4 as uuidv4 } from "uuid";
+import { Group, Node, NodeType, NodeVariable, NodeView } from "@/types/types";
 
 type NodesStore = {
     nodes: Node[];
@@ -53,12 +51,12 @@ type NodesStore = {
 
 const nodesByIdsCache = new Map<string, Node[]>();
 
-export const createDefaultNode = (overrides = {}): Node => ({
+export const createDefaultNode = (overrides = {}): Partial<Node> => ({
     id: uuidv4(),
     name: "Default Name",
     category: "hidden",
     type: NodeType.Rows,
-    view: {x: 0, y: 0, width: 200, height: 200, collapsed: false},
+    view: { x: 0, y: 0, width: 200, height: 200, collapsed: false },
     enabled: true,
     driven: false,
     variables: [],

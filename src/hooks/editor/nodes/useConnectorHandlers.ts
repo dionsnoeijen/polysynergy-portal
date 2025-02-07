@@ -33,24 +33,32 @@ export const useConnectorHandlers = (
     const activeConnectorVariableTypeRef = useRef<string | null>(null);
 
     const dimConnectors = () => {
+        const activeTypes = Array.isArray(activeConnectorVariableTypeRef.current)
+            ? activeConnectorVariableTypeRef.current
+            : [activeConnectorVariableTypeRef.current];
+
+        const invalidInConnectors = [...document.querySelectorAll(`[data-type="in"][data-node-id]`)]
+            .filter((el) => {
+                const nodeTypes = (el.getAttribute("data-variable-type") || "").split(",");
+                console.log("Checking:", el, "nodeTypes:", nodeTypes, "activeTypes:", activeTypes);
+                return !nodeTypes.some(type => activeTypes.includes(type));
+            });
+
         const allOutConnectors = document.querySelectorAll(`[data-type="out"][data-node-id]`);
-        const invalidInConnectors = document.querySelectorAll(
-            `[data-type="in"][data-node-id]:not([data-variable-type="${activeConnectorVariableTypeRef.current}"])`
-        );
+
         allOutConnectors.forEach((connector) => {
-            (connector as HTMLElement).classList.remove("opacity-50");
-            (connector as HTMLElement).classList.add("opacity-50", "pointer-events-none");
+            (connector as HTMLElement).style.opacity = '0.5';
         });
+
         invalidInConnectors.forEach((connector) => {
-            (connector as HTMLElement).classList.remove("opacity-50");
-            (connector as HTMLElement).classList.add("opacity-50", "pointer-events-none");
+            (connector as HTMLElement).style.opacity = '0.5';
         });
     };
 
     const undimCommectors = () => {
         const connectors = document.querySelectorAll(`[data-type="in"], [data-type="out"]`);
         connectors.forEach((connector) => {
-            (connector as HTMLElement).classList.remove("opacity-50", "pointer-events-none");
+            (connector as HTMLElement).style.opacity = "";
         });
     };
 
@@ -203,10 +211,20 @@ export const useConnectorHandlers = (
                 const nodeGroupTarget = target.closest('[data-type="closed-group"]');
 
                 const variableType = target.getAttribute('data-variable-type');
-                if ((activeConnectorVariableTypeRef.current !== null && variableType !== null) && variableType !== activeConnectorVariableTypeRef.current) {
-                    removeConnectionById(id);
-                    activeConnectorVariableTypeRef.current = null;
-                    return;
+                if (variableType !== null && activeConnectorVariableTypeRef.current !== null) {
+                    const variableTypesArray = variableType.split(",");
+
+                    const activeTypes = Array.isArray(activeConnectorVariableTypeRef.current)
+                        ? activeConnectorVariableTypeRef.current
+                        : [activeConnectorVariableTypeRef.current];
+
+                    const hasMatch = variableTypesArray.some(type => activeTypes.includes(type));
+
+                    if (!hasMatch) {
+                        removeConnectionById(id);
+                        activeConnectorVariableTypeRef.current = null;
+                        return;
+                    }
                 }
 
                 if (connection) {

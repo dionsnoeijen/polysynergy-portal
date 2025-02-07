@@ -7,6 +7,7 @@ import {FormType} from "@/types/types";
 import DictVariableForm from "@/components/editor/forms/dict-variable-form";
 import CodeEditorForm from "@/components/editor/forms/code-editor-form";
 import BlueprintForm from "@/components/editor/forms/blueprint-form";
+import NodeEditorForm from "@/components/editor/forms/node-editor-form";
 
 const Form: React.FC = () => {
     const { formType } = useEditorStore();
@@ -42,6 +43,12 @@ const Form: React.FC = () => {
                 formType === FormType.EditBlueprint
             ) && (
                 <BlueprintForm />
+            )}
+            {(
+                formType === FormType.AddNode ||
+                formType === FormType.EditNode
+            ) && (
+                <NodeEditorForm />
             )}
         </div>
     );

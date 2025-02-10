@@ -118,6 +118,7 @@ export type NodeVariable = {
     has_dock?: boolean;
     has_in?: boolean;
     has_out?: boolean;
+    out_type_override?: string;
     dock?: Dock;
 };
 
@@ -154,6 +155,7 @@ export type Node = {
     id: string;
     service?: NodeService;
     icon?: string;
+    handle: null | string;
     name: string;
     category: string;
     type: NodeType|NodeMathType|NodeComparisonType;

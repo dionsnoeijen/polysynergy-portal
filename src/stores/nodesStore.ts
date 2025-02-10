@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from "uuid";
 import { Group, Node, NodeType, NodeVariable, NodeView } from "@/types/types";
+import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
 
 type NodesStore = {
     nodes: Node[];
@@ -30,6 +31,7 @@ type NodesStore = {
     getNodeVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
     getNodesToRender: () => Node[];
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => void;
+    updateNodeHandle: (nodeId: string, handle: string) => void;
     getTrackedNode: () => Node | null;
     initNodes: (nodes: Node[]) => void;
 
@@ -53,6 +55,7 @@ const nodesByIdsCache = new Map<string, Node[]>();
 
 export const createDefaultNode = (overrides = {}): Partial<Node> => ({
     id: uuidv4(),
+    handle: uniqueNamesGenerator({dictionaries: [adjectives, colors, animals]}),
     name: "Default Name",
     category: "hidden",
     type: NodeType.Rows,
@@ -221,6 +224,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         };
 
         node.id = node.id ? node.id : uuidv4();
+        node.handle = node.handle ? node.handle : uniqueNamesGenerator({dictionaries: [adjectives, colors, animals]});
         node.enabled = true;
         node.driven = false;
 
@@ -395,6 +399,20 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     : node
             ),
             trackedNodeId: nodeId,
+        }));
+    },
+
+    updateNodeHandle: (nodeId: string, handle: string) => {
+        nodesByIdsCache.clear();
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        handle,
+                    }
+                    : node
+            ),
         }));
     },
 

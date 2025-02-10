@@ -143,7 +143,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setControlDeselectOne: (controlDeselectOne) => set({controlDeselectOne: controlDeselectOne}),
     boxSelect: false,
     setBoxSelect: (boxSelect) => set({boxSelect: boxSelect}),
-    bottomBarView: BottomBarView.Debug,
+    bottomBarView: BottomBarView.Output,
     setBottomBarView: (view) => set({bottomBarView: view}),
     contextMenu: {visible: false, x: 0, y: 0, items: []},
     openContextMenu: (x, y, items) =>

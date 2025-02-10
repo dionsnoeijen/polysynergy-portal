@@ -18,6 +18,7 @@ import VariableTypeTextArea from "@/components/editor/sidebars/dock/variable-typ
 import { NodeVariable, NodeVariableType } from "@/types/types";
 import { interpretNodeVariableType } from "@/utils/interpretNodeVariableType";
 import VariableTypeCode from "@/components/editor/sidebars/dock/variable-type-code";
+import NodeHandle from "@/components/editor/sidebars/dock/node-handle";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -59,6 +60,10 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
             <Heading arrowToLeft={true} toggleClose={toggleClose}>
                 Dock: {node ? node.name : "select node"}
             </Heading>
+
+            {node && <VariableGroup title={'Handle'}>
+                <NodeHandle node={node} />
+            </VariableGroup>}
 
             {group && (
                 <>

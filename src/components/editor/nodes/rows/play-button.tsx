@@ -17,7 +17,9 @@ const PlayButton: React.FC<Props> = ({
     const { activeVersionId } = useEditorStore();
     const { setMockConnections, setMockNodes } = useMockStore();
 
-    const handlePlay = async () => {
+    const handlePlay = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
         if (activeVersionId) {
             const response = await runMockApi(activeVersionId, nodeId);
             const data = await response.json();
@@ -33,6 +35,7 @@ const PlayButton: React.FC<Props> = ({
             type={"button"}
             className={'block w-full'}
             onClick={handlePlay}
+            onDoubleClick={(e:React.MouseEvent) => e.stopPropagation()}
         ><PlayCircleIcon className={'h-6 w-6 text-white'}/></Button>
     </div>
 };

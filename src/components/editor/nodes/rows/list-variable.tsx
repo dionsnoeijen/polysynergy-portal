@@ -65,7 +65,7 @@ const ListVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={variable.type}
+                nodeVariableType={variable.out_type_override || variable.type}
             />}
             {variable.has_out && isMirror && !onlyIn && (
                 <FakeConnector out/>

@@ -14,7 +14,7 @@ import PlayButton from "@/components/editor/nodes/rows/play-button";
 import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
 import ListVariable from "@/components/editor/nodes/rows/list-variable";
 import BytesVariable from "@/components/editor/nodes/rows/bytes-variable";
-import {NodeProps, NodeCollapsedConnector, NodeEnabledConnector, NodeType, NodeVariableType} from "@/types/types";
+import {NodeProps, NodeCollapsedConnector, NodeEnabledConnector, NodeType, NodeVariableType, Node} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
 import {ThreeWaySwitch} from "@/components/three-way-switch";
@@ -25,9 +25,8 @@ import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
 import NodeIcon from "@/components/editor/nodes/node-icon";
 import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
 import RichTextAreaVariable from "@/components/editor/nodes/rows/rich-text-area-variable";
-import useMockStore from "@/stores/mockStore";
+import useMockStore, {MockNode} from "@/stores/mockStore";
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
-import {getColorForNodeType} from "@/utils/getColorForNodeType";
 
 const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {size, handleResizeMouseDown} = useResizable(node);
@@ -39,8 +38,8 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
         getNodeVariableOpenState,
         toggleNodeViewCollapsedState
     } = useNodesStore();
-    const { handleNodeMouseDown } = useNodeMouseDown(node);
-    const { handleContextMenu } = useNodeContextMenu(node);
+    const {handleNodeMouseDown} = useNodeMouseDown(node);
+    const {handleContextMenu} = useNodeContextMenu(node);
     const position = useNodePlacement(node);
     const ref = useRef<HTMLDivElement>(null);
     const shouldUpdateConnections = useRef(false);
@@ -64,12 +63,55 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
         return node.category !== NodeType.Note;
     };
 
+    const getColorForNodeType = (
+        node: Node,
+        isSelected: boolean,
+        mockNode: MockNode | undefined,
+        hasMockData: boolean,
+    ) => {
+        let classList = ' bg-zinc-800 bg-opacity-50';
+
+        if (mockNode) {
+            classList += " ring-2";
+            classList += " ring-green-500 dark:ring-green-500";
+            if (mockNode.is_killed) {
+                classList += " ring-red-500 dark:ring-red-500";
+            }
+        } else {
+            if (hasMockData) {
+                classList += " ring-2";
+                classList += " ring-red-500 dark:ring-red-500";
+            } else {
+                if (isSelected) {
+                    classList += " ring-2 shadow-2xl";
+                } else {
+                    classList += " ring ring-1";
+                }
+                if (node.service && node.service.id) {
+                    classList += " ring-purple-500 dark:ring-purple-500";
+                } else {
+                    if (node.category === NodeType.Mock) {
+                        classList += " ring-orange-500 dark:ring-orange-500";
+                    } else if (node.category === NodeType.Note) {
+                        classList += " ring-yellow-500 dark:ring-yellow-500";
+                    } else {
+                        classList += " ring-sky-500 dark:ring-sky-500";
+                    }
+                }
+            }
+        }
+
+        return classList;
+    };
+
     const className = `
-    ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start 
-    ring-1 bg-zinc-800 ${getColorForNodeType(node, selectedNodes.includes(node.id), mockNode, hasMockData)} rounded-md pb-5 
-    ${node.view.disabled ? "z-1 select-none opacity-30" : "z-20 cursor-move"}
-    ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}
-    `.trim();
+    ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start rounded-md pb-5 
+    ${node.view.disabled ? " z-1 select-none opacity-30 " : " z-20 cursor-move "}
+    ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)] ' : ' '}
+    ${getColorForNodeType(node, selectedNodes.includes(node.id), mockNode, hasMockData)} 
+    `.replace(/\s+/g, ' ').trim();
+
+    console.log(className);
 
     useEffect(() => {
         if (shouldUpdateConnections.current) {
@@ -94,7 +136,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                 updateNodeHeight(node.id, actualHeight);
             }
         }
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [node.view.height, getNodeVariableOpenState, updateNodeHeight, node.id]);
 
     return !node.view.collapsed ? (
@@ -115,7 +157,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             data-type="node"
             data-node-id={node.id}
         >
-            {mockNode && <ExecutionOrder mockNode={mockNode} centered={false} />}
+            {mockNode && <ExecutionOrder mockNode={mockNode} centered={false}/>}
             <div
                 className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'select-none opacity-0'}`}>
                 {node.has_enabled_switch && (
@@ -130,12 +172,12 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                     </>
                 )}
                 {node?.icon && (
-                    <NodeIcon icon={node.icon} className={'border bg-white border-white/50 ml-3'} />
+                    <NodeIcon icon={node.icon} className={'border bg-white border-white/50 ml-3'}/>
                 )}
                 <h3 className={`font-bold truncate ${node.has_enabled_switch ? 'ml-2' : 'ml-0'} text-sky-600 dark:text-white`}>
                     {node.service
-                      ? (node.service.name.trim() === '' ? '...' : node.service.name)
-                      : node.name}
+                        ? (node.service.name.trim() === '' ? '...' : node.service.name)
+                        : node.name}
                 </h3>
                 {isCollapsable() && (
                     <Button
@@ -147,7 +189,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             <div className="flex flex-col w-full items-start overflow-visible">
                 <div className="w-full">
                     {node.service && node.service.id && (
-                        <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon} />
+                        <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon}/>
                     )}
                     {node.variables.map((variable) => {
                         const type = interpretNodeVariableType(variable);
@@ -285,9 +327,9 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
         >
             <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
             {node?.icon ? (
-                <NodeIcon icon={node.icon} className={'max-w-10 max-h-10'} />
-                ) : (
-                <GlobeAltIcon className={'w-10 h-10'} />
+                <NodeIcon icon={node.icon} className={'max-w-10 max-h-10'}/>
+            ) : (
+                <GlobeAltIcon className={'w-10 h-10'}/>
             )}
             <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
         </div>

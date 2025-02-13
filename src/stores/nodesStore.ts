@@ -1,7 +1,8 @@
-import { create } from 'zustand';
-import { v4 as uuidv4 } from "uuid";
-import { Group, Node, NodeType, NodeVariable, NodeView } from "@/types/types";
-import { uniqueNamesGenerator, adjectives, colors, animals } from 'unique-names-generator';
+import {create} from 'zustand';
+import {v4 as uuidv4} from "uuid";
+import {FlowState, Group, Node, NodeType, NodeVariable, NodeView} from "@/types/types";
+import {adjectives, animals, colors, uniqueNamesGenerator} from 'unique-names-generator';
+import useConnectionsStore from "@/stores/connectionsStore";
 
 type NodesStore = {
     nodes: Node[];
@@ -9,8 +10,7 @@ type NodesStore = {
     enableNodesView: (nodeIds: string[]) => void;
     disableAllNodesViewExceptByIds: (nodeIds: string[]) => void;
     disableNodeView: (nodeId: string) => void;
-    disableNode: (nodeId: string) => void;
-    enableNode: (nodeId: string) => void;
+    setNodeFlowState: (nodeId: string, flowState: FlowState) => void;
     driveNode: (nodeId: string) => void;
     trackedNodeId: string | null;
     toggleNodeViewCollapsedState: (nodeId: string) => void;
@@ -60,7 +60,7 @@ export const createDefaultNode = (overrides = {}): Partial<Node> => ({
     category: "hidden",
     type: NodeType.Rows,
     view: { x: 0, y: 0, width: 200, height: 200, collapsed: false },
-    enabled: true,
+    flowState: FlowState.Enabled,
     driven: false,
     variables: [],
     ...overrides,
@@ -165,34 +165,52 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    disableNode: (nodeId: string) => {
+    setNodeFlowState: (nodeId: string, flowState: FlowState) => {
         nodesByIdsCache.clear();
-        set((state) => ({
-            nodes: state.nodes.map((node) =>
-                node.id === nodeId
-                    ? {
-                        ...node,
-                        enabled: false,
-                        driven: false
-                    }
-                    : node
-            ),
-        }));
-    },
 
-    enableNode: (nodeId: string) => {
-        nodesByIdsCache.clear();
-        set((state) => ({
-            nodes: state.nodes.map((node) =>
-                node.id === nodeId
-                    ? {
+        console.log("setNodeFlowState", nodeId, flowState);
+
+        // If the flow state is going to be set to FlowState.Enabled,
+        // First check if this is allowed by checkin if there are other
+        // driving connections. If not.... then make sure that
+        // 1: Te driven property will be set to false
+        // 2: The flowState will be set to FlowState.Enabled
+        // Otherwise, do nothing.
+        const drivingConnections = useConnectionsStore
+            .getState()
+            .findInConnectionsByNodeIdAndHandle(nodeId, 'node');
+
+        if (flowState === FlowState.Enabled) {
+            // 1 driving connection means it's going to be emptied.
+            if (drivingConnections.length === 1) {
+                set((state) => ({
+                    nodes: state.nodes.map((node) =>
+                        node.id === nodeId ? {
+                            ...node,
+                            flowState,
+                            driven: false
+                        } : node
+                    ),
+                }));
+            }
+        }
+
+        // If the flow state is going to be set to FlowState.FlowIn of FlowState.FlowStop,
+        // First check if this is allowed by checking if there are one or
+        // more driving connections. Otherwise it makes no sense.
+        if ((flowState === FlowState.FlowIn || flowState === FlowState.FlowStop) &&
+            drivingConnections.length > 0
+        ) {
+            console.log('SETTING TO FLOWIN OR FLOWSTOP', flowState);
+            set((state) => ({
+                nodes: state.nodes.map((node) =>
+                    node.id === nodeId ? {
                         ...node,
-                        enabled: true,
-                        driven: false
-                    }
-                    : node
-            ),
-        }));
+                        flowState,
+                    } : node
+                ),
+            }));
+        }
     },
 
     driveNode: (nodeId: string) => {
@@ -202,7 +220,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                 node.id === nodeId
                     ? {
                         ...node,
-                        enabled: true,
+                        flowState: FlowState.FlowStop,
                         driven: true,
                     }
                     : node
@@ -225,7 +243,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
         node.id = node.id ? node.id : uuidv4();
         node.handle = node.handle ? node.handle : uniqueNamesGenerator({dictionaries: [adjectives, colors, animals]});
-        node.enabled = true;
+        node.flowState = FlowState.Enabled;
         node.driven = false;
 
         if (!node.view) {

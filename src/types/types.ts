@@ -45,6 +45,7 @@ export enum FormType {
     EditCode = 'editCode',
     EditNode = 'editNode',
     AddNode = 'addNewNode',
+    EditJson = 'editJson'
 }
 
 export enum InOut {
@@ -76,6 +77,7 @@ export enum NodeVariableType {
     TextArea = 'textarea',
     RichTextArea = 'richtextarea',
     Code = 'code',
+    Json = 'json',
 }
 
 export enum NodeType {
@@ -84,7 +86,8 @@ export enum NodeType {
     Math = 'math',
     Group = 'group',
     Mock = 'mock',
-    Note = 'note'
+    Note = 'note',
+    Jump = 'jump',
 }
 
 export enum NodeComparisonType {
@@ -101,12 +104,18 @@ export enum NodeMathType {
     Divide = 'divide',
 }
 
+export enum NodeJumpType {
+    From = 'from',
+    To = 'to',
+}
+
 export type Dock = {
     field_enabled?: boolean;
     field_secret?: boolean;
     field_text_area?: boolean;
     field_rich_text_area?: boolean;
     field_code_editor?: boolean;
+    field_json_editor?: boolean;
     select_values?: Record<string, string>;
 }
 
@@ -151,6 +160,13 @@ export type Group = {
     nodes?: string[];
 };
 
+export enum FlowState {
+    FlowIn = 'flowIn',
+    FlowStop = 'flowStop',
+    Enabled = 'enabled',
+    Disabled = 'disabled',
+}
+
 export type Node = {
     id: string;
     service?: NodeService;
@@ -158,10 +174,10 @@ export type Node = {
     handle: null | string;
     name: string;
     category: string;
-    type: NodeType|NodeMathType|NodeComparisonType;
+    type: NodeType|NodeMathType|NodeComparisonType|NodeJumpType;
     view: NodeView;
     variables: NodeVariable[];
-    enabled?: boolean;
+    flowState: FlowState;
     driven?: boolean;
     group?: Group;
     has_play_button?: boolean;

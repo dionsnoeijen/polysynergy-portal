@@ -3,10 +3,9 @@ import {NodeVariable, NodeVariableType} from "@/types/types";
 export function interpretNodeVariableType(variable: NodeVariable): { baseType: NodeVariableType; containsNone: boolean } {
     const types = variable.type.split('|').map((type) => type.trim());
     const containsNone = types.includes('None');
-
     if (types.includes('int') || types.includes('float') || types.includes('number')) {
         return { baseType: NodeVariableType.Number, containsNone };
-    } else if (types.includes('str')) {
+    } else if (types.includes('str') || types.includes('string')) {
         if (variable.dock) {
             if (variable?.dock.field_secret) {
                 return {baseType: NodeVariableType.SecretString, containsNone};
@@ -19,6 +18,9 @@ export function interpretNodeVariableType(variable: NodeVariable): { baseType: N
             }
             if (variable?.dock.field_code_editor) {
                 return {baseType: NodeVariableType.Code, containsNone};
+            }
+            if (variable?.dock.field_json_editor) {
+                return {baseType: NodeVariableType.Json, containsNone};
             }
         }
         return { baseType: NodeVariableType.String, containsNone };

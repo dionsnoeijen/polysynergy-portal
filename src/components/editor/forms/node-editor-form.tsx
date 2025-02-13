@@ -1,9 +1,9 @@
-import React, {useEffect, useState, useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-import {FormType, Node as NodeType} from "@/types/types";
+import {FlowState, Node as NodeType} from "@/types/types";
 import Node from "@/components/editor/nodes/node";
-import {Heading, Subheading} from "@/components/heading";
+import {Heading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import Editor, {Monaco} from "@monaco-editor/react";
 import {Button} from "@/components/button";
@@ -55,7 +55,7 @@ const NodeEditorForm: React.FC = () => {
                 height: 200,
                 collapsed: false
             };
-            node.enabled = true;
+            node.flowState = FlowState.Enabled;
             node.driven = false;
 
             setNode(node);

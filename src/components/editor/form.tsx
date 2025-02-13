@@ -8,6 +8,7 @@ import DictVariableForm from "@/components/editor/forms/dict-variable-form";
 import CodeEditorForm from "@/components/editor/forms/code-editor-form";
 import BlueprintForm from "@/components/editor/forms/blueprint-form";
 import NodeEditorForm from "@/components/editor/forms/node-editor-form";
+import JsonEditorForm from "@/components/editor/forms/json-editor-form";
 
 const Form: React.FC = () => {
     const { formType } = useEditorStore();
@@ -49,6 +50,9 @@ const Form: React.FC = () => {
                 formType === FormType.EditNode
             ) && (
                 <NodeEditorForm />
+            )}
+            {(formType === FormType.EditJson) && (
+                <JsonEditorForm />
             )}
         </div>
     );

@@ -6,6 +6,7 @@ import useNodesStore from "@/stores/nodesStore";
 
 type Props = { group: Group };
 
+/** @todo: Fix this */
 const GroupName: React.FC<Props> = ({ group }): React.ReactElement => {
     const { updateNode, getNode } = useNodesStore();
 

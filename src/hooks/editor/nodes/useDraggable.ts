@@ -58,25 +58,12 @@ const useDraggable = () => {
     const handleDraggableMouseUp = useCallback(() => {
         setIsDragging(false);
 
-        const allConnections = collectConnections();
-
-        const updatedConnections = updateConnectionsDirectly(
-            allConnections
-        );
-
         selectedNodesRef.current.forEach((nodeId) => {
             updateNodePosition(
                 nodeId,
                 initialPositionsRef.current[nodeId].x,
                 initialPositionsRef.current[nodeId].y
             );
-        });
-
-        updatedConnections.forEach((connection) => {
-            const existingConnection = getConnection(connection.id);
-            if (existingConnection) {
-                updateConnection({ ...existingConnection, ...connection });
-            }
         });
 
         document.removeEventListener("mousemove", handleDraggableMouseMove);

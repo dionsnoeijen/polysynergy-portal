@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import {Connection, NodeEnabledConnector, Node} from "@/types/types";
+import {create} from 'zustand';
+import {Connection, FlowState, Node, NodeEnabledConnector} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 
 type ConnectionsStore = {
@@ -75,7 +75,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             if (!connection.targetNodeId) return;
             useNodesStore
                 .getState()
-                .enableNode(connection.targetNodeId);
+                .setNodeFlowState(connection.targetNodeId, FlowState.FlowStop);
         }
 
         set((state) => ({
@@ -89,7 +89,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         if (connection.targetHandle === NodeEnabledConnector.Node) {
             if (!connection.targetNodeId) return;
 
-            useNodesStore.getState().enableNode(connection.targetNodeId);
+            useNodesStore.getState().setNodeFlowState(connection.targetNodeId, FlowState.Enabled);
         }
 
         set((state) => ({
@@ -106,7 +106,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             if (connection.targetHandle === NodeEnabledConnector.Node) {
                 if (!connection.targetNodeId) return;
 
-                useNodesStore.getState().enableNode(connection.targetNodeId);
+                useNodesStore.getState().setNodeFlowState(connection.targetNodeId, FlowState.Enabled);
             }
         });
 
@@ -120,7 +120,6 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
         if (connection.targetHandle === NodeEnabledConnector.Node) {
             if (!connection.targetNodeId) return;
-
             useNodesStore.getState().driveNode(connection.targetNodeId);
         }
 

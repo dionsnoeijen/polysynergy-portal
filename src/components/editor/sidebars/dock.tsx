@@ -19,6 +19,7 @@ import { NodeVariable, NodeVariableType } from "@/types/types";
 import { interpretNodeVariableType } from "@/utils/interpretNodeVariableType";
 import VariableTypeCode from "@/components/editor/sidebars/dock/variable-type-code";
 import NodeHandle from "@/components/editor/sidebars/dock/node-handle";
+import VariableTypeJson from "@/components/editor/sidebars/dock/variable-type-json";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -38,7 +39,8 @@ const VariableTypeComponents = {
     [NodeVariableType.SecretString]: VariableTypeSecretString,
     [NodeVariableType.TextArea]: VariableTypeTextArea,
     [NodeVariableType.RichTextArea]: VariableTypeRichTextArea,
-    [NodeVariableType.Code]: VariableTypeCode
+    [NodeVariableType.Code]: VariableTypeCode,
+    [NodeVariableType.Json]: VariableTypeJson
 };
 
 const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {

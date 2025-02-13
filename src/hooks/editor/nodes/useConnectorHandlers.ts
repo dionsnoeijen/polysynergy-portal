@@ -4,7 +4,7 @@ import {v4 as uuidv4} from "uuid";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
 import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
-import {NodeEnabledConnector} from "@/types/types";
+import {FlowState, NodeEnabledConnector} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 
 export const useConnectorHandlers = (
@@ -26,7 +26,7 @@ export const useConnectorHandlers = (
         openGroup,
     } = useEditorStore();
     const {
-        enableNode
+        setNodeFlowState
     } = useNodesStore();
 
     const startedFromGroup = useRef(false);
@@ -40,7 +40,6 @@ export const useConnectorHandlers = (
         const invalidInConnectors = [...document.querySelectorAll(`[data-type="in"][data-node-id]`)]
             .filter((el) => {
                 const nodeTypes = (el.getAttribute("data-variable-type") || "").split(",");
-                console.log("Checking:", el, "nodeTypes:", nodeTypes, "activeTypes:", activeTypes);
                 return !nodeTypes.some(type => activeTypes.includes(type));
             });
 
@@ -81,12 +80,11 @@ export const useConnectorHandlers = (
         const existingConnection = existingConnections[0];
         if (existingConnection.targetHandle === NodeEnabledConnector.Node) {
             if (existingConnection.targetNodeId) {
-                enableNode(existingConnection.targetNodeId);
+                setNodeFlowState(existingConnection.targetNodeId, FlowState.Enabled);
             }
         }
 
         activeConnectorVariableTypeRef.current = (e.currentTarget as HTMLElement).getAttribute('data-variable-type');
-        console.log('A', activeConnectorVariableTypeRef.current);
         dimConnectors();
 
         const updatedConnection = {
@@ -111,8 +109,6 @@ export const useConnectorHandlers = (
             ) as HTMLElement;
 
             undimCommectors();
-
-            console.log('HERE?!?!?');
 
             if (target) {
                 const targetNodeId = !isGroup ?

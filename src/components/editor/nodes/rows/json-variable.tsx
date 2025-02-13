@@ -1,6 +1,6 @@
 import React from "react";
 import { NodeVariable } from "@/types/types";
-import { DocumentTextIcon } from "@heroicons/react/24/outline";
+import {CodeBracketIcon, DocumentTextIcon} from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
 import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
@@ -15,7 +15,7 @@ type Props = {
     isMirror?: boolean;
 };
 
-const StringVariable: React.FC<Props> = ({
+const JsonVariable: React.FC<Props> = ({
     variable,
     nodeId,
     onlyIn = false,
@@ -38,7 +38,7 @@ const StringVariable: React.FC<Props> = ({
         />}
         <div className="flex items-center truncate">
             <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
-            <DocumentTextIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
+            <CodeBracketIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
             <span className="ml-1">{variable.value as string}</span>
         </div>
         {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
@@ -55,4 +55,4 @@ const StringVariable: React.FC<Props> = ({
     </div>
 );
 
-export default StringVariable;
+export default JsonVariable;

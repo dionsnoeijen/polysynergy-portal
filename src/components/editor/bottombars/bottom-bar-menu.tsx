@@ -1,6 +1,7 @@
 import React from "react";
 import { CodeBracketIcon, CodeBracketSquareIcon } from "@heroicons/react/24/outline";
 import useEditorStore, { BottomBarView } from "@/stores/editorStore";
+import {Bars2Icon} from "@heroicons/react/24/outline";
 
 const BottomBarMenu: React.FC = (): React.ReactElement => {
     const { bottomBarView, setBottomBarView } = useEditorStore();
@@ -21,6 +22,13 @@ const BottomBarMenu: React.FC = (): React.ReactElement => {
                     onMouseDown={() => setBottomBarView(BottomBarView.Output)}
                 >
                     <CodeBracketSquareIcon className={"w-4 h-4"}/>
+                </button>
+                <button
+                    type={"button"}
+                    className={`w-full text-lg font-semibold text-white rounded-sm p-1 mt-1 ${bottomBarView === BottomBarView.Logs ? 'bg-sky-500' : 'bg-zinc-500'}`}
+                    onMouseDown={() => setBottomBarView(BottomBarView.Logs)}
+                >
+                    <Bars2Icon className={'w-4 h-4'} />
                 </button>
             </div>
         </div>

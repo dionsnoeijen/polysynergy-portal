@@ -19,12 +19,12 @@ export default function useGlobalStoreListenersWithImmediateSave() {
 
     const saveNodeSetup = () => {
         try {
-            console.log('Saving node setup',
-                'activeRouteId', activeRouteId,
-                'activeScheduleId', activeScheduleId,
-                'activeBlueprintId', activeBlueprintId,
-                'activeVersionId', activeVersionId
-            );
+            // console.log('Saving node setup',
+            //     'activeRouteId', activeRouteId,
+            //     'activeScheduleId', activeScheduleId,
+            //     'activeBlueprintId', activeBlueprintId,
+            //     'activeVersionId', activeVersionId
+            // );
 
             if (activeVersionId) {
                 if (activeRouteId) {

@@ -3,7 +3,8 @@ import {FormType, NodeVariable} from "@/types/types";
 
 export enum BottomBarView {
     Output = 'Output',
-    Debug = 'Debug'
+    Debug = 'Debug',
+    Logs = 'Logs',
 }
 
 export type ContextMenu = {

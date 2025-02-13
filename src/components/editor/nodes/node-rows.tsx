@@ -14,10 +14,10 @@ import PlayButton from "@/components/editor/nodes/rows/play-button";
 import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
 import ListVariable from "@/components/editor/nodes/rows/list-variable";
 import BytesVariable from "@/components/editor/nodes/rows/bytes-variable";
-import {NodeProps, NodeCollapsedConnector, NodeEnabledConnector, NodeType, NodeVariableType, Node} from "@/types/types";
+import {Node, NodeCollapsedConnector, NodeEnabledConnector, NodeProps, NodeType, NodeVariableType} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
-import {ThreeWaySwitch} from "@/components/three-way-switch";
+import {ThreeWaySwitch} from "@/components/editor/nodes/three-way-switch";
 import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
 import {Button} from "@/components/button";
@@ -27,6 +27,7 @@ import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
 import RichTextAreaVariable from "@/components/editor/nodes/rows/rich-text-area-variable";
 import useMockStore, {MockNode} from "@/stores/mockStore";
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
+import JsonVariable from "@/components/editor/nodes/rows/json-variable";
 
 const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {size, handleResizeMouseDown} = useResizable(node);
@@ -110,8 +111,6 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)] ' : ' '}
     ${getColorForNodeType(node, selectedNodes.includes(node.id), mockNode, hasMockData)} 
     `.replace(/\s+/g, ' ').trim();
-
-    console.log(className);
 
     useEffect(() => {
         if (shouldUpdateConnections.current) {
@@ -220,6 +219,15 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                             case NodeVariableType.String:
                                 return (
                                     <StringVariable
+                                        key={'dock-' + node.id + '-' + variable.handle}
+                                        variable={variable}
+                                        nodeId={node.id}
+                                        disabled={node.view.disabled}
+                                    />
+                                );
+                            case NodeVariableType.Json:
+                                return (
+                                    <JsonVariable
                                         key={'dock-' + node.id + '-' + variable.handle}
                                         variable={variable}
                                         nodeId={node.id}

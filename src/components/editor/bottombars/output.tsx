@@ -18,11 +18,11 @@ const Output: React.FC = (): React.ReactElement => {
     return (
         <div className="flex h-full">
             {/* Nodes Column */}
-            <div className="flex-1 border-r border-white/10 h-full flex flex-col">
+            <div className="w-1/2 min-w-[300px] border-r border-white/10 h-full flex flex-col">
                 <div className="border-b border-white/10 p-2">
                     <h3>Node</h3>
                 </div>
-                <div className="flex-1 overflow-scroll">
+                <div className="flex-1 overflow-auto">
                     {mockNodes.reverse().map((node, index) => (
                         <div key={node.id} className="border-b border-white/10 p-2">
                             <div className="flex justify-between items-center">
@@ -57,11 +57,11 @@ const Output: React.FC = (): React.ReactElement => {
             </div>
 
             {/* Result Column */}
-            <div className="flex-1 border-r border-white/10 h-full flex flex-col">
+            <div className="w-1/2 min-w-[300px] border-r border-white/10 h-full flex flex-col">
                 <div className="border-b border-white/10 p-2">
                     <h3>Result</h3>
                 </div>
-                <div className="flex-1 overflow-scroll">
+                <div className="flex-1 overflow-auto">
                     <ReactJson
                         src={mockNodes[mockNodes.length - 1]}
                         theme={theme === "dark" ? "monokai" : "rjv-default"}

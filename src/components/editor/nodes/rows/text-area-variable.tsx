@@ -2,6 +2,7 @@ import React from "react";
 import { NodeVariable } from "@/types/types";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
+import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 
 type Props = {
     variable: NodeVariable;
@@ -32,10 +33,10 @@ const TextAreaVariable: React.FC<Props> = ({
             handle={variable.handle}
             disabled={disabled}
             groupId={groupId}
-            nodeVariableType={variable.type}
+            nodeVariableType={'string'}
         />}
         <div className="flex items-center">
-            <p className="break-words">{variable.value as string}</p>
+            <p className="break-words">{variable.value === '' ? ' s' : variable.value as string}</p>
         </div>
         {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
             out
@@ -43,7 +44,7 @@ const TextAreaVariable: React.FC<Props> = ({
             handle={variable.handle}
             disabled={disabled}
             groupId={groupId}
-            nodeVariableType={variable.type}
+            nodeVariableType={'string'}
         />}
         {variable.has_out && isMirror && !onlyIn && (
             <FakeConnector out />

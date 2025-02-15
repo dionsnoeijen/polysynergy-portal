@@ -7,13 +7,7 @@ export const updateConnectionsDirectly = (
     connections: Array<Connection>,
     mousePosition?: Position
 ) => {
-    const updatedConnections: Array<{
-        id: string;
-        startX: number;
-        startY: number;
-        endX: number;
-        endY: number
-    }> = [];
+    const updatedConnections: Connection[] = [];
     const { isDrawingConnection } = useEditorStore.getState();
 
     connections.forEach((connection) => {
@@ -72,13 +66,7 @@ export const updateConnectionsDirectly = (
                 endDotElement.style.top = `${endPosition.y - 6.5}px`;
             }
 
-            updatedConnections.push({
-                id: connection.id,
-                startX: startPosition.x,
-                startY: startPosition.y,
-                endX: endPosition.x,
-                endY: endPosition.y,
-            });
+            updatedConnections.push(connection);
         }
     });
 

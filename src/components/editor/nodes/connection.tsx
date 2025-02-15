@@ -1,7 +1,8 @@
-import React, { useRef, useCallback, useLayoutEffect, useState } from "react";
+import React, {useRef, useCallback, useLayoutEffect, useState, useEffect} from "react";
 import {Connection as ConnectionProps} from "@/types/types";
 import { useTheme } from "next-themes";
 import useMockStore from "@/stores/mockStore";
+import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 
 type Props = {
     connection: ConnectionProps;
@@ -19,6 +20,10 @@ const Connection: React.FC<Props> = ({ connection }) => {
     const mockConnection = useMockStore(
         (state) => state.getMockConnection(connection.id)
     );
+
+    useEffect(() => {
+        updateConnectionsDirectly([connection]);
+    }, [connection]);
 
     let color = connection.collapsed ? "#cccccc" : "#ffffff";
 

@@ -141,10 +141,8 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     return !node.view.collapsed ? (
         <div
             ref={ref}
-            onContextMenu={!preview ? handleContextMenu : () => {
-            }}
-            onMouseDown={!preview ? handleNodeMouseDown : () => {
-            }}
+            onContextMenu={!preview ? handleContextMenu : () => {}}
+            onMouseDown={!preview ? handleNodeMouseDown : () => {}}
             onDoubleClick={isCollapsable() ? handleCollapse : undefined}
             className={className}
             title={node.category + ' > ' + node.name + ' ' + node.id}

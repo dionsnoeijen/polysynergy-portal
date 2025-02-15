@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, {useRef, useEffect, useCallback, useMemo} from 'react';
 import { useZoom } from "@/hooks/editor/useZoom";
 import { usePan } from "@/hooks/editor/usePan";
 import { Grid } from "@/components/editor/grid";
@@ -19,6 +19,7 @@ import DeleteDialog from "@/components/editor/nodes/delete-dialog";
 import AddNode from "@/components/editor/add-node";
 import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import PointZeroIndicator from "@/components/editor/point-zero-indicator";
+import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -34,7 +35,7 @@ export default function Editor() {
         setShowAddingNode,
         openContextMenu
     } = useEditorStore();
-    const { getNodesToRender, getOpenGroups } = useNodesStore();
+    const { getNodesToRender, getOpenGroups, nodes } = useNodesStore();
     const { connections } = useConnectionsStore();
 
     const { handleDeleteSelectedNodes } = useDeleteNode();
@@ -45,7 +46,11 @@ export default function Editor() {
 
     useGlobalStoreListenersWithImmediateSave();
 
-    const nodesToRender = getNodesToRender();
+    const nodesToRender = useMemo(() => getNodesToRender(), [getNodesToRender, nodes]);
+
+    useEffect(() => {
+        updateConnectionsDirectly(connections);
+    }, [nodesToRender]);
 
     const updateEditorPosition = useCallback(() => {
         if (contentRef.current) {

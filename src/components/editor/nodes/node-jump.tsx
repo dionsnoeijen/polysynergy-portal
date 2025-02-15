@@ -1,8 +1,8 @@
 import { NodeProps, NodeJumpType } from "@/types/types";
+import { Strong } from "@/components/text";
 import React from "react";
 import useEditorStore from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
-import { Strong } from "@/components/text";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";

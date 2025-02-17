@@ -3,8 +3,12 @@ import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 
 const useVariablesForGroup = (groupId: string | null, checkDock = true) => {
-    const { getTrackedNode, getNodeVariable, getGroupById } = useNodesStore();
-    const { findInConnectionsByNodeId, findOutConnectionsByNodeId, connections } = useConnectionsStore();
+    const getTrackedNode = useNodesStore((state) => state.getTrackedNode);
+    const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
+    const getGroupById = useNodesStore((state) => state.getGroupById);
+    const findInConnectionsByNodeId = useConnectionsStore((state) => state.findInConnectionsByNodeId);
+    const findOutConnectionsByNodeId = useConnectionsStore((state) => state.findOutConnectionsByNodeId);
+    const connections= useConnectionsStore((state) => state.connections);
 
     groupId = groupId?.startsWith("mirror-") ? groupId.replace("mirror-", "") : groupId;
     

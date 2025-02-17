@@ -3,7 +3,7 @@ import {NodeVariable} from "@/types/types";
 import {HashtagIcon} from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
-import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
+import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 
 type Props = {
     variable: NodeVariable;

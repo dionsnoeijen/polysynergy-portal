@@ -159,7 +159,7 @@ const AddNode: React.FC = () => {
                     <div className="absolute inset-4 top-16 bottom-16 overflow-y-auto">
                         {filteredAvailableNodes.map((n, index) => (
                             <div
-                                key={n.id}
+                                key={'add-' + n.id}
                                 onClick={(e) => handleAddNodeAtPosition(n.id, e.clientX, e.clientY)}
                                 className={`cursor-pointer p-2 rounded-md ${
                                     index === selectedNodeIndex

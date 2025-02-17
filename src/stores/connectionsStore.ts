@@ -168,10 +168,8 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
                     : (c.sourceNodeId === nodeId);
 
                 if (!matchesNode) return false;
-
                 return !(!includeHidden && c.hidden);
             });
-
             memoizedResults.set(key, result);
         }
 
@@ -191,15 +189,14 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
                         c.targetGroupId === nodeId &&
                         (matchExact
                             ? c.targetHandle === handle
-                            : c.targetHandle?.startsWith(handle))
+                            : c.targetHandle?.startsWith(handle + '.'))
                     );
                 }
-
                 return (
                     c.targetNodeId === nodeId &&
                     (matchExact
                         ? c.targetHandle === handle
-                        : c.targetHandle?.startsWith(handle))
+                        : c.targetHandle?.startsWith(handle + '.'))
                 );
             });
     },
@@ -216,7 +213,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
                 c.sourceNodeId === nodeId &&
                 (matchExact
                     ? c.sourceHandle === handle
-                    : c.sourceHandle?.startsWith(handle))
+                    : c.sourceHandle?.startsWith(handle + '.'))
             );
     },
 
@@ -313,7 +310,6 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             useConnectionsStore.getState().removeConnectionById(connectionId);
             return;
         }
-
         set((state) => ({
             connections: state.connections.map((c) => (
                 c.id === connectionId ? { ...c, endX, endY, targetNodeId, targetHandle } : c)),

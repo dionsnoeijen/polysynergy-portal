@@ -5,11 +5,12 @@ import {Connection} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 import { updateNodesDirectly } from "@/utils/updateNodesDirectly";
+import {snapToGrid} from "@/utils/snapToGrid";
 
 const useDraggable = () => {
     const { selectedNodes, zoomFactor, setIsDragging, openGroup, panPosition, editorPosition } = useEditorStore();
     const { getNode, updateNodePosition } = useNodesStore();
-    const { findInConnectionsByNodeId, findOutConnectionsByNodeId, updateConnection, getConnection } = useConnectionsStore();
+    const { findInConnectionsByNodeId, findOutConnectionsByNodeId } = useConnectionsStore();
 
     const selectedNodesRef = useRef<string[]>(selectedNodes);
     const initialPositionsRef = useRef<{ [key: string]: { x: number; y: number } }>({});
@@ -58,17 +59,26 @@ const useDraggable = () => {
     const handleDraggableMouseUp = useCallback(() => {
         setIsDragging(false);
 
-        selectedNodesRef.current.forEach((nodeId) => {
-            updateNodePosition(
-                nodeId,
-                initialPositionsRef.current[nodeId].x,
-                initialPositionsRef.current[nodeId].y
-            );
+        const updatedNodes = selectedNodesRef.current.map((nodeId) => {
+            const x = snapToGrid(initialPositionsRef.current[nodeId].x);
+            const y = snapToGrid(initialPositionsRef.current[nodeId].y);
+            return { id: nodeId, x, y };
         });
+
+        updatedNodes.forEach(({ id, x, y }) => {
+            updateNodePosition(id, x, y);
+        });
+
+        updateNodesDirectly(
+            updatedNodes.map(n => n.id),
+            0,
+            0,
+            Object.fromEntries(updatedNodes.map(n => [n.id, { x: n.x, y: n.y }]))
+        );
 
         document.removeEventListener("mousemove", handleDraggableMouseMove);
         document.removeEventListener("mouseup", handleDraggableMouseUp);
-    }, [setIsDragging, collectConnections, handleDraggableMouseMove, updateNodePosition, getConnection, updateConnection]);
+    }, [setIsDragging, handleDraggableMouseMove, updateNodePosition]);
 
     const onDragMouseDown = useCallback((e: React.MouseEvent) => {
         setIsDragging(true);

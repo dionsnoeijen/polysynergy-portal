@@ -1,38 +1,28 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useRef} from "react";
 import useEditorStore from "@/stores/editorStore";
-import {GroupProps, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
+import {GroupProps, NodeCollapsedConnector} from "@/types/types";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
-import DictVariable from "@/components/editor/nodes/rows/dict-variable";
-import StringVariable from "@/components/editor/nodes/rows/string-variable";
-import NumberVariable from "@/components/editor/nodes/rows/number-variable";
-import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodesStore from "@/stores/nodesStore";
-import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
-import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
 import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
 import {Button} from "@/components/button";
 import Connector from "@/components/editor/nodes/connector";
-import ListVariable from "@/components/editor/nodes/rows/list-variable";
-import BytesVariable from "@/components/editor/nodes/rows/bytes-variable";
-import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
-import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
-import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
 import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
 import NodeIcon from "@/components/editor/nodes/node-icon";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
+import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
+import NodeVariables from "@/components/editor/nodes/rows/node-variables";
+import useAutoResize from "@/hooks/editor/nodes/useAutoResize";
 
 const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = false}): React.ReactElement => {
-    const ref = useRef<HTMLDivElement>(null);
-    const {selectedNodes, openContextMenu} = useEditorStore();
+    const ref = useAutoResize(node);
+    const selectedNodes = useEditorStore((state) => state.selectedNodes);
+    const openContextMenu = useEditorStore((state) => state.openContextMenu);
     const {openGroup, deleteGroup} = useGrouping();
-    const {collapseConnections, openConnections} = useToggleConnectionCollapse(node);
-    const [isOpenMap, setIsOpenMap] = useState<{ [key: string]: boolean }>({});
     const {variablesForGroup} = useVariablesForGroup(node.id, false);
-    const {updateNodeHeight, toggleNodeViewCollapsedState} = useNodesStore();
+    const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
     const {handleNodeMouseDown} = useNodeMouseDown(node);
-    const shouldUpdateConnections = useRef(false);
     const position = useNodePlacement(node);
 
     const handleContextMenu = (e: React.MouseEvent) => {
@@ -41,95 +31,30 @@ const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = fa
             e.clientX,
             e.clientY,
             [
-                {
-                    label: "Open Group",
-                    action: () => openGroup(node.id),
-                },
-                {
-                    label: "Delete Group",
-                    action: () => deleteGroup(node.id),
-                },
+                { label: "Open Group", action: () => openGroup(node.id) },
+                { label: "Delete Group", action: () => deleteGroup(node.id) },
             ]
         );
     };
 
-    const handleToggle = (handle: string): (() => void) => {
-        return () => {
-            shouldUpdateConnections.current = true;
-            setIsOpenMap((prev) => ({
-                ...prev,
-                [handle]: !prev[handle],
-            }));
-        };
-    };
-
     const handleCollapse = () => {
-        shouldUpdateConnections.current = true;
         toggleNodeViewCollapsedState(node.id);
     };
 
-    useEffect(() => {
-        if (ref.current) {
-            const actualHeight = ref.current.getBoundingClientRect().height;
-            if (actualHeight !== node.view.height) {
-                updateNodeHeight(node.id, actualHeight);
-            }
-        }
-    }, [node.view.height, isOpenMap, updateNodeHeight, node.id]);
-
-    useEffect(() => {
-        if (shouldUpdateConnections.current) {
-            console.log('OPEN/COLLAPSE CONNECTIONS?');
-
-            // if (node.view.collapsed) {
-            //     collapseConnections(NodeCollapsedConnector.Collapsed);
-            // }
-
-            Object.entries(isOpenMap).forEach(([handle, isOpen]) => {
-                if (isOpen) {
-                    console.log('OPEN CONNECTIONS?');
-                    openConnections(handle);
-                } else {
-                    console.log('COLLAPSE CONNECTIONS?');
-                    collapseConnections(handle);
-                }
-            });
-            shouldUpdateConnections.current = false;
-        }
-    }, [isOpenMap, openConnections, collapseConnections]);
-
-    const getColorForNodeType = () => {
-        let classList = '';
-
-        if (node.service && node.service.id) {
-            classList += 'ring-purple-500 dark:ring-purple-500';
-        } else {
-            classList += 'ring-sky-500/50 dark:ring-white shadow-2xl';
-        }
-
-        if (selectedNodes.includes(node.id)) {
-            classList += " ring-2 shadow-2xl";
-        }
-
-        return classList;
-    }
-
-    const className = `${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start ring-1
-        ${getColorForNodeType()} 
-        bg-sky-100 dark:bg-zinc-800 backdrop-blur-lg backdrop-opacity-60 rounded-md cursor-move pb-5 
-        ${!isMirror && node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'}
+    const className = `
+        ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start rounded-md pb-5 
+        ${!isMirror && node.view.disabled ? ' z-1 select-none opacity-30' : ' z-20 cursor-move'}
         ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}
-        `.trim();
+        ${useNodeColor(node, selectedNodes.includes(node.id), undefined, false)}
+        `.replace(/\s+/g, ' ').trim();
 
     return !node.view.collapsed ? (
         <div
             className={className}
             data-type="closed-group"
             data-node-id={isMirror ? ('mirror-' + node.id) : node.id}
-            onContextMenu={!preview ? handleContextMenu : () => {
-            }}
-            onMouseDown={!preview ? handleNodeMouseDown : () => {
-            }}
+            onContextMenu={!preview ? handleContextMenu : () => {}}
+            onMouseDown={!preview ? handleNodeMouseDown : () => {}}
             onDoubleClick={!(node.service && node.service.id) ? () => openGroup(node.id) : () => {}}
             title={node.category + ' > ' + node.name + ' > ' + (isMirror ? ('mirror-' + node.id) : node.id)}
             style={{
@@ -158,277 +83,24 @@ const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = fa
                     <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon}/>
                 </div>
             )}
-            <div className="flex w-full gap-4 pt-2">
+            <div className="flex w-full gap-4">
+                {variablesForGroup?.inVariables && variablesForGroup?.inVariables?.length > 0 && (
                 <div className="flex-1 flex flex-col">
-                    <h4 className={`font-bold text-sky-600 pl-2 dark:text-white mb-2 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>Inputs</h4>
-                    {variablesForGroup?.inVariables && variablesForGroup?.inVariables?.length > 0 ? (
-                        variablesForGroup.inVariables.map(({variable, nodeId}) => {
-                            if (typeof variable === 'undefined') return null;
-                            const variableType = interpretNodeVariableType(variable).baseType;
-                            switch (variableType) {
-                                case NodeVariableType.Dict:
-                                    return (
-                                        <DictVariable
-                                            key={'in-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            isOpen={isOpenMap[variable.handle] || false}
-                                            onToggle={handleToggle(variable.handle)}
-                                            nodeId={nodeId as string}
-                                            onlyIn={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.List:
-                                    return (
-                                        <ListVariable
-                                            key={'in-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            isOpen={isOpenMap[variable.handle] || false}
-                                            onToggle={handleToggle(variable.handle)}
-                                            nodeId={nodeId as string}
-                                            onlyIn={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.String:
-                                    return (
-                                        <StringVariable
-                                            key={'in-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyIn={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.Bytes:
-                                    return (
-                                        <BytesVariable
-                                            key={'in-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyIn={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.Number:
-                                    return (
-                                        <NumberVariable
-                                            key={'in-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyIn={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.DateTime:
-                                    return (
-                                        <DatetimeVariable
-                                            key={'in-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyIn={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.SecretString:
-                                    return (
-                                        <SecretStringVariable
-                                            key={'in-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyIn={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.TextArea:
-                                case NodeVariableType.RichTextArea:
-                                    return (
-                                        <TextAreaVariable
-                                            key={'in-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyIn={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.Boolean:
-                                    return (
-                                        <BooleanVariable
-                                            key={'in-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyIn={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                default:
-                                    return null;
-                            }
-                        })
-                    ) : (
-                        <p className={`text-sky-400 dark:text-slate-400 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>No
-                            inputs</p>
-                    )}
+                    <NodeVariables node={node} variables={variablesForGroup.inVariables} isMirror={isMirror} onlyIn={true} />
                 </div>
-
+                )}
+                {variablesForGroup?.outVariables && variablesForGroup?.outVariables?.length > 0 && (
                 <div className="flex-1 flex flex-col">
-                    <h4 className={`font-bold text-sky-600 pr-2 dark:text-white mb-2 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>Outputs</h4>
-                    {variablesForGroup?.outVariables && variablesForGroup?.outVariables?.length > 0 ? (
-                        variablesForGroup.outVariables.map(({variable, nodeId}) => {
-                            if (typeof variable === 'undefined') return null;
-                            const variableType = interpretNodeVariableType(variable).baseType;
-                            switch (variableType) {
-                                case NodeVariableType.Dict:
-                                    return (
-                                        <DictVariable
-                                            key={'out-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            isOpen={isOpenMap[variable.handle] || false}
-                                            onToggle={handleToggle(variable.handle)}
-                                            nodeId={nodeId as string}
-                                            onlyOut={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.List:
-                                    return (
-                                        <ListVariable
-                                            key={'out-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            isOpen={isOpenMap[variable.handle] || false}
-                                            onToggle={handleToggle(variable.handle)}
-                                            nodeId={nodeId as string}
-                                            onlyOut={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    )
-                                case NodeVariableType.String:
-                                    return (
-                                        <StringVariable
-                                            key={'out-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyOut={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.Bytes:
-                                    return (
-                                        <BytesVariable
-                                            key={'out-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyOut={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.Number:
-                                    return (
-                                        <NumberVariable
-                                            key={'out-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyOut={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.DateTime:
-                                    return (
-                                        <DatetimeVariable
-                                            key={'out-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyOut={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.SecretString:
-                                    return (
-                                        <SecretStringVariable
-                                            key={'out-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyOut={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.TextArea:
-                                case NodeVariableType.RichTextArea:
-                                    return (
-                                        <TextAreaVariable
-                                            key={'out-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyOut={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                case NodeVariableType.Boolean:
-                                case NodeVariableType.TruePath:
-                                case NodeVariableType.FalsePath:
-                                    return (
-                                        <BooleanVariable
-                                            key={'out-' + variable.handle + '-' + nodeId}
-                                            variable={variable}
-                                            nodeId={nodeId as string}
-                                            onlyOut={true}
-                                            disabled={!isMirror && node.view.disabled}
-                                            groupId={node.id}
-                                            isMirror={isMirror}
-                                        />
-                                    );
-                                default:
-                                    return null;
-                            }
-                        })
-                    ) : (
-                        <p className={`text-sky-400 dark:text-slate-400 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>No
-                            outputs</p>
-                    )}
+                    <NodeVariables node={node} variables={variablesForGroup.outVariables} isMirror={isMirror} onlyOut={true} />
                 </div>
+                )}
             </div>
         </div>
     ) : (
         <div
             ref={ref}
-            onContextMenu={!preview ? handleContextMenu : () => {
-            }}
-            onMouseDown={!preview ? handleNodeMouseDown : () => {
-            }}
+            onContextMenu={!preview ? handleContextMenu : () => {}}
+            onMouseDown={!preview ? handleNodeMouseDown : () => {}}
             onDoubleClick={handleCollapse}
             className={className + ` p-5`}
             style={{

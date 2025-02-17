@@ -16,10 +16,10 @@ type ThreeWaySwitchProps = { node: Node, disabled?: boolean };
  * @param disabled
  * @constructor
  */
-export const ThreeWaySwitch: React.FC<ThreeWaySwitchProps> = ({
+const ThreeWaySwitch: React.FC<ThreeWaySwitchProps> = ({
     node,
     disabled = false
-                                                              }: ThreeWaySwitchProps) => {
+}: ThreeWaySwitchProps) => {
 
     const {setNodeFlowState} = useNodesStore();
 
@@ -63,3 +63,5 @@ export const ThreeWaySwitch: React.FC<ThreeWaySwitchProps> = ({
         </Headless.Switch>
     );
 };
+
+export default ThreeWaySwitch;

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTheme } from 'next-themes';
+import {GRID_SIZE} from "@/utils/snapToGrid";
 
 type GridProps = {
     zoomFactor: number;
@@ -28,10 +29,10 @@ export const Grid: React.FC<GridProps> = ({ zoomFactor, position }) => {
                     linear-gradient(0deg, rgba(56, 189, 248, ${0.2 * zoomFactor}) 2px, transparent 1px 100px)
                 `,
                 backgroundSize: `
-                    ${20 * zoomFactor}px ${20 * zoomFactor}px, 
-                    ${20 * zoomFactor}px ${20 * zoomFactor}px, 
-                    ${100 * zoomFactor}px ${100 * zoomFactor}px, 
-                    ${100 * zoomFactor}px ${100 * zoomFactor}px
+                    ${GRID_SIZE * zoomFactor}px ${GRID_SIZE * zoomFactor}px, 
+                    ${GRID_SIZE * zoomFactor}px ${GRID_SIZE * zoomFactor}px, 
+                    ${(GRID_SIZE*5) * zoomFactor}px ${(GRID_SIZE*5) * zoomFactor}px, 
+                    ${(GRID_SIZE*5) * zoomFactor}px ${(GRID_SIZE*5) * zoomFactor}px
                 `,
                 backgroundPosition: `${position.x}px ${position.y}px`,
             }}

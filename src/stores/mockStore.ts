@@ -18,7 +18,7 @@ export type MockNode = {
     id: string;
     order: number;
     type: string;
-    is_killed: boolean;
+    killed: boolean;
     variables: NodeVariables;
 }
 

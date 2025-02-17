@@ -1,6 +1,6 @@
 import {NodeVariable, NodeVariableType} from "@/types/types";
 
-export function interpretNodeVariableType(variable: NodeVariable): { baseType: NodeVariableType; containsNone: boolean } {
+export default function interpretNodeVariableType(variable: NodeVariable): { baseType: NodeVariableType; containsNone: boolean } {
     const types = variable.type.split('|').map((type) => type.trim());
     const containsNone = types.includes('None');
     if (types.includes('int') || types.includes('float') || types.includes('number')) {

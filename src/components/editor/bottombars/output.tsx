@@ -17,14 +17,14 @@ const Output: React.FC = (): React.ReactElement => {
 
     return (
         <div className="flex h-full">
-            {/* Nodes Column */}
+
             <div className="w-1/2 min-w-[300px] border-r border-white/10 h-full flex flex-col">
                 <div className="border-b border-white/10 p-2">
                     <h3>Node</h3>
                 </div>
                 <div className="flex-1 overflow-auto">
                     {mockNodes.reverse().map((node, index) => (
-                        <div key={node.id} className="border-b border-white/10 p-2">
+                        <div key={`${index}-${node.id}`} className="border-b border-white/10 p-2">
                             <div className="flex justify-between items-center">
                                 <span className="inline-flex items-center gap-2">
                                     <span className="flex items-center justify-center w-8 h-8 rounded-full bg-sky-500 text-white">
@@ -56,7 +56,6 @@ const Output: React.FC = (): React.ReactElement => {
                 </div>
             </div>
 
-            {/* Result Column */}
             <div className="w-1/2 min-w-[300px] border-r border-white/10 h-full flex flex-col">
                 <div className="border-b border-white/10 p-2">
                     <h3>Result</h3>

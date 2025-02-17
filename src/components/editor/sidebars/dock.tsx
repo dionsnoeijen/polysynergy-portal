@@ -16,7 +16,7 @@ import VariableTypeSecretString from "@/components/editor/sidebars/dock/variable
 import useEditorStore from "@/stores/editorStore";
 import VariableTypeTextArea from "@/components/editor/sidebars/dock/variable-type-text-area";
 import { NodeVariable, NodeVariableType } from "@/types/types";
-import { interpretNodeVariableType } from "@/utils/interpretNodeVariableType";
+import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 import VariableTypeCode from "@/components/editor/sidebars/dock/variable-type-code";
 import NodeHandle from "@/components/editor/sidebars/dock/node-handle";
 import VariableTypeJson from "@/components/editor/sidebars/dock/variable-type-json";

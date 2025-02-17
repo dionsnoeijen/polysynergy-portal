@@ -13,7 +13,7 @@ export const useZoom = () => {
         const { left, top, width, height } = contentRect;
         const { clientX: mouseX, clientY: mouseY } = e;
 
-        const newZoomFactor = Math.min(Math.max(0.4, zoomFactor - e.deltaY * zoomIntensity * Math.log2(zoomFactor + 1)), 3);
+        const newZoomFactor = Math.min(Math.max(0.1, zoomFactor - e.deltaY * zoomIntensity * Math.log2(zoomFactor + 1)), 3);
         const scaleRatio = newZoomFactor / zoomFactor;
 
         const relativeMouseX = mouseX - left;

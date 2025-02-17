@@ -1,4 +1,9 @@
-export function updateNodesDirectly(nodes: string[], deltaX: number, deltaY: number, initialPositions: Record<string, {x:number,y:number}>) {
+export function updateNodesDirectly(
+    nodes: string[],
+    deltaX: number,
+    deltaY: number,
+    initialPositions: Record<string, {x:number,y:number}>
+) {
     const updateNodes: Array<{
         id: string,
         x: number,

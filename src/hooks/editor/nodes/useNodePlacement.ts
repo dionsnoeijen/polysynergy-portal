@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Node as NodeType } from "@/types/types";
 import { globalToLocal } from "@/utils/positionUtils";
 import useNodesStore from "@/stores/nodesStore";
+import {snapToGrid} from "@/utils/snapToGrid";
 
 const useNodePlacement = (node: NodeType) => {
     const { updateNodePosition, setAddingStatus } = useNodesStore();
@@ -15,7 +16,11 @@ const useNodePlacement = (node: NodeType) => {
         };
 
         const handleMouseUp = () => {
-            updateNodePosition(node.id, position.x, position.y);
+            updateNodePosition(
+                node.id,
+                snapToGrid(position.x),
+                snapToGrid(position.y)
+            );
             setAddingStatus(node.id, false);
         };
 
@@ -26,6 +31,7 @@ const useNodePlacement = (node: NodeType) => {
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
         };
+    // eslint-disable-next-line
     }, [node.view.adding, position, updateNodePosition, setAddingStatus]);
 
     return position;

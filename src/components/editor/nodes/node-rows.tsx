@@ -1,62 +1,39 @@
-import React, {useEffect, useRef} from "react";
-import useResizable from "@/hooks/editor/nodes/useResizable";
-import Connector from "@/components/editor/nodes/connector";
+import React from "react";
+import {NodeCollapsedConnector, NodeEnabledConnector, NodeProps, NodeType, NodeVariableType} from "@/types/types";
+
 import useNodesStore from "@/stores/nodesStore";
-import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
-import DictVariable from "@/components/editor/nodes/rows/dict-variable";
-import StringVariable from "@/components/editor/nodes/rows/string-variable";
-import NumberVariable from "@/components/editor/nodes/rows/number-variable";
-import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
+import useEditorStore from "@/stores/editorStore";
+import useMockStore from "@/stores/mockStore";
+
+import useResizable from "@/hooks/editor/nodes/useResizable";
+import useAutoResize from "@/hooks/editor/nodes/useAutoResize";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
+
 import PlayButton from "@/components/editor/nodes/rows/play-button";
-import DatetimeVariable from "@/components/editor/nodes/rows/datetime-variable";
-import ListVariable from "@/components/editor/nodes/rows/list-variable";
-import BytesVariable from "@/components/editor/nodes/rows/bytes-variable";
-import {Node, NodeCollapsedConnector, NodeEnabledConnector, NodeProps, NodeType, NodeVariableType} from "@/types/types";
-import useEditorStore from "@/stores/editorStore";
-import SecretStringVariable from "@/components/editor/nodes/rows/secret-string-variable";
-import {ThreeWaySwitch} from "@/components/editor/nodes/three-way-switch";
-import {interpretNodeVariableType} from "@/utils/interpretNodeVariableType";
-import TextAreaVariable from "@/components/editor/nodes/rows/text-area-variable";
-import {Button} from "@/components/button";
-import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
+import ThreeWaySwitch from "@/components/editor/nodes/three-way-switch";
+import Connector from "@/components/editor/nodes/connector";
 import NodeIcon from "@/components/editor/nodes/node-icon";
 import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
-import RichTextAreaVariable from "@/components/editor/nodes/rows/rich-text-area-variable";
-import useMockStore, {MockNode} from "@/stores/mockStore";
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
-import JsonVariable from "@/components/editor/nodes/rows/json-variable";
+import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
+import NodeVariables from "@/components/editor/nodes/rows/node-variables";
+import {Button} from "@/components/button";
+import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
 
 const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {size, handleResizeMouseDown} = useResizable(node);
-    const {selectedNodes, zoomFactor} = useEditorStore();
-    const {collapseConnections, openConnections} = useToggleConnectionCollapse(node);
-    const {
-        updateNodeHeight,
-        toggleNodeVariableOpenState,
-        getNodeVariableOpenState,
-        toggleNodeViewCollapsedState
-    } = useNodesStore();
+    const {selectedNodes} = useEditorStore();
     const {handleNodeMouseDown} = useNodeMouseDown(node);
     const {handleContextMenu} = useNodeContextMenu(node);
+    const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
     const position = useNodePlacement(node);
-    const ref = useRef<HTMLDivElement>(null);
-    const shouldUpdateConnections = useRef(false);
-
+    const ref = useAutoResize(node);
     const mockNode = useMockStore((state) => state.getMockNode(node.id));
     const hasMockData = useMockStore((state) => state.hasMockData());
 
-    const handleToggle = (handle: string): (() => void) => {
-        return () => {
-            shouldUpdateConnections.current = true;
-            toggleNodeVariableOpenState(node.id, handle);
-        };
-    };
-
     const handleCollapse = () => {
-        shouldUpdateConnections.current = true;
         toggleNodeViewCollapsedState(node.id);
     };
 
@@ -64,79 +41,12 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
         return node.category !== NodeType.Note;
     };
 
-    const getColorForNodeType = (
-        node: Node,
-        isSelected: boolean,
-        mockNode: MockNode | undefined,
-        hasMockData: boolean,
-    ) => {
-        let classList = ' bg-zinc-800 bg-opacity-50';
-
-        if (mockNode) {
-            classList += " ring-2";
-            classList += " ring-green-500 dark:ring-green-500";
-            if (mockNode.is_killed) {
-                classList += " ring-red-500 dark:ring-red-500";
-            }
-        } else {
-            if (hasMockData) {
-                classList += " ring-2";
-                classList += " ring-red-500 dark:ring-red-500";
-            } else {
-                if (isSelected) {
-                    classList += " ring-2 shadow-2xl";
-                } else {
-                    classList += " ring ring-1";
-                }
-                if (node.service && node.service.id) {
-                    classList += " ring-purple-500 dark:ring-purple-500";
-                } else {
-                    if (node.category === NodeType.Mock) {
-                        classList += " ring-orange-500 dark:ring-orange-500";
-                    } else if (node.category === NodeType.Note) {
-                        classList += " ring-yellow-500 dark:ring-yellow-500";
-                    } else {
-                        classList += " ring-sky-500 dark:ring-sky-500";
-                    }
-                }
-            }
-        }
-
-        return classList;
-    };
-
     const className = `
-    ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start rounded-md pb-5 
-    ${node.view.disabled ? " z-1 select-none opacity-30 " : " z-20 cursor-move "}
-    ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)] ' : ' '}
-    ${getColorForNodeType(node, selectedNodes.includes(node.id), mockNode, hasMockData)} 
-    `.replace(/\s+/g, ' ').trim();
-
-    useEffect(() => {
-        if (shouldUpdateConnections.current) {
-            node.variables.forEach((variable) => {
-                if (variable.value && (typeof variable.value === "object" && !Array.isArray(variable.value) || Array.isArray(variable.value))) {
-                    const isOpen = getNodeVariableOpenState(node.id, variable.handle);
-                    if (isOpen) {
-                        openConnections(variable.handle);
-                    } else {
-                        collapseConnections(variable.handle);
-                    }
-                }
-            });
-            shouldUpdateConnections.current = false;
-        }
-    }, [getNodeVariableOpenState, openConnections, collapseConnections, node.id, node.variables]);
-
-    useEffect(() => {
-        if (ref.current) {
-            const actualHeight = ref.current.getBoundingClientRect().height / zoomFactor;
-            if (actualHeight !== node.view.height) {
-                updateNodeHeight(node.id, actualHeight);
-            }
-        }
-        // eslint-disable-next-line
-    }, [node.view.height, getNodeVariableOpenState, updateNodeHeight, node.id]);
+        ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start rounded-md pb-5 
+        ${node.view.disabled ? " z-1 select-none opacity-30 " : " z-20 cursor-move "}
+        ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)] ' : ' '}
+        ${useNodeColor(node, selectedNodes.includes(node.id), mockNode, hasMockData)}
+        `.replace(/\s+/g, ' ').trim();
 
     return !node.view.collapsed ? (
         <div
@@ -145,7 +55,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             onMouseDown={!preview ? handleNodeMouseDown : () => {}}
             onDoubleClick={isCollapsable() ? handleCollapse : undefined}
             className={className}
-            title={node.category + ' > ' + node.name + ' ' + node.id}
+            title={node.category + ' > ' + node.name + ' > ' + node.id}
             style={{
                 width: `${size.width}px`,
                 left: preview ? '0px' : `${position.x}px`,
@@ -159,8 +69,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                 className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${node.view.disabled && 'select-none opacity-0'}`}>
                 {node.has_enabled_switch && (
                     <>
-                        <Connector
-                            in
+                        <Connector in
                             nodeId={node.id}
                             handle={NodeEnabledConnector.Node}
                             nodeVariableType={[NodeVariableType.TruePath, NodeVariableType.FalsePath]}
@@ -188,119 +97,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                     {node.service && node.service.id && (
                         <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon}/>
                     )}
-                    {node.variables.map((variable) => {
-                        const type = interpretNodeVariableType(variable);
-                        const isOpen = getNodeVariableOpenState(node.id, variable.handle);
-                        switch (type.baseType) {
-                            case NodeVariableType.Dict:
-                                return (
-                                    <DictVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        isOpen={isOpen}
-                                        onToggle={handleToggle(variable.handle)}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                );
-                            case NodeVariableType.List:
-                                return (
-                                    <ListVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        isOpen={isOpen}
-                                        onToggle={handleToggle(variable.handle)}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                );
-                            case NodeVariableType.String:
-                                return (
-                                    <StringVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                );
-                            case NodeVariableType.Json:
-                                return (
-                                    <JsonVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                );
-                            case NodeVariableType.Bytes:
-                                return (
-                                    <BytesVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                )
-                            case NodeVariableType.Number:
-                                return (
-                                    <NumberVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                );
-                            case NodeVariableType.DateTime:
-                                return (
-                                    <DatetimeVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                );
-                            case NodeVariableType.SecretString:
-                                return (
-                                    <SecretStringVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                );
-                            case NodeVariableType.TextArea:
-                                return (
-                                    <TextAreaVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                );
-                            case NodeVariableType.RichTextArea:
-                                return (
-                                    <RichTextAreaVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                );
-                            case NodeVariableType.Boolean:
-                            case NodeVariableType.TruePath:
-                            case NodeVariableType.FalsePath:
-                                return (
-                                    <BooleanVariable
-                                        key={'dock-' + node.id + '-' + variable.handle}
-                                        variable={variable}
-                                        nodeId={node.id}
-                                        disabled={node.view.disabled}
-                                    />
-                                );
-                            default:
-                                return null;
-                        }
-                    })}
+                    <NodeVariables node={node} variables={node.variables.map((variable) => ({variable, nodeId: node.id}))} />
                     {node.has_play_button && (
                         <PlayButton
                             disabled={node.view.disabled}
@@ -317,10 +114,8 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     ) : (
         <div
             ref={ref}
-            onContextMenu={!preview ? handleContextMenu : () => {
-            }}
-            onMouseDown={!preview ? handleNodeMouseDown : () => {
-            }}
+            onContextMenu={!preview ? handleContextMenu : () => {}}
+            onMouseDown={!preview ? handleNodeMouseDown : () => {}}
             onDoubleClick={isCollapsable() ? handleCollapse : undefined}
             className={className + ` p-5 w-auto h-auto inline-block items-center justify-center cursor-pointer`}
             style={{

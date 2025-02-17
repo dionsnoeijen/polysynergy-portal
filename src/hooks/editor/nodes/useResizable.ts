@@ -3,6 +3,7 @@ import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
 import useConnectionsStore from '@/stores/connectionsStore';
 import { Node } from '@/types/types';
+import {snapToGrid} from "@/utils/snapToGrid";
 
 type Size = {
     width: number;
@@ -50,7 +51,12 @@ const useResizable = (node: Node) => {
             setIsResizing(false);
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
-            updateNodeWidth(node.id, sizeRef.current.width);
+            const finalWidth = snapToGrid(sizeRef.current.width);
+            updateNodeWidth(node.id, finalWidth);
+            const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`) as HTMLElement;
+            if (nodeEl) {
+                nodeEl.style.width = `${finalWidth}px`;
+            }
         };
 
         window.addEventListener("mousemove", handleMouseMove);

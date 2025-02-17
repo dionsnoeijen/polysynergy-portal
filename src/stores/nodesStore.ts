@@ -257,14 +257,14 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     addGroupNode: (node: Partial<Node>) => {
         nodesByIdsCache.clear();
-
-        node.type = NodeType.Group;
-        node.category = "group";
-        node.name = "Untitled Group";
-
-        const defaultNode = createDefaultNode(node);
+        const newNode: Node = {
+            ...createDefaultNode(node) as Node,
+            type: NodeType.Group,
+            category: NodeType.Group,
+            name: "Untitled",
+        };
         set((state) => ({
-            nodes: [...state.nodes, defaultNode],
+            nodes: [...state.nodes, newNode],
         }));
     },
 

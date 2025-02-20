@@ -1,16 +1,12 @@
 import React from "react";
-import {NodeVariable} from "@/types/types";
+import {NodeVariable, VariableTypeProps} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
-import {Field, Fieldset, Label} from "@/components/fieldset";
+import {Field, Fieldset} from "@/components/fieldset";
 import {Input} from "@/components/input";
 import {Select} from "@/components/select";
+import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
-type Props = {
-    nodeId: string;
-    variable: NodeVariable;
-};
-
-const VariableTypeNumber: React.FC<Props> = ({nodeId, variable}): React.ReactElement => {
+const VariableTypeNumber: React.FC<VariableTypeProps> = ({nodeId, variable, publishedButton = true}): React.ReactElement => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const value =
@@ -29,9 +25,9 @@ const VariableTypeNumber: React.FC<Props> = ({nodeId, variable}): React.ReactEle
 
     return (
         <Fieldset>
-            <Label>{variable.handle}</Label>
+            {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
             <Field>
-                {variable.dock.select_values ? (
+                {variable.dock && variable.dock.select_values ? (
                     <Select onChange={handleChange} defaultValue={value}>
                         {Object.entries(variable.dock.select_values).map(([key, v]) => (
                             <option key={key} value={key}>

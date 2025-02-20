@@ -22,7 +22,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value = "", onChange })
   };
 
   const handleKeyCommand = (command: string, state: EditorState) => {
-    const newState = RichUtils.handleKeyCommand(state, command);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newState: any = RichUtils.handleKeyCommand(state, command);
     if (newState) {
       setEditorState(newState);
       const htmlContent = stateToHTML(newState.getCurrentContent());

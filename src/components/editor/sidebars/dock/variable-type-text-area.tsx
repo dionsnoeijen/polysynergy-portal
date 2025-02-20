@@ -1,26 +1,21 @@
 import React from "react";
-import { NodeVariable } from "@/types/types";
+import { VariableTypeProps } from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
-import { Input } from "@/components/input";
-import { Field, Fieldset, Label } from "@/components/fieldset";
-import {Textarea} from "@/components/textarea";
+import { Field, Fieldset } from "@/components/fieldset";
+import { Textarea } from "@/components/textarea";
+import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
-type Props = {
-    nodeId: string;
-    variable: NodeVariable;
-};
-
-const VariableTypeTextArea: React.FC<Props> = ({ nodeId, variable }) => {
+const VariableTypeTextArea: React.FC<VariableTypeProps> = ({ nodeId, variable, publishedButton = true }) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = e.target.value;
         updateNodeVariable(nodeId, variable.handle, newValue);
     };
 
     return (
         <Fieldset>
-            <Label>{variable.handle}</Label>
+            {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
             <Field>
                 <Textarea
                     onChange={handleChange}

@@ -25,7 +25,7 @@ type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
 };
 
-const VariableTypeComponents = {
+export const VariableTypeComponents = {
     [NodeVariableType.String]: VariableTypeString,
     [NodeVariableType.Bytes]: VariableTypeBytes,
     [NodeVariableType.Number]: VariableTypeNumber,
@@ -62,6 +62,12 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
             <Heading arrowToLeft={true} toggleClose={toggleClose}>
                 Dock: {node ? node.name : "select node"}
             </Heading>
+
+            {!node && (
+                <div className="flex flex-1 items-center justify-center text-gray-500 dark:text-gray-400 text-lg">
+                    Select node for node fields
+                </div>
+            )}
 
             {node && <VariableGroup title={'Handle'}>
                 <NodeHandle node={node} />
@@ -112,7 +118,7 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
             )}
 
             {node && node.variables.length > 0 && (
-                <VariableGroup title="Node Variables">
+                <VariableGroup title={node.name}>
                     {node.variables.map((variable: NodeVariable) => {
                         if (!variable.has_dock) return;
                         const { baseType } = interpretNodeVariableType(variable);

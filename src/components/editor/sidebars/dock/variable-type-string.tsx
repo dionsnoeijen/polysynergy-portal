@@ -1,16 +1,13 @@
 import React from "react";
-import {NodeVariable} from "@/types/types";
+import { VariableTypeProps } from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
-import {Input} from "@/components/input";
-import {Field, Fieldset, Label} from "@/components/fieldset";
-import {Select} from "@/components/select";
+import { Input } from "@/components/input";
+import { Field, FieldGroup, Fieldset } from "@/components/fieldset";
+import { Select } from "@/components/select";
+import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
-type Props = {
-    nodeId: string;
-    variable: NodeVariable;
-};
 
-const VariableTypeString: React.FC<Props> = ({nodeId, variable}) => {
+const VariableTypeString: React.FC<VariableTypeProps> = ({nodeId, variable, publishedButton}) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
@@ -19,17 +16,18 @@ const VariableTypeString: React.FC<Props> = ({nodeId, variable}) => {
     };
 
     return (
-        <Fieldset>
-            <Label>{variable.handle}</Label>
+        <Fieldset className={'w-full'}>
+            {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
             <Field>
+                <FieldGroup>
                 {variable.dock && variable.dock.select_values ? (
                     <Select
                         disabled={variable.dock.field_enabled === false}
-                        onChange={handleChange} defaultValue={variable.value as string}>
+                        onChange={handleChange}
+                        defaultValue={variable.value as string}
+                    >
                         {Object.entries(variable.dock.select_values).map(([key, v]) => (
-                            <option key={key} value={key}>
-                                {v}
-                            </option>
+                        <option key={key} value={key}>{v}</option>
                         ))}
                     </Select>
                 ) : (
@@ -42,6 +40,7 @@ const VariableTypeString: React.FC<Props> = ({nodeId, variable}) => {
                         aria-label={variable.handle}
                     />
                 )}
+                </FieldGroup>
             </Field>
         </Fieldset>
     );

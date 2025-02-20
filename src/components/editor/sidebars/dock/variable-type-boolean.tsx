@@ -1,16 +1,12 @@
 import React from "react";
 
-import { NodeVariable } from "@/types/types";
-import { Field, Fieldset, Label } from "@/components/fieldset";
+import { VariableTypeProps } from "@/types/types";
+import { Field, Fieldset } from "@/components/fieldset";
 import { Checkbox, CheckboxField } from "@/components/checkbox";
 import useNodesStore from "@/stores/nodesStore";
+import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
-type Props = {
-    nodeId: string;
-    variable: NodeVariable;
-};
-
-const VariableTypeBoolean: React.FC<Props> = ({ nodeId, variable }): React.ReactElement => {
+const VariableTypeBoolean: React.FC<VariableTypeProps> = ({ nodeId, variable, publishedButton = true }): React.ReactElement => {
     const { updateNodeVariable } = useNodesStore();
 
     const handleChange = (checked: boolean) => {
@@ -19,7 +15,7 @@ const VariableTypeBoolean: React.FC<Props> = ({ nodeId, variable }): React.React
 
     return (
         <Fieldset>
-            <Label>{variable.handle}</Label>
+            {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
             <Field>
                 <CheckboxField>
                     <Checkbox

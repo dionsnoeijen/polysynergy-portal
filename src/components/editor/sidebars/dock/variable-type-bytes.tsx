@@ -1,32 +1,27 @@
 import React from "react";
-import { NodeVariable } from "@/types/types";
+import { VariableTypeProps } from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
-import { Input } from "@/components/input";
-import { Field, Fieldset, Label } from "@/components/fieldset";
+import { Field, Fieldset } from "@/components/fieldset";
+import { Textarea } from "@/components/textarea";
+import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
-type Props = {
-    nodeId: string;
-    variable: NodeVariable;
-};
-
-const VariableTypeBytes: React.FC<Props> = ({ nodeId, variable }) => {
+const VariableTypeBytes: React.FC<VariableTypeProps> = ({ nodeId, variable, publishedButton = true }) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = e.target.value;
         updateNodeVariable(nodeId, variable.handle, newValue);
     };
 
     return (
         <Fieldset>
-            <Label>{variable.handle}</Label>
+            {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
             <Field>
-                <Input
-                    type="text"
-                    value={variable.value as string || ""}
+                <Textarea
                     onChange={handleChange}
                     placeholder={variable.handle}
                     aria-label={variable.handle}
+                    defaultValue={variable.value as string || ""}
                 />
             </Field>
         </Fieldset>

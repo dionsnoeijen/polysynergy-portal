@@ -20,11 +20,11 @@ const Editor = dynamic(() => import('@/components/editor/editor'), {
 });
 
 export function EditorLayout({
-                                 projectUuid,
-                                 routeUuid,
-                                 scheduleUuid,
-                                 blueprintUuid,
-                             }: {
+    projectUuid,
+    routeUuid,
+    scheduleUuid,
+    blueprintUuid,
+}: {
     projectUuid?: string,
     routeUuid?: string,
     scheduleUuid?: string,
@@ -227,6 +227,7 @@ export function EditorLayout({
                 </main>
 
                 {!dockClosed && (
+                    <>
                     <div style={{width: width.dock}} className="absolute top-0 right-0 bottom-0 overflow-scroll">
                         <div className="absolute inset-[10px]">
                             <Dock toggleClose={toggleCloseDock}/>
@@ -237,6 +238,11 @@ export function EditorLayout({
                             className="absolute top-0 left-0 bottom-0 w-[8px] cursor-col-resize"
                         />
                     </div>
+                    <div
+                      style={{ width: width.dock }}
+                      className="absolute right-0 bottom-0 h-4 bg-gradient-to-t from-[#18181BFF] to-transparent"
+                    />
+                    </>
                 )}
 
                 {dockClosed && (

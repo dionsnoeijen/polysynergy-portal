@@ -24,7 +24,6 @@ export default function TreeList<T extends ListItemWithId>({
 }: ListProps<T>): React.JSX.Element {
     const [isOpen, setIsOpen] = useState(true);
 
-    /** Helperfunctie voor de className van een item */
     const getItemClassName = (item: T) => {
         const baseClasses =
             "flex items-center border-l border-r border-sky-500 dark:border-white/20 justify-between pl-2 transition-colors duration-200 group dark:hover:bg-sky-500 dark:hover:text-white";
@@ -32,7 +31,6 @@ export default function TreeList<T extends ListItemWithId>({
         const isActive = activeItem === item.id;
         const isEditing = formEditingItem === item.id;
 
-        // Achtergrond bepalen: formEditingItem > activeItem > default (odd/even)
         const bgClass = isEditing
             ? "bg-sky-200 dark:bg-sky-200"
             : isActive
@@ -45,7 +43,7 @@ export default function TreeList<T extends ListItemWithId>({
     return items.length > 0 ? (
         <div className="mt-[10px]">
             <div
-                className={`flex items-center shadow-sm justify-between border border-sky-500 p-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
+                className={`flex items-center shadow-sm justify-between border border-sky-500 p-1 pl-2 pr-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
                     isOpen ? " rounded-bl-none rounded-br-none" : ""
                 }`}
             >
@@ -74,7 +72,7 @@ export default function TreeList<T extends ListItemWithId>({
                         <Button
                             onClick={addButtonClick}
                             plain
-                            className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0"
+                            className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0 !px-0 !py-0"
                         >
                             <PlusIcon />
                         </Button>
@@ -85,7 +83,7 @@ export default function TreeList<T extends ListItemWithId>({
     ) : (
         <>
             {addButtonClick && (
-                <div className="mt-[10px]">
+                <div>
                     <Button
                         disabled={addDisabled}
                         onClick={addButtonClick}

@@ -45,7 +45,8 @@ export enum FormType {
     EditCode = 'editCode',
     EditNode = 'editNode',
     AddNode = 'addNewNode',
-    EditJson = 'editJson'
+    EditJson = 'editJson',
+    PlaceService = 'placeService',
 }
 
 export enum InOut {
@@ -117,12 +118,14 @@ export type Dock = {
     field_code_editor?: boolean;
     field_json_editor?: boolean;
     select_values?: Record<string, string>;
-}
+};
 
 export type NodeVariable = {
     name?: string;
     handle: string;
     value: null | string | number | boolean | string[] | NodeVariable[];
+    published: boolean;
+    published_description?: string;
     type: string | NodeVariableType;
     has_dock?: boolean;
     has_in?: boolean;
@@ -334,3 +337,10 @@ export interface State {
   [key: string]: any;
 }
 export type StoreName = 'nodes' | 'connections';
+
+export type VariableTypeProps = {
+    nodeId: string;
+    variable: NodeVariable;
+    publishedButton: boolean;
+    onChange?: (value: string) => void;
+};

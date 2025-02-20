@@ -28,7 +28,7 @@ export default function RouteTree(): ReactElement {
                        title={`${route.method}: /${formatSegments(route.segments)} - ${route.id}`}
                        className={`block flex-1 truncate dark:hover:text-white pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
                     >
-                        <b className="dark:text-white">{route.method}</b>: /{formatSegments(route.segments)}
+                        <b className="dark:text-gray-300">{route.method}</b>: /{formatSegments(route.segments)}
                     </Link>
                     <button
                         onClick={() => openForm(FormType.EditRoute, route.id)}

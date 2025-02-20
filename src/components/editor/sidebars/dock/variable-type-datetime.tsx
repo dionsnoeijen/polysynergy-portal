@@ -1,19 +1,15 @@
 import React from "react";
 
-import { NodeVariable } from "@/types/types";
-import { Field, Fieldset, Label } from "@/components/fieldset";
+import { VariableTypeProps } from "@/types/types";
+import { Field, Fieldset } from "@/components/fieldset";
 import useNodesStore from "@/stores/nodesStore";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
+import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
-type Props = {
-    nodeId: string;
-    variable: NodeVariable;
-};
 
-const VariableTypeDatetime: React.FC<Props> = ({ nodeId, variable }): React.ReactElement => {
-    const { updateNodeVariable } = useNodesStore();
-
+const VariableTypeDatetime: React.FC<VariableTypeProps> = ({ nodeId, variable, publishedButton = true }): React.ReactElement => {
+    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
     const initialValue = variable.value ? new Date(variable.value as string) : null;
 
     const handleChange = (datetime: Date | null) => {
@@ -23,7 +19,7 @@ const VariableTypeDatetime: React.FC<Props> = ({ nodeId, variable }): React.Reac
 
     return (
         <Fieldset>
-            <Label>{variable.handle}</Label>
+            {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
             <Field>
                 <DatePicker
                     selected={initialValue}

@@ -72,8 +72,14 @@ const getVariableComponent = (
     onlyOut: boolean
 ) => {
     const type = interpretNodeVariableType(variable);
+
+    if (!type || !type.baseType) {
+        return <span className="text-red-500">[Fout: onbekend type]</span>;
+    }
+
+    const key = `node-${nodeId}-${variable.handle}`;
+
     const commonProps = {
-        key: `node-${nodeId}-${variable.handle}`,
         variable,
         isOpen,
         onToggle: handleToggle(variable.handle),
@@ -87,29 +93,29 @@ const getVariableComponent = (
 
     switch (type.baseType) {
         case NodeVariableType.Dict:
-            return <DictVariable {...commonProps} />;
+            return <DictVariable key={key} {...commonProps} />;
         case NodeVariableType.List:
-            return <ListVariable {...commonProps} />;
+            return <ListVariable key={key} {...commonProps} />;
         case NodeVariableType.String:
-            return <StringVariable {...commonProps} />;
+            return <StringVariable key={key} {...commonProps} />;
         case NodeVariableType.Json:
-            return <JsonVariable {...commonProps} />;
+            return <JsonVariable key={key} {...commonProps} />;
         case NodeVariableType.Bytes:
-            return <BytesVariable {...commonProps} />;
+            return <BytesVariable key={key} {...commonProps} />;
         case NodeVariableType.Number:
-            return <NumberVariable {...commonProps} />;
+            return <NumberVariable key={key} {...commonProps} />;
         case NodeVariableType.DateTime:
-            return <DatetimeVariable {...commonProps} />;
+            return <DatetimeVariable key={key} {...commonProps} />;
         case NodeVariableType.SecretString:
-            return <SecretStringVariable {...commonProps} />;
+            return <SecretStringVariable key={key} {...commonProps} />;
         case NodeVariableType.TextArea:
-            return <TextAreaVariable {...commonProps} />;
+            return <TextAreaVariable key={key} {...commonProps} />;
         case NodeVariableType.RichTextArea:
-            return <RichTextAreaVariable {...commonProps} />;
+            return <RichTextAreaVariable key={key} {...commonProps} />;
         case NodeVariableType.Boolean:
         case NodeVariableType.TruePath:
         case NodeVariableType.FalsePath:
-            return <BooleanVariable {...commonProps} />;
+            return <BooleanVariable key={key} {...commonProps} />;
         default:
             return null;
     }

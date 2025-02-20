@@ -1,17 +1,15 @@
 import React from "react";
 
-import {FormType, NodeVariable, NodeVariableType} from "@/types/types";
+import useEditorStore from "@/stores/editorStore";
+import {FormType, NodeVariable, NodeVariableType, VariableTypeProps} from "@/types/types";
 import {Text} from "@/components/text";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {CheckCircleIcon, PencilIcon, XCircleIcon} from "@heroicons/react/24/outline";
-import useEditorStore from "@/stores/editorStore";
+import {Button} from "@/components/button";
+import {Fieldset} from "@/components/fieldset";
+import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
-type Props = {
-    variable: NodeVariable;
-    nodeId: string;
-};
-
-const VariableTypeDict: React.FC<Props> = ({ variable, nodeId }: Props): React.ReactElement => {
+const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publishedButton = true }): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
 
     const { openForm } = useEditorStore();
@@ -22,25 +20,29 @@ const VariableTypeDict: React.FC<Props> = ({ variable, nodeId }: Props): React.R
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-2">
-                <Text>{variable.handle}</Text>
+            {publishedButton && (
+            <div className="flex justify-between items-center w-full">
+                <Fieldset className={'w-full'}>
+                    <LabelPublish nodeId={nodeId} variable={variable} />
+                </Fieldset>
             </div>
+            )}
             <div className="border border-white/20 rounded-md">
-                <Table dense>
+                <Table dense className={"bg-white/5"}>
                     <TableHead>
                         <TableRow>
-                            <TableHeader className="py-1">in</TableHeader>
-                            <TableHeader className="py-1">key</TableHeader>
-                            <TableHeader className="py-1">value</TableHeader>
-                            <TableHeader className="py-1">out</TableHeader>
+                            <TableHeader className="!py-1 !pl-2 !pr-2">in</TableHeader>
+                            <TableHeader className="!py-1">key</TableHeader>
+                            <TableHeader className="!py-1">value</TableHeader>
+                            <TableHeader className="!py-1 !pl-2 !pr-2">out</TableHeader>
                         </TableRow>
                     </TableHead>
                     <TableBody>
 
                         {variable.value === null &&
                             (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="py-1">
+                                <TableRow className="!py-1">
+                                    <TableCell colSpan={4} className="!py-1 !pl-2 !pr-2">
                                         <Text>No data</Text>
                                     </TableCell>
                                 </TableRow>
@@ -56,22 +58,22 @@ const VariableTypeDict: React.FC<Props> = ({ variable, nodeId }: Props): React.R
                                 ) {
                                     return (
                                         <TableRow key={item.handle}>
-                                            <TableCell className="p-1">
-                                                {item.has_in ? (<CheckCircleIcon className={"w-4 h-4"}/>) : (<XCircleIcon className={'w-4 h-4'} />)}
+                                            <TableCell className="!p-1 !pl-2">
+                                                {item.has_in ? (<CheckCircleIcon className={"w-4 h-4"} />) : (<XCircleIcon className={'w-4 h-4'} />)}
                                             </TableCell>
                                             <TableCell
-                                                className="py-1 truncate overflow-hidden whitespace-nowrap"
+                                                className="!p-1 max-w-[100px] truncate overflow-hidden whitespace-nowrap"
                                                 title={item.handle}
                                             >
                                                 {item.handle}
                                             </TableCell>
                                             <TableCell
-                                                className="py-1 truncate overflow-hidden whitespace-nowrap"
+                                                className="!p-1 max-w-[200px] truncate overflow-hidden whitespace-nowrap"
                                                 title={item.value?.toString()}
                                             >
                                                 {item.value?.toString()}
                                             </TableCell>
-                                            <TableCell className="p-1">
+                                            <TableCell className="!p-1 !pr-2">
                                                 {item.has_out ? (<CheckCircleIcon className={"w-4 h-4"}/>) : (<XCircleIcon className={'w-4 h-4'} />)}
                                             </TableCell>
                                         </TableRow>
@@ -79,18 +81,15 @@ const VariableTypeDict: React.FC<Props> = ({ variable, nodeId }: Props): React.R
                                 }
                                 return null;
                             })}
-                        <TableRow>
-                            <td colSpan={4} className="border-t border-white/20 p-0 py-0 px-0">
-                                <button
-                                    className="text-slate-500 hover:text-slate-600 w-full pb-1"
-                                    onClick={() => onEdit(nodeId)}
-                                >
-                                    <PencilIcon className="w-4 h-4 inline text-slate-300"/>
-                                </button>
-                            </td>
-                        </TableRow>
                     </TableBody>
                 </Table>
+                <Button
+                    plain
+                    className="w-full bg-white/5 hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0 !px-0 !py-0"
+                    onClick={() => onEdit(nodeId)}
+                >
+                    <PencilIcon className="w-4 h-4 inline text-slate-400"/>
+                </Button>
             </div>
         </div>
     );

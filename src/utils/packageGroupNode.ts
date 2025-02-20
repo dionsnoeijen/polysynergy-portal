@@ -1,5 +1,5 @@
-import {Connection, Node, NodeService, Package} from '@/types/types';
-import { v4 as uuidv4 } from 'uuid';
+import {Connection, Node, NodeService, NodeVariableType, Package} from '@/types/types';
+import {v4 as uuidv4} from 'uuid';
 
 
 /**
@@ -25,7 +25,6 @@ export const promoteNodeInStateToService = (
     category: string,
     icon: string,
 ) => {
-
     const id = uuidv4();
 
     node.service = {
@@ -47,22 +46,35 @@ export const makeServiceFromNodeForStorage = (
 ): Node => {
     let clonedNode = JSON.parse(JSON.stringify(node));
 
-    const packagedData = packageNode(clonedNode, nodes, connections);
-
-    if (!packagedData) {
-        throw new Error("Unable to create package from node.");
+    if (node.group && node.group.nodes && node.group.nodes.length > 0) {
+        const packagedData = packageGroupNode(clonedNode, nodes, connections);
+            if (!packagedData) {
+            throw new Error("Unable to package group node.");
+        }
+        clonedNode.package = packagedData;
+        resetNodeView(clonedNode, packagedData.nodes, packagedData.connections);
     }
 
-    clonedNode.package = packagedData;
-
-    resetNodeView(clonedNode, packagedData.nodes, packagedData.connections);
     const ids = gatherAllIds(clonedNode);
     const idMap = createIdMap(ids);
 
     clonedNode = replaceIdsInJsonString(clonedNode, idMap);
+    clonedNode = clearPublishedVariableValues(clonedNode);
 
     return clonedNode;
 };
+
+function clearPublishedVariableValues(node: Node): Node {
+    node.variables.map((variable) => {
+        if (!variable.published) return;
+        if (variable.type === NodeVariableType.Dict) {
+            variable.value.map((v) => {v.value = ''});
+        } else {
+            variable.value = '';
+        }
+    });
+    return node;
+}
 
 function replaceIdsInJsonString(originalData: Node, idMap: Record<string, string>): Node {
   let jsonString = JSON.stringify(originalData);
@@ -176,7 +188,7 @@ export const unpackNode = (node: Node): {
     }
 }
 
-export const packageNode = (
+export const packageGroupNode = (
     node: Node,
     nodes: Node[],
     connections: Connection[],

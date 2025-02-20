@@ -14,6 +14,27 @@ export function Fieldset({
   )
 }
 
+export function LabelGroup({
+  className,
+  children,
+  actions,
+  ...props
+}: { className?: string; children: React.ReactNode; actions?: React.ReactNode } & React.ComponentPropsWithoutRef<'div'>) {
+  return (
+    <div
+      data-slot="label-group"
+      className={clsx(
+        className,
+        'flex items-center justify-between w-full px-2 py-0',
+      )}
+      {...props}
+    >
+      <div className="flex-1 truncate">{children}</div> {/* Zorgt voor ellipsis bij lange labels */}
+      {actions && <div className="ml-2 flex-shrink-0">{actions}</div>} {/* Zorgt dat knoppen rechts uitlijnen */}
+    </div>
+  );
+}
+
 export function Legend({
   className,
   ...props
@@ -30,16 +51,35 @@ export function Legend({
   )
 }
 
-export function FieldGroup({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
-  return <div data-slot="control" {...props} className={clsx(className, 'space-y-8')} />
+export function FieldGroup({
+  className,
+  children,
+  actions,
+  ...props
+}: { className?: string; children: React.ReactNode; actions?: React.ReactNode } & React.ComponentPropsWithoutRef<'div'>) {
+  return (
+    <div
+      data-slot="control"
+      {...props}
+      className={clsx(className, 'flex items-center space-y-0 space-x-1')}
+    >
+      <div className="flex-1">{children}</div>
+      {actions && <div data-slot="action">{actions}</div>}
+    </div>
+  );
 }
 
-export function Field({ className, ...props }: { className?: string } & Omit<Headless.FieldProps, 'as' | 'className'>) {
+export function Field({
+  className,
+  children,
+  ...props
+}: { className?: string; children: React.ReactNode } & Omit<Headless.FieldProps, 'as' | 'className'>) {
   return (
     <Headless.Field
       {...props}
       className={clsx(
         className,
+        'flex flex-col', // Zorgt ervoor dat label en input onder elkaar staan
         '[&>[data-slot=label]+[data-slot=control]]:mt-3',
         '[&>[data-slot=label]+[data-slot=description]]:mt-1',
         '[&>[data-slot=description]+[data-slot=control]]:mt-3',
@@ -47,8 +87,10 @@ export function Field({ className, ...props }: { className?: string } & Omit<Hea
         '[&>[data-slot=control]+[data-slot=error]]:mt-3',
         '[&>[data-slot=label]]:font-medium'
       )}
-    />
-  )
+    >
+      {children}
+    </Headless.Field>
+  );
 }
 
 export function Label({ className, ...props }: { className?: string } & Omit<Headless.LabelProps, 'as' | 'className'>) {

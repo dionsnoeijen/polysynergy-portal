@@ -29,8 +29,10 @@ type NodesStore = {
     getNodes: () => Node[];
     getNodesByIds: (nodeIds: string[]) => Node[];
     getNodeVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
+    updateNodeVariablePublishedDescription: (nodeId: string, variableHandle: string, description: string) => void;
     getNodesToRender: () => Node[];
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => void;
+    toggleNodeVariablePublished: (nodeId: string, variableHandle: string) => void;
     updateNodeHandle: (nodeId: string, handle: string) => void;
     getTrackedNode: () => Node | null;
     initNodes: (nodes: Node[]) => void;
@@ -250,9 +252,9 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             node.view = defaultNodeView;
         }
 
-        set((state) => ({
-            nodes: [...state.nodes, node],
-        }));
+        console.log(node);
+
+        set((state) => ({ nodes: [...state.nodes, node],}));
     },
 
     addGroupNode: (node: Partial<Node>) => {
@@ -398,6 +400,27 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         return node?.variables.find((variable) => variable.handle === variableHandle);
     },
 
+    updateNodeVariablePublishedDescription: (nodeId: string, variableHandle: string, description: string) => {
+        nodesByIdsCache.clear();
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        variables: node.variables.map((variable) =>
+                            variable.handle === variableHandle
+                                ? {
+                                    ...variable,
+                                    published_description: description,
+                                }
+                                : variable
+                        ),
+                    }
+                    : node
+            ),
+        }));
+    },
+
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => {
         nodesByIdsCache.clear();
         set((state) => ({
@@ -417,6 +440,28 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     : node
             ),
             trackedNodeId: nodeId,
+        }));
+    },
+
+    toggleNodeVariablePublished: (nodeId: string, variableHandle: string) => {
+        nodesByIdsCache.clear();
+
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        variables: node.variables.map((variable) =>
+                            variable.handle === variableHandle
+                                ? {
+                                    ...variable,
+                                    published: !variable.published,
+                                }
+                                : variable
+                        ),
+                    }
+                    : node
+            ),
         }));
     },
 

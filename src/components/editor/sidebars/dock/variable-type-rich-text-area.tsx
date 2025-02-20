@@ -1,15 +1,11 @@
 import React from "react";
-import { NodeVariable } from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
-import { Field, Fieldset, Label } from "@/components/fieldset";
+import { VariableTypeProps } from "@/types/types";
+import { Field, Fieldset } from "@/components/fieldset";
 import RichTextEditor from "@/components/rich-text-editor";
+import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
-type Props = {
-    nodeId: string;
-    variable: NodeVariable;
-};
-
-const VariableTypeRichTextArea: React.FC<Props> = ({ nodeId, variable }) => {
+const VariableTypeRichTextArea: React.FC<VariableTypeProps> = ({ nodeId, variable, publishedButton = true }) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const handleChange = (value: string) => {
@@ -18,7 +14,7 @@ const VariableTypeRichTextArea: React.FC<Props> = ({ nodeId, variable }) => {
 
     return (
         <Fieldset>
-            <Label>{variable.handle}</Label>
+            {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
             <Field>
                 <RichTextEditor
                     onChange={(value: string) => handleChange(value)}

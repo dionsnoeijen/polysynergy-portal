@@ -1,28 +1,56 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import useEditorStore from "@/stores/editorStore";
+import useNodesStore from "@/stores/nodesStore";
+import useConnectionsStore from "@/stores/connectionsStore";
+import useServicesStore from "@/stores/servicesStore";
 import { Heading, Subheading } from "@/components/heading";
 import { Divider } from "@/components/divider";
 import { Button } from "@/components/button";
 import { FormType } from "@/types/types";
 import { Input } from "@/components/input";
-import useEditorStore from "@/stores/editorStore";
-import useNodesStore from "@/stores/nodesStore";
 import { Text } from "@/components/text";
-import SvgSelector from "@/components/editor/forms/service/svg-selector";
+import { makeServiceFromNodeForStorage, promoteNodeInStateToService } from "@/utils/packageGroupNode";
+import { storeService } from "@/api/servicesApi";
+import { Alert, AlertActions, AlertDescription, AlertTitle } from "@/components/alert";
 import Node from "@/components/editor/nodes/node";
 import RichTextEditor from "@/components/rich-text-editor";
-import {makeServiceFromNodeForStorage, promoteNodeInStateToService} from "@/utils/packageNode";
-import useConnectionsStore from "@/stores/connectionsStore";
-import useServicesStore from "@/stores/servicesStore";
-import {storeService} from "@/api/servicesApi";
-import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
+import SvgSelector from "@/components/editor/forms/service/svg-selector";
 
 const ServiceForm: React.FC = () => {
     const { closeForm, formType, selectedNodes, formEditRecordId } = useEditorStore();
-    const { nodes, getNode } = useNodesStore();
+    const { nodes, getNode, updateNodeVariablePublishedDescription } = useNodesStore();
     const { connections } = useConnectionsStore();
     const { getService, fetchServices } = useServicesStore();
 
+    const [name, setName] = useState("");
+    const [category, setCategory] = useState("");
+    const [icon, setIcon] = useState("");
+    const [description, setDescription] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [nameError, setNameError] = useState<boolean>(false);
+    const [categoryError, setCategoryError] = useState<boolean>(false);
+    const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+
     let node = undefined;
+
+    if (formType === FormType.AddService) {
+        node = getNode(selectedNodes[0]);
+    }
+
+    if (formType === FormType.EditService && formEditRecordId) {
+        node = getService(formEditRecordId);
+        if (node) {
+            node = node.node_setup.versions[0].content.nodes[0];
+        }
+    }
+
+    useEffect(() => {
+        if (!node) return;
+        setName(node.service?.name || "");
+        setCategory(node.service?.category || "");
+        setIcon(node.icon || "");
+        setDescription(node.service?.description || "");
+    }, [node]);
 
     if (formType === FormType.AddService) {
         if (selectedNodes.length > 1) {
@@ -34,20 +62,6 @@ const ServiceForm: React.FC = () => {
             console.log("NO NODES SELECTED, MAKE SURE THE FORM DOES NOT LOAD AT ALL");
             return null;
         }
-    }
-
-    if (formType === FormType.EditService && formEditRecordId) {
-        node = getService(formEditRecordId);
-        if (!node) {
-            console.log('THERE IS NO NODE SERVICE IN THE SERVICE STORE WITH THAT ID');
-            return null;
-        }
-        node = node.node_setup.versions[0].content.nodes[0];
-        console.log('SERVICE LOADED FROM STORE', node);
-    }
-
-    if (formType === FormType.AddService) {
-        node = getNode(selectedNodes[0]);
     }
 
     if (!node) {
@@ -71,15 +85,6 @@ const ServiceForm: React.FC = () => {
             category: "",
         };
     }
-
-    const [name, setName] = useState(node.service.name || "");
-    const [category, setCategory] = useState(node.service.category || "");
-    const [icon, setIcon] = useState(node.icon || "");
-    const [description, setDescription] = useState(node.service.description || "");
-    const [error, setError] = useState<string | null>(null);
-    const [nameError, setNameError] = useState<boolean>(false);
-    const [categoryError, setCategoryError] = useState<boolean>(false);
-    const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
     const handleCancel = (e: React.FormEvent) => {
         e.preventDefault();
@@ -127,15 +132,11 @@ const ServiceForm: React.FC = () => {
             icon
         );
 
-        console.log(node);
-
         const nodeForStorage = makeServiceFromNodeForStorage(
             node,
             nodes,
             connections,
         );
-
-        console.log(nodeForStorage);
 
         if (!nodeForStorage?.service?.id) {
             console.log("CANNOT MAKE A SERVICE FROM A SERVICE, MAKE SURE THE FORM DOES NOT LOAD AT ALL");
@@ -213,7 +214,7 @@ const ServiceForm: React.FC = () => {
                         }`}
                     />
                     {nameError && (
-                        <p className="mt-1 text-sm text-red-500">Name is required.</p>
+                        <p className="mt-1 text-sm text-red-500">Name is required</p>
                     )}
                 </div>
             </section>
@@ -265,6 +266,37 @@ const ServiceForm: React.FC = () => {
                 </div>
                 <div>
                     <SvgSelector onSelect={(url: string) => handleIconChange(url)} />
+                </div>
+            </section>
+
+            <Divider className="my-10" soft bleed />
+
+            <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                <div className="space-y-1">
+                    <Subheading>Published Variables</Subheading>
+                    <Text>
+                        Give a good description on what is expected in the published variable. Creating the service, will empty the value, so dont worry about accidentally sharing your keys.
+                    </Text>
+                </div>
+                <div>
+                    {node.variables.map((variable) => {
+                        if (!variable.published) return null;
+                        return (
+                            <div key={`v-node-${node.id}-${variable.handle}`}>
+                                <Subheading>{variable.name} - {variable.handle}</Subheading>
+                                <RichTextEditor
+                                    value={variable.published_description || ""}
+                                    onChange={(description) => {
+                                        updateNodeVariablePublishedDescription(
+                                            node.id,
+                                            variable.handle,
+                                            description
+                                        );
+                                    }}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </section>
 

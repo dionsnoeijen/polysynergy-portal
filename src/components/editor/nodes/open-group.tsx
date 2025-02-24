@@ -1,25 +1,24 @@
-import React, {useEffect, useState, useRef, useLayoutEffect} from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import {Node} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import ConnectorGroup from "@/components/editor/nodes/connector-group";
-import {
-    Dialog,
-    DialogTitle,
-    DialogDescription,
-    DialogBody,
-    DialogActions,
-} from "@/components/dialog";
-import {Button} from "@/components/button";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
-import {MARGIN} from "@/utils/constants";
-import {getNodeBoundsFromDOM} from "@/utils/positionUtils";
+import ConnectorGroup from "@/components/editor/nodes/connector-group";
 import ClosedGroup from "@/components/editor/nodes/closed-group";
+
+import { Dialog, DialogTitle, DialogDescription, DialogBody, DialogActions } from "@/components/dialog";
+import { Button } from "@/components/button";
+import { MARGIN } from "@/utils/constants";
+import { getNodeBoundsFromDOM } from "@/utils/positionUtils";
 
 type GroupProps = { node: Node };
 
 const OpenGroup: React.FC<GroupProps> = ({node}): null | React.ReactElement => {
-    const {openContextMenu, setSelectedNodes, isDragging, zoomFactor} = useEditorStore();
+    const openContextMenu = useEditorStore((state) => state.openContextMenu);
+    const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
+    const isDragging = useEditorStore((state) => state.isDragging);
+    const zoomFactor = useEditorStore((state) => state.zoomFactor);
+
     const {closeGroup, dissolveGroup} = useGrouping();
     const connections = useConnectionsStore((state) => state.connections);
 
@@ -73,7 +72,7 @@ const OpenGroup: React.FC<GroupProps> = ({node}): null | React.ReactElement => {
 
         closedGroupNodeEl.style.left = `${x}px`;
         closedGroupNodeEl.style.top = `${y}px`;
-        // eslint-disable-next-line
+    // eslint-disable-next-line
     }, [bounds, node.id, connections]);
 
     const width = bounds.maxX - bounds.minX;
@@ -112,6 +111,22 @@ const OpenGroup: React.FC<GroupProps> = ({node}): null | React.ReactElement => {
         setIsDialogOpen(false);
     };
 
+    useEffect(() => {
+        if (!isDialogOpen) return;
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Enter") {
+                handleCancelDissolve();
+            }
+            if (event.key === "Escape") {
+                handleCancelDissolve();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isDialogOpen]);
+
     if (!node.group) return null;
 
     return (
@@ -123,7 +138,11 @@ const OpenGroup: React.FC<GroupProps> = ({node}): null | React.ReactElement => {
                 data-type="open-group"
                 onContextMenu={handleContextMenu}
                 onDoubleClick={() => !node.group?.isHidden && closeGroup(node.id)}
-                className={`absolute border border-sky-500 dark:border-white rounded-md bg-sky-500 dark:bg-slate-500/20 bg-opacity-25
+                className={`
+                    ${(node.service && node.service.id) ? 
+                        'border-purple-500 dark:border-purple-500 bg-purple-500 dark:bg-purple-500/20' : 
+                        'border-sky-500 dark:border-white bg-sky-500 dark:bg-slate-500/20'}
+                    absolute border rounded-md bg-opacity-25
                     ${node.group.isHidden ? 'z-1 select-none opacity-30' : 'z-10'}
                 `}
                 title={node.id}

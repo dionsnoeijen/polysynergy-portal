@@ -1,5 +1,11 @@
 import React from "react";
-import {NodeCollapsedConnector, NodeEnabledConnector, NodeProps, NodeType, NodeVariableType} from "@/types/types";
+import {
+    NodeCollapsedConnector,
+    NodeEnabledConnector,
+    NodeProps,
+    NodeType,
+    NodeVariableType
+} from "@/types/types";
 
 import useNodesStore from "@/stores/nodesStore";
 import useEditorStore from "@/stores/editorStore";
@@ -19,15 +25,17 @@ import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
 import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
 import NodeVariables from "@/components/editor/nodes/rows/node-variables";
-import {Button} from "@/components/button";
-import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
+
+import { Button } from "@/components/button";
+import { ChevronDownIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
 
 const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {size, handleResizeMouseDown} = useResizable(node);
-    const {selectedNodes} = useEditorStore();
-    const {handleNodeMouseDown} = useNodeMouseDown(node);
-    const {handleContextMenu} = useNodeContextMenu(node);
+    const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
+    const isNodeInService = useNodesStore((state) => state.isNodeInService([node.id]));
+    const {handleNodeMouseDown} = useNodeMouseDown(node, isNodeInService);
+    const {handleContextMenu} = useNodeContextMenu(node);
     const position = useNodePlacement(node);
     const ref = useAutoResize(node);
     const mockNode = useMockStore((state) => state.getMockNode(node.id));
@@ -45,7 +53,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
         ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start rounded-md pb-5 
         ${node.view.disabled ? " z-1 select-none opacity-30 " : " z-20 cursor-move "}
         ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)] ' : ' '}
-        ${useNodeColor(node, selectedNodes.includes(node.id), mockNode, hasMockData)}
+        ${useNodeColor(node, selectedNodes.includes(node.id), mockNode, hasMockData, isNodeInService)}
         `.replace(/\s+/g, ' ').trim();
 
     return !node.view.collapsed ? (

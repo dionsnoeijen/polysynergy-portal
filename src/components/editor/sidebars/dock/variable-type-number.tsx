@@ -1,9 +1,9 @@
 import React from "react";
-import {NodeVariable, VariableTypeProps} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
-import {Field, Fieldset} from "@/components/fieldset";
-import {Input} from "@/components/input";
-import {Select} from "@/components/select";
+import { VariableTypeProps } from "@/types/types";
+import { Field, Fieldset } from "@/components/fieldset";
+import { Input } from "@/components/input";
+import { Select } from "@/components/select";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
 const VariableTypeNumber: React.FC<VariableTypeProps> = ({nodeId, variable, publishedButton = true}): React.ReactElement => {
@@ -30,9 +30,9 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({nodeId, variable, publ
                 {variable.dock && variable.dock.select_values ? (
                     <Select onChange={handleChange} defaultValue={value}>
                         {Object.entries(variable.dock.select_values).map(([key, v]) => (
-                            <option key={key} value={key}>
-                                {v}
-                            </option>
+                        <option key={key} value={key}>
+                            {v}
+                        </option>
                         ))}
                     </Select>
                 ) : (

@@ -6,13 +6,12 @@ import useServicesStore from "@/stores/servicesStore";
 import useEditorStore from "@/stores/editorStore";
 
 export default function ServiceTree(): ReactElement {
-    const { services, fetchServices } = useServicesStore();
-    const {
-        openForm,
-        formEditRecordId,
-        activeServiceId,
-        selectedNodes,
-    } = useEditorStore();
+    const services = useServicesStore((state) => state.services);
+    const fetchServices = useServicesStore((state) => state.fetchServices);
+    const openForm = useEditorStore((state) => state.openForm);
+    const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+    const activeServiceId = useEditorStore((state) => state.activeServiceId);
+    const selectedNodes = useEditorStore((state) => state.selectedNodes);
 
     const [addDisabled, setAddDisabled] = React.useState(true);
 

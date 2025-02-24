@@ -1,18 +1,13 @@
 import React, { useState } from "react";
-import { VariableTypeProps } from "@/types/types";
+import useNodesStore from "@/stores/nodesStore";
 import { Input } from "@/components/input";
 import { Field, FieldGroup, Fieldset } from "@/components/fieldset";
 import { Button } from "@/components/button";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import useNodesStore from "@/stores/nodesStore";
+import { VariableTypeProps } from "@/types/types";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
-type ExtendedVariableTypeProps = VariableTypeProps & {
-    onChange?: (value: string) => void;
-    currentValue?: string; // Optionele prop voor de huidige waarde
-};
-
-const VariableTypeSecretString: React.FC<ExtendedVariableTypeProps> = ({
+const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
     nodeId,
     variable,
     publishedButton = true,
@@ -35,7 +30,6 @@ const VariableTypeSecretString: React.FC<ExtendedVariableTypeProps> = ({
         setIsPasswordVisible((prev) => !prev);
     };
 
-    // Gebruik currentValue als die is meegegeven, anders val terug op variable.value
     const displayValue = currentValue !== undefined ? currentValue : (variable.value as string) || "";
 
     return (

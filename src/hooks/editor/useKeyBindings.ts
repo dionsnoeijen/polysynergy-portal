@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import {useEffect} from "react";
 
 type KeyBindings = {
     [key: string]: (event: KeyboardEvent) => void;
@@ -11,16 +11,19 @@ export const useKeyBindings = (bindings: KeyBindings) => {
             if (
                 activeElement &&
                 activeElement instanceof HTMLElement &&
-                (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA" || activeElement.isContentEditable)
+                (activeElement.tagName === "INPUT" || 
+                 activeElement.tagName === "TEXTAREA" || 
+                 activeElement.isContentEditable)
             ) {
                 return;
             }
 
+            // Combine ctrl and meta keys for cross-platform support
+            const ctrlOrCmd = event.ctrlKey || event.metaKey;
             const modifiers = [
-                event.ctrlKey ? 'ctrl' : '',
+                ctrlOrCmd ? 'ctrl' : '',
                 event.shiftKey ? 'shift' : '',
                 event.altKey ? 'alt' : '',
-                event.metaKey && !event.ctrlKey ? 'meta' : '',
             ].filter(Boolean);
 
             const mainKey = event.key.toLowerCase();

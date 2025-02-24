@@ -1,6 +1,6 @@
 import React from "react";
-import { VariableTypeProps } from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
+import { VariableTypeProps } from "@/types/types";
 import { Field, Fieldset } from "@/components/fieldset";
 import { Textarea } from "@/components/textarea";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";

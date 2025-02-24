@@ -20,29 +20,37 @@ import AddNode from "@/components/editor/add-node";
 import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import PointZeroIndicator from "@/components/editor/point-zero-indicator";
 import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
+import useDraggable from "@/hooks/editor/nodes/useDraggable";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
+    const mousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-    const {
-        zoomFactor,
-        setEditorPosition,
-        isDragging,
-        panPosition,
-        selectedNodes,
-        deleteNodesDialogOpen,
-        setDeleteNodesDialogOpen,
-        setShowAddingNode,
-        openContextMenu
-    } = useEditorStore();
-    const { getNodesToRender, getOpenGroups, nodes } = useNodesStore();
-    const { connections } = useConnectionsStore();
+    const zoomFactor = useEditorStore((state) => state.zoomFactor);
+    const setEditorPosition = useEditorStore((state) => state.setEditorPosition);
+    const isDragging = useEditorStore((state) => state.isDragging);
+    const panPosition = useEditorStore((state) => state.panPosition);
+    const selectedNodes = useEditorStore((state) => state.selectedNodes);
+    const deleteNodesDialogOpen = useEditorStore((state) => state.deleteNodesDialogOpen);
+    const setDeleteNodesDialogOpen = useEditorStore((state) => state.setDeleteNodesDialogOpen);
+    const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
+    const openContextMenu = useEditorStore((state) => state.openContextMenu);
+    const copySelectedNodes = useEditorStore((state) => state.copySelectedNodes);
+    const pasteNodes = useEditorStore((state) => state.pasteNodes);
+    const isPasting = useEditorStore((state) => state.isPasting);
+
+    const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
+    const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
+    const nodes = useNodesStore((state) => state.nodes);
+
+    const connections = useConnectionsStore((state) => state.connections);
 
     const { handleDeleteSelectedNodes } = useDeleteNode();
     const { handleZoom } = useZoom();
     const { handlePanMouseDown, handleMouseMove, handleMouseUp } = usePan();
     const { handleEditorMouseDown } = useDeselectOnClickOutside();
     const { createGroup } = useGrouping();
+    const { startDraggingAfterPaste } = useDraggable();
 
     useGlobalStoreListenersWithImmediateSave();
 
@@ -64,6 +72,10 @@ export default function Editor() {
         window.addEventListener('resize', updateEditorPosition);
         return () => window.removeEventListener('resize', updateEditorPosition);
     }, [setEditorPosition, updateEditorPosition]);
+
+    const handleMousePositionUpdate = useCallback((e: React.MouseEvent) => {
+        mousePositionRef.current = { x: e.clientX, y: e.clientY };
+    }, []);
 
     const handleWheel = (e: React.WheelEvent) => {
         if (!contentRef.current) return;
@@ -102,10 +114,15 @@ export default function Editor() {
             console.log('Cut selected nodes');
         },
         'ctrl+c': () => {
-            console.log('Copy selected nodes');
+            copySelectedNodes();
         },
         'ctrl+v': () => {
-            console.log('Paste nodes');
+            const pastedNodeIds = pasteNodes();
+            startDraggingAfterPaste(
+                mousePositionRef.current.x,
+                mousePositionRef.current.y,
+                pastedNodeIds
+            );
         },
         'ctrl+z': () => {
             console.log('Undo last action');
@@ -136,7 +153,7 @@ export default function Editor() {
                 }
             ]
         );
-    }
+    };
 
     return (
         <div
@@ -147,7 +164,11 @@ export default function Editor() {
                 handleEditorMouseDown();
                 handlePanMouseDown(e);
             }}
-            onMouseMove={isDragging ? undefined : handleMouseMove}
+            onMouseMove={(e) => {
+                handleMousePositionUpdate(e);
+                if (isDragging || isPasting) return;
+                handleMouseMove(e);
+            }}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
             onContextMenu={handleContextMenu}
@@ -186,7 +207,7 @@ export default function Editor() {
                 isOpen={deleteNodesDialogOpen}
                 onConfirm={handleConfirmDelete}
                 onCancel={handleCancelDelete}
-                itemCount={selectedNodes.length}
+                selectedNodes={selectedNodes}
             />
         </div>
     );

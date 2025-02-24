@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 import {v4 as uuidv4} from "uuid";
-import {FlowState, Group, Node, NodeType, NodeVariable, NodeView} from "@/types/types";
+import {Connection, FlowState, Group, Node, NodeType, NodeVariable, NodeView} from "@/types/types";
 import {adjectives, animals, colors, uniqueNamesGenerator} from 'unique-names-generator';
 import useConnectionsStore from "@/stores/connectionsStore";
 
@@ -29,6 +29,7 @@ type NodesStore = {
     getNodes: () => Node[];
     getNodesByIds: (nodeIds: string[]) => Node[];
     getNodeVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
+    updateNodeVariablePublishedTitle: (nodeId: string, variableHandle: string, title: string) => void;
     updateNodeVariablePublishedDescription: (nodeId: string, variableHandle: string, description: string) => void;
     getNodesToRender: () => Node[];
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => void;
@@ -36,6 +37,8 @@ type NodesStore = {
     updateNodeHandle: (nodeId: string, handle: string) => void;
     getTrackedNode: () => Node | null;
     initNodes: (nodes: Node[]) => void;
+    isNodeInService: (nodeIds: string[]) => boolean;
+    getAllNestedNodesByIds: (nodeIds: string[]) => Node[];
 
     openGroup: (nodeId: string) => void;
     isNodeInGroup: (nodeId: string) => string | null;
@@ -233,26 +236,22 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     addNode: (node) => {
         nodesByIdsCache.clear();
 
-        const defaultNodeView: NodeView = {
-            x: 0,
-            y: 0,
-            width: 200,
-            height: 200,
-            disabled: false,
-            adding: true,
-            collapsed: false,
-        };
-
         node.id = node.id ? node.id : uuidv4();
         node.handle = node.handle ? node.handle : uniqueNamesGenerator({dictionaries: [adjectives, colors, animals]});
         node.flowState = FlowState.Enabled;
         node.driven = false;
 
         if (!node.view) {
-            node.view = defaultNodeView;
+            node.view = {
+                x: 0,
+                y: 0,
+                width: 200,
+                height: 200,
+                disabled: false,
+                adding: true,
+                collapsed: false,
+            };
         }
-
-        console.log(node);
 
         set((state) => ({ nodes: [...state.nodes, node],}));
     },
@@ -297,6 +296,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     updateNodePosition: (nodeId: string, x: number, y: number) => {
         nodesByIdsCache.clear();
+
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
@@ -398,6 +398,27 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     getNodeVariable: (nodeId, variableHandle) => {
         const node = get().getNode(nodeId);
         return node?.variables.find((variable) => variable.handle === variableHandle);
+    },
+
+    updateNodeVariablePublishedTitle: (nodeId: string, variableHandle: string, title: string) => {
+        nodesByIdsCache.clear();
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        variables: node.variables.map((variable) =>
+                            variable.handle === variableHandle
+                                ? {
+                                    ...variable,
+                                    published_title: title,
+                                }
+                                : variable
+                        ),
+                    }
+                    : node
+            ),
+        }));
     },
 
     updateNodeVariablePublishedDescription: (nodeId: string, variableHandle: string, description: string) => {
@@ -661,6 +682,62 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     initNodes: (nodes: Node[]) => {
         set({nodes});
+    },
+
+    isNodeInService: (nodeIds: string[]): boolean => {
+        const state = get();
+        const nodes = state.nodes;
+
+        const checkServiceRecursively = (currentNodeId: string, visited: Set<string> = new Set()): boolean => {
+            if (visited.has(currentNodeId)) return false;
+            visited.add(currentNodeId);
+
+            const node = nodes.find(n => n.id === currentNodeId);
+            if (!node) return false;
+
+            const groupId = state.isNodeInGroup(currentNodeId);
+            if (!groupId) return false;
+
+            const groupNode = nodes.find(n => n.id === groupId);
+            if (!groupNode) return false;
+            if (groupNode.service) return true;
+
+            return checkServiceRecursively(groupId, visited);
+        };
+
+        return nodeIds.some(nodeId => {
+            const node = nodes.find(n => n.id === nodeId);
+            if (!node) return false;
+            if (node.service) return false;
+            return checkServiceRecursively(nodeId);
+        });
+    },
+
+    getAllNestedNodesByIds: (nodeIds: string[]): Node[] => {
+        const state = get();
+        const allNodes = state.nodes;
+        const resultNodeIds = new Set<string>(nodeIds);
+
+        const collectNestedNodes = (currentNodeId: string) => {
+            const node = allNodes.find(n => n.id === currentNodeId);
+            if (!node || node.type !== NodeType.Group || !node.group?.nodes) return;
+
+            node.group.nodes.forEach((nestedNodeId) => {
+                if (!resultNodeIds.has(nestedNodeId)) {
+                    resultNodeIds.add(nestedNodeId);
+                    const nestedNode = allNodes.find(n => n.id === nestedNodeId);
+                    if (nestedNode?.type === NodeType.Group) {
+                        collectNestedNodes(nestedNodeId);
+                    }
+                }
+            });
+        };
+
+        nodeIds.forEach((nodeId) => {
+            collectNestedNodes(nodeId);
+        });
+
+        return Array.from(resultNodeIds).map((id) => allNodes.find(n => n.id === id)!).filter(Boolean);
     },
 }));
 

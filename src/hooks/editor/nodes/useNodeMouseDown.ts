@@ -3,7 +3,10 @@ import useEditorStore from "@/stores/editorStore";
 import { Node as NodeType } from "@/types/types";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
 
-const useNodeMouseDown = (node: NodeType) => {
+const useNodeMouseDown = (
+    node: NodeType,
+    isInService?: boolean
+) => {
     const { selectedNodes, setSelectedNodes } = useEditorStore();
     const { onDragMouseDown } = useDraggable();
 
@@ -11,7 +14,9 @@ const useNodeMouseDown = (node: NodeType) => {
         (e: React.MouseEvent) => {
             if (node.view.disabled) return;
 
-            const isToggleClick = (e.target as HTMLElement).closest("button[data-toggle='true']");
+            const isToggleClick = (e.target as HTMLElement)
+                .closest("button[data-toggle='true']");
+
             if (isToggleClick) return;
 
             e.preventDefault();
@@ -36,9 +41,11 @@ const useNodeMouseDown = (node: NodeType) => {
                 setSelectedNodes([node.id]);
             }
 
-            onDragMouseDown(e);
+            if (!isInService) {
+                onDragMouseDown(e);
+            }
         },
-        [node, selectedNodes, setSelectedNodes, onDragMouseDown]
+        [isInService, node, selectedNodes, setSelectedNodes, onDragMouseDown]
     );
 
     return { handleNodeMouseDown };

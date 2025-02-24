@@ -1,5 +1,9 @@
 import {create} from 'zustand';
-import {FormType, NodeVariable} from "@/types/types";
+import {Connection, FormType, Node, NodeVariable, Package} from "@/types/types";
+import useNodesStore from "@/stores/nodesStore";
+import useConnectionsStore from "@/stores/connectionsStore";
+import {escapeRegExp, gatherAllIds, replaceIdsInJsonString, unpackNode} from "@/utils/packageGroupNode";
+import {v4 as uuidv4} from 'uuid';
 
 export enum BottomBarView {
     Output = 'Output',
@@ -73,12 +77,23 @@ type EditorState = {
     setActiveBlueprintId: (blueprintId: string) => void;
     activeVersionId?: string;
     setActiveVersionId: (versionId: string) => void;
+    activeGlobalVariableId?: string;
+    setActiveGlobalVariableId: (globalVariableId: string) => void;
 
     editingRouteVersions: { [routeId: string]: string };
     setEditingRouteVersion: (routeId: string, versionId: string) => void;
 
     editingScheduleVersions: { [scheduleId: string]: string };
     setEditingScheduleVersion: (scheduleId: string, versionId: string) => void;
+
+    copiedPackage: Package | null;
+    setCopiedPackage: (pkg: Package | null) => void;
+    copySelectedNodes: () => void;
+    isPasting: boolean;
+    setIsPasting: (isPasting: boolean) => void;
+    pastedNodeIds: string[];
+    setPastedNodeIds: (nodeIds: string[]) => void;
+    pasteNodes: () => string[];
 };
 
 const useEditorStore = create<EditorState>((set, get) => ({
@@ -105,6 +120,9 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setActiveBlueprintId: (blueprintId: string) => set({activeBlueprintId: blueprintId}),
     activeVersionId: '',
     setActiveVersionId: (versionId: string) => set({activeVersionId: versionId}),
+    activeGlobalVariableId: '',
+    setActiveGlobalVariableId: (globalVariableId: string) => set({activeGlobalVariableId: globalVariableId}),
+
 
     openForm: (type: FormType, formEditRecordId: null | string = null, variable?: NodeVariable | null) => set({
         showForm: true,
@@ -204,6 +222,85 @@ const useEditorStore = create<EditorState>((set, get) => ({
                 [scheduleId]: versionId,
             },
         })),
+
+    copiedPackage: null,
+    setCopiedPackage: (pkg) => set({copiedPackage: pkg}),
+
+    copySelectedNodes: () => {
+        const selectedNodeIds = get().selectedNodes;
+        if (selectedNodeIds.length === 0) return;
+
+        const nestedNodes = useNodesStore
+            .getState()
+            .getAllNestedNodesByIds(selectedNodeIds);
+
+        const nestedNodeIds = new Set(nestedNodes.map(node => node.id));
+
+        const uniqueConnectionsMap = new Map<string, Connection>();
+        nestedNodes.forEach((node) => {
+            const inConnections = useConnectionsStore.getState().findInConnectionsByNodeId(node.id);
+            const outConnections = useConnectionsStore.getState().findOutConnectionsByNodeId(node.id);
+
+            [...inConnections, ...outConnections].forEach((connection) => {
+                const hasValidSource = nestedNodeIds.has(connection.sourceNodeId);
+                const hasValidTarget = connection.targetNodeId ? nestedNodeIds.has(connection.targetNodeId) : true;
+
+                if (hasValidSource && hasValidTarget) {
+                    uniqueConnectionsMap.set(connection.id, connection);
+                }
+            });
+        });
+
+        const connections = Array.from(uniqueConnectionsMap.values());
+
+        const packageData = {
+            nodes: nestedNodes,
+            connections
+        };
+
+        const ids = gatherAllIds(packageData);
+        const idMap: { [id: string]: string } = {};
+        let count = 1;
+        ids.forEach((id) => {
+            idMap[id] = `{uuid-${count++}}`;
+        });
+
+        const packagedData = replaceIdsInJsonString(packageData, idMap);
+
+        set({copiedPackage: packagedData});
+    },
+
+    isPasting: false,
+    setIsPasting: (isPasting) => set({isPasting: isPasting}),
+
+    pastedNodeIds: [],
+    setPastedNodeIds: (nodeIds) => set({ pastedNodeIds: nodeIds }),
+
+    pasteNodes: (): string[] => {
+        let copiedPackage = get().copiedPackage;
+        if (!copiedPackage) return [];
+
+        copiedPackage = unpackNode(copiedPackage);
+
+        copiedPackage.nodes.forEach((node: Node) => {
+            useNodesStore.getState().addNode(node);
+        });
+
+        if (copiedPackage.connections) {
+            copiedPackage.connections.forEach((connection: Connection) => {
+                useConnectionsStore.getState().addConnection(connection);
+            });
+        }
+
+        const pastedNodeIds = copiedPackage.nodes.map((node) => node.id);
+        set({
+            selectedNodes: pastedNodeIds,
+            pastedNodeIds,
+            isPasting: true
+        });
+
+        return pastedNodeIds;
+    },
 }));
 
 export default useEditorStore;

@@ -4,7 +4,7 @@ import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import { Heading, Subheading } from "@/components/heading";
-import { Node, NodeVariable, NodeVariableType, Service } from "@/types/types";
+import {Connection, Node, NodeVariable, NodeVariableType, Package, Service} from "@/types/types";
 import { Divider } from "@/components/divider";
 import { unpackNode } from "@/utils/packageGroupNode";
 import { Button } from "@/components/button";
@@ -28,15 +28,15 @@ const PlaceServiceForm: React.FC = () => {
     const [simpleVariables, setSimpleVariables] = useState<{ [nodeId: string]: { [handle: string]: string } }>({});
     const [publishedVariables, setPublishedVariables] = useState<{ variable: NodeVariable; nodeId: string }[]>([]);
     const [unpackedNodes, setUnpackedNodes] = useState<Node[]>([]);
-    const [unpackedConnections, setUnpackedConnections] = useState<any[]>([]);
+    const [unpackedConnections, setUnpackedConnections] = useState<Connection[]>([]);
 
     useEffect(() => {
         if (!service) return;
 
-        const node: Node = service.node_setup.versions[0].content.nodes[0];
-        if (!node) return;
+        const packagedData: Package = service.node_setup.versions[0].content;
+        if (!packagedData) return;
 
-        const { nodes, connections } = unpackNode(node);
+        const { nodes, connections } = unpackNode(packagedData);
         const initialVariables: { [nodeId: string]: { [handle: string]: NodeVariable[] } } = {};
         const initialSimpleVariables: { [nodeId: string]: { [handle: string]: string } } = {};
         const pubVariables: { variable: NodeVariable; nodeId: string }[] = [];
@@ -94,42 +94,46 @@ const PlaceServiceForm: React.FC = () => {
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.MouseEvent) => {
         e.preventDefault();
-        const position = globalToLocal((e as any).screenX, (e as any).screenY);
+        const position = globalToLocal(
+            (e as React.MouseEvent).screenX,
+            (e as React.MouseEvent).screenY
+        );
 
         if (unpackedConnections.length > 0) {
             unpackedConnections.forEach((c) => addConnection(c));
         }
 
-        const nodesToAdd = unpackedNodes.map((n) => {
-            const nodeCopy = { ...n, variables: [...n.variables] };
+        const nodesToAdd =
+            unpackedNodes.map((n, index) => {
+                const nodeCopy = { ...n, variables: [...n.variables] };
 
-            publishedVariables.forEach(({ variable, nodeId }) => {
-                if (nodeCopy.id === nodeId) {
-                    const targetVariable = nodeCopy.variables.find((v) => v.handle === variable.handle);
-                    if (targetVariable) {
-                        if (variable.type === NodeVariableType.Dict && variables[nodeId]?.[variable.handle]) {
-                            targetVariable.value = variables[nodeId][variable.handle];
-                        } else if (simpleVariables[nodeId]?.[variable.handle] !== undefined) {
-                            targetVariable.value = simpleVariables[nodeId][variable.handle];
+                publishedVariables.forEach(({ variable, nodeId }) => {
+                    if (nodeCopy.id === nodeId) {
+                        const targetVariable = nodeCopy.variables.find((v) => v.handle === variable.handle);
+                        if (targetVariable) {
+                            if (variable.type === NodeVariableType.Dict && variables[nodeId]?.[variable.handle]) {
+                                targetVariable.value = variables[nodeId][variable.handle];
+                            } else if (simpleVariables[nodeId]?.[variable.handle] !== undefined) {
+                                targetVariable.value = simpleVariables[nodeId][variable.handle];
+                            }
                         }
                     }
-                }
+                });
+
+                nodeCopy.view = {
+                    x: nodeCopy.view.x + position.x,
+                    y: nodeCopy.view.y + position.y,
+                    width: 200,
+                    height: 200,
+                    disabled: false,
+                    adding: index === unpackedNodes.length - 1, // The last node is the top service node
+                    collapsed: false,
+                };
+
+                return nodeCopy;
             });
-
-            nodeCopy.view = {
-                x: position.x,
-                y: position.y,
-                width: 200,
-                height: 200,
-                disabled: false,
-                adding: true,
-                collapsed: false,
-            };
-
-            return nodeCopy;
-        });
 
         nodesToAdd.forEach((n) => addNode(n));
 
@@ -138,10 +142,11 @@ const PlaceServiceForm: React.FC = () => {
         }
 
         closeForm();
+
     };
 
     return (
-        <form onSubmit={handleSubmit} method="post" className="p-10">
+        <form method="post" className="p-10">
             <Heading>{service.name}</Heading>
             <Divider className="my-10" soft bleed />
 
@@ -150,14 +155,14 @@ const PlaceServiceForm: React.FC = () => {
                 if (baseType === NodeVariableType.Dict) {
                     return (
                         <div key={nodeId + "-" + variable.handle}>
-                            <Subheading>{`Variables for ${variable.handle}`}</Subheading>
+                            <Subheading>{`${variable.published_title}`}</Subheading>
                             {variable.published_description && (
                                 <div className="mb-4 rounded-md border border-white/10 p-4">
                                     <Text dangerouslySetInnerHTML={{ __html: variable.published_description }} />
                                 </div>
                             )}
                             <EditDictVariable
-                                title={`Variables for ${variable.handle}`}
+                                title={`${variable.handle}`}
                                 onlyValues={true}
                                 variables={variables[nodeId]?.[variable.handle] || []}
                                 handle={variable.handle}
@@ -172,7 +177,7 @@ const PlaceServiceForm: React.FC = () => {
                     const VariableComponent = VariableTypeComponents[baseType];
                     return VariableComponent ? (
                         <div key={nodeId + "-" + variable.handle}>
-                            <Subheading>{`${variable.handle}`}</Subheading>
+                            <Subheading>{`${variable.published_title}`}</Subheading>
                             {variable.published_description && (
                                 <div className="mb-4 rounded-md border border-white/10 p-4">
                                     <Text dangerouslySetInnerHTML={{ __html: variable.published_description }} />
@@ -195,7 +200,7 @@ const PlaceServiceForm: React.FC = () => {
                 <Button type="button" onClick={() => closeForm()} plain>
                     Cancel
                 </Button>
-                <Button type="submit">Place</Button>
+                <Button type="submit" onClick={(e: React.MouseEvent) => handleSubmit(e)}>Place</Button>
             </div>
         </form>
     );

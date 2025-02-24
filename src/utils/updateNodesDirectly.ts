@@ -9,8 +9,11 @@ export function updateNodesDirectly(
         x: number,
         y: number
     }> = [];
+
     nodes.forEach((nodeId: string) => {
-        const el = document.querySelector(`[data-node-id="${nodeId}"]`) as HTMLElement;
+        const el = document.querySelector(
+            `[data-node-id="${nodeId}"]:not([data-type="in"]):not([data-type="out"])`
+        ) as HTMLElement;
         if (!el) return;
 
         const { x: startX, y: startY } = initialPositions[nodeId];

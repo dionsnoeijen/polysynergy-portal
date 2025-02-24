@@ -47,6 +47,8 @@ export enum FormType {
     AddNode = 'addNewNode',
     EditJson = 'editJson',
     PlaceService = 'placeService',
+    AddGlobalVariable = 'addGlobalVariable',
+    EditGlobalVariable = 'editGlobalVariable',
 }
 
 export enum InOut {
@@ -125,6 +127,7 @@ export type NodeVariable = {
     handle: string;
     value: null | string | number | boolean | string[] | NodeVariable[];
     published: boolean;
+    published_title?: string;
     published_description?: string;
     type: string | NodeVariableType;
     has_dock?: boolean;
@@ -146,6 +149,8 @@ export type NodeView = {
 };
 
 export type Package = {
+    id?: string,
+    type?: "service" | "blueprint";
     nodes: Node[];
     connections?: Connection[];
 };
@@ -343,4 +348,5 @@ export type VariableTypeProps = {
     variable: NodeVariable;
     publishedButton: boolean;
     onChange?: (value: string) => void;
+    currentValue?: string;
 };

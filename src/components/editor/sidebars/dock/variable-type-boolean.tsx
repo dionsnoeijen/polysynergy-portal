@@ -1,17 +1,33 @@
 import React from "react";
 
+import useNodesStore from "@/stores/nodesStore";
+
 import { VariableTypeProps } from "@/types/types";
 import { Field, Fieldset } from "@/components/fieldset";
 import { Checkbox, CheckboxField } from "@/components/checkbox";
-import useNodesStore from "@/stores/nodesStore";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
-const VariableTypeBoolean: React.FC<VariableTypeProps> = ({ nodeId, variable, publishedButton = true }): React.ReactElement => {
-    const { updateNodeVariable } = useNodesStore();
+const VariableTypeBoolean: React.FC<VariableTypeProps> = ({
+    nodeId,
+    variable,
+    publishedButton = true,
+    onChange,
+    currentValue,
+}): React.ReactElement => {
+    const updateNodeVariable =
+        useNodesStore((state) => state.updateNodeVariable);
 
-    const handleChange = (checked: boolean) => {
-        updateNodeVariable(nodeId, variable.handle, checked);
-    };
+    const handleChange =
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const newValue = e.target.value;
+            if (onChange) {
+                onChange(newValue);
+            } else {
+                updateNodeVariable(nodeId, variable.handle, newValue);
+            }
+        };
+
+    const displayValue = currentValue !== undefined ? currentValue : (variable.value as boolean) || false;
 
     return (
         <Fieldset>
@@ -20,7 +36,7 @@ const VariableTypeBoolean: React.FC<VariableTypeProps> = ({ nodeId, variable, pu
                 <CheckboxField>
                     <Checkbox
                         name={variable.handle}
-                        checked={!!variable.value}
+                        checked={!!displayValue}
                         onChange={handleChange}
                     />
                 </CheckboxField>

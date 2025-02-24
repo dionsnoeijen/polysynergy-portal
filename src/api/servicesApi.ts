@@ -1,5 +1,5 @@
 import { getIdToken } from "@/api/auth/authToken";
-import { Node } from "@/types/types";
+import {Node, Package} from "@/types/types";
 import { Connection } from "@/types/types";
 
 export const storeService = async (
@@ -7,8 +7,7 @@ export const storeService = async (
     name: string,
     category: string,
     description: string,
-    nodes: Node[],
-    connections?: Connection[],
+    packagedData: Package
 ) => {
     try {
         const idToken = getIdToken();
@@ -27,8 +26,8 @@ export const storeService = async (
                     description
                 },
                 node_setup_content: {
-                    nodes,
-                    connections,
+                    nodes: packagedData.nodes,
+                    connections: packagedData.connections
                 }
             }),
         });

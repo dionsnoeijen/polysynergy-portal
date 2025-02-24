@@ -1,12 +1,14 @@
-import React, {useRef} from "react";
+import React from "react";
 import useEditorStore from "@/stores/editorStore";
-import {GroupProps, NodeCollapsedConnector} from "@/types/types";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
 import useNodesStore from "@/stores/nodesStore";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
-import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
-import {Button} from "@/components/button";
+
+import { GroupProps, NodeCollapsedConnector } from "@/types/types";
+import { ChevronDownIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/button";
+
 import Connector from "@/components/editor/nodes/connector";
 import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
 import NodeIcon from "@/components/editor/nodes/node-icon";
@@ -15,15 +17,20 @@ import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
 import NodeVariables from "@/components/editor/nodes/rows/node-variables";
 import useAutoResize from "@/hooks/editor/nodes/useAutoResize";
 
-const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = false}): React.ReactElement => {
+const ClosedGroup: React.FC<GroupProps> = ({
+    node,
+    isMirror = false,
+    preview = false
+}): React.ReactElement => {
     const ref = useAutoResize(node);
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const openContextMenu = useEditorStore((state) => state.openContextMenu);
+    const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
+    const position = useNodePlacement(node);
+
     const {openGroup, deleteGroup} = useGrouping();
     const {variablesForGroup} = useVariablesForGroup(node.id, false);
-    const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
     const {handleNodeMouseDown} = useNodeMouseDown(node);
-    const position = useNodePlacement(node);
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -55,7 +62,8 @@ const ClosedGroup: React.FC<GroupProps> = ({node, isMirror = false, preview = fa
             data-node-id={isMirror ? ('mirror-' + node.id) : node.id}
             onContextMenu={!preview ? handleContextMenu : () => {}}
             onMouseDown={!preview ? handleNodeMouseDown : () => {}}
-            onDoubleClick={!(node.service && node.service.id) ? () => openGroup(node.id) : () => {}}
+            onDoubleClick={() => openGroup(node.id)}
+            // onDoubleClick={!(node.service && node.service.id) ? () => openGroup(node.id) : () => {}}
             title={node.category + ' > ' + node.name + ' > ' + (isMirror ? ('mirror-' + node.id) : node.id)}
             style={{
                 left: preview ? '0px' : `${position.x}px`,

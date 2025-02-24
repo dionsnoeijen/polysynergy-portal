@@ -4,7 +4,7 @@ import useEditorStore from "@/stores/editorStore";
 import { fetchDynamicRoute as fetchDynamicRouteAPI } from "@/api/dynamicRoutesApi";
 import { fetchBlueprint as fetchBlueprintAPI } from "@/api/blueprintApi";
 import { fetchSchedule as fetchScheduleAPI } from "@/api/schedulesApi";
-import {Route} from "@/types/types";
+import { Route } from "@/types/types";
 
 async function fetchAndApplyNodeSetup({
     routeId = null,
@@ -26,7 +26,6 @@ async function fetchAndApplyNodeSetup({
         }
 
         if (scheduleId) {
-            console.log('RIGHT?!?!?');
             const schedule = await fetchScheduleAPI(scheduleId);
             useEditorStore.getState().setActiveVersionId(schedule.node_setup?.versions[0]?.id ?? '');
             useNodesStore.getState().initNodes(schedule.node_setup?.versions[0]?.content.nodes ?? []);

@@ -1,4 +1,4 @@
-import {Connection, Node, NodeService, NodeVariableType, Package} from '@/types/types';
+import {Connection, Node, NodeService, NodeVariable, NodeVariableType, Package} from '@/types/types';
 import {v4 as uuidv4} from 'uuid';
 
 
@@ -43,32 +43,39 @@ export const makeServiceFromNodeForStorage = (
     node: Node,
     nodes: Node[],
     connections: Connection[],
-): Node => {
+): Package => {
     let clonedNode = JSON.parse(JSON.stringify(node));
 
+    let packagedData: Package | undefined = {
+        nodes: [],
+        connections: [],
+        type: 'service',
+    };
+
     if (node.group && node.group.nodes && node.group.nodes.length > 0) {
-        const packagedData = packageGroupNode(clonedNode, nodes, connections);
-            if (!packagedData) {
+        packagedData = packageGroupNode(clonedNode, nodes, connections);
+        if (!packagedData) {
             throw new Error("Unable to package group node.");
         }
-        clonedNode.package = packagedData;
         resetNodeView(clonedNode, packagedData.nodes, packagedData.connections);
     }
 
-    const ids = gatherAllIds(clonedNode);
-    const idMap = createIdMap(ids);
-
-    clonedNode = replaceIdsInJsonString(clonedNode, idMap);
     clonedNode = clearPublishedVariableValues(clonedNode);
+    packagedData.id = clonedNode.service.id;
+    packagedData.nodes.push(clonedNode);
 
-    return clonedNode;
+    const ids = gatherAllIds(packagedData);
+    const idMap = createIdMap(ids);
+    packagedData = replaceIdsInJsonString(packagedData, idMap);
+
+    return packagedData;
 };
 
 function clearPublishedVariableValues(node: Node): Node {
     node.variables.map((variable) => {
         if (!variable.published) return;
         if (variable.type === NodeVariableType.Dict) {
-            variable.value.map((v) => {v.value = ''});
+            (variable.value as [])?.map((v: NodeVariable) => {v.value = ''});
         } else {
             variable.value = '';
         }
@@ -76,7 +83,7 @@ function clearPublishedVariableValues(node: Node): Node {
     return node;
 }
 
-function replaceIdsInJsonString(originalData: Node, idMap: Record<string, string>): Node {
+export function replaceIdsInJsonString(originalData: Package, idMap: Record<string, string>): Package {
   let jsonString = JSON.stringify(originalData);
 
   for (const [oldId, placeholder] of Object.entries(idMap)) {
@@ -88,11 +95,11 @@ function replaceIdsInJsonString(originalData: Node, idMap: Record<string, string
   return JSON.parse(jsonString);
 }
 
-function escapeRegExp(str: string): string {
+export function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function gatherAllIds(obj: unknown, ids: Set<string> = new Set()): Set<string> {
+export function gatherAllIds(obj: unknown, ids: Set<string> = new Set()): Set<string> {
   if (Array.isArray(obj)) {
     for (const item of obj) {
       gatherAllIds(item, ids);
@@ -107,7 +114,6 @@ function gatherAllIds(obj: unknown, ids: Set<string> = new Set()): Set<string> {
       ) && typeof value === 'string') {
           ids.add(value);
       }
-      // verder alles recursief door
       gatherAllIds(value, ids);
     }
   }
@@ -161,42 +167,21 @@ export const resetNodeView = (
     });
 };
 
-export const unpackNode = (node: Node): {
-    nodes: Node[],
-    connections: Connection[] | undefined
-} => {
-    const ids = gatherAllIds(node);
+export const unpackNode = (packagedData: Package): Package => {
+
+    const ids = gatherAllIds(packagedData);
     const idMap = createUuidMap(ids);
 
-    const clonedNode = replaceIdsInJsonString(node, idMap);
+    packagedData = replaceIdsInJsonString(packagedData, idMap);
 
-    let nodes = [clonedNode];
-    let connections = undefined;
-
-    if (clonedNode.package) {
-        nodes = [
-            clonedNode,
-            ...clonedNode.package.nodes || []
-        ];
-        connections = clonedNode.package.connections || [];
-        clonedNode.package = undefined;
-    }
-
-    return {
-        nodes,
-        connections
-    }
+    return packagedData;
 }
 
 export const packageGroupNode = (
     node: Node,
     nodes: Node[],
     connections: Connection[],
-): Package | undefined => {
-
-    if (!node.group || !node.group.nodes || node.group.nodes.length === 0) {
-        return undefined;
-    }
+): Package => {
 
     const getAllNodesRecursively = (currentNode: Node, allNodes: Node[]): Node[] => {
         const result: Node[] = [];
@@ -213,8 +198,9 @@ export const packageGroupNode = (
         return result;
     };
 
-    const nodesForPackage = getAllNodesRecursively(node, nodes);
+    nodes.map((n) => { clearPublishedVariableValues(n); });
 
+    const nodesForPackage = getAllNodesRecursively(node, nodes);
     const connectionsForPackage = connections.filter((connection) => {
         return (
             connection.isInGroup === node.id ||

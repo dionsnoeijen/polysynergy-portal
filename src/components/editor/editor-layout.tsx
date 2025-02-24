@@ -160,7 +160,6 @@ export function EditorLayout({
 
     return (
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
-
             {closeFormMessage && (
                 <>
                     <div className="z-20 fixed top-0 left-0 right-0 h-[1px] bg-green-500 animate-progress"></div>
@@ -273,7 +272,7 @@ export function EditorLayout({
                     />
                     <div
                         className="absolute top-[10px] left-[10px] right-[10px] bottom-[10px]">
-                        <BottomBar/>
+                        <BottomBar />
                     </div>
                 </div>
             )}
@@ -284,11 +283,11 @@ export function EditorLayout({
                     onClick={toggleCloseOutput}
                     className="absolute z-10 bottom-[10px] right-[10px] p-3 radius-bl-0"
                 >
-                    <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/>
+                    <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white" />
                 </button>
             )}
 
-            <ContextMenu/>
+            <ContextMenu />
         </div>
     );
 }

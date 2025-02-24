@@ -100,7 +100,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                     </Button>
                 )}
             </div>
-            <div className="flex flex-col w-full items-start overflow-visible">
+            <div className={`flex flex-col w-full items-start overflow-visible ${node.view.disabled && 'select-none opacity-0'}`}>
                 <div className="w-full">
                     {node.service && node.service.id && (
                         <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon}/>

@@ -63,7 +63,6 @@ const ClosedGroup: React.FC<GroupProps> = ({
             onContextMenu={!preview ? handleContextMenu : () => {}}
             onMouseDown={!preview ? handleNodeMouseDown : () => {}}
             onDoubleClick={() => openGroup(node.id)}
-            // onDoubleClick={!(node.service && node.service.id) ? () => openGroup(node.id) : () => {}}
             title={node.category + ' > ' + node.name + ' > ' + (isMirror ? ('mirror-' + node.id) : node.id)}
             style={{
                 left: preview ? '0px' : `${position.x}px`,
@@ -87,7 +86,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
             </div>
 
             {node.service && node.service.id && (
-                <div className="flex w-full">
+                <div className={`flex w-full ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
                     <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon}/>
                 </div>
             )}

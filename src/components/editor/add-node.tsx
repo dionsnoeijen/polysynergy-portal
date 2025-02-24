@@ -1,40 +1,35 @@
 "use client";
 
-import React, {useCallback, useEffect, useRef} from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import useEditorStore from "@/stores/editorStore";
-import {Input, InputGroup} from "@/components/input";
-import {ChevronRightIcon, MagnifyingGlassIcon, PlusIcon} from "@heroicons/react/24/outline";
+import { Input, InputGroup } from "@/components/input";
+import { ChevronRightIcon, MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useNodesStore from "@/stores/nodesStore";
-import {globalToLocal} from "@/utils/positionUtils";
-import {useMousePosition} from "@/hooks/editor/useMousePosition";
-import {v4 as uuidv4} from "uuid";
-import {Button} from "@/components/button";
-import {FormType} from "@/types/types";
+import { globalToLocal } from "@/utils/positionUtils";
+import { useMousePosition } from "@/hooks/editor/useMousePosition";
+import { v4 as uuidv4 } from "uuid";
+import { Button } from "@/components/button";
+import { FormType } from "@/types/types";
 
 const AddNode: React.FC = () => {
-    const {
-        showAddingNode,
-        setShowAddingNode,
-        setAddingNode,
-        openGroup,
-        openForm,
-    } = useEditorStore();
+    const showAddingNode = useEditorStore((state) => state.showAddingNode);
+    const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
+    const setAddingNode = useEditorStore((state) => state.setAddingNode);
+    const openGroup = useEditorStore((state) => state.openGroup);
+    const openForm = useEditorStore((state) => state.openForm);
 
-    const {
-        filteredAvailableNodes,
-        selectedNodeIndex,
-        setSelectedNodeIndex,
-        resetSelectedNodeIndex,
-        setSearchPhrase,
-        filterAvailableNodes,
-        searchPhrase,
-        fetchAvailableNodes,
-        availableNodes,
-        getAvailableNodeById,
-    } = useAvailableNodeStore();
+    const filteredAvailableNodes = useAvailableNodeStore((state) => state.filteredAvailableNodes);
+    const selectedNodeIndex = useAvailableNodeStore((state) => state.selectedNodeIndex);
+    const setSelectedNodeIndex = useAvailableNodeStore((state) => state.setSelectedNodeIndex);
+    const resetSelectedNodeIndex = useAvailableNodeStore((state) => state.resetSelectedNodeIndex);
+    const setSearchPhrase = useAvailableNodeStore((state) => state.setSearchPhrase);
+    const fetchAvailableNodes = useAvailableNodeStore((state) => state.fetchAvailableNodes);
+    const getAvailableNodeById = useAvailableNodeStore((state) => state.getAvailableNodeById);
+    const searchPhrase = useAvailableNodeStore((state) => state.searchPhrase);
 
-    const { addNode, addNodeToGroup } = useNodesStore();
+    const addNode = useNodesStore((state) => state.addNode);
+    const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
 
     const { x: mouseX, y: mouseY } = useMousePosition();
 
@@ -48,23 +43,16 @@ const AddNode: React.FC = () => {
     }, [showAddingNode]);
 
     useEffect(() => {
-        filterAvailableNodes();
-    }, [filterAvailableNodes, searchPhrase, availableNodes]);
-
-    useEffect(() => {
         fetchAvailableNodes();
     }, [fetchAvailableNodes]);
 
-    const handleAddNodeAtPosition = useCallback((
-        nodeId: string,
-        screenX: number,
-        screenY: number
-    ) => {
-
+    const handleAddNodeAtPosition = useCallback((nodeId: string, screenX: number, screenY: number) => {
         const replaceIdWith = uuidv4();
 
         setAddingNode(replaceIdWith);
         setShowAddingNode(false);
+        setSearchPhrase(""); // Reset search phrase
+        resetSelectedNodeIndex(); // Reset selected index
 
         const node = getAvailableNodeById(nodeId);
         if (!node) return;
@@ -86,9 +74,7 @@ const AddNode: React.FC = () => {
         if (openGroup) {
             addNodeToGroup(openGroup, node.id);
         }
-
-        resetSelectedNodeIndex();
-    }, []);
+    }, [addNode, addNodeToGroup, getAvailableNodeById, openGroup, setAddingNode, setShowAddingNode, setSearchPhrase, resetSelectedNodeIndex]);
 
     const handleAddNewNode = () => {
         openForm(FormType.AddNode);
@@ -100,6 +86,7 @@ const AddNode: React.FC = () => {
         const handleClickOutside = (e: MouseEvent) => {
             if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
                 setShowAddingNode(false);
+                setSearchPhrase(""); // Reset search phrase bij sluiten
                 resetSelectedNodeIndex();
             }
         };
@@ -116,6 +103,7 @@ const AddNode: React.FC = () => {
                 handleAddNodeAtPosition(nodeId, mouseX, mouseY);
             } else if (e.key === "Escape") {
                 setShowAddingNode(false);
+                setSearchPhrase(""); // Reset search phrase bij escape
                 resetSelectedNodeIndex();
             }
         };
@@ -136,7 +124,8 @@ const AddNode: React.FC = () => {
         mouseX,
         mouseY,
         handleAddNodeAtPosition,
-        setShowAddingNode
+        setShowAddingNode,
+        setSearchPhrase
     ]);
 
     return (
@@ -152,6 +141,7 @@ const AddNode: React.FC = () => {
                         <Input
                             type="search"
                             placeholder="Search node"
+                            value={searchPhrase}
                             onChange={(e) => setSearchPhrase(e.target.value)}
                             ref={inputRef}
                         />

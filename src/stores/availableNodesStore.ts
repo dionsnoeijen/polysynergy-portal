@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { Node } from "@/types/types";
-import {fetchAvailableNodesAPI} from "@/api/availableNodesApi";
-import {addIdsToAvailableNodes} from "@/stores/helpers/addIdsToAvailableNodes";
+import { fetchAvailableNodesAPI } from "@/api/availableNodesApi";
+import { addIdsToAvailableNodes } from "@/stores/helpers/addIdsToAvailableNodes";
 
 type AvailableNodeStore = {
     selectedNodeIndex: number;
@@ -12,7 +12,7 @@ type AvailableNodeStore = {
     filteredAvailableNodes: Node[];
     searchPhrase: string;
     setSearchPhrase: (phrase: string) => void;
-    filterAvailableNodes: () => void;
+    filterAvailableNodes: () => void; // Geen argument meer nodig
     fetchAvailableNodes: () => void;
 };
 
@@ -28,11 +28,23 @@ const useAvailableNodeStore = create<AvailableNodeStore>((set, get) => ({
     getAvailableNodeById: (id: string) => get().availableNodes.find((node) => node.id === id),
     filteredAvailableNodes: [],
     searchPhrase: "",
-    setSearchPhrase: (phrase) => set({ searchPhrase: phrase }),
+    setSearchPhrase: (phrase) => {
+        set({ searchPhrase: phrase });
+        get().filterAvailableNodes(); // Trigger filter bij verandering van search phrase
+    },
     filterAvailableNodes: () => {
-        const searchPhrase = get().searchPhrase.toLowerCase();
-        const filtered = get().availableNodes.filter((node) =>
-            node.name.toLowerCase().includes(searchPhrase)
+        const searchLower = get().searchPhrase.toLowerCase();
+        // Sorteer eerst op category, dan op naam
+        const sortedNodes = [...get().availableNodes].sort((a, b) => {
+            const categoryCompare = a.category.localeCompare(b.category);
+            if (categoryCompare !== 0) return categoryCompare;
+            return a.name.localeCompare(b.name);
+        });
+
+        // Filter op zowel naam als category
+        const filtered = sortedNodes.filter((node) =>
+            node.name.toLowerCase().includes(searchLower) ||
+            node.category.toLowerCase().includes(searchLower)
         );
         set({ filteredAvailableNodes: filtered });
     },
@@ -40,13 +52,8 @@ const useAvailableNodeStore = create<AvailableNodeStore>((set, get) => ({
         try {
             let data: Node[] = await fetchAvailableNodesAPI();
             data = addIdsToAvailableNodes(data);
-
             set({ availableNodes: data });
-            const searchPhrase = get().searchPhrase.toLowerCase();
-            const filtered = data.filter((node) =>
-                node.name.toLowerCase().includes(searchPhrase)
-            );
-            set({ filteredAvailableNodes: filtered });
+            get().filterAvailableNodes(); // Filter na fetch
         } catch (error) {
             console.error("Failed to fetch available nodes:", error);
         }

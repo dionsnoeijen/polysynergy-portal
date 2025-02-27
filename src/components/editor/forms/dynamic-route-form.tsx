@@ -1,23 +1,33 @@
 import React, {useEffect, useState} from 'react';
+import useEditorStore from "@/stores/editorStore";
+import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import {Heading, Subheading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Text} from "@/components/text";
 import {Input} from "@/components/input";
 import {Textarea} from "@/components/textarea";
 import {Button} from "@/components/button";
-import useEditorStore from "@/stores/editorStore";
-import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType} from "@/types/types";
+import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType, Node} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon} from "@heroicons/react/24/outline";
 import {Select} from "@/components/select";
 import {Checkbox, CheckboxField} from "@/components/checkbox";
 import {formatSegments} from "@/utils/formatters";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from '@/components/alert';
-import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
+import {useRouter, useParams} from 'next/navigation';
 
 const DynamicRouteForm: React.FC = () => {
-    const { closeForm, formType, formEditRecordId } = useEditorStore();
-    const { getDynamicRoute, storeDynamicRoute, updateDynamicRoute } = useDynamicRoutesStore();
+    const closeForm = useEditorStore((state) => state.closeForm);
+    const formType = useEditorStore((state) => state.formType);
+    const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+
+    const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
+    const storeDynamicRoute = useDynamicRoutesStore((state) => state.storeDynamicRoute);
+    const updateDynamicRoute = useDynamicRoutesStore((state) => state.updateDynamicRoute);
+    const deleteDynamicRoute = useDynamicRoutesStore((state) => state.deleteDynamicRoute);
+
+    const params = useParams();
+    const router = useRouter();
 
     const [description, setDescription] = useState('');
     const [method, setMethod] = useState<HttpMethod>(HttpMethod.Get);
@@ -95,7 +105,7 @@ const DynamicRouteForm: React.FC = () => {
         );
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (formType === FormType.AddRoute) {
@@ -104,8 +114,11 @@ const DynamicRouteForm: React.FC = () => {
                 segments,
                 method,
             };
-            storeDynamicRoute(newRoute);
+            const createdRoute: Route | undefined = await storeDynamicRoute(newRoute);
             closeForm('Route created successfully');
+            if (createdRoute && createdRoute.id) {
+                router.push(`/project/${params.projectUuid}/route/${createdRoute.id}`);
+            }
         }
 
         if (formType === FormType.EditRoute && formEditRecordId) {
@@ -115,14 +128,16 @@ const DynamicRouteForm: React.FC = () => {
                 segments,
                 method,
             };
-            updateDynamicRoute(updatedRoute);
+            await updateDynamicRoute(updatedRoute);
             closeForm('Route updated successfully');
         }
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
+        await deleteDynamicRoute(formEditRecordId as string);
         closeForm('Route deleted successfully');
         setShowDeleteAlert(false);
+        router.push(`/project/${params.projectUuid}`);
     };
 
     return (

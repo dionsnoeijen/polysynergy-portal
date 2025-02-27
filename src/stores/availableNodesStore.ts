@@ -9,6 +9,7 @@ type AvailableNodeStore = {
     resetSelectedNodeIndex: () => void;
     availableNodes: Node[];
     getAvailableNodeById: (id: string) => Node | undefined;
+    getAvailableNodeByPath: (path: string) => Node | undefined;
     filteredAvailableNodes: Node[];
     searchPhrase: string;
     setSearchPhrase: (phrase: string) => void;
@@ -26,6 +27,7 @@ const useAvailableNodeStore = create<AvailableNodeStore>((set, get) => ({
     resetSelectedNodeIndex: () => set({ selectedNodeIndex: -1 }),
     availableNodes: [],
     getAvailableNodeById: (id: string) => get().availableNodes.find((node) => node.id === id),
+    getAvailableNodeByPath: (path: string) => get().availableNodes.find((node) => node.path === path),
     filteredAvailableNodes: [],
     searchPhrase: "",
     setSearchPhrase: (phrase) => {
@@ -34,14 +36,13 @@ const useAvailableNodeStore = create<AvailableNodeStore>((set, get) => ({
     },
     filterAvailableNodes: () => {
         const searchLower = get().searchPhrase.toLowerCase();
-        // Sorteer eerst op category, dan op naam
+
         const sortedNodes = [...get().availableNodes].sort((a, b) => {
             const categoryCompare = a.category.localeCompare(b.category);
             if (categoryCompare !== 0) return categoryCompare;
             return a.name.localeCompare(b.name);
         });
 
-        // Filter op zowel naam als category
         const filtered = sortedNodes.filter((node) =>
             node.name.toLowerCase().includes(searchLower) ||
             node.category.toLowerCase().includes(searchLower)

@@ -40,3 +40,20 @@ export const updateNodeSetupVersionAPI = (
         }
     );
 };
+
+export const publishNodeSetupVersionAPI = (
+    versionId: string,
+): Promise<Response> => {
+    const idToken = getIdToken();
+    return fetch(
+        `${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/${versionId}/publish/`,
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+            },
+        }
+    );
+}

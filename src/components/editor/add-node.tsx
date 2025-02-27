@@ -24,7 +24,6 @@ const AddNode: React.FC = () => {
     const setSelectedNodeIndex = useAvailableNodeStore((state) => state.setSelectedNodeIndex);
     const resetSelectedNodeIndex = useAvailableNodeStore((state) => state.resetSelectedNodeIndex);
     const setSearchPhrase = useAvailableNodeStore((state) => state.setSearchPhrase);
-    const fetchAvailableNodes = useAvailableNodeStore((state) => state.fetchAvailableNodes);
     const getAvailableNodeById = useAvailableNodeStore((state) => state.getAvailableNodeById);
     const searchPhrase = useAvailableNodeStore((state) => state.searchPhrase);
 
@@ -42,20 +41,26 @@ const AddNode: React.FC = () => {
         }
     }, [showAddingNode]);
 
-    useEffect(() => {
-        fetchAvailableNodes();
-    }, [fetchAvailableNodes]);
-
     const handleAddNodeAtPosition = useCallback((nodeId: string, screenX: number, screenY: number) => {
-        const replaceIdWith = uuidv4();
-
-        setAddingNode(replaceIdWith);
-        setShowAddingNode(false);
-        setSearchPhrase(""); // Reset search phrase
-        resetSelectedNodeIndex(); // Reset selected index
-
         const node = getAvailableNodeById(nodeId);
         if (!node) return;
+
+        setShowAddingNode(false);
+        setSearchPhrase("");
+        resetSelectedNodeIndex();
+
+        if (node?.category === 'service') {
+            openForm(FormType.PlaceService, node.id);
+            return;
+        }
+
+        if (node?.category === 'blueprint') {
+            openForm(FormType.PlaceBlueprint, node.id);
+            return;
+        }
+
+        const replaceIdWith = uuidv4();
+        setAddingNode(replaceIdWith);
 
         const position = globalToLocal(screenX, screenY);
         node.id = replaceIdWith;
@@ -86,7 +91,7 @@ const AddNode: React.FC = () => {
         const handleClickOutside = (e: MouseEvent) => {
             if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
                 setShowAddingNode(false);
-                setSearchPhrase(""); // Reset search phrase bij sluiten
+                setSearchPhrase("");
                 resetSelectedNodeIndex();
             }
         };
@@ -103,7 +108,7 @@ const AddNode: React.FC = () => {
                 handleAddNodeAtPosition(nodeId, mouseX, mouseY);
             } else if (e.key === "Escape") {
                 setShowAddingNode(false);
-                setSearchPhrase(""); // Reset search phrase bij escape
+                setSearchPhrase("");
                 resetSelectedNodeIndex();
             }
         };

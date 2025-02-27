@@ -7,7 +7,7 @@ import { Select } from "@/components/select";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 
 
-const VariableTypeString: React.FC<VariableTypeProps> = ({nodeId, variable, publishedButton}) => {
+const VariableTypeString: React.FC<VariableTypeProps> = ({nodeId, variable, publishedButton = true}) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {

@@ -6,7 +6,7 @@ import {snapToGrid} from "@/utils/snapToGrid";
 
 const useNodePlacement = (node: NodeType) => {
     const { updateNodePosition, setAddingStatus } = useNodesStore();
-    const [position, setPosition] = useState({ x: node.view.x, y: node.view.y });
+    const [ position, setPosition ] = useState({ x: node.view.x, y: node.view.y });
 
     useEffect(() => {
         if (!node.view.adding) return;

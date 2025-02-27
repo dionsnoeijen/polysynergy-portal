@@ -10,6 +10,7 @@ import BlueprintForm from "@/components/editor/forms/blueprint-form";
 import NodeEditorForm from "@/components/editor/forms/node-editor-form";
 import JsonEditorForm from "@/components/editor/forms/json-editor-form";
 import PlaceServiceForm from "@/components/editor/forms/place-service-form";
+import PlaceBlueprintForm from "@/components/editor/forms/place-blueprint-form";
 
 const Form: React.FC = () => {
     const { formType } = useEditorStore();
@@ -57,6 +58,9 @@ const Form: React.FC = () => {
             )}
             {(formType === FormType.PlaceService) && (
                 <PlaceServiceForm />
+            )}
+            {(formType === FormType.PlaceBlueprint) && (
+                <PlaceBlueprintForm />
             )}
         </div>
     );

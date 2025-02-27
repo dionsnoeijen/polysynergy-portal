@@ -3,6 +3,7 @@ import {
     fetchDynamicRoutes as fetchDynamicRoutesAPI,
     storeDynamicRoute as storeDynamicRouteAPI,
     updateDynamicRoute as updateDynamicRouteAPI,
+    deleteDynamicRoute as deleteDynamicRouteAPI,
 } from '@/api/dynamicRoutesApi';
 import useEditorStore from "@/stores/editorStore";
 import { Route } from "@/types/types";
@@ -11,8 +12,9 @@ type DynamicRoutesStore = {
     routes: Route[];
     getDynamicRoute: (routeId: string) => Route | undefined;
     fetchDynamicRoutes: () => Promise<void>;
-    storeDynamicRoute: (route: Route) => Promise<void>;
+    storeDynamicRoute: (route: Route) => Promise<Route | undefined>;
     updateDynamicRoute: (route: Route) => Promise<void>;
+    deleteDynamicRoute: (routeId: string) => Promise<void>;
 };
 
 const useDynamicRoutesStore = create<DynamicRoutesStore>((
@@ -21,7 +23,10 @@ const useDynamicRoutesStore = create<DynamicRoutesStore>((
     routes: [],
 
     getDynamicRoute: (routeId): Route | undefined => {
-        return useDynamicRoutesStore.getState().routes.find((route) => route.id === routeId);
+        return useDynamicRoutesStore
+            .getState()
+            .routes
+            .find((route) => route.id === routeId);
     },
 
     fetchDynamicRoutes: async () => {
@@ -34,12 +39,13 @@ const useDynamicRoutesStore = create<DynamicRoutesStore>((
         }
     },
 
-    storeDynamicRoute: async (route: Route) => {
+    storeDynamicRoute: async (route: Route): Promise<Route | undefined> => {
         const { activeProjectId } = useEditorStore.getState();
         try {
             const response = await storeDynamicRouteAPI(activeProjectId, route);
             route.id = response.id;
             set((state) => ({ routes: [...state.routes, route] }));
+            return route;
         } catch (error) {
             console.error('Failed to store route:', error);
         }
@@ -47,12 +53,24 @@ const useDynamicRoutesStore = create<DynamicRoutesStore>((
 
     updateDynamicRoute: async (route: Route) => {
         try {
-            await updateDynamicRouteAPI(route.id as string, route);
+            const { activeProjectId } = useEditorStore.getState();
+            await updateDynamicRouteAPI(activeProjectId, route.id as string, route);
             set((state) => ({
                 routes: state.routes.map((r) => (r.id === route.id ? route : r)),
             }));
         } catch (error) {
             console.error('Failed to update routes:', error);
+        }
+    },
+
+    deleteDynamicRoute: async (routeId: string) => {
+        try {
+            await deleteDynamicRouteAPI(routeId);
+            set((state) => ({
+                routes: state.routes.filter((r) => r.id !== routeId),
+            }));
+        } catch (error) {
+            console.error('Failed to delete route:', error);
         }
     }
 }));

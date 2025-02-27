@@ -5,12 +5,13 @@ import { useZoom } from "@/hooks/editor/useZoom";
 import { usePan } from "@/hooks/editor/usePan";
 import { Grid } from "@/components/editor/grid";
 import { useKeyBindings } from "@/hooks/editor/useKeyBindings";
-import useEditorStore from "@/stores/editorStore";
-import useConnectionsStore from "@/stores/connectionsStore";
 import { useDeselectOnClickOutside } from "@/hooks/editor/nodes/useDeselectOnClickOutside";
 import { useDeleteNode } from "@/hooks/editor/nodes/useDeleteNode";
-import Node from "@/components/editor/nodes/node";
+import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
+import useEditorStore from "@/stores/editorStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
+import Node from "@/components/editor/nodes/node";
 import Connection from "@/components/editor/nodes/connection";
 import BoxSelect from "@/components/editor/box-select";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
@@ -19,8 +20,11 @@ import DeleteDialog from "@/components/editor/nodes/delete-dialog";
 import AddNode from "@/components/editor/add-node";
 import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import PointZeroIndicator from "@/components/editor/point-zero-indicator";
-import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
+import {useAutoAddRouteNodes} from "@/hooks/editor/useAutoAddRouteNodes";
+import {useAutoAddScheduleNodes} from "@/hooks/editor/useAutoAddScheduleNodes";
+import {useAutoUpdateScheduleNodes} from "@/hooks/editor/useAutoUpdateScheduleNodes";
+import {useAutoUpdateRouteNodes} from "@/hooks/editor/useAutoUpdateRouteNodes";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -53,6 +57,10 @@ export default function Editor() {
     const { startDraggingAfterPaste } = useDraggable();
 
     useGlobalStoreListenersWithImmediateSave();
+    useAutoAddRouteNodes();
+    useAutoUpdateRouteNodes();
+    useAutoAddScheduleNodes();
+    useAutoUpdateScheduleNodes();
 
     const nodesToRender = useMemo(() => getNodesToRender(), [getNodesToRender, nodes]);
 

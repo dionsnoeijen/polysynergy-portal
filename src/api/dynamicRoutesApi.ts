@@ -40,7 +40,7 @@ export const storeDynamicRoute = async (projectId: string, route: Route) => {
     return response.json();
 };
 
-export const updateDynamicRoute = async (routeId: string, updatedData: Partial<Route>) => {
+export const updateDynamicRoute = async (projectId: string, routeId: string, updatedData: Partial<Route>) => {
     const idToken = getIdToken();
     const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/dynamic-routes/${routeId}/`, {
         method: 'PATCH',
@@ -49,7 +49,21 @@ export const updateDynamicRoute = async (routeId: string, updatedData: Partial<R
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${idToken}`,
         },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify({
+            ...updatedData,
+            project_id: projectId
+        }),
     });
     return response.json();
+};
+
+export const deleteDynamicRoute = async (routeId: string) => {
+    const idToken = getIdToken();
+    return await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/dynamic-routes/${routeId}/`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
 };

@@ -27,7 +27,7 @@ import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
 import NodeVariables from "@/components/editor/nodes/rows/node-variables";
 
 import { Button } from "@/components/button";
-import { ChevronDownIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, GlobeAltIcon, HomeIcon } from "@heroicons/react/24/outline";
 
 const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {size, handleResizeMouseDown} = useResizable(node);
@@ -93,6 +93,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                         ? (node.service.name.trim() === '' ? '...' : node.service.name)
                         : node.name}
                 </h3>
+                {!node.view.isDeletable && (<HomeIcon className={'ml-2 h-4 w-4'} />)}
                 {isCollapsable() && (
                     <Button
                         onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">

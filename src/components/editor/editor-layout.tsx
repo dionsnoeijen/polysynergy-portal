@@ -14,6 +14,7 @@ import dynamic from 'next/dynamic';
 import VersionPublishedMenu from "@/components/editor/editormenus/version-published-menu";
 import fetchAndApplyNodeSetup from "@/utils/fetchNodeSetup";
 import ClearMockViewMenu from "@/components/editor/editormenus/clear-mock-view-menu";
+import useAvailableNodeStore from "@/stores/availableNodesStore";
 
 const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
@@ -37,6 +38,8 @@ export function EditorLayout({
         Output = 'output',
     }
 
+    const fetchAvailableNodes = useAvailableNodeStore((state) => state.fetchAvailableNodes);
+
     const [resizing, setResizing] = useState<ResizeWhat | null>(null);
     const [width, setWidth] = useState({itemManager: 256, dock: 256});
     const [height, setHeight] = useState({horizontalEditorLayout: 0});
@@ -59,6 +62,8 @@ export function EditorLayout({
     useEffect(() => {
         setHeight({horizontalEditorLayout: window.innerHeight * 0.85});
         setWindowHeight(window.innerHeight);
+
+        fetchAvailableNodes();
 
         setActiveProjectId(projectUuid || '');
         if (routeUuid) {
@@ -207,7 +212,7 @@ export function EditorLayout({
                                         <SelectionsMenu/>
                                         <UndoRedoMenu/>
                                         <ClearMockViewMenu />
-                                        <VersionPublishedMenu/>
+                                        <VersionPublishedMenu routeUuid={routeUuid} />
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">

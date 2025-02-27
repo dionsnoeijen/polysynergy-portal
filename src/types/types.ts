@@ -47,6 +47,7 @@ export enum FormType {
     AddNode = 'addNewNode',
     EditJson = 'editJson',
     PlaceService = 'placeService',
+    PlaceBlueprint = 'placeBlueprint',
     AddGlobalVariable = 'addGlobalVariable',
     EditGlobalVariable = 'editGlobalVariable',
 }
@@ -146,6 +147,7 @@ export type NodeView = {
     disabled?: boolean;
     adding?: boolean;
     isOpenMap?: { [key: string]: boolean };
+    isDeletable?: boolean;
 };
 
 export type Package = {
@@ -179,7 +181,7 @@ export type Node = {
     id: string;
     service?: NodeService;
     icon?: string;
-    handle: null | string;
+    handle: string;
     name: string;
     category: string;
     type: NodeType|NodeMathType|NodeComparisonType|NodeJumpType;
@@ -227,7 +229,7 @@ export type Blueprint = {
     id?: string;
     name: string;
     metadata: Metadata;
-    node_setup?: NodeSetup;
+    node_setup: NodeSetup;
     project_ids?: string[];
 };
 
@@ -289,6 +291,7 @@ export type Route = ListItemWithId & {
     segments: RouteSegment[];
     method: HttpMethod;
     node_setup?: NodeSetup;
+    versions?: { id: string, version_number: number, published: boolean }[];
 };
 
 export enum Roles {

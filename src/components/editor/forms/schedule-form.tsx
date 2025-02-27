@@ -14,12 +14,22 @@ import {Input} from "@/components/input";
 import {Button} from "@/components/button";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import {FormType, Schedule} from "@/types/types";
+import {useParams, useRouter} from "next/navigation";
 
 const dayOfWeekLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const ScheduleForm: React.FC = () => {
-    const {closeForm, formType, formEditRecordId} = useEditorStore();
-    const {getSchedule, storeSchedule, updateSchedule} = useSchedulesStore();
+    const closeForm = useEditorStore((state) => state.closeForm);
+    const formType = useEditorStore((state) => state.formType);
+    const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+
+    const getSchedule = useSchedulesStore((state) => state.getSchedule);
+    const storeSchedule = useSchedulesStore((state) => state.storeSchedule);
+    const updateSchedule = useSchedulesStore((state) => state.updateSchedule);
+    const deleteSchedule = useSchedulesStore((state) => state.deleteSchedule);
+
+    const params = useParams();
+    const router = useRouter();
 
     const [name, setName] = useState("");
     const [start_time, setStartTime] = useState<Date | null>(new Date());
@@ -51,7 +61,6 @@ const ScheduleForm: React.FC = () => {
         function interpretPart(part: string, label: string, isDayOfWeek = false) {
             const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-            // Range with step (e.g. "5-19/3")
             if (part.match(/^(\d+)-(\d+)\/(\d+)$/)) {
                 // eslint-disable-next-line
                 const [_, start, end, step] = part.match(/^(\d+)-(\d+)\/(\d+)$/)!;
@@ -61,7 +70,6 @@ const ScheduleForm: React.FC = () => {
                 return `starting at ${start}, every ${step} ${label}s until ${end}`;
             }
 
-            // Range without step (e.g. "5-19")
             if (part.match(/^(\d+)-(\d+)$/)) {
                 // eslint-disable-next-line
                 const [_, start, end] = part.match(/^(\d+)-(\d+)$/)!;
@@ -71,14 +79,11 @@ const ScheduleForm: React.FC = () => {
                 return `from ${start} to ${end} ${label}s`;
             }
 
-            // Step from all (e.g. "*/3")
             if (part.match(/^\*\/(\d+)$/)) {
                 const step = part.split("/")[1];
                 return `every ${step} ${label}s`;
             }
 
-            // Single value (e.g. "5" or "2")
-            // For dayOfWeek we convert to day name
             if (part.match(/^\d+$/)) {
                 if (isDayOfWeek) {
                     return `on ${days[parseInt(part)]}`;
@@ -86,12 +91,10 @@ const ScheduleForm: React.FC = () => {
                 return `at every ${part}th ${label}${label.endsWith("s") ? "" : ""}`;
             }
 
-            // Catch-all for "*" or unknown
             if (part === "*") {
                 return `every possible ${label}`;
             }
 
-            // If something else, just show raw
             return part;
         }
 
@@ -134,7 +137,7 @@ const ScheduleForm: React.FC = () => {
         return newErrors.length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrors([]);
         if (!start_time) return;
@@ -148,8 +151,11 @@ const ScheduleForm: React.FC = () => {
                 end_time,
                 is_active
             };
-            storeSchedule(newSchedule);
+            const createdSchedule = await storeSchedule(newSchedule);
             closeForm("Schedule created successfully");
+            if (createdSchedule && createdSchedule.id) {
+                router.push(`/project/${params.projectUuid}/schedule/${createdSchedule.id}`);
+            }
         }
         if (formType === FormType.EditSchedule && formEditRecordId) {
             const updatedSchedule: Schedule = {
@@ -160,14 +166,19 @@ const ScheduleForm: React.FC = () => {
                 end_time,
                 is_active
             };
-            updateSchedule(updatedSchedule);
-            closeForm("Schedule updated successfully");
+            const updated = await updateSchedule(updatedSchedule);
+            if (updated) {
+                router.push(`/project/${params.projectUuid}/schedule/${formEditRecordId}`);
+                closeForm("Schedule updated successfully");
+            }
         }
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
+        await deleteSchedule(formEditRecordId as string);
         closeForm("Schedule deleted successfully");
         setShowDeleteAlert(false);
+        router.push(`/project/${params.projectUuid}`);
     };
 
     return (
@@ -295,6 +306,23 @@ const ScheduleForm: React.FC = () => {
             </section>
 
             <Divider className="my-10" soft bleed/>
+
+            {formType === FormType.EditSchedule && (
+                <>
+                    <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                        <div className="space-y-1">
+                            <Subheading>Delete</Subheading>
+                            <Text>After deletion, the schedule is recoverable through versions</Text>
+                        </div>
+                        <div className="flex justify-end self-center">
+                            <Button color="red" type="button" onClick={() => setShowDeleteAlert(true)}>
+                                Delete schedule
+                            </Button>
+                        </div>
+                    </section>
+                    <Divider className="my-10" soft bleed/>
+                </>
+            )}
 
             <div className="flex justify-end gap-4">
                 <Button type="button" onClick={() => closeForm()} plain>

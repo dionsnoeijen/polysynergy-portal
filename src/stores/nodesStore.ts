@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 import {v4 as uuidv4} from "uuid";
-import {Connection, FlowState, Group, Node, NodeType, NodeVariable, NodeView} from "@/types/types";
+import {FlowState, Group, Node, NodeType, NodeVariable} from "@/types/types";
 import {adjectives, animals, colors, uniqueNamesGenerator} from 'unique-names-generator';
 import useConnectionsStore from "@/stores/connectionsStore";
 
@@ -38,7 +38,9 @@ type NodesStore = {
     getTrackedNode: () => Node | null;
     initNodes: (nodes: Node[]) => void;
     isNodeInService: (nodeIds: string[]) => boolean;
+    isNodeDeletable: (nodeIds: string[]) => boolean;
     getAllNestedNodesByIds: (nodeIds: string[]) => Node[];
+    getNodesByPath: (path: string) => Node[] | undefined;
 
     openGroup: (nodeId: string) => void;
     isNodeInGroup: (nodeId: string) => string | null;
@@ -713,6 +715,17 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         });
     },
 
+    isNodeDeletable: (nodeIds: string[]): boolean => {
+        // If node.view.isDeletable is set to false, the node is not deletable
+        // in any other case it is
+        const state = get();
+        const nodes = state.nodes;
+        return nodeIds.every(nodeId => {
+            const node = nodes.find(n => n.id === nodeId);
+            return node?.view.isDeletable !== false;
+        });
+    },
+
     getAllNestedNodesByIds: (nodeIds: string[]): Node[] => {
         const state = get();
         const allNodes = state.nodes;
@@ -739,6 +752,11 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
         return Array.from(resultNodeIds).map((id) => allNodes.find(n => n.id === id)!).filter(Boolean);
     },
+
+    getNodesByPath: (path: string): Node[] | undefined => {
+        const state = get();
+        return state.nodes.filter((node) => node.path === path);
+    }
 }));
 
 export default useNodesStore;

@@ -1,7 +1,8 @@
 import React from "react";
+import useEditorStore from "@/stores/editorStore";
+import useNodesStore  from "@/stores/nodesStore";
 import clsx from "clsx";
 import Heading from "@/components/editor/sidebars/elements/heading";
-import useNodesStore  from "@/stores/nodesStore";
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
 import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";
 import VariableTypeDict from "@/components/editor/sidebars/dock/variable-type-dict";
@@ -13,13 +14,12 @@ import VariableTypeList from "@/components/editor/sidebars/dock/variable-type-li
 import VariableTypeBytes from "@/components/editor/sidebars/dock/variable-type-bytes";
 import VariableTypeRichTextArea from "@/components/editor/sidebars/dock/variable-type-rich-text-area";
 import VariableTypeSecretString from "@/components/editor/sidebars/dock/variable-type-secret-string";
-import useEditorStore from "@/stores/editorStore";
 import VariableTypeTextArea from "@/components/editor/sidebars/dock/variable-type-text-area";
-import { NodeVariable, NodeVariableType } from "@/types/types";
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 import VariableTypeCode from "@/components/editor/sidebars/dock/variable-type-code";
 import NodeHandle from "@/components/editor/sidebars/dock/node-handle";
 import VariableTypeJson from "@/components/editor/sidebars/dock/variable-type-json";
+import { NodeVariable, NodeVariableType } from "@/types/types";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -44,7 +44,8 @@ export const VariableTypeComponents = {
 };
 
 const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
-    const { selectedNodes, openGroup } = useEditorStore();
+    const selectedNodes = useEditorStore((state) => state.selectedNodes);
+    const openGroup = useEditorStore((state) => state.openGroup);
     const nodes = useNodesStore((state) => state.nodes);
 
     const node = selectedNodes.length === 1 ?
@@ -89,6 +90,7 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                                             <VariableComponent
                                                 nodeId={nodeId as string}
                                                 variable={variable}
+                                                publishedButton={true}
                                             />
                                         </div>
                                     ) : null;
@@ -107,6 +109,7 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                                             <VariableComponent
                                                 nodeId={nodeId}
                                                 variable={variable}
+                                                publishedButton={true}
                                             />
                                         </div>
                                     ) : null;
@@ -117,24 +120,31 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
                 </>
             )}
 
-            {node && node.variables.length > 0 && (
-                <VariableGroup title={node.name}>
-                    {node.variables.map((variable: NodeVariable) => {
-                        if (!variable.has_dock) return;
-                        const { baseType } = interpretNodeVariableType(variable);
-                        const VariableComponent = VariableTypeComponents[baseType];
+            {node && node.variables.length > 0 ? (
+                node.variables.some((variable: NodeVariable) => variable.has_dock) ? (
+                    <VariableGroup title={node.name}>
+                        {node.variables.map((variable: NodeVariable) => {
+                            if (!variable.has_dock) return null;
+                            const { baseType } = interpretNodeVariableType(variable);
+                            const VariableComponent = VariableTypeComponents[baseType];
 
-                        return VariableComponent ? (
-                            <div key={node.id + '-' + variable.handle}>
-                                <VariableComponent
-                                    nodeId={node.id}
-                                    variable={variable}
-                                />
-                            </div>
-                        ) : null;
-                    })}
-                </VariableGroup>
-            )}
+                            return VariableComponent ? (
+                                <div key={node.id + '-' + variable.handle}>
+                                    <VariableComponent
+                                        nodeId={node.id}
+                                        variable={variable}
+                                        publishedButton={true}
+                                    />
+                                </div>
+                            ) : null;
+                        })}
+                    </VariableGroup>
+                ) : (
+                    <p className="text-zinc-400 text-sm italic p-4">
+                        Node does not have variables that can be edited from the dock.
+                    </p>
+                )
+            ) : null}
         </div>
     );
 };

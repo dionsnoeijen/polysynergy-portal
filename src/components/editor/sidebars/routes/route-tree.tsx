@@ -1,16 +1,20 @@
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
-import React, {ReactElement, useEffect} from "react";
+import React, { ReactElement, useEffect } from "react";
+import { PencilIcon } from "@heroicons/react/24/outline";
+import { formatSegments } from "@/utils/formatters";
+import { FormType } from "@/types/types";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
-import {PencilIcon} from "@heroicons/react/24/outline";
 import useEditorStore from "@/stores/editorStore";
-import {FormType} from "@/types/types";
-import {formatSegments} from "@/utils/formatters";
 import Link from "next/link";
 
 export default function RouteTree(): ReactElement {
+    const routes = useDynamicRoutesStore((state) => state.routes);
+    const fetchDynamicRoutes = useDynamicRoutesStore((state) => state.fetchDynamicRoutes);
 
-    const { routes, fetchDynamicRoutes } = useDynamicRoutesStore();
-    const { openForm, formEditRecordId, activeRouteId, activeProjectId } = useEditorStore();
+    const openForm = useEditorStore((state) => state.openForm);
+    const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+    const activeRouteId = useEditorStore((state) => state.activeRouteId);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
 
     useEffect(() => {
         fetchDynamicRoutes();

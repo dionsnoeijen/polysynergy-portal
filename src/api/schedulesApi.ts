@@ -53,3 +53,14 @@ export const updateScheduleAPI = async (scheduleId: string, updatedData: Partial
     });
     return response.json();
 };
+
+export const deleteScheduleAPI = async (scheduleId: string) => {
+    const idToken = getIdToken();
+    return await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+};

@@ -3,6 +3,7 @@ import {
     fetchSchedulesAPI,
     storeScheduleAPI,
     updateScheduleAPI,
+    deleteScheduleAPI,
 } from '@/api/schedulesApi';
 import useEditorStore from "@/stores/editorStore";
 import { Schedule } from '@/types/types';
@@ -11,8 +12,9 @@ type SchedulesStore = {
     schedules: Schedule[];
     getSchedule: (scheduleId: string) => Schedule | undefined;
     fetchSchedules: () => Promise<void>;
-    storeSchedule: (schedule: Schedule) => Promise<void>;
-    updateSchedule: (schedule: Schedule) => Promise<void>;
+    storeSchedule: (schedule: Schedule) => Promise<Schedule | undefined>;
+    updateSchedule: (schedule: Schedule) => Promise<Schedule | undefined>;
+    deleteSchedule: (scheduleId: string) => Promise<void>;
 };
 
 const useSchedulesStore = create<SchedulesStore>((
@@ -34,27 +36,40 @@ const useSchedulesStore = create<SchedulesStore>((
         }
     },
 
-    storeSchedule: async (schedule: Schedule) => {
+    storeSchedule: async (schedule: Schedule): Promise<Schedule | undefined> => {
         const { activeProjectId } = useEditorStore.getState();
         try {
             const response = await storeScheduleAPI(activeProjectId, schedule);
             schedule.id = response.id;
             set((state) => ({ schedules: [...state.schedules, schedule] }));
+            return schedule;
         } catch (error) {
             console.error('Failed to store schedule:', error);
         }
     },
 
-    updateSchedule: async (schedule: Schedule) => {
+    updateSchedule: async (schedule: Schedule): Promise<Schedule | undefined> => {
         try {
-            await updateScheduleAPI(schedule.id as string, schedule);
+            const response = await updateScheduleAPI(schedule.id as string, schedule);
             set((state) => ({
                 schedules: state.schedules.map((s) => (s.id === schedule.id ? schedule : s)),
             }));
+            return response;
         } catch (error) {
             console.error('Failed to update schedule:', error);
         }
     },
+
+    deleteSchedule: async (scheduleId: string) => {
+        try {
+            await deleteScheduleAPI(scheduleId);
+            set((state) => ({
+                schedules: state.schedules.filter((s) => s.id !== scheduleId),
+            }));
+        } catch (error) {
+            console.error('Failed to delete schedule:', error);
+        }
+    }
 }));
 
 export default useSchedulesStore;

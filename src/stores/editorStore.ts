@@ -97,9 +97,9 @@ type EditorState = {
 };
 
 const useEditorStore = create<EditorState>((set, get) => ({
-    zoomFactor: 1,
+    zoomFactor: .75,
     setZoomFactor: (factor) => set({zoomFactor: factor}),
-    panPosition: {x: 200, y: 200},
+    panPosition: {x: 0, y: 100},
     setPanPosition: (position) => set({panPosition: position}),
     isDragging: false,
     setIsDragging: (dragging) => set({isDragging: dragging}),

@@ -114,6 +114,12 @@ export const useConnectorHandlers = (
                 const targetNodeId = !isGroup ?
                     target.getAttribute("data-node-id") as string :
                     target.getAttribute("data-group-id") as string;
+                // Check: target mag niet gelijk zijn aan de source
+                if (targetNodeId === existingConnection.sourceNodeId) {
+                    removeConnectionById(existingConnection.id);
+                    setIsDrawingConnection("");
+                    return;
+                }
                 const targetHandle = target.getAttribute("data-handle") as string;
 
                 const nodeGroupTarget = target.closest('[data-type="closed-group"]');
@@ -204,6 +210,11 @@ export const useConnectorHandlers = (
                     .getAttribute("data-group-id") as string;
 
                 const connection = getConnection(id);
+                if (connection && targetNodeId === connection.sourceNodeId) {
+                    removeConnectionById(id);
+                    setIsDrawingConnection("");
+                    return;
+                }
                 const nodeGroupTarget = target.closest('[data-type="closed-group"]');
 
                 const variableType = target.getAttribute('data-variable-type');

@@ -1,9 +1,9 @@
 import React, { ReactElement } from "react";
-import TreeList from "@/components/editor/sidebars/elements/tree-list";
-import { NodeVariable, FormType } from "@/types/types";
-import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import useGlobalVariablesStore from "@/stores/globalVariablesStore";
 import useEditorStore from "@/stores/editorStore";
+import TreeList from "@/components/editor/sidebars/elements/tree-list";
+import {FormType } from "@/types/types";
+import {PencilIcon, TrashIcon} from "@heroicons/react/24/outline";
 
 export default function GlobalVariableTree(): ReactElement {
     const globalVariables = useGlobalVariablesStore((state) => state.globalVariables);

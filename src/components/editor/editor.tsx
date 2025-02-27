@@ -1,13 +1,13 @@
 'use client';
 
 import React, {useRef, useEffect, useCallback, useMemo} from 'react';
-import { useZoom } from "@/hooks/editor/useZoom";
-import { usePan } from "@/hooks/editor/usePan";
-import { Grid } from "@/components/editor/grid";
-import { useKeyBindings } from "@/hooks/editor/useKeyBindings";
-import { useDeselectOnClickOutside } from "@/hooks/editor/nodes/useDeselectOnClickOutside";
-import { useDeleteNode } from "@/hooks/editor/nodes/useDeleteNode";
-import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
+import {useZoom} from "@/hooks/editor/useZoom";
+import {usePan} from "@/hooks/editor/usePan";
+import {Grid} from "@/components/editor/grid";
+import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
+import {useDeselectOnClickOutside} from "@/hooks/editor/nodes/useDeselectOnClickOutside";
+import {useDeleteNode} from "@/hooks/editor/nodes/useDeleteNode";
+import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 import useEditorStore from "@/stores/editorStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
@@ -51,12 +51,12 @@ export default function Editor() {
     const connections = useConnectionsStore((state) => state.connections);
     const clearMockStore = useMockStore((state) => state.clearMockStore);
 
-    const { handleDeleteSelectedNodes } = useDeleteNode();
-    const { handleZoom } = useZoom();
-    const { handlePanMouseDown, handleMouseMove, handleMouseUp } = usePan();
-    const { handleEditorMouseDown } = useDeselectOnClickOutside();
-    const { createGroup } = useGrouping();
-    const { startDraggingAfterPaste } = useDraggable();
+    const {handleDeleteSelectedNodes} = useDeleteNode();
+    const {handleZoom} = useZoom();
+    const {handlePanMouseDown, handleMouseMove, handleMouseUp} = usePan();
+    const {handleEditorMouseDown} = useDeselectOnClickOutside();
+    const {createGroup} = useGrouping();
+    const {startDraggingAfterPaste} = useDraggable();
 
     useGlobalStoreListenersWithImmediateSave();
     useAutoAddRouteNodes();

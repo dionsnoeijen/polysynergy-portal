@@ -25,6 +25,7 @@ import {useAutoAddRouteNodes} from "@/hooks/editor/useAutoAddRouteNodes";
 import {useAutoAddScheduleNodes} from "@/hooks/editor/useAutoAddScheduleNodes";
 import {useAutoUpdateScheduleNodes} from "@/hooks/editor/useAutoUpdateScheduleNodes";
 import {useAutoUpdateRouteNodes} from "@/hooks/editor/useAutoUpdateRouteNodes";
+import useMockStore from "@/stores/mockStore";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -48,6 +49,7 @@ export default function Editor() {
     const nodes = useNodesStore((state) => state.nodes);
 
     const connections = useConnectionsStore((state) => state.connections);
+    const clearMockStore = useMockStore((state) => state.clearMockStore);
 
     const { handleDeleteSelectedNodes } = useDeleteNode();
     const { handleZoom } = useZoom();
@@ -66,6 +68,7 @@ export default function Editor() {
 
     useEffect(() => {
         updateConnectionsDirectly(connections);
+        clearMockStore();
     }, [nodesToRender]);
 
     const updateEditorPosition = useCallback(() => {

@@ -1,5 +1,4 @@
 import React from "react";
-import { CursorArrowRaysIcon } from "@heroicons/react/24/outline";
 import { useKeyBindings } from "@/hooks/editor/useKeyBindings";
 import useMockStore from "@/stores/mockStore";
 import {ArrowUturnUpIcon} from "@heroicons/react/16/solid";

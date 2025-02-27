@@ -2,8 +2,7 @@ import {create} from 'zustand';
 import {Connection, FormType, Node, NodeVariable, Package} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import {escapeRegExp, gatherAllIds, replaceIdsInJsonString, unpackNode} from "@/utils/packageGroupNode";
-import {v4 as uuidv4} from 'uuid';
+import {gatherAllIds, replaceIdsInJsonString, unpackNode} from "@/utils/packageGroupNode";
 
 export enum BottomBarView {
     Output = 'Output',

@@ -23,6 +23,13 @@ export default function TreeList<T extends ListItemWithId>({
     title = "List",
 }: ListProps<T>): React.JSX.Element {
     const [isOpen, setIsOpen] = useState(true);
+    const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
+
+    const handleScroll = (e: React.UIEvent<HTMLUListElement>) => {
+        const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
+        // Een kleine marge om afrondingsfouten op te vangen
+        setIsScrolledToBottom(scrollTop + clientHeight >= scrollHeight - 5);
+    };
 
     const getItemClassName = (item: T) => {
         const baseClasses =
@@ -57,18 +64,31 @@ export default function TreeList<T extends ListItemWithId>({
                 </button>
             </div>
 
-            <ul
-                className={`overflow-hidden transition-all duration-300 ${
-                    isOpen ? "max-h-screen" : "max-h-0"
-                }`}
-            >
-                {items.map((item, index) => (
-                    <li className={getItemClassName(item)} key={index}>
-                        {renderItem(item)}
-                    </li>
-                ))}
-                {addButtonClick && (
-                    <li className="flex items-center justify-between border-l border-b border-t border-r border-sky-500 dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
+            <div className="relative">
+                <ul
+                    onScroll={handleScroll}
+                    className={`overflow-y-auto transition-all duration-300 ${
+                        isOpen ? "max-h-[10rem]" : "max-h-0"
+                    }`}
+                >
+                    {items.map((item, index) => (
+                        <li className={getItemClassName(item)} key={index}>
+                            {renderItem(item)}
+                        </li>
+                    ))}
+                </ul>
+                {isOpen && items.length > 5 && !isScrolledToBottom && (
+                    <div className="pointer-events-none absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-white dark:from-zinc-800" />
+                )}
+            </div>
+
+            {addButtonClick && (
+                <div
+                    className={`transition-all duration-300 overflow-hidden ${
+                        isOpen ? "max-h-12 opacity-100" : "max-h-0 opacity-0"
+                    }`}
+                >
+                    <div className="flex items-center justify-between border-l border-b border-t border-r border-sky-500 dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
                         <Button
                             onClick={addButtonClick}
                             plain
@@ -76,9 +96,9 @@ export default function TreeList<T extends ListItemWithId>({
                         >
                             <PlusIcon />
                         </Button>
-                    </li>
-                )}
-            </ul>
+                    </div>
+                </div>
+            )}
         </div>
     ) : (
         <>

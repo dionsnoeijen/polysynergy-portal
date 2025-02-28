@@ -26,6 +26,7 @@ export default function RouteTree(): ReactElement {
             title={`Routes`}
             activeItem={activeRouteId}
             formEditingItem={formEditRecordId}
+            startsOpen={true}
             renderItem={(route) => (
                 <>
                     <Link href={`/project/${activeProjectId}/route/${route.id}`}

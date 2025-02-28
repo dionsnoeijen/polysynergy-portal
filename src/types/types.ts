@@ -48,8 +48,10 @@ export enum FormType {
     EditJson = 'editJson',
     PlaceService = 'placeService',
     PlaceBlueprint = 'placeBlueprint',
-    AddGlobalVariable = 'addGlobalVariable',
-    EditGlobalVariable = 'editGlobalVariable',
+    AddProjectVariable = 'addProjectVariable',
+    EditProjectVariable = 'editProjectVariable',
+    AddProjectSecret = 'addProjectSecret',
+    EditProjectSecret = 'editProjectSecret',
 }
 
 export enum InOut {
@@ -137,6 +139,8 @@ export type NodeVariable = {
     out_type_override?: string;
     dock?: Dock;
 };
+
+export type NodeVariableWithId = NodeVariable & ListItemWithId;
 
 export type NodeView = {
     x: number;
@@ -341,8 +345,8 @@ export type Project = {
 };
 
 export interface State {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
 }
 export type StoreName = 'nodes' | 'connections';
 
@@ -350,6 +354,15 @@ export type VariableTypeProps = {
     nodeId: string;
     variable: NodeVariable;
     publishedButton: boolean;
-    onChange?: (value: string) => void;
+    onChange?: (value: null | string | number | boolean | string[] | NodeVariable[]) => void;
     currentValue?: string;
+};
+
+export type Secret = {
+    id: string;
+    key: string;
+    value?: string;
+    projectId: string;
+    description?: string;
+    createdDate?: string;
 };

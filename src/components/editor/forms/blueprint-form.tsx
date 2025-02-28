@@ -68,6 +68,22 @@ const BlueprintForm: React.FC = () => {
         setShowDeleteAlert(false);
     };
 
+    useEffect(() => {
+        if (!showDeleteAlert) return;
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Enter") {
+                handleDelete();
+            }
+            if (event.key === "Escape") {
+                setShowDeleteAlert(false);
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [showDeleteAlert, handleDelete, setShowDeleteAlert]);
+
     return (
         <form onSubmit={handleSubmit} method={'post'} className={'p-10'}>
             <Heading>{formType === FormType.AddBlueprint ? "Add " : "Edit "} Blueprint</Heading>

@@ -74,7 +74,7 @@ const getVariableComponent = (
     const type = interpretNodeVariableType(variable);
 
     if (!type || !type.baseType) {
-        return <span className="text-red-500">[Fout: onbekend type]</span>;
+        return <span className="text-red-500">[Fout: unknown type]</span>;
     }
 
     const key = `node-${nodeId}-${variable.handle}`;

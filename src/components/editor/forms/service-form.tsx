@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useCallback, useEffect, useState} from "react";
 
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
@@ -45,7 +45,7 @@ const ServiceForm: React.FC = () => {
     const [nameError, setNameError] = useState<boolean>(false);
     const [categoryError, setCategoryError] = useState<boolean>(false);
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-    const [publishedVariables, setPublishedVariables] = useState<{[nodeId: string]: NodeVariable[]}>({});
+    const [publishedVariables, setPublishedVariables] = useState<{ [handle: string]: { variables: NodeVariable[]; nodeIds: string[] } }>({});
     const [nodeNames, setNodeNames] = useState<{[nodeId: string]: string}>({});
 
     let node = undefined;
@@ -61,24 +61,46 @@ const ServiceForm: React.FC = () => {
         }
     }
 
+    const handleDelete = useCallback(() => {
+        closeForm('Service deleted successfully');
+        setShowDeleteAlert(false);
+    }, [closeForm]);
+
+    useEffect(() => {
+        if (!showDeleteAlert) return;
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Enter") {
+                handleDelete();
+            }
+            if (event.key === "Escape") {
+                setShowDeleteAlert(false);
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [showDeleteAlert, handleDelete, setShowDeleteAlert]);
+
     useEffect(() => {
         if (!node) return;
         setName(node.service?.name || "");
         setCategory(node.service?.category || "");
         setIcon(node.icon || "");
         setDescription(node.service?.description || "");
-        setNodeNames({[node.id]: node.name});
+        setNodeNames({ [node.id]: node.name });
         if (node.type === NodeType.Group) {
             const nodesInGroup = getNodesInGroup(node.id);
             const nodesByIds = getNodesByIds(nodesInGroup);
             nodesByIds.map((n) => {
-                setNodeNames((prev) => ({...prev, [n.id]: n.name}));
+                setNodeNames((prev) => ({ ...prev, [n.id]: n.name }));
             });
-            setPublishedVariables(findPublishedVariables(nodesByIds));
+            const { variablesByHandle } = findPublishedVariables(nodesByIds);
+            setPublishedVariables(variablesByHandle);
         } else {
-            setPublishedVariables(findPublishedVariables([node]));
+            const { variablesByHandle } = findPublishedVariables([node]);
+            setPublishedVariables(variablesByHandle);
         }
-
     }, [getNodesByIds, getNodesInGroup, node]);
 
     if (formType === FormType.AddService) {
@@ -212,11 +234,6 @@ const ServiceForm: React.FC = () => {
         node.icon = newIcon;
     };
 
-    const handleDelete = () => {
-        closeForm('Service deleted successfully');
-        setShowDeleteAlert(false);
-    };
-
     return (
         <form onSubmit={handleSubmit} method="post" className="p-10">
             <Heading>{formType === FormType.AddService ? "Add " : "Edit "} Service</Heading>
@@ -304,9 +321,9 @@ const ServiceForm: React.FC = () => {
                     </Text>
                 </div>
                 <div>
-                    {Object.entries(publishedVariables).map(([nodeId, variables], index) => (
-                        <div key={`node-pv-${nodeId}`}>
-                            {variables.map((variable) => (
+                    {Object.entries(publishedVariables).map(([nodeId, data], index) => (
+                        <div key={`node-pv-${nodeId}-${index}`}>
+                            {data.variables.map((variable) => (
                                 <>
                                     {index > 0 && <Divider className={'mt-5 mb-5'} />}
                                     <div key={`v-node-${nodeId}-${variable.handle}`}>

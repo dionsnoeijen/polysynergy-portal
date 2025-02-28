@@ -6,6 +6,7 @@ import useConnectionsStore from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
 import {
     Connection as ConnectionType,
+    FlowState,
     Node as NodeType,
     NodeVariable,
     NodeVariableType,
@@ -33,6 +34,9 @@ export function useAutoAddRouteNodes() {
         if (!routeNode || !mockRouteNode || !dynamicRoute) return;
 
         routeNode.id = uuidv4();
+        routeNode.driven = true;
+        routeNode.flowState = FlowState.FlowIn;
+
         routeNode.view = {
             x: 400,
             y: 100,

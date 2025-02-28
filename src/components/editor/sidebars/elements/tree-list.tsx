@@ -11,6 +11,7 @@ type ListProps<T extends ListItemWithId> = {
     addButtonClick?: () => void;
     addDisabled?: boolean;
     title?: string;
+    startsOpen?: boolean;
 };
 
 export default function TreeList<T extends ListItemWithId>({
@@ -21,8 +22,9 @@ export default function TreeList<T extends ListItemWithId>({
     addButtonClick,
     addDisabled = false,
     title = "List",
+    startsOpen = false
 }: ListProps<T>): React.JSX.Element {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(startsOpen);
     const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
 
     const handleScroll = (e: React.UIEvent<HTMLUListElement>) => {
@@ -101,7 +103,7 @@ export default function TreeList<T extends ListItemWithId>({
             )}
         </div>
     ) : (
-        <>
+        <div className="mt-[10px]">
             {addButtonClick && (
                 <div>
                     <Button
@@ -115,6 +117,6 @@ export default function TreeList<T extends ListItemWithId>({
                     </Button>
                 </div>
             )}
-        </>
+        </div>
     );
 }

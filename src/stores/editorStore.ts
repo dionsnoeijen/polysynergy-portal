@@ -18,6 +18,7 @@ export type ContextMenu = {
 };
 
 type EditorState = {
+    debugBarAvailable: boolean;
     zoomFactor: number;
     setZoomFactor: (factor: number) => void;
     panPosition: { x: number; y: number };
@@ -76,8 +77,8 @@ type EditorState = {
     setActiveBlueprintId: (blueprintId: string) => void;
     activeVersionId?: string;
     setActiveVersionId: (versionId: string) => void;
-    activeGlobalVariableId?: string;
-    setActiveGlobalVariableId: (globalVariableId: string) => void;
+    activeProjectVariableId?: string;
+    setActiveProjectVariableId: (projectVariableId: string) => void;
 
     editingRouteVersions: { [routeId: string]: string };
     setEditingRouteVersion: (routeId: string, versionId: string) => void;
@@ -96,6 +97,8 @@ type EditorState = {
 };
 
 const useEditorStore = create<EditorState>((set, get) => ({
+    debugBarAvailable: false,
+
     zoomFactor: .75,
     setZoomFactor: (factor) => set({zoomFactor: factor}),
     panPosition: {x: 0, y: 100},
@@ -119,9 +122,8 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setActiveBlueprintId: (blueprintId: string) => set({activeBlueprintId: blueprintId}),
     activeVersionId: '',
     setActiveVersionId: (versionId: string) => set({activeVersionId: versionId}),
-    activeGlobalVariableId: '',
-    setActiveGlobalVariableId: (globalVariableId: string) => set({activeGlobalVariableId: globalVariableId}),
-
+    activeProjectVariableId: '',
+    setActiveProjectVariableId: (projectVariableId: string) => set({activeProjectVariableId: projectVariableId}),
 
     openForm: (type: FormType, formEditRecordId: null | string = null, variable?: NodeVariable | null) => set({
         showForm: true,

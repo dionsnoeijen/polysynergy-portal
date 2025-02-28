@@ -82,7 +82,7 @@ const PlaceBlueprintForm: React.FC = () => {
             unpackedConnections.forEach((c) => addConnection(c));
         }
 
-        const nodesToAdd = unpackedNodes.map((n, index) => {
+        const nodesToAdd = unpackedNodes.map((n) => {
             const nodeCopy = { ...n, variables: [...n.variables] };
             const handle = n.handle;
 

@@ -21,6 +21,7 @@ export default function ScheduleTree(): ReactElement {
             title={'Schedules'}
             activeItem={activeScheduleId}
             formEditingItem={formEditRecordId}
+            startsOpen={true}
             renderItem={(schedule) => (
                 <>
                     <Link href={`/project/${activeProjectId}/schedule/${schedule.id}`}

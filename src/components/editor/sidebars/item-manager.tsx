@@ -1,12 +1,13 @@
 import React, {ReactElement} from "react";
 import clsx from 'clsx';
 import Heading from "@/components/editor/sidebars/elements/heading";
-import RouteTree from "@/components/editor/sidebars/routes/route-tree";
+import RouteTree from "@/components/editor/sidebars/trees/route-tree";
 import SidebarTenantHeader from "@/components/sidebar/sidebar-tenant-header";
-import ScheduleTree from "@/components/editor/sidebars/schedules/schedule-tree";
-import ServiceTree from "@/components/editor/sidebars/services/service-tree";
+import ScheduleTree from "@/components/editor/sidebars/trees/schedule-tree";
+import ServiceTree from "@/components/editor/sidebars/trees/service-tree";
 import BlueprintTree from "@/components/editor/sidebars/blueprints/blueprint-tree";
-import {Divider} from "@/components/divider";
+import ProjectVariableTree from "@/components/editor/sidebars/trees/project-variable-tree";
+import SecretTree from "@/components/editor/sidebars/trees/secret-tree";
 
 export default function ItemManager({
                                         className,
@@ -22,8 +23,9 @@ export default function ItemManager({
                 <RouteTree />
                 <ScheduleTree />
                 <BlueprintTree />
-                <Divider className={'mt-3 mb-1'} />
                 <ServiceTree />
+                <SecretTree />
+                <ProjectVariableTree />
             </div>
             <SidebarTenantHeader/>
         </div>

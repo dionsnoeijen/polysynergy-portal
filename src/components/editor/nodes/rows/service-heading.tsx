@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import {ArrowRightCircleIcon, ChevronRightIcon, InformationCircleIcon} from "@heroicons/react/24/outline";
 import { Button } from "@/components/button";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
@@ -21,6 +21,19 @@ const ServiceHeading: React.FC<Props> = ({
 }) => {
     const [showDetachAlert, setShowDetachAlert] = useState(false);
     const [showInfoDialog, setShowInfoDialog] = useState(false);
+
+    useEffect(() => {
+        if (!showInfoDialog) return;
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setShowInfoDialog(false);
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [showInfoDialog]);
 
     const handleDetach = ()=> {
         // @todo: Detach actions

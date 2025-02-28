@@ -18,12 +18,11 @@ const VariableTypeBoolean: React.FC<VariableTypeProps> = ({
         useNodesStore((state) => state.updateNodeVariable);
 
     const handleChange =
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-            const newValue = e.target.value;
+        (checked: boolean) => {
             if (onChange) {
-                onChange(newValue);
+                onChange(checked);
             } else {
-                updateNodeVariable(nodeId, variable.handle, newValue);
+                updateNodeVariable(nodeId, variable.handle, checked);
             }
         };
 

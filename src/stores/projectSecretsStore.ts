@@ -28,7 +28,7 @@ const useProjectSecretsStore = create<ProjectSecretsStore>((set, get) => ({
     try {
       if (!activeProjectId) return;
       const data = await fetchProjectSecretsAPI(activeProjectId);
-      // tslint:disable-next-line:no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const transformedSecrets = data.secrets.map((s: any) => ({
         id: s.ARN,
         key: s.Name,
@@ -64,7 +64,7 @@ const useProjectSecretsStore = create<ProjectSecretsStore>((set, get) => ({
   updateSecret: async (secret: Secret) => {
     const { activeProjectId } = useEditorStore.getState();
     try {
-      await updateProjectSecretAPI(activeProjectId, secret.id, secret.value);
+      await updateProjectSecretAPI(activeProjectId, secret.id, secret.value as string);
       set((state) => ({
         secrets: state.secrets.map((s) => (s.id === secret.id ? secret : s)),
       }));

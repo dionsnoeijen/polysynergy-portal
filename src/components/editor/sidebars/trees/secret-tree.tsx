@@ -3,7 +3,10 @@ import useEditorStore from "@/stores/editorStore";
 import useProjectSecretsStore from "@/stores/projectSecretsStore";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import {FormType, Secret} from "@/types/types";
-import {PencilIcon} from "@heroicons/react/24/outline";
+import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
+import useAvailableNodeStore from "@/stores/availableNodesStore";
+import {globalToLocal} from "@/utils/positionUtils";
+import useNodesStore from "@/stores/nodesStore";
 
 export default function SecretTree(): ReactElement {
     const secrets = useProjectSecretsStore((state) => state.secrets);
@@ -11,6 +14,8 @@ export default function SecretTree(): ReactElement {
     const openForm = useEditorStore((state) => state.openForm);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeProjectVariableId = useEditorStore((state) => state.activeProjectVariableId);
+    const getAvailableNodeByPath = useAvailableNodeStore((state) => state.getAvailableNodeByPath);
+    const addNode = useNodesStore((state) => state.addNode);
 
     useEffect(() => {
         fetchSecrets();
@@ -18,6 +23,28 @@ export default function SecretTree(): ReactElement {
 
     const handleEditVariable = (key: string) => {
         openForm(FormType.EditProjectSecret, key);
+    };
+
+    const handleAddSecretNode = (mouseX: number, mouseY: number, id: string) => {
+        const node = getAvailableNodeByPath('nodes.nodes.secret.variable_secret.VariableSecret');
+        if (!node) return;
+
+        const { x, y } = globalToLocal(mouseX, mouseY);
+        node.view = {
+            x,
+            y,
+            width: 200,
+            height: 200,
+            collapsed: false,
+            adding: true
+        };
+
+        const secretIdVar = node.variables.find((v: any) => v.handle === "secret_id");
+        if (secretIdVar) {
+            secretIdVar.value = id;
+        }
+
+        addNode(node);
     };
 
     return (
@@ -40,6 +67,13 @@ export default function SecretTree(): ReactElement {
                             }`}
                         >
                             <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
+                        </button>
+                        <button
+                            onClick={(e: React.MouseEvent) => handleAddSecretNode(e.clientX, e.clientY, secret.id)}
+                            type="button"
+                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group`}
+                        >
+                            <PlusIcon className="w-4 h-4 transition-colors duration-200"/>
                         </button>
                     </div>
                 </div>

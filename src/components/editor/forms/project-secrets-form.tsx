@@ -12,6 +12,7 @@ import {
   updateProjectSecretAPI,
   fetchProjectSecretDetailAPI, // Nieuwe API-functie die de volledige secret ophaalt
 } from "@/api/secretsApi";
+import {Text} from "@/components/text";
 
 const ProjectSecretsForm: React.FC = () => {
   const closeForm = useEditorStore((state) => state.closeForm);
@@ -74,6 +75,9 @@ const ProjectSecretsForm: React.FC = () => {
       <Heading>
         {formType === FormType.EditProjectSecret ? "Edit Secret" : "Add Secret"}
       </Heading>
+      <Text>
+        The secret values are only available to you (the logged-in user). No one else can view these values.
+      </Text>
       <Divider className="my-10" soft bleed />
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <div className="flex flex-col md:flex-row md:gap-4">

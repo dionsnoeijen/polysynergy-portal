@@ -93,7 +93,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                         ? (node.service.name.trim() === '' ? '...' : node.service.name)
                         : node.name}
                 </h3>
-                {!node.view.isDeletable && (<HomeIcon className={'ml-2 h-4 w-4'} />)}
+                {false === node.view.isDeletable && (<HomeIcon className={'ml-2 h-4 w-4'} />)}
                 {isCollapsable() && (
                     <Button
                         onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">

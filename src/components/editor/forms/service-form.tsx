@@ -88,7 +88,7 @@ const ServiceForm: React.FC = () => {
         setCategory(node.service?.category || "");
         setIcon(node.icon || "");
         setDescription(node.service?.description || "");
-        setNodeNames({ [node.id]: node.name });
+        setNodeNames({ [node.handle]: node.name });
         if (node.type === NodeType.Group) {
             const nodesInGroup = getNodesInGroup(node.id);
             const nodesByIds = getNodesByIds(nodesInGroup);
@@ -321,32 +321,30 @@ const ServiceForm: React.FC = () => {
                     </Text>
                 </div>
                 <div>
-                    {Object.entries(publishedVariables).map(([nodeId, data], index) => (
-                        <div key={`node-pv-${nodeId}-${index}`}>
-                            {data.variables.map((variable) => (
-                                <>
-                                    {index > 0 && <Divider className={'mt-5 mb-5'} />}
-                                    <div key={`v-node-${nodeId}-${variable.handle}`}>
-                                        <Subheading className={'mb-1'}>{`${nodeNames[nodeId]} - ${variable.name}`}</Subheading>
-                                        <Input
-                                            className={'mb-2'}
-                                            placeholder={'Variable title'}
-                                            value={variable.published_title}
-                                            onChange={(e) => {
-                                                const title: string = e.target.value;
-                                                updateNodeVariablePublishedTitle(nodeId, variable.handle, title);
-                                            }}
-                                        />
-                                        <RichTextEditor
-                                            value={variable.published_description || ""}
-                                            onChange={(description) => {
-                                                updateNodeVariablePublishedDescription(nodeId, variable.handle, description);
-                                            }}
-                                        />
-                                    </div>
-                                </>
-                            ))}
-                        </div>
+                    {Object.entries(publishedVariables).map(([nodeHandle, data], index) => (
+                        data.variables.map((variable) => (
+                            <div key={`node-pv-${nodeHandle}-${index}-${variable.handle}`}>
+                                {index > 0 && <Divider className={'mt-5 mb-5'} />}
+                                <div>
+                                    <Subheading className={'mb-1'}>{`${nodeNames[nodeHandle]} - ${variable.name}`}</Subheading>
+                                    <Input
+                                        className={'mb-2'}
+                                        placeholder={'Variable title'}
+                                        value={variable.published_title as string}
+                                        onChange={(e) => {
+                                            const title: string = e.target.value;
+                                            updateNodeVariablePublishedTitle(nodeHandle, variable.handle, title);
+                                        }}
+                                    />
+                                    <RichTextEditor
+                                        value={variable.published_description || ""}
+                                        onChange={(description) => {
+                                            updateNodeVariablePublishedDescription(nodeHandle, variable.handle, description);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        ))
                     ))}
                 </div>
             </section>

@@ -7,6 +7,7 @@ import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import {globalToLocal} from "@/utils/positionUtils";
 import useNodesStore from "@/stores/nodesStore";
+import {v4 as uuidv4} from "uuid";
 
 export default function SecretTree(): ReactElement {
     const secrets = useProjectSecretsStore((state) => state.secrets);
@@ -30,6 +31,7 @@ export default function SecretTree(): ReactElement {
         if (!node) return;
 
         const { x, y } = globalToLocal(mouseX, mouseY);
+        node.id = uuidv4();
         node.view = {
             x,
             y,
@@ -39,6 +41,7 @@ export default function SecretTree(): ReactElement {
             adding: true
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const secretIdVar = node.variables.find((v: any) => v.handle === "secret_id");
         if (secretIdVar) {
             secretIdVar.value = id;

@@ -44,7 +44,7 @@ export function useAutoAddRouteNodes() {
             height: 200,
             adding: false,
             isDeletable: false,
-            collapsed: false,
+            collapsed: true,
         };
 
         mockRouteNode.id = uuidv4();
@@ -55,7 +55,7 @@ export function useAutoAddRouteNodes() {
             height: 200,
             adding: false,
             isDeletable: false,
-            collapsed: false,
+            collapsed: true,
         };
 
         const connection: ConnectionType = {

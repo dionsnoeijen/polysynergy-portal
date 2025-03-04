@@ -135,11 +135,17 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             data-type="node"
             data-node-id={node.id}
         >
-            <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
-            {node?.icon ? (
-                <NodeIcon icon={node.icon} className={'max-w-10 max-h-10'}/>
+            {node?.has_enabled_switch && (
+                <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
+            )}
+            {node?.has_play_button ? (
+                <PlayButton disabled={node.view.disabled} nodeId={node.id} collapsed={true} />
             ) : (
-                <GlobeAltIcon className={'w-10 h-10'}/>
+                node?.icon ? (
+                    <NodeIcon icon={node.icon} className={'max-w-10 max-h-10'}/>
+                ) : (
+                    <GlobeAltIcon className={'w-10 h-10'}/>
+                )
             )}
             <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
         </div>

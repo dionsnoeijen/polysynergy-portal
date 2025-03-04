@@ -97,7 +97,7 @@ type EditorState = {
 };
 
 const useEditorStore = create<EditorState>((set, get) => ({
-    debugBarAvailable: false,
+    debugBarAvailable: true,
 
     zoomFactor: .75,
     setZoomFactor: (factor) => set({zoomFactor: factor}),
@@ -125,12 +125,17 @@ const useEditorStore = create<EditorState>((set, get) => ({
     activeProjectVariableId: '',
     setActiveProjectVariableId: (projectVariableId: string) => set({activeProjectVariableId: projectVariableId}),
 
-    openForm: (type: FormType, formEditRecordId: null | string = null, variable?: NodeVariable | null) => set({
+    openForm: (
+        type: FormType,
+        formEditRecordId: null | string = null,
+        variable?: NodeVariable | null
+    ) => set({
         showForm: true,
         formType: type,
         formEditRecordId: formEditRecordId,
         formEditVariable: variable ?? null
     }),
+
     closeForm: (closeFormMessage?: string | null) => {
         set({
             showForm: false,

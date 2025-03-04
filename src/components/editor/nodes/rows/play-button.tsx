@@ -1,6 +1,5 @@
 import React from "react";
 import { PlayCircleIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/button";
 import useEditorStore from "@/stores/editorStore";
 import useMockStore from "@/stores/mockStore";
 import { runMockApi } from "@/api/runApi";
@@ -8,11 +7,13 @@ import { runMockApi } from "@/api/runApi";
 type Props = {
     nodeId: string;
     disabled?: boolean;
+    collapsed?: boolean;
 };
 
 const PlayButton: React.FC<Props> = ({
     nodeId,
     disabled = false,
+    collapsed = false,
 }: Props) => {
     const { activeVersionId } = useEditorStore();
     const { setMockConnections, setMockNodes } = useMockStore();
@@ -23,21 +24,25 @@ const PlayButton: React.FC<Props> = ({
         if (activeVersionId) {
             const response = await runMockApi(activeVersionId, nodeId);
             const data = await response.json();
-            setMockConnections(data.result.connections);
-            setMockNodes(data.result.nodes_order);
+            const result = JSON.parse(data.result.body);
+            setMockConnections(result.connections);
+            setMockNodes(result.nodes_order);
         }
     }
 
-    return <div
-        className={`flex items-center justify-between rounded-md w-full pl-3 pr-3 pt-2 relative ${disabled && 'select-none opacity-0'}`}>
-        <Button
-            color={'orange'}
-            type={"button"}
-            className={'block w-full'}
-            onClick={handlePlay}
-            onDoubleClick={(e:React.MouseEvent) => e.stopPropagation()}
-        ><PlayCircleIcon className={'h-6 w-6 text-white'}/></Button>
-    </div>
+    return (
+        <div className={`flex items-center justify-center rounded-md w-full relative ${collapsed ? 'p-0' : 'p-2 -mb-5'} ${disabled && 'select-none opacity-0'}`}>
+            <button
+                color="orange"
+                type="button"
+                className={`flex justify-center items-center rounded-md focus:outline-none w-full ${!collapsed ? 'border border-white/50 p-1' : ''}`}
+                onClick={handlePlay}
+                onDoubleClick={(e: React.MouseEvent) => e.stopPropagation()}
+            >
+                <PlayCircleIcon className={`${collapsed ? 'h-10 w-10' : 'h-6 w-6'} text-white !opacity-100`} />
+            </button>
+        </div>
+    );
 };
 
 export default PlayButton;

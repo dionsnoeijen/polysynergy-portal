@@ -9,7 +9,7 @@ type GridProps = {
     position: { x: number; y: number };
 };
 
-export const Grid: React.FC<GridProps> = ({ zoomFactor, position }) => {
+const Grid: React.FC<GridProps> = ({ zoomFactor, position }) => {
 
     const { theme } = useTheme();
 
@@ -39,3 +39,5 @@ export const Grid: React.FC<GridProps> = ({ zoomFactor, position }) => {
         />
     );
 };
+
+export default Grid;

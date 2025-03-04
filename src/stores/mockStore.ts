@@ -55,10 +55,10 @@ const useMockStore = create<MockState>((set, get) => ({
         return get().mockConnections.find((connection) => connection.uuid === connectionId);
     },
     clearMockStore: () => {
-        // set({
-        //     mockConnections: [],
-        //     mockNodes: []
-        // });
+        set({
+            mockConnections: [],
+            mockNodes: []
+        });
     },
     hasMockData: () => {
         return get().mockConnections.length > 0 || get().mockNodes.length > 0

@@ -716,7 +716,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     isNodeDeletable: (nodeIds: string[]): boolean => {
-        // If node.view.isDeletable is set to false, the node is not deletable
+        // If node.view.isDeletable is set to false (explicitly), the node is not deletable
         // in any other case it is
         const state = get();
         const nodes = state.nodes;

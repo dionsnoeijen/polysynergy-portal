@@ -1,76 +1,84 @@
-import {useEffect} from 'react';
+import { useEffect } from 'react';
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
-import {updateNodeSetupVersionAPI} from "@/api/nodeSetupsApi";
-import {State, StoreName} from "@/types/types";
+import { updateNodeSetupVersionAPI } from "@/api/nodeSetupsApi";
+import { State, StoreName } from "@/types/types";
 
 export default function useGlobalStoreListenersWithImmediateSave() {
-    const {nodes} = useNodesStore();
-    const {connections} = useConnectionsStore();
-    const {activeRouteId, activeScheduleId, activeBlueprintId, activeVersionId} = useEditorStore();
+    const nodes = useNodesStore((state) => state.nodes);
+    const connections = useConnectionsStore((state) => state.connections);
+    const activeRouteId = useEditorStore((state) => state.activeRouteId);
+    const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
+    const activeBlueprintId = useEditorStore((state) => state.activeBlueprintId);
+    const activeVersionId = useEditorStore((state) => state.activeVersionId);
+    const setIsSaving = useEditorStore((state) => state.setIsSaving);
     const debounceInterval = 3000;
-    const latestStates: Record<StoreName, State> = {
-        nodes,
-        connections,
-    };
-    let lastSavedAt = Date.now();
+    const latestStates: Record<StoreName, State> = { nodes, connections };
+
     let debounceTimeout: NodeJS.Timeout | null = null;
+    let isSaving = false;
 
-    const saveNodeSetup = () => {
+    const cancelSave = () => {
+        if (debounceTimeout) {
+            setIsSaving(false);
+            clearTimeout(debounceTimeout);
+            debounceTimeout = null;
+        }
+    };
+
+    const saveNodeSetup = async () => {
+
+        if (isSaving) return;
+
         try {
-            // console.log('Saving node setup',
-            //     'activeRouteId', activeRouteId,
-            //     'activeScheduleId', activeScheduleId,
-            //     'activeBlueprintId', activeBlueprintId,
-            //     'activeVersionId', activeVersionId
-            // );
+            isSaving = true;
 
-            if (activeVersionId) {
-                if (activeRouteId) {
-                    updateNodeSetupVersionAPI(
-                        activeRouteId,
-                        activeVersionId,
-                        latestStates,
-                        'route'
-                    );
-                }
+            const { activeRouteId, activeScheduleId, activeBlueprintId, activeVersionId } = useEditorStore.getState();
 
-                if (activeScheduleId) {
-                    updateNodeSetupVersionAPI(
-                        activeScheduleId,
-                        activeVersionId,
-                        latestStates,
-                        'schedule'
-                    );
-                }
+            if (!activeVersionId) return;
 
-                if (activeBlueprintId) {
-                    updateNodeSetupVersionAPI(
-                        activeBlueprintId,
-                        activeVersionId,
-                        latestStates,
-                        'blueprint'
-                    );
-                }
+            if (activeRouteId) {
+                await updateNodeSetupVersionAPI(
+                    activeRouteId,
+                    activeVersionId,
+                    latestStates,
+                    'route'
+                );
             }
 
-            lastSavedAt = Date.now();
+            if (activeScheduleId) {
+                await updateNodeSetupVersionAPI(
+                    activeScheduleId,
+                    activeVersionId,
+                    latestStates,
+                    'schedule'
+                );
+            }
+
+            if (activeBlueprintId) {
+                await updateNodeSetupVersionAPI(
+                    activeBlueprintId,
+                    activeVersionId,
+                    latestStates,
+                    'blueprint'
+                );
+            }
+            setIsSaving(false);
+
         } catch (error) {
             console.error("Failed to save node setup:", error);
+        } finally {
+            isSaving = false;
         }
     };
 
     const triggerSave = () => {
-        const now = Date.now();
-        if (now - lastSavedAt >= debounceInterval) {
+        cancelSave();
+        setIsSaving(true);
+        debounceTimeout = setTimeout(() => {
             saveNodeSetup();
-        } else {
-            if (debounceTimeout) clearTimeout(debounceTimeout);
-            debounceTimeout = setTimeout(() => {
-                saveNodeSetup();
-            }, debounceInterval);
-        }
+        }, debounceInterval);
     };
 
     useEffect(() => {
@@ -87,8 +95,13 @@ export default function useGlobalStoreListenersWithImmediateSave() {
         return () => {
             unsubscribeNodes();
             unsubscribeConnections();
-            if (debounceTimeout) clearTimeout(debounceTimeout);
+            cancelSave();
         };
-        // eslint-disable-next-line
-    }, [activeRouteId, activeVersionId, activeScheduleId]);
+    // eslint-disable-next-line
+    }, [activeRouteId, activeVersionId, activeScheduleId, activeBlueprintId]);
+
+    useEffect(() => {
+        cancelSave();
+    // eslint-disable-next-line
+    }, [activeVersionId, activeRouteId, activeScheduleId, activeBlueprintId]);
 }

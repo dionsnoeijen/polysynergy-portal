@@ -19,14 +19,13 @@ export const fetchNodeSetupVersionAPI = async (
     return response.json();
 };
 
-export const updateNodeSetupVersionAPI = (
+export const updateNodeSetupVersionAPI = async (
     setupId: string,
     versionId: string,
-    content: Record<StoreName, State>, // Specifiek alleen voor content
+    content: Record<StoreName, State>,
     type: "route" | "schedule" | "blueprint"
 ): Promise<Response> => {
     const idToken = getIdToken();
-    // console.log('CONTENT', content);
     return fetch(
         `${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/${type}/${setupId}/version/${versionId}/`,
         {
@@ -36,7 +35,7 @@ export const updateNodeSetupVersionAPI = (
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${idToken}`,
             },
-            body: JSON.stringify({ content }), // Alleen 'content' meegeven
+            body: JSON.stringify({ content }),
         }
     );
 };
@@ -56,4 +55,26 @@ export const publishNodeSetupVersionAPI = (
             },
         }
     );
+}
+
+export const createNodeSetupVersionDraftAPI = async (
+    setupId: string,
+    versionId: string,
+    content: Record<StoreName, State>,
+    type: "route" | "schedule" | "blueprint"
+) => {
+    const idToken = getIdToken();
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/${type}/${setupId}/version/${versionId}/`,
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ content }),
+        }
+    );
+    return response.json();
 }

@@ -1,16 +1,21 @@
 'use client';
 
-import React, {useRef, useEffect, useCallback, useMemo} from 'react';
+import React, {useRef, useEffect, useCallback, useMemo, useState} from 'react';
+import useEditorStore from "@/stores/editorStore";
+import useConnectionsStore from "@/stores/connectionsStore";
+import useNodesStore from "@/stores/nodesStore";
+import useMockStore from "@/stores/mockStore";
 import {useZoom} from "@/hooks/editor/useZoom";
 import {usePan} from "@/hooks/editor/usePan";
-import {Grid} from "@/components/editor/grid";
+import {useAutoAddRouteNodes} from "@/hooks/editor/useAutoAddRouteNodes";
 import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 import {useDeselectOnClickOutside} from "@/hooks/editor/nodes/useDeselectOnClickOutside";
 import {useDeleteNode} from "@/hooks/editor/nodes/useDeleteNode";
 import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
-import useEditorStore from "@/stores/editorStore";
-import useConnectionsStore from "@/stores/connectionsStore";
-import useNodesStore from "@/stores/nodesStore";
+import {useAutoAddScheduleNodes} from "@/hooks/editor/useAutoAddScheduleNodes";
+import {useAutoUpdateScheduleNodes} from "@/hooks/editor/useAutoUpdateScheduleNodes";
+import {useAutoUpdateRouteNodes} from "@/hooks/editor/useAutoUpdateRouteNodes";
+import Grid from "@/components/editor/grid";
 import Node from "@/components/editor/nodes/node";
 import Connection from "@/components/editor/nodes/connection";
 import BoxSelect from "@/components/editor/box-select";
@@ -21,11 +26,6 @@ import AddNode from "@/components/editor/add-node";
 import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import PointZeroIndicator from "@/components/editor/point-zero-indicator";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
-import {useAutoAddRouteNodes} from "@/hooks/editor/useAutoAddRouteNodes";
-import {useAutoAddScheduleNodes} from "@/hooks/editor/useAutoAddScheduleNodes";
-import {useAutoUpdateScheduleNodes} from "@/hooks/editor/useAutoUpdateScheduleNodes";
-import {useAutoUpdateRouteNodes} from "@/hooks/editor/useAutoUpdateRouteNodes";
-import useMockStore from "@/stores/mockStore";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -43,6 +43,7 @@ export default function Editor() {
     const copySelectedNodes = useEditorStore((state) => state.copySelectedNodes);
     const pasteNodes = useEditorStore((state) => state.pasteNodes);
     const isPasting = useEditorStore((state) => state.isPasting);
+    const isDraft = useEditorStore((state) => state.isDraft);
 
     const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
     const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
@@ -57,6 +58,8 @@ export default function Editor() {
     const {handleEditorMouseDown} = useDeselectOnClickOutside();
     const {createGroup} = useGrouping();
     const {startDraggingAfterPaste} = useDraggable();
+
+    const [isInteracted, setIsInteracted] = useState(false);
 
     useGlobalStoreListenersWithImmediateSave();
     useAutoAddRouteNodes();
@@ -169,7 +172,7 @@ export default function Editor() {
     return (
         <div
             data-type="editor"
-            className="relative w-full h-full overflow-hidden rounded-md"
+            className={`relative w-full h-full overflow-hidden rounded-md`}
             onWheel={handleWheel}
             onMouseDown={(e) => {
                 handleEditorMouseDown();
@@ -182,9 +185,26 @@ export default function Editor() {
             }}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            onContextMenu={handleContextMenu}
+            onContextMenu={isDraft ? handleContextMenu : () => {}}
             ref={contentRef}
         >
+            {!isDraft && (
+                <div
+                    className={`absolute top-0 left-0 w-full h-full z-50 pointer-events-auto 
+                        shadow-[inset_0_0_15px_5px_rgba(34,197,94,0.7)]
+                        ${isInteracted ? "bg-transparent" : "bg-green-500/40"}`}
+                    onClick={() => setIsInteracted(true)}
+                >
+                    {!isInteracted && (
+                        <div className="absolute inset-0 flex items-center justify-center z-50 text-white text-lg font-semibold text-center px-4
+                            shadow-lg shadow-black/50"
+                        >
+                            This version is live and cannot be edited. Create a new draft to make changes.
+                        </div>
+                    )}
+                </div>
+            )}
+
             <Grid zoomFactor={zoomFactor} position={panPosition} />
 
             <div

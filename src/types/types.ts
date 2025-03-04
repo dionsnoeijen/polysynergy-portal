@@ -267,9 +267,9 @@ export interface NodeSetupVersion {
     content: {
         nodes: Node[],
         connections: Connection[],
-        groups: Group[],
     };
     published: boolean;
+    draft: boolean;
     created_by?: string | null;
 }
 
@@ -295,7 +295,7 @@ export type Route = ListItemWithId & {
     segments: RouteSegment[];
     method: HttpMethod;
     node_setup?: NodeSetup;
-    versions?: { id: string, version_number: number, published: boolean }[];
+    versions?: { id: string, version_number: number, published: boolean, draft: boolean }[];
 };
 
 export enum Roles {

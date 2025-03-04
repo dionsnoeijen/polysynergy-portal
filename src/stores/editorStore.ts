@@ -80,6 +80,15 @@ type EditorState = {
     activeProjectVariableId?: string;
     setActiveProjectVariableId: (projectVariableId: string) => void;
 
+    isSaving: boolean;
+    setIsSaving: (isSaving: boolean) => void;
+
+    isDraft: boolean;
+    setIsDraft: (isDraft: boolean) => void;
+
+    isPublished: boolean;
+    setIsPublished: (isPublished: boolean) => void;
+
     editingRouteVersions: { [routeId: string]: string };
     setEditingRouteVersion: (routeId: string, versionId: string) => void;
 
@@ -124,6 +133,15 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setActiveVersionId: (versionId: string) => set({activeVersionId: versionId}),
     activeProjectVariableId: '',
     setActiveProjectVariableId: (projectVariableId: string) => set({activeProjectVariableId: projectVariableId}),
+
+    isSaving: false,
+    setIsSaving: (isSaving) => set({isSaving: isSaving}),
+
+    isDraft: false,
+    setIsDraft: (isDraft) => set({isDraft: isDraft}),
+
+    isPublished: false,
+    setIsPublished: (isPublished) => set({isPublished: isPublished}),
 
     openForm: (
         type: FormType,

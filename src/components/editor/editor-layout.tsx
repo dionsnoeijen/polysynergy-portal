@@ -208,10 +208,10 @@ export function EditorLayout({
                             projectUuid && (routeUuid || scheduleUuid || blueprintUuid) ? (
                                 activeVersionId ? (
                                     <>
-                                        <Editor/>
-                                        <SelectionsMenu/>
-                                        <UndoRedoMenu/>
-                                        <ClearMockViewMenu />
+                                        <Editor key={'editor-' + activeVersionId} />
+                                        <SelectionsMenu key={'selections-menu-' + activeVersionId} />
+                                        <UndoRedoMenu key={'undo-redo-menu-' + activeVersionId}/>
+                                        <ClearMockViewMenu key={'clear-mock-view-menu-' + activeVersionId} />
                                         <VersionPublishedMenu routeUuid={routeUuid} />
                                     </>
                                 ) : (

@@ -37,6 +37,12 @@ export const storeDynamicRoute = async (projectId: string, route: Route) => {
             project_id: projectId,
         }),
     });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "An error occurred while storing the route.");
+    }
+
     return response.json();
 };
 

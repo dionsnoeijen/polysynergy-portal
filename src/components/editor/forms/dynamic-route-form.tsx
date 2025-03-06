@@ -33,6 +33,7 @@ const DynamicRouteForm: React.FC = () => {
     const [method, setMethod] = useState<HttpMethod>(HttpMethod.Get);
     const [segments, setSegments] = useState<RouteSegment[]>([]);
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
         if (formType === FormType.EditRoute && formEditRecordId) {
@@ -108,28 +109,33 @@ const DynamicRouteForm: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (formType === FormType.AddRoute) {
-            const newRoute: Route = {
-                description,
-                segments,
-                method,
-            };
-            const createdRoute: Route | undefined = await storeDynamicRoute(newRoute);
-            closeForm('Route created successfully');
-            if (createdRoute && createdRoute.id) {
-                router.push(`/project/${params.projectUuid}/route/${createdRoute.id}`);
-            }
-        }
+        try {
+            if (formType === FormType.AddRoute) {
+                const newRoute: Route = {
+                    description,
+                    segments,
+                    method,
+                };
+                const createdRoute: Route | undefined = await storeDynamicRoute(newRoute);
 
-        if (formType === FormType.EditRoute && formEditRecordId) {
-            const updatedRoute: Route = {
-                id: formEditRecordId,
-                description,
-                segments,
-                method,
-            };
-            await updateDynamicRoute(updatedRoute);
-            closeForm('Route updated successfully');
+                if (createdRoute && createdRoute.id) {
+                    closeForm('Route created successfully');
+                    router.push(`/project/${params.projectUuid}/route/${createdRoute.id}`);
+                }
+            }
+
+            if (formType === FormType.EditRoute && formEditRecordId) {
+                const updatedRoute: Route = {
+                    id: formEditRecordId,
+                    description,
+                    segments,
+                    method,
+                };
+                await updateDynamicRoute(updatedRoute);
+                closeForm('Route updated successfully');
+            }
+        } catch (error) {
+            setErrorMessage((error as Error).message);
         }
     };
 
@@ -359,6 +365,16 @@ const DynamicRouteForm: React.FC = () => {
                         <Button color="red" onClick={handleDelete}>
                             Yes, delete
                         </Button>
+                    </AlertActions>
+                </Alert>
+            )}
+
+            {errorMessage && (
+                <Alert size="md" className="text-center" open={true} onClose={() => setErrorMessage(null)}>
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{errorMessage}</AlertDescription>
+                    <AlertActions>
+                        <Button onClick={() => setErrorMessage(null)} plain>Close</Button>
                     </AlertActions>
                 </Alert>
             )}

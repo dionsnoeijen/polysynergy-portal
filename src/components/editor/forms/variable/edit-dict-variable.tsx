@@ -13,7 +13,7 @@ type Props = {
     variables: NodeVariable[];
     onChange: (updatedVariables: NodeVariable[], handle?: string) => void; // Handle optioneel meegeven
     onlyValues?: boolean;
-    handle?: string; // Nieuwe optionele prop
+    handle?: string;
 };
 
 const EditDictVariable: React.FC<Props> = ({ title, variables, onChange, onlyValues = false, handle }) => {
@@ -33,7 +33,7 @@ const EditDictVariable: React.FC<Props> = ({ title, variables, onChange, onlyVal
     ) => {
         const updatedVariables = [...variables];
         updatedVariables[index] = { ...updatedVariables[index], [key]: value };
-        onChange(updatedVariables, handle); // Stuur handle mee
+        onChange(updatedVariables, handle);
     };
 
     const addVariable = () => {

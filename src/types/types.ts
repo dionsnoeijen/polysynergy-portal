@@ -52,6 +52,7 @@ export enum FormType {
     EditProjectVariable = 'editProjectVariable',
     AddProjectSecret = 'addProjectSecret',
     EditProjectSecret = 'editProjectSecret',
+    ProjectPublish = 'projectPublish',
 }
 
 export enum InOut {
@@ -221,6 +222,7 @@ export type Schedule = {
     updated_at?: string;
     project_id?: string;
     node_setup?: NodeSetup;
+    versions?: { id: string, version_number: number, published: boolean, draft: boolean }[];
 };
 
 export type Metadata = {

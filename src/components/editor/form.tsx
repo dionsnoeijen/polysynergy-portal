@@ -13,6 +13,7 @@ import PlaceServiceForm from "@/components/editor/forms/place-service-form";
 import PlaceBlueprintForm from "@/components/editor/forms/place-blueprint-form";
 import ProjectVariablesForm from "@/components/editor/forms/project-variables-form";
 import ProjectSecretsForm from "@/components/editor/forms/project-secrets-form";
+import ProjectPublishForm from "@/components/editor/forms/project-publish-form";
 
 const Form: React.FC = () => {
     const { formType } = useEditorStore();
@@ -75,6 +76,11 @@ const Form: React.FC = () => {
                 formType === FormType.EditProjectSecret
             ) && (
                 <ProjectSecretsForm />
+            )}
+            {(
+                formType === FormType.ProjectPublish
+            ) && (
+                <ProjectPublishForm />
             )}
         </div>
     );

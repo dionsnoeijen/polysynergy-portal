@@ -4,15 +4,15 @@ import React, {useEffect, useState} from 'react';
 import { Select } from '@/components/select';
 import { Button } from '@/components/button';
 import useDynamicRoutesStore from '@/stores/dynamicRoutesStore';
-import {ArrowRightCircleIcon, ArrowUturnLeftIcon} from '@heroicons/react/24/outline';
-import {createNodeSetupVersionDraftAPI, publishNodeSetupVersionAPI} from "@/api/nodeSetupsApi";
+import {ArrowRightCircleIcon, Bars3Icon, BarsArrowDownIcon} from '@heroicons/react/24/outline';
+import {createNodeSetupVersionDraftAPI, publishNodeSetupRouteVersionAPI} from "@/api/nodeSetupsApi";
 import useEditorStore from "@/stores/editorStore";
 import fetchAndApplyNodeSetup from "@/utils/fetchNodeSetup";
 import SavingIndicator from "@/components/saving-indicator";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import {State, StoreName} from "@/types/types";
+import {FormType, State, StoreName} from "@/types/types";
 
 type VersionPublishedMenuProps = { routeUuid?: string; };
 
@@ -20,6 +20,7 @@ export default function VersionPublishedMenu({ routeUuid }: VersionPublishedMenu
     const nodes = useNodesStore((state) => state.nodes);
     const connections = useConnectionsStore((state) => state.connections);
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
+    const openForm = useEditorStore((state) => state.openForm);
 
     const routes = useDynamicRoutesStore((state) => state.routes);
     const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
@@ -70,7 +71,7 @@ export default function VersionPublishedMenu({ routeUuid }: VersionPublishedMenu
     };
 
     const handlePublish = async () => {
-        await publishNodeSetupVersionAPI(activeVersionId as string);
+        await publishNodeSetupRouteVersionAPI(activeVersionId as string);
         setShowPublishAlert(false);
     }
 
@@ -108,10 +109,13 @@ export default function VersionPublishedMenu({ routeUuid }: VersionPublishedMenu
                 })}
             </Select>
             <Button disabled={isPublished} onClick={handlePublishClick}>
-                <ArrowRightCircleIcon />
+                <ArrowRightCircleIcon className="h-6 w-6" />
             </Button>
-            <Button>
-                <ArrowUturnLeftIcon onClick={handleDraftClick} className="h-6 w-6 text-blue-500" />
+            <Button onClick={handleDraftClick} >
+                <BarsArrowDownIcon className="h-6 w-6" />
+            </Button>
+            <Button onClick={() => openForm(FormType.ProjectPublish)}>
+                <Bars3Icon className="h-6 w-6" />
             </Button>
             <SavingIndicator isSaving={isSaving} />
 

@@ -12,6 +12,17 @@ export const fetchSchedulesAPI = async (projectId: string) => {
     return response.json();
 };
 
+export const fetchSchedule = async (scheduleId: string): Promise<Schedule> => {
+    const idToken = getIdToken();
+    const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        }
+    });
+    return response.json();
+};
+
 export const storeScheduleAPI = async (projectId: string, schedule: Schedule) => {
     const idToken = getIdToken();
     const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/`, {
@@ -25,17 +36,6 @@ export const storeScheduleAPI = async (projectId: string, schedule: Schedule) =>
             ...schedule,
             project_id: projectId,
         }),
-    });
-    return response.json();
-};
-
-export const fetchSchedule = async (scheduleId: string): Promise<Schedule> => {
-    const idToken = getIdToken();
-    const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${idToken}`,
-        }
     });
     return response.json();
 };

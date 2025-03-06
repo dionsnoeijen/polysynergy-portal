@@ -28,6 +28,7 @@ const useSchedulesStore = create<SchedulesStore>((
 
     fetchSchedules: async () => {
         const { activeProjectId } = useEditorStore.getState();
+        if (!activeProjectId) return;
         try {
             const data: Schedule[] = await fetchSchedulesAPI(activeProjectId);
             set({ schedules: data });

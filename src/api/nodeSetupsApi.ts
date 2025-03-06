@@ -40,12 +40,63 @@ export const updateNodeSetupVersionAPI = async (
     );
 };
 
-export const publishNodeSetupVersionAPI = (
+export const publishNodeSetupRouteVersionAPI = (
     versionId: string,
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/${versionId}/publish/`,
+        `${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/route/${versionId}/publish/`,
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+            },
+        }
+    );
+}
+
+export const unpublishNodeSetupRouteVersionAPI = (
+    versionId: string,
+): Promise<Response> => {
+    const idToken = getIdToken();
+    return fetch(
+        `${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/route/${versionId}/unpublish/`,
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+            },
+        }
+    );
+}
+
+export const publishNodeSetupScheduleVersionAPI = (
+    versionId: string,
+): Promise<Response> => {
+    const idToken = getIdToken();
+    return fetch(
+        `${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/schedule/${versionId}/publish/`,
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+            },
+        }
+    );
+}
+
+export const unpublishNodeSetupScheduleVersionAPI = (
+    versionId: string,
+): Promise<Response> => {
+    const idToken = getIdToken();
+    return fetch(
+        `${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/schedule/${versionId}/unpublish/`,
         {
             method: "POST",
             headers: {

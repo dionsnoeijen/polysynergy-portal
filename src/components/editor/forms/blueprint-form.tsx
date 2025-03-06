@@ -1,19 +1,23 @@
 import React, {useEffect, useState} from "react";
+import useEditorStore from "@/stores/editorStore";
+import useBlueprintsStore from "@/stores/blueprintsStore";
 import {Heading, Subheading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Button} from "@/components/button";
 import {Blueprint, FormType} from "@/types/types";
 import {Input} from "@/components/input";
-import useEditorStore from "@/stores/editorStore";
-import useBlueprintsStore from "@/stores/blueprintsStore";
 import {Text} from "@/components/text";
 import SvgSelector from "@/components/editor/forms/service/svg-selector";
 import RichTextEditor from "@/components/rich-text-editor";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 
 const BlueprintForm: React.FC = () => {
-    const { closeForm, formType, formEditRecordId } = useEditorStore();
-    const { getBlueprint, storeBlueprint } = useBlueprintsStore();
+    const closeForm = useEditorStore((state) => state.closeForm);
+    const formType = useEditorStore((state) => state.formType);
+    const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+
+    const getBlueprint = useBlueprintsStore((state) => state.getBlueprint);
+    const storeBlueprint = useBlueprintsStore((state) => state.storeBlueprint);
 
     const [name, setName] = useState("");
     const [category, setCategory] = useState("");
@@ -57,14 +61,12 @@ const BlueprintForm: React.FC = () => {
                     icon: icon,
                 },
             };
-            // @todo: update blueprint
             closeForm("Blueprint updated successfully");
         }
     };
 
     const handleDelete = () => {
         closeForm('Blueprint deleted successfully');
-        // @todo: Implement deletion
         setShowDeleteAlert(false);
     };
 

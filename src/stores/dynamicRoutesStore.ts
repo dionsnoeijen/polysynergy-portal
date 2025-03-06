@@ -31,6 +31,7 @@ const useDynamicRoutesStore = create<DynamicRoutesStore>((
 
     fetchDynamicRoutes: async () => {
         const { activeProjectId } = useEditorStore.getState();
+        if (!activeProjectId) return;
         try {
             const data: Route[] = await fetchDynamicRoutesAPI(activeProjectId);
             set({ routes: data });

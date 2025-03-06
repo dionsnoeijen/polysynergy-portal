@@ -1,5 +1,5 @@
 import { Route } from "@/types/types";
-import {getIdToken} from "@/api/auth/authToken";
+import { getIdToken } from "@/api/auth/authToken";
 
 export const fetchDynamicRoutes = async (projectId: string): Promise<Route[]> => {
     const idToken = getIdToken();

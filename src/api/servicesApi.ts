@@ -1,5 +1,8 @@
 import { getIdToken } from "@/api/auth/authToken";
 import { Package } from "@/types/types";
+import getConfig from "next/config";
+
+const { publicRuntimeConfig } = getConfig();
 
 export const storeService = async (
     id: string,
@@ -10,7 +13,7 @@ export const storeService = async (
 ) => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/services/`, {
+        const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/services/`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -46,7 +49,7 @@ export const storeService = async (
 export const fetchServices = async () => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/services/`, {
+        const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/services/`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${idToken}`,

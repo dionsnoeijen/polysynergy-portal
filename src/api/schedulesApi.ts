@@ -1,9 +1,12 @@
 import { Schedule } from "@/types/types";
 import { getIdToken } from "@/api/auth/authToken";
+import getConfig from "next/config";
+
+const { publicRuntimeConfig } = getConfig();
 
 export const fetchSchedulesAPI = async (projectId: string) => {
     const idToken = getIdToken();
-    const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/?project_id=${projectId}`, {
+    const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/?project_id=${projectId}`, {
         headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${idToken}`,
@@ -14,7 +17,7 @@ export const fetchSchedulesAPI = async (projectId: string) => {
 
 export const fetchSchedule = async (scheduleId: string): Promise<Schedule> => {
     const idToken = getIdToken();
-    const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {
+    const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {
         headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${idToken}`,
@@ -25,7 +28,7 @@ export const fetchSchedule = async (scheduleId: string): Promise<Schedule> => {
 
 export const storeScheduleAPI = async (projectId: string, schedule: Schedule) => {
     const idToken = getIdToken();
-    const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/`, {
+    const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -42,7 +45,7 @@ export const storeScheduleAPI = async (projectId: string, schedule: Schedule) =>
 
 export const updateScheduleAPI = async (scheduleId: string, updatedData: Partial<Schedule>) => {
     const idToken = getIdToken();
-    const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {
+    const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {
         method: 'PATCH',
         headers: {
             'Accept': 'application/json',
@@ -56,7 +59,7 @@ export const updateScheduleAPI = async (scheduleId: string, updatedData: Partial
 
 export const deleteScheduleAPI = async (scheduleId: string) => {
     const idToken = getIdToken();
-    return await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {
+    return await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/schedules/${scheduleId}/`, {
         method: 'DELETE',
         headers: {
             'Accept': 'application/json',

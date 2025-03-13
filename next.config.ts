@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
         NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL: process.env.NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL,
         NEXT_PUBLIC_POLYSYNERGY_API: process.env.NEXT_PUBLIC_POLYSYNERGY_API,
     },
+    publicRuntimeConfig: {
+        NEXT_PUBLIC_POLYSYNERGY_API: process.env.NEXT_PUBLIC_POLYSYNERGY_API,
+    },
 };
 
 export default nextConfig;

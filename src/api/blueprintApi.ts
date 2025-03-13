@@ -1,12 +1,15 @@
 import { getIdToken } from "@/api/auth/authToken";
 import { Blueprint } from "@/types/types";
+import getConfig from "next/config";
+
+const { publicRuntimeConfig } = getConfig();
 
 export const storeBlueprint = async (
     blueprint: Blueprint
 ): Promise<Blueprint> => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/blueprints/`, {
+        const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/blueprints/`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -30,7 +33,7 @@ export const storeBlueprint = async (
 
 export const fetchBlueprint = async (blueprintId: string): Promise<Blueprint> => {
     const idToken = getIdToken();
-    const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/blueprints/${blueprintId}/`, {
+    const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/blueprints/${blueprintId}/`, {
         headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${idToken}`,
@@ -42,7 +45,7 @@ export const fetchBlueprint = async (blueprintId: string): Promise<Blueprint> =>
 export const fetchBlueprints = async (): Promise<Blueprint[]> => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${process.env.NEXT_PUBLIC_POLYSYNERGY_API}/blueprints/`, {
+        const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/blueprints/`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${idToken}`,

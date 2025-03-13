@@ -135,8 +135,6 @@ export default function Editor() {
         'ctrl+v': () => {
             const pastedNodeIds = pasteNodes();
             startDraggingAfterPaste(
-                mousePositionRef.current.x,
-                mousePositionRef.current.y,
                 pastedNodeIds
             );
         },

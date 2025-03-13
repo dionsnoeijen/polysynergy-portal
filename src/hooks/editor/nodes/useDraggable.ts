@@ -134,8 +134,6 @@ const useDraggable = () => {
     }, [setIsDragging, handleDraggableMouseMove, handleDraggableMouseUp, getNode]);
 
     const startDraggingAfterPaste = useCallback((
-        mouseX: number,
-        mouseY: number,
         pastedNodeIds: string[]
     ) => {
         setIsDragging(true);

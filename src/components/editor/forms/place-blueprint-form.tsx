@@ -119,8 +119,6 @@ const PlaceBlueprintForm: React.FC = () => {
         closeForm();
 
         startDraggingAfterPaste(
-            0,
-            0,
             nodesToAdd.map((n) => n.id)
         );
     };

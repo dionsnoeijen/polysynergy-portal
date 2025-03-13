@@ -95,9 +95,9 @@ export default function Home() {
                         onClick={() => setShowTrashed(false)}
                         className={`px-2 py-1 text-sm font-medium ${
                             !showTrashed ?
-                                'bg-gray-600 text-white' :
-                                'bg-gray-700 text-gray-400'
-                        } border border-gray-500 rounded-l-md hover:bg-gray-800`}
+                                'bg-zinc-600 text-white' :
+                                'bg-zinc-700 text-zinc-400'
+                        } border border-zinc-500 rounded-l-md hover:bg-zinc-800`}
                     >
                         Available
                     </button>
@@ -107,15 +107,15 @@ export default function Home() {
                         onClick={() => setShowTrashed(true)}
                         className={`px-2 py-1 text-sm font-medium ${
                             showTrashed ?
-                                'bg-gray-600 text-white' :
-                                'bg-gray-800 text-gray-400'
-                        } border-t border-b border-r border-gray-500 rounded-r-md hover:bg-gray-800`}
+                                'bg-zinc-600 text-white' :
+                                'bg-zinc-800 text-zinc-400'
+                        } border-t border-b border-r border-zinc-500 rounded-r-md hover:bg-zinc-800`}
                     >
                         <TrashIcon
                             className={`w-4 h-4 ${
                                 showTrashed ?
                                     'text-white' :
-                                    'text-gray-500'
+                                    'text-zinc-500'
                             }`}
                         />
                     </button>

@@ -1,15 +1,13 @@
 import { getIdToken } from "@/api/auth/authToken";
 import { Blueprint } from "@/types/types";
-import getConfig from "next/config";
-
-const { publicRuntimeConfig } = getConfig();
+import config from "@/config";
 
 export const storeBlueprint = async (
     blueprint: Blueprint
 ): Promise<Blueprint> => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/blueprints/`, {
+        const response = await fetch(`${config.API_URL}/blueprints/`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -33,7 +31,7 @@ export const storeBlueprint = async (
 
 export const fetchBlueprint = async (blueprintId: string): Promise<Blueprint> => {
     const idToken = getIdToken();
-    const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/blueprints/${blueprintId}/`, {
+    const response = await fetch(`${config.API_URL}/blueprints/${blueprintId}/`, {
         headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${idToken}`,
@@ -45,7 +43,7 @@ export const fetchBlueprint = async (blueprintId: string): Promise<Blueprint> =>
 export const fetchBlueprints = async (): Promise<Blueprint[]> => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/blueprints/`, {
+        const response = await fetch(`${config.API_URL}/blueprints/`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${idToken}`,

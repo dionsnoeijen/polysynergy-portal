@@ -1,8 +1,6 @@
 import { getIdToken } from "@/api/auth/authToken";
 import { Package } from "@/types/types";
-import getConfig from "next/config";
-
-const { publicRuntimeConfig } = getConfig();
+import config from "@/config";
 
 export const storeService = async (
     id: string,
@@ -13,7 +11,7 @@ export const storeService = async (
 ) => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/services/`, {
+        const response = await fetch(`${config.API_URL}/services/`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -49,7 +47,7 @@ export const storeService = async (
 export const fetchServices = async () => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/services/`, {
+        const response = await fetch(`${config.API_URL}/services/`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${idToken}`,

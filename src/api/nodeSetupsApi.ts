@@ -1,8 +1,6 @@
 import { getIdToken } from "@/api/auth/authToken";
 import {State, StoreName} from "@/types/types";
-import getConfig from "next/config";
-
-const { publicRuntimeConfig } = getConfig();
+import config from "@/config";
 
 export const fetchNodeSetupVersionAPI = async (
     setupId: string,
@@ -11,7 +9,7 @@ export const fetchNodeSetupVersionAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/${type}/${setupId}/version/${versionId}/`,
+        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/`,
         {
             headers: {
                 Accept: "application/json",
@@ -30,7 +28,7 @@ export const updateNodeSetupVersionAPI = async (
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/${type}/${setupId}/version/${versionId}/`,
+        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/`,
         {
             method: "PUT",
             headers: {
@@ -48,7 +46,7 @@ export const publishNodeSetupRouteVersionAPI = (
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/route/${versionId}/publish/`,
+        `${config.API_URL}/node-setup/route/${versionId}/publish/`,
         {
             method: "POST",
             headers: {
@@ -65,7 +63,7 @@ export const unpublishNodeSetupRouteVersionAPI = (
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/route/${versionId}/unpublish/`,
+        `${config.API_URL}/node-setup/route/${versionId}/unpublish/`,
         {
             method: "POST",
             headers: {
@@ -82,7 +80,7 @@ export const publishNodeSetupScheduleVersionAPI = (
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/schedule/${versionId}/publish/`,
+        `${config.API_URL}/node-setup/schedule/${versionId}/publish/`,
         {
             method: "POST",
             headers: {
@@ -99,7 +97,7 @@ export const unpublishNodeSetupScheduleVersionAPI = (
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/schedule/${versionId}/unpublish/`,
+        `${config.API_URL}/node-setup/schedule/${versionId}/unpublish/`,
         {
             method: "POST",
             headers: {
@@ -119,7 +117,7 @@ export const createNodeSetupVersionDraftAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/node-setup/${type}/${setupId}/version/${versionId}/`,
+        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/`,
         {
             method: "POST",
             headers: {

@@ -1,13 +1,11 @@
 import {getIdToken} from "@/api/auth/authToken";
 import {Project} from "@/types/types";
-import getConfig from "next/config";
-
-const { publicRuntimeConfig } = getConfig();
+import config from "@/config";
 
 export const fetchProjects = async ({ trashed = false }: { trashed?: boolean }) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/projects/?trashed=${trashed}`,
+        `${config.API_URL}/projects/?trashed=${trashed}`,
         {
             headers: {
                 'Accept': 'application/json',
@@ -25,7 +23,7 @@ export const fetchProjects = async ({ trashed = false }: { trashed?: boolean }) 
 
 export const createProject = async (name: string) => {
     const idToken = getIdToken();
-    const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/projects/`, {
+    const response = await fetch(`${config.API_URL}/projects/`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -42,7 +40,7 @@ export const createProject = async (name: string) => {
 
 export const deleteProject = async (projectId: string) => {
     const idToken = getIdToken();
-    const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/projects/${projectId}/`, {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/`, {
         method: 'DELETE',
         headers: {
             'Accept': 'application/json',
@@ -54,7 +52,7 @@ export const deleteProject = async (projectId: string) => {
 
 export const updateProject = async (projectId: string, updatedData: Partial<Project>) => {
     const idToken = getIdToken();
-    const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/projects/${projectId}/`, {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/`, {
         method: 'PATCH',
         headers: {
             'Accept': 'application/json',
@@ -68,7 +66,7 @@ export const updateProject = async (projectId: string, updatedData: Partial<Proj
 
 export const restoreProject = async (projectId: string) => {
     const idToken = getIdToken();
-    const response = await fetch(`${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/projects/${projectId}/restore/`, {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/restore/`, {
         method: 'PATCH',
         headers: {
             'Accept': 'application/json',

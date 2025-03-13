@@ -1,13 +1,11 @@
 import { getIdToken } from "@/api/auth/authToken";
 import {Secret} from "@/types/types";
-import getConfig from "next/config";
-
-const { publicRuntimeConfig } = getConfig();
+import config from "@/config";
 
 export const fetchProjectSecretsAPI = async (projectId: string) => {
   const idToken = getIdToken();
   const response = await fetch(
-    `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/projects/${projectId}/secrets/`,
+    `${config.API_URL}/projects/${projectId}/secrets/`,
     {
       headers: {
         Accept: "application/json",
@@ -25,7 +23,7 @@ export const createProjectSecretAPI = async (
 ): Promise<Secret> => {
   const idToken = getIdToken();
   const response = await fetch(
-    `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/projects/${projectId}/secrets/`,
+    `${config.API_URL}/projects/${projectId}/secrets/`,
     {
       method: "POST",
       headers: {
@@ -46,7 +44,7 @@ export const updateProjectSecretAPI = async (
 ): Promise<Secret> => {
   const idToken = getIdToken();
   const response = await fetch(
-    `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/projects/${projectId}/secrets/${secretId}/`,
+    `${config.API_URL}/projects/${projectId}/secrets/${secretId}/`,
     {
       method: "PUT",
       headers: {
@@ -66,7 +64,7 @@ export const deleteProjectSecretAPI = async (
 ): Promise<{message: string}> => {
   const idToken = getIdToken();
   const response = await fetch(
-    `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/projects/${projectId}/secrets/${secretId}/`,
+    `${config.API_URL}/projects/${projectId}/secrets/${secretId}/`,
     {
       method: "DELETE",
       headers: {
@@ -84,7 +82,7 @@ export const deleteProjectSecretAPI = async (
 export const fetchProjectSecretDetailAPI = async (projectId: string, secretId: string) => {
   const idToken = getIdToken();
   const response = await fetch(
-    `${publicRuntimeConfig.NEXT_PUBLIC_POLYSYNERGY_API}/projects/${projectId}/secrets/${secretId}/`,
+    `${config.API_URL}/projects/${projectId}/secrets/${secretId}/`,
     {
       headers: {
         Accept: "application/json",

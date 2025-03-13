@@ -13,7 +13,8 @@ frontend:
     files:
       - '**/*'
   cache:
-    paths: []
+    paths:
+      - node_modules/**/*
   environment:
     variables:
       NODE_ENV: production

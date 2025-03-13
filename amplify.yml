@@ -18,3 +18,4 @@ frontend:
   environment:
     variables:
       NODE_ENV: production
+  framework: next.js

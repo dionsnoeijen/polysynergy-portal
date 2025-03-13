@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import useEditorStore from "@/stores/editorStore";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import {Heading, Subheading} from "@/components/heading";
@@ -7,7 +7,7 @@ import {Text} from "@/components/text";
 import {Input} from "@/components/input";
 import {Textarea} from "@/components/textarea";
 import {Button} from "@/components/button";
-import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType, Node} from "@/types/types";
+import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon} from "@heroicons/react/24/outline";
 import {Select} from "@/components/select";
@@ -139,12 +139,12 @@ const DynamicRouteForm: React.FC = () => {
         }
     };
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         await deleteDynamicRoute(formEditRecordId as string);
         closeForm('Route deleted successfully');
         setShowDeleteAlert(false);
         router.push(`/project/${params.projectUuid}`);
-    };
+    }, [formEditRecordId, deleteDynamicRoute, closeForm, router, params.projectUuid]);
 
     useEffect(() => {
         if (!showDeleteAlert) return;

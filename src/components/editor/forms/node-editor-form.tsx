@@ -5,7 +5,7 @@ import {FlowState, Node as NodeType} from "@/types/types";
 import Node from "@/components/editor/nodes/node";
 import {Heading} from "@/components/heading";
 import {Divider} from "@/components/divider";
-import Editor, {Monaco} from "@monaco-editor/react";
+import Editor from "@monaco-editor/react";
 import {Button} from "@/components/button";
 import {fetchNodeSerialization} from "@/api/nodeApi";
 import {LockClosedIcon} from "@heroicons/react/16/solid";
@@ -18,7 +18,8 @@ const NodeEditorForm: React.FC = () => {
     const [code, setCode] = useState<string>('');
     const [isBaseNode, setIsBaseNode] = useState<boolean>(true);
     const [showUnlockAlert, setShowUnlockAlert] = useState<boolean>(false);
-    const [editorHeight, setEditorHeight] = useState(400); // Start met een standaard hoogte
+    const [editorHeight, setEditorHeight] = useState(400);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const editorRef = useRef<any>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -63,8 +64,8 @@ const NodeEditorForm: React.FC = () => {
     };
 
     const handleEditorDidMount = (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         editor: any,
-        monaco: Monaco
     ) => {
         editorRef.current = editor;
 
@@ -96,30 +97,7 @@ const NodeEditorForm: React.FC = () => {
             setNode(node);
         } else {
             // Reset naar default als er geen formEditRecordId is
-            setCode(`from nodes.nodes.node import Node, node, dock_property
-
-@node(
-    name="New",
-    category="code",
-    has_true_path=True,
-    has_enabled_switch=True
-)
-class NewNode(Node):
-    def __init__(self):
-        self._variable: str = ""
-        super().__init__()
-
-    @property
-    @dock_property()
-    def variable(self) -> str:
-        return self._variable
-        
-    @variable.setter
-    def variable(self, value: str):
-        self._variable = value
-    
-    def execute(self):
-        pass`);
+            setCode(`# @todo, add a default code snippet here`);
         }
     }, [formEditRecordId, getNode]); // 🔥 Deze `useEffect` draait alleen als de node moet worden opgehaald
 

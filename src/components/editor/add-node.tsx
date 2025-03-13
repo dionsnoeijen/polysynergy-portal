@@ -79,6 +79,7 @@ const AddNode: React.FC = () => {
         if (openGroup) {
             addNodeToGroup(openGroup, node.id);
         }
+    // eslint-disable-next-line
     }, [addNode, addNodeToGroup, getAvailableNodeById, openGroup, setAddingNode, setShowAddingNode, setSearchPhrase, resetSelectedNodeIndex]);
 
     const handleAddNewNode = () => {

@@ -1,7 +1,7 @@
 import React from "react";
 import useNodesStore from "@/stores/nodesStore";
 import {Input} from "@/components/input";
-import {Field, Fieldset, Label} from "@/components/fieldset";
+import {Field, Fieldset} from "@/components/fieldset";
 import {Node} from "@/types/types";
 
 type Props = {

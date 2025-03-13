@@ -12,7 +12,7 @@ import {format} from "date-fns";
 import {Select} from "@/components/select";
 import {deleteClientAccount, inviteClientAccount, resendClientAccountInvite} from "@/api/clientAccountsApi";
 import useAccountsStore from "@/stores/accountsStore";
-import {Role, Roles} from "@/types/types";
+import {Roles} from "@/types/types";
 import {isValidEmail} from "@/utils/validators";
 
 export default function AccountsPage() {

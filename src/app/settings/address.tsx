@@ -4,6 +4,7 @@ import { Input } from '@/components/input'
 import { Listbox, ListboxLabel, ListboxOption } from '@/components/listbox'
 import { getCountries } from '@/data'
 import { useState } from 'react'
+import Image from "next/image";
 
 export function Address() {
   const countries = getCountries()
@@ -38,7 +39,7 @@ export function Address() {
       >
         {countries.map((country) => (
           <ListboxOption key={country.code} value={country}>
-            <img className="w-5 sm:w-4" src={country.flagUrl} alt="" />
+            <Image className="w-5 sm:w-4" src={country.flagUrl} alt="" />
             <ListboxLabel>{country.name}</ListboxLabel>
           </ListboxOption>
         ))}

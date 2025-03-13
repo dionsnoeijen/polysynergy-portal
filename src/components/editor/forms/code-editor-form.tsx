@@ -1,17 +1,18 @@
 import React, { useEffect, useState, useRef } from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-import { FormType, Node } from "@/types/types";
+import { Node } from "@/types/types";
 import { Heading } from "@/components/heading";
 import { Divider } from "@/components/divider";
-import Editor, { Monaco } from "@monaco-editor/react";
+import Editor from "@monaco-editor/react";
 import {Button} from "@/components/button";
 
 const CodeEditorForm: React.FC = () => {
-    const { getNode, updateNodeVariable } = useNodesStore();
+    const getNode = useNodesStore((state) => state.getNode);
     const { closeForm, formEditVariable, formEditRecordId } = useEditorStore();
     const [node, setNode] = useState<Node>();
-    const [editorHeight, setEditorHeight] = useState(400); // Start met een standaard hoogte
+    const [editorHeight, setEditorHeight] = useState(400);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const editorRef = useRef<any>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -25,7 +26,8 @@ const CodeEditorForm: React.FC = () => {
         console.log(value);
     };
 
-    const handleEditorDidMount = (editor: any, monaco: Monaco) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleEditorDidMount = (editor: any) => {
         editorRef.current = editor;
 
         const updateHeight = () => {

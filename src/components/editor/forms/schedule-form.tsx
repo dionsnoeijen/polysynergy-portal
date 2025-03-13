@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {Heading, Subheading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Text} from "@/components/text";
@@ -174,12 +174,12 @@ const ScheduleForm: React.FC = () => {
         }
     };
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         await deleteSchedule(formEditRecordId as string);
         closeForm("Schedule deleted successfully");
         setShowDeleteAlert(false);
         router.push(`/project/${params.projectUuid}`);
-    };
+    }, [closeForm, deleteSchedule, formEditRecordId, params.projectUuid, router]);
 
     useEffect(() => {
         if (!showDeleteAlert) return;

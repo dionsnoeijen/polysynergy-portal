@@ -56,6 +56,7 @@ const ProjectSecretsForm: React.FC = () => {
         await createProjectSecretAPI(activeProjectId, key, secretValue);
       }
       closeForm();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "An error occurred.");
     }

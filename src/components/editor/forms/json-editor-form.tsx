@@ -1,10 +1,10 @@
 import React, {useEffect, useState, useRef} from "react";
+import {Divider} from "@/components/divider";
+import {Button} from "@/components/button";
+import {Heading} from "@/components/heading";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-import {Heading} from "@/components/heading";
-import {Divider} from "@/components/divider";
-import Editor, {Monaco} from "@monaco-editor/react";
-import {Button} from "@/components/button";
+import Editor from "@monaco-editor/react";
 import {Node} from "@/types/types";
 
 const JsonEditorForm: React.FC = () => {
@@ -12,6 +12,7 @@ const JsonEditorForm: React.FC = () => {
     const {closeForm, formEditVariable, formEditRecordId} = useEditorStore();
     const [node, setNode] = useState<Node>();
     const [editorHeight, setEditorHeight] = useState(400);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const editorRef = useRef<any>(null);
     const [json, setJson] = useState<string | undefined>();
 
@@ -26,7 +27,8 @@ const JsonEditorForm: React.FC = () => {
         setJson(value);
     };
 
-    const handleEditorDidMount = (editor: any, monaco: Monaco) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleEditorDidMount = (editor: any) => {
         editorRef.current = editor;
 
         const updateHeight = () => {

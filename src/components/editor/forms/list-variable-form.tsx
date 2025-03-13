@@ -23,6 +23,7 @@ const ListVariableForm: React.FC = () => {
         value: "",
         has_in: false,
         has_out: false,
+        published: false
     });
     const [ variables, setVariables ] = useState<NodeVariable[]>([]);
     const [ errors, setErrors ] = useState<{ [key: string]: string }>({});
@@ -45,6 +46,7 @@ const ListVariableForm: React.FC = () => {
             value: "",
             has_in: false,
             has_out: false,
+            published: false
         });
     }
 

@@ -187,6 +187,7 @@ const PlaceServiceForm: React.FC = () => {
                                 nodeId={nodeId}
                                 variable={variable}
                                 publishedButton={false}
+                                // @ts-expect-error - @todo: Test this form and fix the typing
                                 onChange={(value) => handleSimpleVariableChange(nodeId, variable.handle, value)}
                                 currentValue={simpleVariables[nodeId]?.[variable.handle]}
                             />

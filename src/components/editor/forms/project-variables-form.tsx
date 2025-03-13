@@ -27,7 +27,7 @@ import VariableTypeCode from "@/components/editor/sidebars/dock/variable-type-co
 import VariableTypeJson from "@/components/editor/sidebars/dock/variable-type-json";
 import useEditorStore from "@/stores/editorStore";
 
-const getDefaultValueForType = (type: NodeVariableType): any => {
+const getDefaultValueForType = (type: NodeVariableType): string | [] | boolean | number => {
     switch (type) {
         case NodeVariableType.String:
             return "";
@@ -56,10 +56,10 @@ const getDefaultValueForType = (type: NodeVariableType): any => {
     }
 };
 
-// Render het juiste input-component op basis van het type met de dock componenten.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getVariableInputComponent = (
     type: NodeVariableType,
-    value: string,
+    value: string | number | boolean | string[] | NodeVariable[] | null,
     onChange: (value: string | number | boolean | string[] | NodeVariable[] | null) => void,
     variableHandle: string
 ) => {
@@ -109,7 +109,7 @@ type ProjectVariable = {
     id: string;
     handle: string;
     type: NodeVariableType;
-    value: any;
+    value: string | number | boolean | [];
 };
 
 const ProjectVariablesForm: React.FC = () => {
@@ -133,12 +133,16 @@ const ProjectVariablesForm: React.FC = () => {
         setNewVariableHandle("");
     };
 
-    const updateVariableValue = (id: string, newValue: any) => {
-        setProjectVariables((prev) =>
-            prev.map((variable) =>
-                variable.id === id ? {...variable, value: newValue} : variable
-            )
-        );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const updateVariableValue = (
+        // id: string,
+        // newValue: string | number | boolean | string[] | NodeVariable[] | null
+    ) => {
+        // setProjectVariables((prev) =>
+        //     prev.map((variable) =>
+        //         variable.id === id ? {...variable, value: newValue} : variable
+        //     )
+        // );
     };
 
     return (
@@ -160,12 +164,12 @@ const ProjectVariablesForm: React.FC = () => {
                             <TableCell>{variable.handle}</TableCell>
                             <TableCell>{variable.type}</TableCell>
                             <TableCell>
-                                {getVariableInputComponent(
-                                    variable.type,
-                                    variable.value,
-                                    (newVal) => updateVariableValue(variable.id, newVal),
-                                    variable.handle
-                                )}
+                                {/*{getVariableInputComponent(*/}
+                                {/*    variable.type,*/}
+                                {/*    variable.value,*/}
+                                {/*    (newVal) => updateVariableValue(variable.id, newVal),*/}
+                                {/*    variable.handle*/}
+                                {/*)}*/}
                             </TableCell>
                         </TableRow>
                     ))}

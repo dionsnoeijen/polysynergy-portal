@@ -4,7 +4,7 @@ import useEditorStore from "@/stores/editorStore";
 import { fetchDynamicRoute as fetchDynamicRouteAPI } from "@/api/dynamicRoutesApi";
 import { fetchBlueprint as fetchBlueprintAPI } from "@/api/blueprintApi";
 import { fetchSchedule as fetchScheduleAPI } from "@/api/schedulesApi";
-import {NodeSetup, NodeSetupVersion, Route} from "@/types/types";
+import {NodeSetupVersion, Route} from "@/types/types";
 
 async function fetchAndApplyNodeSetup({
     routeId = null,

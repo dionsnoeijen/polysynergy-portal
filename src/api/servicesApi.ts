@@ -1,6 +1,5 @@
 import { getIdToken } from "@/api/auth/authToken";
-import {Node, Package} from "@/types/types";
-import { Connection } from "@/types/types";
+import { Package } from "@/types/types";
 
 export const storeService = async (
     id: string,

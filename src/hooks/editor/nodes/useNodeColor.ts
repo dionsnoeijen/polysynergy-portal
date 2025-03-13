@@ -47,7 +47,7 @@ const useNodeColor = (
         }
 
         return classList;
-    }, [node, isSelected, mockNode, hasMockData]);
+    }, [mockNode, hasMockData, isSelected, node.service?.id, node.category, isNodeInService]);
 };
 
 export default useNodeColor;

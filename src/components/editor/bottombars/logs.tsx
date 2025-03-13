@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 
 export default function Logs() {
-    const [logs, setLogs] = useState<string[]>([]);
+    // const [logs, setLogs] = useState<string[]>([]);
 
     // useEffect(() => {
     //     const socket = new WebSocket("ws://localhost:8000/ws/logs/");
@@ -22,7 +22,7 @@ export default function Logs() {
                 </div>
                 <div className="flex-1 overflow-scroll">
                     <pre>
-                        {logs.join("\n")}
+                        {/*{logs.join("\n")}*/}
                     </pre>
                 </div>
             </div>

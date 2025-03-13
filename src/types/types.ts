@@ -235,7 +235,7 @@ export type Blueprint = {
     id?: string;
     name: string;
     metadata: Metadata;
-    node_setup: NodeSetup;
+    node_setup?: NodeSetup;
     project_ids?: string[];
 };
 

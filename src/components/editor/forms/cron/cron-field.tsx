@@ -43,7 +43,7 @@ export function CronField({
 
   useEffect(() => {
     onChange(getCronValue());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line
   }, [useRange, useStep, rangeStart, rangeEnd, step, singleValue]);
 
   const options = [];

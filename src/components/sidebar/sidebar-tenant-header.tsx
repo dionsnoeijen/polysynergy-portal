@@ -8,7 +8,7 @@ import {
     DropdownMenu
 } from "@/components/dropdown";
 import {Avatar} from "@/components/avatar";
-import {ChevronUpIcon, Cog8ToothIcon, PlusIcon, UserIcon} from "@heroicons/react/24/outline";
+import {ChevronUpIcon, Cog8ToothIcon, UserIcon} from "@heroicons/react/24/outline";
 
 export default function SidebarTenantHeader()
 {

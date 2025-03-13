@@ -1,5 +1,5 @@
 import React from "react";
-import {FormType, NodeVariable, VariableTypeProps} from "@/types/types";
+import {FormType, VariableTypeProps} from "@/types/types";
 import {Field, Fieldset} from "@/components/fieldset";
 import {PencilIcon} from "@heroicons/react/24/outline";
 import useEditorStore from "@/stores/editorStore";

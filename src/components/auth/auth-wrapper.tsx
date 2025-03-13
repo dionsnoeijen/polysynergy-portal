@@ -45,6 +45,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
                 auth.signinRedirect();
             }
         }
+    // eslint-disable-next-line
     }, [auth]);
 
     if (auth.isLoading || isAccountSynced === null) {

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import useEditorStore from "@/stores/editorStore";
 import useBlueprintsStore from "@/stores/blueprintsStore";
 import {Heading, Subheading} from "@/components/heading";
@@ -35,7 +35,7 @@ const BlueprintForm: React.FC = () => {
                 setIcon(blueprint.metadata.icon ?? "");
             }
         }
-    }, []);
+    }, [formEditRecordId, formType, getBlueprint]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,23 +52,23 @@ const BlueprintForm: React.FC = () => {
             storeBlueprint(newBlueprint);
             closeForm("Blueprint created successfully");
         } else {
-            const updatedBlueprint: Blueprint = {
-                id: formEditRecordId,
-                name: name,
-                metadata: {
-                    category: category,
-                    description: description,
-                    icon: icon,
-                },
-            };
+            // const updatedBlueprint: Blueprint = {
+            //     id: formEditRecordId,
+            //     name: name,
+            //     metadata: {
+            //         category: category,
+            //         description: description,
+            //         icon: icon,
+            //     },
+            // };
             closeForm("Blueprint updated successfully");
         }
     };
 
-    const handleDelete = () => {
+    const handleDelete = useCallback(() => {
         closeForm('Blueprint deleted successfully');
         setShowDeleteAlert(false);
-    };
+    }, [closeForm]);
 
     useEffect(() => {
         if (!showDeleteAlert) return;

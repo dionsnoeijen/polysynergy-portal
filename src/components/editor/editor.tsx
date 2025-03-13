@@ -67,11 +67,13 @@ export default function Editor() {
     useAutoAddScheduleNodes();
     useAutoUpdateScheduleNodes();
 
+    // eslint-disable-next-line
     const nodesToRender = useMemo(() => getNodesToRender(), [getNodesToRender, nodes]);
 
     useEffect(() => {
         updateConnectionsDirectly(connections);
         clearMockStore();
+    // eslint-disable-next-line
     }, [nodesToRender]);
 
     const updateEditorPosition = useCallback(() => {

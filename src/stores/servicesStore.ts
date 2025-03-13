@@ -1,7 +1,6 @@
 import {create} from "zustand";
 import {Service} from "@/types/types";
 import {StateCreator} from "zustand/index";
-import useEditorStore from "@/stores/editorStore";
 import {fetchServices as fetchServicesAPI} from "@/api/servicesApi";
 
 type ServicesStore = {
@@ -21,7 +20,6 @@ const useServicesStore = create<ServicesStore>((
     },
 
     fetchServices: async () => {
-        const { activeProjectId } = useEditorStore.getState();
         try {
             const data: Service[] = await fetchServicesAPI();
             set({services: data});

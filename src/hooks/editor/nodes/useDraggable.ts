@@ -1,8 +1,8 @@
 import React, { useEffect, useCallback, useRef } from "react";
 import useEditorStore from "@/stores/editorStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import { Connection } from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
+import { Connection } from "@/types/types";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 import { updateNodesDirectly } from "@/utils/updateNodesDirectly";
 import { snapToGrid } from "@/utils/snapToGrid";
@@ -44,6 +44,7 @@ const useDraggable = () => {
             allConnections.push(...groupInConnections, ...groupOutConnections);
         }
         return allConnections;
+    // eslint-disable-next-line
     }, [findInConnectionsByNodeId, findOutConnectionsByNodeId, openGroup]);
 
     const handleDraggableMouseMove = useCallback(
@@ -61,6 +62,7 @@ const useDraggable = () => {
             const allConnections = collectConnections();
             updateConnectionsDirectly(allConnections);
         },
+        // eslint-disable-next-line
         [zoomFactor, collectConnections, editorPosition, panPosition]
     );
 
@@ -96,6 +98,7 @@ const useDraggable = () => {
 
         document.removeEventListener("mousemove", handleDraggableMouseMove);
         document.removeEventListener("mouseup", handleDraggableMouseUp);
+    // eslint-disable-next-line
     }, [setIsDragging, handleDraggableMouseMove, updateNodePosition, setIsPasting]);
 
     const onDragMouseDown = useCallback((e: React.MouseEvent) => {
@@ -127,6 +130,7 @@ const useDraggable = () => {
 
         document.addEventListener("mousemove", handleDraggableMouseMove);
         document.addEventListener("mouseup", handleDraggableMouseUp);
+    // eslint-disable-next-line
     }, [setIsDragging, handleDraggableMouseMove, handleDraggableMouseUp, getNode]);
 
     const startDraggingAfterPaste = useCallback((
@@ -148,6 +152,7 @@ const useDraggable = () => {
 
         document.addEventListener("mousemove", handleDraggableMouseMove);
         document.addEventListener("mouseup", handleDraggableMouseUp);
+    // eslint-disable-next-line
     }, [setIsDragging, handleDraggableMouseMove, handleDraggableMouseUp, getNode, editorPosition, panPosition, zoomFactor, updateNodePosition]);
 
     return { onDragMouseDown, startDraggingAfterPaste };

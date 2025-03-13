@@ -92,7 +92,7 @@ export function EditorLayout({
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [projectUuid, routeUuid, scheduleUuid, blueprintUuid]);
+    }, [projectUuid, routeUuid, scheduleUuid, blueprintUuid, fetchAvailableNodes, setActiveProjectId, setActiveBlueprintId, setActiveScheduleId, setActiveRouteId]);
 
 
     const startResizing = useCallback((resizeWhat: ResizeWhat) => {

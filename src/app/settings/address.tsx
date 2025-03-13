@@ -39,7 +39,7 @@ export function Address() {
       >
         {countries.map((country) => (
           <ListboxOption key={country.code} value={country}>
-            <Image className="w-5 sm:w-4" src={country.flagUrl} alt="" />
+            <Image className="w-5 sm:w-4" src={country.flagUrl} alt="" fill />
             <ListboxLabel>{country.name}</ListboxLabel>
           </ListboxOption>
         ))}

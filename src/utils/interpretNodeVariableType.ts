@@ -7,19 +7,19 @@ export default function interpretNodeVariableType(variable: NodeVariable): { bas
         return { baseType: NodeVariableType.Number, containsNone };
     } else if (types.includes('str') || types.includes('string')) {
         if (variable.dock) {
-            if (variable?.dock.field_secret) {
+            if (variable?.dock.secret) {
                 return {baseType: NodeVariableType.SecretString, containsNone};
             }
-            if (variable?.dock.field_text_area) {
+            if (variable?.dock.text_area) {
                 return {baseType: NodeVariableType.TextArea, containsNone};
             }
-            if (variable?.dock.field_rich_text_area) {
+            if (variable?.dock.rich_text_area) {
                 return {baseType: NodeVariableType.RichTextArea, containsNone};
             }
-            if (variable?.dock.field_code_editor) {
+            if (variable?.dock.code_editor) {
                 return {baseType: NodeVariableType.Code, containsNone};
             }
-            if (variable?.dock.field_json_editor) {
+            if (variable?.dock.json_editor) {
                 return {baseType: NodeVariableType.Json, containsNone};
             }
         }

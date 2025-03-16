@@ -6,7 +6,7 @@ import { Input } from "@/components/input";
 import { Select } from "@/components/select";
 import { Button } from "@/components/button";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { NodeVariable, NodeVariableType } from "@/types/types";
+import {Dock, NodeVariable, NodeVariableType} from "@/types/types";
 
 type Props = {
     title: string;
@@ -14,9 +14,17 @@ type Props = {
     onChange: (updatedVariables: NodeVariable[], handle?: string) => void; // Handle optioneel meegeven
     onlyValues?: boolean;
     handle?: string;
+    dock?: Dock;
 };
 
-const EditDictVariable: React.FC<Props> = ({ title, variables, onChange, onlyValues = false, handle }) => {
+const EditDictVariable: React.FC<Props> = ({
+    title,
+    variables,
+    onChange,
+    onlyValues = false,
+    handle,
+    dock
+}) => {
     const [newVariable, setNewVariable] = useState<NodeVariable>({
         handle: "",
         type: NodeVariableType.String,
@@ -32,7 +40,13 @@ const EditDictVariable: React.FC<Props> = ({ title, variables, onChange, onlyVal
         value: string | boolean | NodeVariableType
     ) => {
         const updatedVariables = [...variables];
-        updatedVariables[index] = { ...updatedVariables[index], [key]: value };
+        console.log(key);
+        if (key === "handle") {
+            const validValue = (value as string).replace(/[^a-z-_]/g, '');
+            updatedVariables[index] = {...updatedVariables[index], [key]: validValue};
+        } else {
+            updatedVariables[index] = {...updatedVariables[index], [key]: value};
+        }
         onChange(updatedVariables, handle);
     };
 
@@ -63,24 +77,24 @@ const EditDictVariable: React.FC<Props> = ({ title, variables, onChange, onlyVal
                 <Table dense bleed grid>
                     <TableHead>
                         <TableRow>
-                            <TableHeader>In</TableHeader>
-                            <TableHeader>Key</TableHeader>
-                            <TableHeader>Type</TableHeader>
-                            <TableHeader>Value</TableHeader>
-                            <TableHeader>Out</TableHeader>
+                            {!(dock && dock.in_switch === false) && <TableHeader>In</TableHeader>}
+                            <TableHeader>{dock?.key_label || "Key"}</TableHeader>
+                            <TableHeader>{dock?.type_label || "Type"}</TableHeader>
+                            <TableHeader>{dock?.value_label || "Value"}</TableHeader>
+                            {!(dock && dock.out_switch === false) && <TableHeader>Out</TableHeader>}
                             <TableHeader>Actions</TableHeader>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {variables.map((variable, index) => (
                             <TableRow key={`row-${index}`}>
-                                <TableCell>
+                                {!(dock && dock.in_switch === false) && <TableCell>
                                     <Switch
                                         checked={variable.has_in}
                                         onChange={(checked) => updateVariable(index, "has_in", checked)}
                                         disabled={onlyValues}
                                     />
-                                </TableCell>
+                                </TableCell>}
                                 <TableCell>
                                     <Input
                                         value={variable.handle}
@@ -107,13 +121,13 @@ const EditDictVariable: React.FC<Props> = ({ title, variables, onChange, onlyVal
                                         onChange={(e) => updateVariable(index, "value", e.target.value)}
                                     />
                                 </TableCell>
-                                <TableCell>
+                                {!(dock && dock.out_switch === false) && <TableCell>
                                     <Switch
                                         checked={variable.has_out}
                                         onChange={(checked) => updateVariable(index, "has_out", checked)}
                                         disabled={onlyValues}
                                     />
-                                </TableCell>
+                                </TableCell>}
                                 <TableCell>
                                     <Button plain onClick={() => removeVariable(index)}>
                                         <TrashIcon className="w-4 h-4" />

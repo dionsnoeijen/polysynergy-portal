@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 
-import { Divider } from "@/components/divider";
-import { Button } from "@/components/button";
-import { FormType, Node, NodeVariable } from "@/types/types";
-import { Heading } from "@/components/heading";
+import {Divider} from "@/components/divider";
+import {Button} from "@/components/button";
+import {FormType, Node, NodeVariable} from "@/types/types";
+import {Heading} from "@/components/heading";
 
 import EditDictVariable from "@/components/editor/forms/variable/edit-dict-variable";
 
@@ -38,7 +38,7 @@ const DictVariableForm: React.FC = () => {
 
             <Divider className="my-10" soft bleed />
 
-            <EditDictVariable title="Array values" variables={variables} onChange={setVariables} />
+            <EditDictVariable title="Array values" dock={formEditVariable?.dock} variables={variables} onChange={setVariables} />
 
             <Divider className="my-10" soft bleed />
 

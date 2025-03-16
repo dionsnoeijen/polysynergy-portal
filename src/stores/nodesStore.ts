@@ -175,8 +175,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     setNodeFlowState: (nodeId: string, flowState: FlowState) => {
         nodesByIdsCache.clear();
 
-        console.log("setNodeFlowState", nodeId, flowState);
-
         // If the flow state is going to be set to FlowState.Enabled,
         // First check if this is allowed by checkin if there are other
         // driving connections. If not.... then make sure that

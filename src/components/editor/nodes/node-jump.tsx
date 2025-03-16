@@ -43,7 +43,7 @@ const NodeJump: React.FC<NodeProps> = ({ node }) => {
                 />
             )}
 
-            <Strong className={`text-white text-3xl dark:text-white -mt-1 ${node.view.disabled && 'select-none opacity-0'}`}>{node.handle}</Strong>
+            <Strong className={`text-white dark:text-white -mt-1 ${node.view.disabled && 'select-none opacity-0'}`}>{node.handle}</Strong>
             {node.type === NodeJumpType.To && (
                 <Connector
                     out

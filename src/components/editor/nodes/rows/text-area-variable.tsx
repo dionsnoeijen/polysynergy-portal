@@ -2,6 +2,7 @@ import React from "react";
 import { NodeVariable } from "@/types/types";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
+import {DocumentTextIcon} from "@heroicons/react/24/outline";
 
 type Props = {
     variable: NodeVariable;
@@ -35,7 +36,9 @@ const TextAreaVariable: React.FC<Props> = ({
             nodeVariableType={'string'}
         />}
         <div className="flex items-center">
-            <p className="break-words">{variable.value === '' ? ' s' : variable.value as string}</p>
+            <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
+            <DocumentTextIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
+            <span className="ml-1">{variable.value === '' ? ' s' : variable.value as string}</span>
         </div>
         {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
             out

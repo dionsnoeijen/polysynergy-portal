@@ -44,9 +44,9 @@ export function ApplicationLayout({
                     <NavbarSpacer />
                     <NavbarSection>
                         <Dropdown>
-                            <DropdownButton as={NavbarItem}>
-                                <Avatar src="/users/erica.jpg" square />
-                            </DropdownButton>
+                            {/*<DropdownButton as={NavbarItem}>*/}
+                            {/*    <Avatar src="/users/erica.jpg" square />*/}
+                            {/*</DropdownButton>*/}
                             <AccountDropdownMenu anchor="bottom end" />
                         </Dropdown>
                     </NavbarSection>
@@ -54,7 +54,9 @@ export function ApplicationLayout({
             }
             sidebar={
                 <Sidebar>
-                    <SidebarTenantHeader />
+                    <div className={'m-4'}>
+                        <SidebarTenantHeader />
+                    </div>
 
                     <SidebarBody>
                         <SidebarSection>

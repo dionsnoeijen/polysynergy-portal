@@ -89,6 +89,12 @@ type EditorState = {
     isPublished: boolean;
     setIsPublished: (isPublished: boolean) => void;
 
+    showDocs: boolean;
+    docsMarkdown: string,
+
+    openDocs: (markdown: string) => void;
+    closeDocs: () => void;
+
     editingRouteVersions: { [routeId: string]: string };
     setEditingRouteVersion: (routeId: string, versionId: string) => void;
 
@@ -142,6 +148,19 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
     isPublished: false,
     setIsPublished: (isPublished) => set({isPublished: isPublished}),
+
+    showDocs: false,
+    docsMarkdown: '',
+
+    openDocs: (markdown: string) => set({
+        showDocs: true,
+        docsMarkdown: markdown,
+    }),
+
+    closeDocs: () => set({
+        showDocs: false,
+        docsMarkdown: '',
+    }),
 
     openForm: (
         type: FormType,

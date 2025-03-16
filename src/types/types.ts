@@ -117,13 +117,21 @@ export enum NodeJumpType {
 }
 
 export type Dock = {
-    field_enabled?: boolean;
-    field_secret?: boolean;
-    field_text_area?: boolean;
-    field_rich_text_area?: boolean;
-    field_code_editor?: boolean;
-    field_json_editor?: boolean;
+    has_dock?: boolean;
+    enabled?: boolean;
+    secret?: boolean;
+    text_area?: boolean;
+    rich_text_area?: boolean;
+    code_editor?: boolean;
+    json_editor?: boolean;
     select_values?: Record<string, string>;
+    switch?: boolean;
+    info?: string;
+    in_switch?: boolean;
+    out_switch?: boolean;
+    key_label?: string;
+    type_label?: string;
+    value_label?: string;
 };
 
 export type NodeVariable = {
@@ -186,6 +194,7 @@ export type Node = {
     id: string;
     service?: NodeService;
     icon?: string;
+    documentation?: string;
     handle: string;
     name: string;
     category: string;

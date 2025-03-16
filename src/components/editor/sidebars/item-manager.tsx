@@ -27,7 +27,9 @@ export default function ItemManager({
                 <SecretTree />
                 <ProjectVariableTree />
             </div>
-            <SidebarTenantHeader/>
+            <div className={'-mb-2'}>
+                <SidebarTenantHeader/>
+            </div>
         </div>
     );
 }

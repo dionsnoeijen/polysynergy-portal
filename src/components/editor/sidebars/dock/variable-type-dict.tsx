@@ -31,10 +31,10 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
                 <Table dense className={"bg-white/5"}>
                     <TableHead>
                         <TableRow>
-                            <TableHeader className="!py-1 !pl-2 !pr-2">in</TableHeader>
-                            <TableHeader className="!py-1">key</TableHeader>
-                            <TableHeader className="!py-1">value</TableHeader>
-                            <TableHeader className="!py-1 !pl-2 !pr-2">out</TableHeader>
+                            {!(variable.dock && variable.dock.in_switch === false) && <TableHeader className="!py-1 !pl-2 !pr-2">in</TableHeader>}
+                            <TableHeader className="!py-1">{variable.dock?.key_label || "key"}</TableHeader>
+                            <TableHeader className="!py-1">{variable.dock?.value_label || "value"}</TableHeader>
+                            {!(variable.dock && variable.dock.out_switch === false) && <TableHeader className="!py-1 !pl-2 !pr-2">out</TableHeader>}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -58,9 +58,9 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
                                 ) {
                                     return (
                                         <TableRow key={item.handle}>
-                                            <TableCell className="!p-1 !pl-2">
+                                            {!(variable.dock && variable.dock.in_switch === false) && <TableCell className="!p-1 !pl-2">
                                                 {item.has_in ? (<CheckCircleIcon className={"w-4 h-4"} />) : (<XCircleIcon className={'w-4 h-4'} />)}
-                                            </TableCell>
+                                            </TableCell>}
                                             <TableCell
                                                 className="!p-1 max-w-[100px] truncate overflow-hidden whitespace-nowrap"
                                                 title={item.handle}
@@ -73,9 +73,10 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
                                             >
                                                 {item.value?.toString()}
                                             </TableCell>
+                                            {!(variable.dock && variable.dock.out_switch === false) &&
                                             <TableCell className="!p-1 !pr-2">
                                                 {item.has_out ? (<CheckCircleIcon className={"w-4 h-4"}/>) : (<XCircleIcon className={'w-4 h-4'} />)}
-                                            </TableCell>
+                                            </TableCell>}
                                         </TableRow>
                                     );
                                 }

@@ -19,7 +19,9 @@ import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 import VariableTypeCode from "@/components/editor/sidebars/dock/variable-type-code";
 import NodeHandle from "@/components/editor/sidebars/dock/node-handle";
 import VariableTypeJson from "@/components/editor/sidebars/dock/variable-type-json";
-import { NodeVariable, NodeVariableType } from "@/types/types";
+import { Node, NodeVariable, NodeVariableType } from "@/types/types";
+import {Button} from "@/components/button";
+import {InformationCircleIcon} from "@heroicons/react/24/outline";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -47,8 +49,9 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const openGroup = useEditorStore((state) => state.openGroup);
     const nodes = useNodesStore((state) => state.nodes);
+    const openDocs = useEditorStore((state) => state.openDocs);
 
-    const node = selectedNodes.length === 1 ?
+    const node: Node | null | undefined = selectedNodes.length === 1 ?
         nodes.find((n) => n.id === selectedNodes[0]) : null;
 
     const { group, variablesForGroup } = useVariablesForGroup(
@@ -73,6 +76,12 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
             {node && <VariableGroup title={'Handle'}>
                 <NodeHandle node={node} />
             </VariableGroup>}
+
+            {node && node.documentation && (
+                <Button plain onClick={() => openDocs(node?.documentation as string)}>
+                    Documentation <InformationCircleIcon />
+                </Button>
+            )}
 
             {group && (
                 <>

@@ -6,6 +6,7 @@ import ItemManager from "@/components/editor/sidebars/item-manager";
 import Dock from "@/components/editor/sidebars/dock";
 import useEditorStore from "@/stores/editorStore";
 import Form from "@/components/editor/form";
+import Docs from "@/components/editor/docs";
 import SelectionsMenu from "@/components/editor/editormenus/selections-menu";
 import UndoRedoMenu from "@/components/editor/editormenus/undo-redo-menu";
 import BottomBar from "@/components/editor/bottombars/bottom-bar";
@@ -49,15 +50,14 @@ export function EditorLayout({
     const [dockClosed, setDockClosed] = useState(false);
     const [outputClosed, setOutputClosed] = useState(false);
 
-    const {
-        showForm,
-        setActiveProjectId,
-        setActiveRouteId,
-        setActiveScheduleId,
-        setActiveBlueprintId,
-        activeVersionId,
-        closeFormMessage
-    } = useEditorStore();
+    const showForm = useEditorStore((state) => state.showForm);
+    const showDocs = useEditorStore((state) => state.showDocs);
+    const setActiveProjectId = useEditorStore((state) => state.setActiveProjectId);
+    const setActiveRouteId = useEditorStore((state) => state.setActiveRouteId);
+    const setActiveScheduleId = useEditorStore((state) => state.setActiveScheduleId);
+    const setActiveBlueprintId = useEditorStore((state) => state.setActiveBlueprintId);
+    const activeVersionId = useEditorStore((state) => state.activeVersionId);
+    const closeFormMessage = useEditorStore((state) => state.closeFormMessage);
 
     useEffect(() => {
         setHeight({horizontalEditorLayout: window.innerHeight * 0.85});
@@ -203,7 +203,9 @@ export function EditorLayout({
                         className={`absolute top-[10px] left-0 right-0 bottom-0 overflow-scroll border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {showForm ? (
-                            <Form/>
+                            <Form />
+                        ) : showDocs ? (
+                            <Docs />
                         ) : (
                             projectUuid && (routeUuid || scheduleUuid || blueprintUuid) ? (
                                 activeVersionId ? (

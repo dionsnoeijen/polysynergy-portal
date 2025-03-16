@@ -142,7 +142,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                 <PlayButton disabled={node.view.disabled} nodeId={node.id} collapsed={true} />
             ) : (
                 node?.icon ? (
-                    <NodeIcon icon={node.icon} className={'max-w-10 max-h-10'}/>
+                    <NodeIcon icon={node.icon} className={'text-white w-10 h-10 max-w-10 max-h-10'}/>
                 ) : (
                     <GlobeAltIcon className={'w-10 h-10'}/>
                 )

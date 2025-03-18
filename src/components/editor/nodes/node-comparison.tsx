@@ -83,7 +83,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 handle={NodeVariableType.TruePath}
                 className={`-translate-y-5 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
-                nodeVariableType={NodeVariableType.TruePath}
+                nodeVariableType={[NodeVariableType.TruePath, NodeVariableType.Number, NodeVariableType.String]}
             />
             <Connector
                 out
@@ -91,7 +91,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 handle={NodeVariableType.FalsePath}
                 className={`translate-y-2 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
-                nodeVariableType={NodeVariableType.FalsePath}
+                nodeVariableType={[NodeVariableType.FalsePath, NodeVariableType.Number, NodeVariableType.String]}
             />
         </div>
     );

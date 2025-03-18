@@ -33,9 +33,9 @@ export const useConnectorHandlers = (
     const activeConnectorVariableTypeRef = useRef<string | null>(null);
 
     const dimConnectors = () => {
-        const activeTypes = Array.isArray(activeConnectorVariableTypeRef.current)
-            ? activeConnectorVariableTypeRef.current
-            : [activeConnectorVariableTypeRef.current];
+        const activeTypes = activeConnectorVariableTypeRef.current
+            ? activeConnectorVariableTypeRef.current.split(',')
+            : [];
 
         const invalidInConnectors = [...document.querySelectorAll(`[data-type="in"][data-node-id]`)]
             .filter((el) => {
@@ -114,13 +114,15 @@ export const useConnectorHandlers = (
                 const targetNodeId = !isGroup ?
                     target.getAttribute("data-node-id") as string :
                     target.getAttribute("data-group-id") as string;
-                // Check: target mag niet gelijk zijn aan de source
+
                 if (targetNodeId === existingConnection.sourceNodeId) {
                     removeConnectionById(existingConnection.id);
                     setIsDrawingConnection("");
                     return;
                 }
                 const targetHandle = target.getAttribute("data-handle") as string;
+
+                console.log('TARGET HANDLE', targetHandle);
 
                 const nodeGroupTarget = target.closest('[data-type="closed-group"]');
                 const connection = getConnection(existingConnection.id);
@@ -221,9 +223,9 @@ export const useConnectorHandlers = (
                 if (variableType !== null && activeConnectorVariableTypeRef.current !== null) {
                     const variableTypesArray = variableType.split(",");
 
-                    const activeTypes = Array.isArray(activeConnectorVariableTypeRef.current)
-                        ? activeConnectorVariableTypeRef.current
-                        : [activeConnectorVariableTypeRef.current];
+                    const activeTypes = activeConnectorVariableTypeRef.current
+                        ? activeConnectorVariableTypeRef.current.split(',')
+                        : [];
 
                     const hasMatch = variableTypesArray.some(type => activeTypes.includes(type));
 

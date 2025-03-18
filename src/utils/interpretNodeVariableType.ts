@@ -3,9 +3,8 @@ import {NodeVariable, NodeVariableType} from "@/types/types";
 export default function interpretNodeVariableType(variable: NodeVariable): { baseType: NodeVariableType; containsNone: boolean } {
     const types = variable.type.split('|').map((type) => type.trim());
     const containsNone = types.includes('None');
-    if (types.includes('int') || types.includes('float') || types.includes('number')) {
-        return { baseType: NodeVariableType.Number, containsNone };
-    } else if (types.includes('str') || types.includes('string')) {
+
+    if (types.includes('str') || types.includes('string')) {
         if (variable.dock) {
             if (variable?.dock.secret) {
                 return {baseType: NodeVariableType.SecretString, containsNone};
@@ -23,11 +22,11 @@ export default function interpretNodeVariableType(variable: NodeVariable): { bas
                 return {baseType: NodeVariableType.Json, containsNone};
             }
         }
-        return { baseType: NodeVariableType.String, containsNone };
+        return {baseType: NodeVariableType.String, containsNone};
+    } else if (types.includes('int') || types.includes('float') || types.includes('number')) {
+        return { baseType: NodeVariableType.Number, containsNone };
     } else if (types.includes('bytes')) {
         return { baseType: NodeVariableType.Bytes, containsNone };
-    } else if (types.includes('bool')) {
-        return { baseType: NodeVariableType.Boolean, containsNone };
     } else if (types.includes('dict')) {
         return { baseType: NodeVariableType.Dict, containsNone };
     } else if (types.includes('list')) {
@@ -38,6 +37,8 @@ export default function interpretNodeVariableType(variable: NodeVariable): { bas
         return { baseType: NodeVariableType.TruePath, containsNone };
     } else if (types.includes('false_path')) {
         return { baseType: NodeVariableType.FalsePath, containsNone };
+    } else if (types.includes('bool')) {
+        return { baseType: NodeVariableType.Boolean, containsNone };
     }
 
     return { baseType: NodeVariableType.Unknown, containsNone };

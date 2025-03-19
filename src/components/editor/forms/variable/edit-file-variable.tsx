@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {Dock, NodeVariable, NodeVariableType} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
-import {Fieldset, Label} from "@/components/fieldset";
+import {Fieldset} from "@/components/fieldset";
 import {Subheading} from "@/components/heading";
 import {Button} from "@/components/button";
 import {PlusIcon, TrashIcon} from "@heroicons/react/24/outline";

@@ -3,7 +3,7 @@ import {Fieldset, Label} from "@/components/fieldset";
 import {Subheading} from "@/components/heading";
 
 const SvgSelector = ({onSelect}: {onSelect: (url: string) => void}) => {
-    const [svgContent, setSvgContent] = useState<string | null>(null); // SVG content from upload
+    const [svgContent, setSvgContent] = useState<string | null>(null);
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];

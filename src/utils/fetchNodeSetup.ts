@@ -4,20 +4,23 @@ import useEditorStore from "@/stores/editorStore";
 import { fetchDynamicRoute as fetchDynamicRouteAPI } from "@/api/dynamicRoutesApi";
 import { fetchBlueprint as fetchBlueprintAPI } from "@/api/blueprintApi";
 import { fetchSchedule as fetchScheduleAPI } from "@/api/schedulesApi";
+import { fetchConfig } from "@/api/configsApi";
 import {NodeSetupVersion, Route} from "@/types/types";
 
 async function fetchAndApplyNodeSetup({
     routeId = null,
     scheduleId = null,
     blueprintId = null,
+    configId = null,
     versionId = null,
 }: {
     routeId?: string | null;
     scheduleId?: string | null;
     blueprintId?: string | null;
+    configId?: string | null;
     versionId?: string | null;
 }) {
-    if (!routeId && !scheduleId && !blueprintId) return;
+    if (!routeId && !scheduleId && !blueprintId && !configId) return;
 
     let version = null;
 
@@ -44,6 +47,10 @@ async function fetchAndApplyNodeSetup({
         if (blueprintId) {
             const blueprint = await fetchBlueprintAPI(blueprintId);
             version = getVersion(blueprint?.node_setup?.versions);
+        }
+        if (configId) {
+            const config = await fetchConfig(configId);
+            version = getVersion(config?.node_setup?.versions);
         }
 
         useEditorStore.getState().setIsDraft(version?.draft ?? false);

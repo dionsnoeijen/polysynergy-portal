@@ -24,7 +24,7 @@ export const updateNodeSetupVersionAPI = async (
     setupId: string,
     versionId: string,
     content: Record<StoreName, State>,
-    type: "route" | "schedule" | "blueprint"
+    type: "route" | "schedule" | "blueprint" | "config"
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(

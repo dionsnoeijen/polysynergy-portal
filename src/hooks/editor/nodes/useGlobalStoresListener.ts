@@ -11,6 +11,7 @@ export default function useGlobalStoreListenersWithImmediateSave() {
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
     const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
     const activeBlueprintId = useEditorStore((state) => state.activeBlueprintId);
+    const activeConfigId = useEditorStore((state) => state.activeConfigId);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const setIsSaving = useEditorStore((state) => state.setIsSaving);
     const debounceInterval = 3000;
@@ -34,7 +35,7 @@ export default function useGlobalStoreListenersWithImmediateSave() {
         try {
             isSaving = true;
 
-            const { activeRouteId, activeScheduleId, activeBlueprintId, activeVersionId } = useEditorStore.getState();
+            const { activeRouteId, activeScheduleId, activeBlueprintId, activeVersionId, activeConfigId } = useEditorStore.getState();
 
             if (!activeVersionId) return;
 
@@ -64,6 +65,16 @@ export default function useGlobalStoreListenersWithImmediateSave() {
                     'blueprint'
                 );
             }
+
+            if (activeConfigId) {
+                await updateNodeSetupVersionAPI(
+                    activeConfigId,
+                    activeVersionId,
+                    latestStates,
+                    'config'
+                );
+            }
+
             setIsSaving(false);
 
         } catch (error) {
@@ -98,10 +109,10 @@ export default function useGlobalStoreListenersWithImmediateSave() {
             cancelSave();
         };
     // eslint-disable-next-line
-    }, [activeRouteId, activeVersionId, activeScheduleId, activeBlueprintId]);
+    }, [activeRouteId, activeVersionId, activeScheduleId, activeBlueprintId, activeConfigId]);
 
     useEffect(() => {
         cancelSave();
     // eslint-disable-next-line
-    }, [activeVersionId, activeRouteId, activeScheduleId, activeBlueprintId]);
+    }, [activeVersionId, activeRouteId, activeScheduleId, activeBlueprintId, activeConfigId]);
 }

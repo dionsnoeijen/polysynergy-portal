@@ -8,6 +8,7 @@ import ServiceTree from "@/components/editor/sidebars/trees/service-tree";
 import BlueprintTree from "@/components/editor/sidebars/blueprints/blueprint-tree";
 import ProjectVariableTree from "@/components/editor/sidebars/trees/project-variable-tree";
 import SecretTree from "@/components/editor/sidebars/trees/secret-tree";
+import ConfigTree from "@/components/editor/sidebars/trees/config-tree";
 
 export default function ItemManager({
                                         className,
@@ -23,6 +24,7 @@ export default function ItemManager({
                 <RouteTree />
                 <ScheduleTree />
                 <BlueprintTree />
+                <ConfigTree />
                 <ServiceTree />
                 <SecretTree />
                 <ProjectVariableTree />

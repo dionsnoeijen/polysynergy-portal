@@ -26,11 +26,13 @@ export function EditorLayout({
     routeUuid,
     scheduleUuid,
     blueprintUuid,
+    configUuid,
 }: {
     projectUuid?: string,
     routeUuid?: string,
     scheduleUuid?: string,
     blueprintUuid?: string,
+    configUuid?: string,
 }) {
 
     enum ResizeWhat {
@@ -56,6 +58,7 @@ export function EditorLayout({
     const setActiveRouteId = useEditorStore((state) => state.setActiveRouteId);
     const setActiveScheduleId = useEditorStore((state) => state.setActiveScheduleId);
     const setActiveBlueprintId = useEditorStore((state) => state.setActiveBlueprintId);
+    const setActiveConfigId = useEditorStore((state) => state.setActiveConfigId);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const closeFormMessage = useEditorStore((state) => state.closeFormMessage);
 
@@ -69,20 +72,30 @@ export function EditorLayout({
         if (routeUuid) {
             setActiveBlueprintId('');
             setActiveScheduleId('');
+            setActiveConfigId('');
             setActiveRouteId(routeUuid);
             fetchAndApplyNodeSetup({routeId: routeUuid});
         }
         if (scheduleUuid) {
             setActiveRouteId('');
             setActiveBlueprintId('');
+            setActiveConfigId('');
             setActiveScheduleId(scheduleUuid);
             fetchAndApplyNodeSetup({scheduleId: scheduleUuid});
         }
         if (blueprintUuid) {
             setActiveRouteId('');
             setActiveScheduleId('');
+            setActiveConfigId('');
             setActiveBlueprintId(blueprintUuid);
             fetchAndApplyNodeSetup({blueprintId: blueprintUuid});
+        }
+        if (configUuid) {
+            setActiveRouteId('');
+            setActiveBlueprintId('');
+            setActiveScheduleId('');
+            setActiveConfigId(configUuid);
+            fetchAndApplyNodeSetup({configId: configUuid});
         }
 
         const handleResize = () => {
@@ -92,7 +105,7 @@ export function EditorLayout({
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [projectUuid, routeUuid, scheduleUuid, blueprintUuid, fetchAvailableNodes, setActiveProjectId, setActiveBlueprintId, setActiveScheduleId, setActiveRouteId]);
+    }, [configUuid, projectUuid, routeUuid, scheduleUuid, blueprintUuid, fetchAvailableNodes, setActiveProjectId, setActiveBlueprintId, setActiveScheduleId, setActiveRouteId, setActiveConfigId]);
 
 
     const startResizing = useCallback((resizeWhat: ResizeWhat) => {
@@ -207,7 +220,7 @@ export function EditorLayout({
                         ) : showDocs ? (
                             <Docs />
                         ) : (
-                            projectUuid && (routeUuid || scheduleUuid || blueprintUuid) ? (
+                            projectUuid && (routeUuid || scheduleUuid || blueprintUuid || configUuid) ? (
                                 activeVersionId ? (
                                     <>
                                         <Editor key={'editor-' + activeVersionId} />

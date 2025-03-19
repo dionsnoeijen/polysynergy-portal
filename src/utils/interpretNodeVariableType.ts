@@ -28,6 +28,11 @@ export default function interpretNodeVariableType(variable: NodeVariable): { bas
     } else if (types.includes('bytes')) {
         return { baseType: NodeVariableType.Bytes, containsNone };
     } else if (types.includes('dict')) {
+        if (variable?.dock) {
+            if (variable?.dock?.files_editor) {
+                return { baseType: NodeVariableType.Files, containsNone }
+            }
+        }
         return { baseType: NodeVariableType.Dict, containsNone };
     } else if (types.includes('list')) {
         return { baseType: NodeVariableType.List, containsNone };

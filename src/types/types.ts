@@ -46,6 +46,7 @@ export enum FormType {
     EditNode = 'editNode',
     AddNode = 'addNewNode',
     EditJson = 'editJson',
+    EditFiles = 'editFiles',
     PlaceService = 'placeService',
     PlaceBlueprint = 'placeBlueprint',
     AddProjectVariable = 'addProjectVariable',
@@ -53,6 +54,9 @@ export enum FormType {
     AddProjectSecret = 'addProjectSecret',
     EditProjectSecret = 'editProjectSecret',
     ProjectPublish = 'projectPublish',
+    EditConfig = 'editConfig',
+    AddConfig = 'addConfig',
+    PlaceConfig = 'placeConfig',
 }
 
 export enum InOut {
@@ -85,6 +89,7 @@ export enum NodeVariableType {
     RichTextArea = 'richtextarea',
     Code = 'code',
     Json = 'json',
+    Files = 'files',
 }
 
 export enum NodeType {
@@ -124,6 +129,7 @@ export type Dock = {
     rich_text_area?: boolean;
     code_editor?: boolean;
     json_editor?: boolean;
+    files_editor?: boolean;
     select_values?: Record<string, string>;
     switch?: boolean;
     info?: string;
@@ -247,6 +253,14 @@ export type Blueprint = {
     node_setup?: NodeSetup;
     project_ids?: string[];
 };
+
+export type Config = {
+    id?: string;
+    name: string;
+    metadata: Metadata;
+    node_setup?: NodeSetup;
+    project_ids?: string[];
+}
 
 export type Service = {
     id?: string;

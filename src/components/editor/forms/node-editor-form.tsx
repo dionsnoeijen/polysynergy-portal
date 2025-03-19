@@ -96,16 +96,15 @@ const NodeEditorForm: React.FC = () => {
             setCode(node.code);
             setNode(node);
         } else {
-            // Reset naar default als er geen formEditRecordId is
             setCode(`# @todo, add a default code snippet here`);
         }
-    }, [formEditRecordId, getNode]); // 🔥 Deze `useEffect` draait alleen als de node moet worden opgehaald
+    }, [formEditRecordId, getNode]);
 
     useEffect(() => {
         if (code) {
-            handleEditorChange(code); // 🔥 Voer pas uit als `code` correct is ingesteld
+            handleEditorChange(code);
         }
-    }, [code]); // 🔥 Deze `useEffect` wordt alleen uitgevoerd als `code` wijzigt
+    }, [code]);
 
     return (
         <form onSubmit={handleSubmit} method="post">

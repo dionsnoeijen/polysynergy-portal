@@ -73,6 +73,8 @@ type EditorState = {
     setActiveScheduleId: (scheduleId: string) => void;
     activeServiceId: string;
     setActiveServiceId: (serviceId: string) => void;
+    activeConfigId: string;
+    setActiveConfigId: (configId: string) => void;
     activeBlueprintId: string;
     setActiveBlueprintId: (blueprintId: string) => void;
     activeVersionId?: string;
@@ -133,6 +135,8 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setActiveScheduleId: (scheduleId: string) => set({activeScheduleId: scheduleId}),
     activeServiceId: '',
     setActiveServiceId: (serviceId: string) => set({activeServiceId: serviceId}),
+    activeConfigId: '',
+    setActiveConfigId: (configId: string) => set({activeConfigId: configId}),
     activeBlueprintId: '',
     setActiveBlueprintId: (blueprintId: string) => set({activeBlueprintId: blueprintId}),
     activeVersionId: '',

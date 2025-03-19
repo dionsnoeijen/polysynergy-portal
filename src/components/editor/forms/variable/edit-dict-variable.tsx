@@ -40,10 +40,10 @@ const EditDictVariable: React.FC<Props> = ({
         value: string | boolean | NodeVariableType
     ) => {
         const updatedVariables = [...variables];
-        console.log(key);
         if (key === "handle") {
-            const validValue = (value as string).replace(/[^a-z-_]/g, '');
-            updatedVariables[index] = {...updatedVariables[index], [key]: validValue};
+            // @todo: Make optional
+            // const validValue = (value as string).replace(/[^a-z-_]/g, '');
+            updatedVariables[index] = {...updatedVariables[index], [key]: value as string};
         } else {
             updatedVariables[index] = {...updatedVariables[index], [key]: value};
         }
@@ -59,7 +59,7 @@ const EditDictVariable: React.FC<Props> = ({
             has_out: false,
             published: false,
         });
-        onChange([...variables, newVariable], handle); // Stuur handle mee
+        onChange([...variables, newVariable], handle);
     };
 
     const removeVariable = (index: number) => {

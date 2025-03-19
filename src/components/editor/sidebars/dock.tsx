@@ -22,6 +22,7 @@ import VariableTypeJson from "@/components/editor/sidebars/dock/variable-type-js
 import { Node, NodeVariable, NodeVariableType } from "@/types/types";
 import {Button} from "@/components/button";
 import {InformationCircleIcon} from "@heroicons/react/24/outline";
+import VariableTypeFiles from "@/components/editor/sidebars/dock/variable-type-files";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -42,7 +43,8 @@ export const VariableTypeComponents = {
     [NodeVariableType.TextArea]: VariableTypeTextArea,
     [NodeVariableType.RichTextArea]: VariableTypeRichTextArea,
     [NodeVariableType.Code]: VariableTypeCode,
-    [NodeVariableType.Json]: VariableTypeJson
+    [NodeVariableType.Json]: VariableTypeJson,
+    [NodeVariableType.Files]: VariableTypeFiles,
 };
 
 const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {

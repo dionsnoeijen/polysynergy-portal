@@ -14,6 +14,8 @@ import PlaceBlueprintForm from "@/components/editor/forms/place-blueprint-form";
 import ProjectVariablesForm from "@/components/editor/forms/project-variables-form";
 import ProjectSecretsForm from "@/components/editor/forms/project-secrets-form";
 import ProjectPublishForm from "@/components/editor/forms/project-publish-form";
+import ConfigForm from "@/components/editor/forms/config-form";
+import FileEditorForm from "@/components/editor/forms/file-editor-form";
 
 const Form: React.FC = () => {
     const { formType } = useEditorStore();
@@ -51,6 +53,12 @@ const Form: React.FC = () => {
                 <BlueprintForm />
             )}
             {(
+                formType === FormType.AddConfig ||
+                formType === FormType.EditConfig
+            ) && (
+                <ConfigForm />
+            )}
+            {(
                 formType === FormType.AddNode ||
                 formType === FormType.EditNode
             ) && (
@@ -58,6 +66,9 @@ const Form: React.FC = () => {
             )}
             {(formType === FormType.EditJson) && (
                 <JsonEditorForm />
+            )}
+            {(formType === FormType.EditFiles) && (
+                <FileEditorForm />
             )}
             {(formType === FormType.PlaceService) && (
                 <PlaceServiceForm />

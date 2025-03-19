@@ -1,29 +1,27 @@
-import React, { useEffect, useState } from "react";
-import useEditorStore from "@/stores/editorStore";
-import useNodesStore from "@/stores/nodesStore";
-
-import {Divider} from "@/components/divider";
-import {Button} from "@/components/button";
+import React, {useEffect, useState} from "react";
+import EditFileVariable from "@/components/editor/forms/variable/edit-file-variable";
 import {FormType, Node, NodeVariable} from "@/types/types";
+import useEditorStore from "@/stores/editorStore";
+import {Button} from "@/components/button";
+import useNodesStore from "@/stores/nodesStore";
 import {Heading} from "@/components/heading";
+import {Divider} from "@/components/divider";
 
-import EditDictVariable from "@/components/editor/forms/variable/edit-dict-variable";
-
-const DictVariableForm: React.FC = () => {
+const FileEditorForm: React.FC = () => {
     const getNode = useNodesStore((state) => state.getNode);
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
-    const closeForm = useEditorStore((state) => state.closeForm);
     const formEditVariable = useEditorStore((state) => state.formEditVariable);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+    const closeForm = useEditorStore((state) => state.closeForm);
     const formType = useEditorStore((state) => state.formType);
 
-    const [variables, setVariables] = useState<NodeVariable[]>(formEditVariable?.value as NodeVariable[] || []);
+    const [files, setFiles] = useState<NodeVariable[]>(formEditVariable?.value as NodeVariable[] || []);
     const [node, setNode] = useState<Node>();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!formEditRecordId || !formEditVariable) return;
-        updateNodeVariable(formEditRecordId, formEditVariable?.handle, variables);
+        updateNodeVariable(formEditRecordId, formEditVariable?.handle, files);
         closeForm();
     };
 
@@ -38,7 +36,7 @@ const DictVariableForm: React.FC = () => {
 
             <Divider className="my-10" soft bleed />
 
-            <EditDictVariable title="Array values" dock={formEditVariable?.dock} variables={variables} onChange={setVariables} />
+            <EditFileVariable title={'Files'} files={files} onChange={setFiles} dock={formEditVariable?.dock} />
 
             <Divider className="my-10" soft bleed />
 
@@ -47,11 +45,11 @@ const DictVariableForm: React.FC = () => {
                     Cancel
                 </Button>
                 <Button type="submit">
-                    { formType === FormType.EditDict && "Save dictionary" }
+                    { formType === FormType.EditFiles && "Save files" }
                 </Button>
             </div>
         </form>
     );
-};
+}
 
-export default DictVariableForm;
+export default FileEditorForm;

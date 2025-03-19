@@ -1,11 +1,9 @@
 'use client'
 
-import { Avatar } from '@/components/avatar'
 import {
     Dropdown,
-    DropdownButton,
 } from '@/components/dropdown'
-import { Navbar, NavbarItem, NavbarSection, NavbarSpacer } from '@/components/navbar'
+import { Navbar, NavbarSection, NavbarSpacer } from '@/components/navbar'
 import {
     Sidebar,
     SidebarBody,

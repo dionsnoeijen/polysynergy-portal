@@ -17,7 +17,7 @@ type Props = {
     isMirror?: boolean;
 };
 
-const DictVariable: React.FC<Props> = ({
+const FileVariable: React.FC<Props> = ({
    variable,
    isOpen,
    onToggle,
@@ -124,4 +124,4 @@ const DictVariable: React.FC<Props> = ({
     </>
 };
 
-export default DictVariable;
+export default FileVariable;

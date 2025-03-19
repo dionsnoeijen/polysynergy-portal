@@ -2,8 +2,8 @@ import React, {useEffect, useState} from "react";
 import EditFileVariable from "@/components/editor/forms/variable/edit-file-variable";
 import {FormType, Node, NodeVariable} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
-import {Button} from "@/components/button";
 import useNodesStore from "@/stores/nodesStore";
+import {Button} from "@/components/button";
 import {Heading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 

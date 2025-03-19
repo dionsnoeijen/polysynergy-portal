@@ -31,25 +31,9 @@ const EditFileVariable: React.FC<Props> = ({
         type: NodeVariableType.String,
         value: "",
         has_in: false,
-        has_out: false,
+        has_out: true,
         published: false,
     });
-
-    const updateFile = (
-        index: number,
-        key: keyof NodeVariable,
-        value: string | boolean | NodeVariableType
-    ) => {
-        const updatedVariables = [...files];
-        if (key === "handle") {
-            // @todo: Make optional
-            // const validValue = (value as string).replace(/[^a-z-_]/g, '');
-            updatedVariables[index] = {...updatedVariables[index], [key]: value as string};
-        } else {
-            updatedVariables[index] = {...updatedVariables[index], [key]: value};
-        }
-        onChange(updatedVariables, handle);
-    };
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
         if (!event.target.files || event.target.files.length === 0) return;
@@ -88,7 +72,7 @@ const EditFileVariable: React.FC<Props> = ({
             type: NodeVariableType.String,
             value: "",
             has_in: false,
-            has_out: false,
+            has_out: true,
             published: false,
         });
         onChange([...files, newFile], handle);

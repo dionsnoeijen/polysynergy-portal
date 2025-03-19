@@ -14,6 +14,7 @@ import RichTextAreaVariable from "@/components/editor/nodes/rows/rich-text-area-
 import BooleanVariable from "@/components/editor/nodes/rows/boolean-variable";
 import useNodesStore from "@/stores/nodesStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
+import FileVariable from "@/components/editor/nodes/rows/file-variable";
 
 type Props = {
     node: Node;
@@ -112,6 +113,8 @@ const getVariableComponent = (
             return <TextAreaVariable key={key} {...commonProps} />;
         case NodeVariableType.RichTextArea:
             return <RichTextAreaVariable key={key} {...commonProps} />;
+        case NodeVariableType.Files:
+            return <FileVariable key={key} {...commonProps} />;
         case NodeVariableType.Boolean:
         case NodeVariableType.TruePath:
         case NodeVariableType.FalsePath:

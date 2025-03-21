@@ -44,6 +44,8 @@ export default function interpretNodeVariableType(variable: NodeVariable): { bas
         return { baseType: NodeVariableType.FalsePath, containsNone };
     } else if (types.includes('bool')) {
         return { baseType: NodeVariableType.Boolean, containsNone };
+    } else if (types.some((type) => type.startsWith('nodes.nodes'))) {
+        return { baseType: NodeVariableType.Dependency, containsNone };
     }
 
     return { baseType: NodeVariableType.Unknown, containsNone };

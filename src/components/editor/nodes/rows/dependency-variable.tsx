@@ -1,6 +1,6 @@
 import React from "react";
 import { NodeVariable } from "@/types/types";
-import {CodeBracketIcon} from "@heroicons/react/24/outline";
+import {DocumentTextIcon, ForwardIcon} from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
@@ -15,7 +15,7 @@ type Props = {
     isMirror?: boolean;
 };
 
-const JsonVariable: React.FC<Props> = ({
+const DependencyVariable: React.FC<Props> = ({
     variable,
     nodeId,
     onlyIn = false,
@@ -34,11 +34,11 @@ const JsonVariable: React.FC<Props> = ({
             handle={variable.handle}
             disabled={disabled}
             groupId={groupId}
-            nodeVariableType={interpretNodeVariableType(variable).baseType + ',' + 'string'}
+            nodeVariableType={interpretNodeVariableType(variable).baseType}
         />}
         <div className="flex items-center truncate">
             <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
-            <CodeBracketIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
+            <ForwardIcon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400" />
             <span className="ml-1">{variable.value as string}</span>
         </div>
         {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
@@ -47,7 +47,7 @@ const JsonVariable: React.FC<Props> = ({
             handle={variable.handle}
             disabled={disabled}
             groupId={groupId}
-            nodeVariableType={interpretNodeVariableType(variable).baseType + ',' + 'string'}
+            nodeVariableType={interpretNodeVariableType(variable).baseType}
         />}
         {variable.has_out && isMirror && !onlyIn && (
             <FakeConnector out />
@@ -55,4 +55,4 @@ const JsonVariable: React.FC<Props> = ({
     </div>
 );
 
-export default JsonVariable;
+export default DependencyVariable;

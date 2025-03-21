@@ -39,6 +39,9 @@ const Connector: React.FC<ConnectorProps> = ({
     } else if (nodeVariableType === NodeVariableType.FalsePath) {
         backgroundClasses = "ring-white dark:ring-white bg-red-400 dark:bg-red-400";
         iconColorClasses = "text-zinc-800 dark:text-zinc-800";
+    } else if (nodeVariableType === NodeVariableType.Dependency) {
+        backgroundClasses = "ring-white dark:ring-white bg-fuchsia-400 dark:bg-fuchsia-400";
+        iconColorClasses = "text-zinc-800 dark:text-zinc-800";
     } else {
         backgroundClasses = "ring-sky-500 dark:ring-white bg-white dark:bg-zinc-800";
         iconColorClasses = "text-sky-600 dark:text-white";

@@ -15,14 +15,14 @@ const PlayButton: React.FC<Props> = ({
     disabled = false,
     collapsed = false,
 }: Props) => {
-    const { activeVersionId } = useEditorStore();
+    const { activeVersionId, activeProjectId } = useEditorStore();
     const { setMockConnections, setMockNodes } = useMockStore();
 
     const handlePlay = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
         if (activeVersionId) {
-            const response = await runMockApi(activeVersionId, nodeId);
+            const response = await runMockApi(activeProjectId, activeVersionId, nodeId);
             const data = await response.json();
             const result = JSON.parse(data.result.body);
             setMockConnections(result.connections);

@@ -90,6 +90,7 @@ export enum NodeVariableType {
     Code = 'code',
     Json = 'json',
     Files = 'files',
+    Dependency = 'dependency'
 }
 
 export enum NodeType {
@@ -152,6 +153,7 @@ export type NodeVariable = {
     has_in?: boolean;
     has_out?: boolean;
     out_type_override?: string;
+    in_type_override?: string;
     dock?: Dock;
 };
 

@@ -39,6 +39,7 @@ export const VariableTypeComponents = {
     [NodeVariableType.TruePath]: null,
     [NodeVariableType.FalsePath]: null,
     [NodeVariableType.Unknown]: null,
+    [NodeVariableType.Dependency]: null,
     [NodeVariableType.SecretString]: VariableTypeSecretString,
     [NodeVariableType.TextArea]: VariableTypeTextArea,
     [NodeVariableType.RichTextArea]: VariableTypeRichTextArea,

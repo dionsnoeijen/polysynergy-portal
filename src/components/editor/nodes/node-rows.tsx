@@ -80,7 +80,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                         <Connector in
                             nodeId={node.id}
                             handle={NodeEnabledConnector.Node}
-                            nodeVariableType={[NodeVariableType.TruePath, NodeVariableType.FalsePath]}
+                            nodeVariableType={[NodeVariableType.TruePath, NodeVariableType.FalsePath].join(',')}
                         />
                         <ThreeWaySwitch disabled={preview} node={node}/>
                     </>

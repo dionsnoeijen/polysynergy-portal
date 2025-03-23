@@ -74,7 +74,7 @@ export type Position = {
 };
 
 export enum NodeVariableType {
-    String = 'string',
+    String = 'str',
     Bytes = 'bytes',
     Number = 'number',
     Dict = 'dict',
@@ -101,6 +101,7 @@ export enum NodeType {
     Mock = 'mock',
     Note = 'note',
     Jump = 'jump',
+    Flow = 'flow',
 }
 
 export enum NodeComparisonType {

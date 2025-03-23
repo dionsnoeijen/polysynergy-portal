@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import {Dock, NodeVariable, NodeVariableType} from "@/types/types";
+import React from "react";
+import {Dock} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {Fieldset} from "@/components/fieldset";
 import {Subheading} from "@/components/heading";
@@ -10,8 +10,8 @@ import useEditorStore from "@/stores/editorStore";
 
 type Props = {
     title: string;
-    files: NodeVariable[];
-    onChange: (updatedVariables: NodeVariable[], handle?: string) => void;
+    files: string[];
+    onChange: (updatedVariables: string[], handle?: string) => void;
     handle?: string;
     dock?: Dock;
 };
@@ -25,15 +25,6 @@ const EditFileVariable: React.FC<Props> = ({
 }) => {
 
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
-
-    const [newFile, setNewFile] = useState<NodeVariable>({
-        handle: "",
-        type: NodeVariableType.String,
-        value: "",
-        has_in: false,
-        has_out: true,
-        published: false,
-    });
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
         if (!event.target.files || event.target.files.length === 0) return;
@@ -57,7 +48,7 @@ const EditFileVariable: React.FC<Props> = ({
                 console.error("Upload failed:", response.error);
             } else {
                 const updatedFiles = files.map((f, i) =>
-                    i === index ? { ...f, value: response.file, handle: file.name } : f
+                    i === index ? response.file : f
                 );
                 onChange(updatedFiles, handle);
             }
@@ -67,15 +58,7 @@ const EditFileVariable: React.FC<Props> = ({
     };
 
     const addFile = () => {
-        setNewFile({
-            handle: "",
-            type: NodeVariableType.String,
-            value: "",
-            has_in: false,
-            has_out: true,
-            published: false,
-        });
-        onChange([...files, newFile], handle);
+        onChange([...files, ""], handle);
     };
 
     const removeFile = (index: number) => {
@@ -116,7 +99,7 @@ const EditFileVariable: React.FC<Props> = ({
                                 </Fieldset>
                             </TableCell>
                             <TableCell>
-                                {file.value as string}
+                                {file as string}
                             </TableCell>
                             <TableCell>
                                 <Button plain onClick={() => removeFile(index)}>

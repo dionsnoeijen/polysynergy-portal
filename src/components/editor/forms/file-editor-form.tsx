@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import EditFileVariable from "@/components/editor/forms/variable/edit-file-variable";
-import {FormType, Node, NodeVariable} from "@/types/types";
+import {FormType, Node} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import {Button} from "@/components/button";
@@ -15,7 +15,7 @@ const FileEditorForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
     const formType = useEditorStore((state) => state.formType);
 
-    const [files, setFiles] = useState<NodeVariable[]>(formEditVariable?.value as NodeVariable[] || []);
+    const [files, setFiles] = useState<string[]>(formEditVariable?.value as string[] || []);
     const [node, setNode] = useState<Node>();
 
     const handleSubmit = (e: React.FormEvent) => {

@@ -21,9 +21,9 @@ const useNodeColor = (
             classList += " ring-2 ring-red-500 dark:ring-red-500";
         } else {
             if (isSelected) {
-                classList += " ring-2 shadow-2xl";
+                classList += " ring-4 shadow-2xl";
             } else {
-                classList += " ring ring-1";
+                classList += " ring ring-2";
             }
 
             if (node.service?.id || isNodeInService) {
@@ -38,6 +38,10 @@ const useNodeColor = (
                         break;
                     case NodeType.Group:
                         classList += " ring-green-200 dark:ring-green-200";
+                        break;
+                    case NodeType.Flow:
+                    case NodeType.Jump:
+                        classList += " ring-pink-700 dark:ring-pink-700";
                         break;
                     default:
                         classList += " ring-sky-500 dark:ring-sky-500";

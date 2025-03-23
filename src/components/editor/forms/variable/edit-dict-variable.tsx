@@ -113,6 +113,8 @@ const EditDictVariable: React.FC<Props> = ({
                                         <option value={NodeVariableType.String}>String</option>
                                         <option value={NodeVariableType.Number}>Number</option>
                                         <option value={NodeVariableType.Boolean}>Boolean</option>
+                                        <option value={NodeVariableType.List}>List</option>
+                                        <option value={NodeVariableType.Dict}>Dict</option>
                                     </Select>
                                 </TableCell>
                                 <TableCell>

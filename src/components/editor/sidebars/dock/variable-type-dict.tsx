@@ -50,14 +50,16 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
                         }
 
                         {isArray &&
-                            (variable.value as NodeVariable[]).map((item) => {
+                            (variable.value as NodeVariable[]).map((item, index) => {
                                 if (
                                     item.type === NodeVariableType.String ||
                                     item.type === NodeVariableType.Number ||
-                                    item.type === NodeVariableType.Boolean
+                                    item.type === NodeVariableType.Boolean ||
+                                    item.type === NodeVariableType.List ||
+                                    item.type === NodeVariableType.Dict
                                 ) {
                                     return (
-                                        <TableRow key={item.handle}>
+                                        <TableRow key={item.handle + '-' + index}>
                                             {!(variable.dock && variable.dock.in_switch === false) && <TableCell className="!p-1 !pl-2">
                                                 {item.has_in ? (<CheckCircleIcon className={"w-4 h-4"} />) : (<XCircleIcon className={'w-4 h-4'} />)}
                                             </TableCell>}

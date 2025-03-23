@@ -43,7 +43,7 @@ const DictVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={variable.in_type_override || type.baseType}
+                nodeVariableType={variable.in_type_override || type.validationType}
             />}
             <div className="flex items-center truncate">
                 <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
@@ -69,7 +69,7 @@ const DictVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={variable.out_type_override || type.baseType}
+                nodeVariableType={variable.out_type_override || type.validationType}
             />}
             {variable.has_out && isMirror && !onlyIn && (
                 <FakeConnector out/>
@@ -78,10 +78,9 @@ const DictVariable: React.FC<Props> = ({
 
         {isOpen &&
             Array.isArray(variable.value) &&
-            (variable.value as NodeVariable[]).map((item, index) => {
+            (variable.value as NodeVariable[]).map((item: NodeVariable, index: number) => {
                 const type = interpretNodeVariableType(item);
-
-                return <div key={item.handle} className="flex items-center pl-6 pr-6 pt-1 relative">
+                return <div key={item.handle + '-' + index} className="flex items-center pl-6 pr-6 pt-1 relative">
                     {item.has_in && isMirror && !onlyOut && (
                         <FakeConnector in/>
                     )}
@@ -91,7 +90,7 @@ const DictVariable: React.FC<Props> = ({
                         handle={`${variable.handle}.${item.handle}`}
                         disabled={disabled}
                         groupId={groupId}
-                        nodeVariableType={type.baseType}
+                        nodeVariableType={type.validationType}
                     />}
                     <div className="flex items-center truncate text-sky-200 dark:text-white" title={`${variable.handle}.${item.handle}`}>
                         <span className="text-sky-400 dark:text-slate-400">
@@ -106,7 +105,7 @@ const DictVariable: React.FC<Props> = ({
                                 </div>
                             )}
                         </span>
-                        {' ' + item.handle}: {item.value as string}
+                        <span>{' ' + item.handle}: {item.value as string}</span>
                     </div>
                     {item.has_out && !isMirror && !disabled && !onlyIn && <Connector
                         out
@@ -114,7 +113,7 @@ const DictVariable: React.FC<Props> = ({
                         handle={`${variable.handle}.${item.handle}`}
                         disabled={disabled}
                         groupId={groupId}
-                        nodeVariableType={type.baseType}
+                        nodeVariableType={type.validationType}
                     />}
                     {item.has_out && isMirror && !onlyIn && (
                         <FakeConnector out/>

@@ -442,7 +442,11 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => {
+    updateNodeVariable: (
+        nodeId: string,
+        variableHandle: string,
+        newValue: null | string | number | boolean | string[] | NodeVariable[]
+    ) => {
         nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>

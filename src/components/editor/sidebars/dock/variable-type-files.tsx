@@ -1,5 +1,5 @@
 import React from "react";
-import {FormType, NodeVariable, NodeVariableType, VariableTypeProps} from "@/types/types";
+import {FormType, VariableTypeProps} from "@/types/types";
 import {Fieldset} from "@/components/fieldset";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
@@ -14,7 +14,7 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({ variable, nodeId, publ
     const openForm = useEditorStore((state) => state.openForm);
 
      const onEdit = (nodeId: string) => {
-        openForm(FormType.EditFiles, nodeId, variable);
+         openForm(FormType.EditFiles, nodeId, variable);
     }
 
     return (
@@ -38,30 +38,23 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({ variable, nodeId, publ
                             (
                                 <TableRow className="!py-1">
                                     <TableCell colSpan={4} className="!py-1 !pl-2 !pr-2">
-                                        <Text>No data</Text>
+                                        <Text>No files</Text>
                                     </TableCell>
                                 </TableRow>
                             )
                         }
                         {isArray &&
-                            (variable.value as NodeVariable[]).map((item) => {
-                                if (
-                                    item.type === NodeVariableType.String ||
-                                    item.type === NodeVariableType.Number ||
-                                    item.type === NodeVariableType.Boolean
-                                ) {
-                                    return (
-                                        <TableRow key={item.handle}>
-                                            <TableCell
-                                                className="!p-1 max-w-[100px] truncate overflow-hidden whitespace-nowrap"
-                                                title={item.handle}
-                                            >
-                                                {item.handle}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                }
-                                return null;
+                            (variable.value as string[]).map((item, index) => {
+                                return (
+                                    <TableRow key={`file-${index}`}>
+                                        <TableCell
+                                            className="!p-1 max-w-[100px] truncate overflow-hidden whitespace-nowrap"
+                                            title={item}
+                                        >
+                                            {item as string}
+                                        </TableCell>
+                                    </TableRow>
+                                );
                             })}
                     </TableBody>
                 </Table>

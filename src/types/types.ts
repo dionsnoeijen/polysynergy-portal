@@ -18,6 +18,7 @@ export type Connection = {
     collapsed?: boolean;
     hidden?: boolean;
     disabled?: boolean;
+    touched?: boolean;
     targetGroupId?: string;
     sourceGroupId?: string;
     isInGroup?: string;
@@ -72,6 +73,16 @@ export type Position = {
     x: number;
     y: number;
 };
+
+export enum Fundamental {
+    Route = 'route',
+    Schedule = 'schedule',
+    Service = 'service',
+    Blueprint = 'blueprint',
+    Config = 'config',
+    Secret = 'secret',
+    Variable = 'variable',
+}
 
 export enum NodeVariableType {
     String = 'str',

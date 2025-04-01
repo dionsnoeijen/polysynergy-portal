@@ -31,6 +31,7 @@ type ConnectionsStore = {
     ) => void;
     clearConnections: () => void;
     initConnections: (connections: Connection[]) => void;
+    isValueConnected: (nodeId: string, handle: string) => boolean;
 };
 
 const memoizedResults = new Map();
@@ -322,7 +323,14 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
 
     initConnections: (connections: Connection[]) => {
         set({ connections });
-    }
+    },
+
+    isValueConnected: (nodeId: string, handle: string): boolean => {
+        return useConnectionsStore
+            .getState()
+            .connections
+            .some((c) => c.targetNodeId === nodeId && c.targetHandle === handle);
+    },
 }));
 
 export default useConnectionsStore;

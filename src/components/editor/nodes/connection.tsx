@@ -34,8 +34,11 @@ const Connection: React.FC<Props> = ({ connection }) => {
     }
 
     if (mockConnection) {
-        color = "rgb(255, 0, 0)";
-        if (!mockConnection.killer) {
+        if (mockConnection.killer) color = "rgb(255, 0, 0)";
+        if (!mockConnection.touched && !mockConnection.killer) {
+            color = "rgb(255, 0, 0)";
+        }
+        if (!mockConnection.killer && mockConnection.touched) {
             color = "rgb(0, 255, 0)";
         }
     }

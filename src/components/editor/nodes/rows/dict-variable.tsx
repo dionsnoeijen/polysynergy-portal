@@ -1,9 +1,10 @@
 import React from "react";
 import {NodeVariable} from "@/types/types";
-import {ChevronDownIcon, ChevronLeftIcon, Squares2X2Icon} from "@heroicons/react/24/outline";
+import {BoltIcon, ChevronDownIcon, ChevronLeftIcon, Squares2X2Icon} from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
+import useConnectionsStore from "@/stores/connectionsStore";
 
 type Props = {
     variable: NodeVariable;
@@ -30,6 +31,8 @@ const DictVariable: React.FC<Props> = ({
 }) => {
 
     const type = interpretNodeVariableType(variable);
+    const isSubValueConnected = useConnectionsStore((state) => state.isValueConnected);
+    const isMainValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
 
     return <>
         <div
@@ -46,8 +49,8 @@ const DictVariable: React.FC<Props> = ({
                 nodeVariableType={variable.in_type_override || type.validationType}
             />}
             <div className="flex items-center truncate">
-                <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
-                <Squares2X2Icon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
+                <h3 className={`font-semibold truncate ${isMainValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-600 dark:text-white'}`}>{variable.name}:</h3>
+                <Squares2X2Icon className={`w-4 h-4 ml-1 ${isMainValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-400 dark:text-slate-400'}`} />
             </div>
             <button
                 type="button"
@@ -58,9 +61,9 @@ const DictVariable: React.FC<Props> = ({
                 data-toggle="true"
             >
                 {isOpen ? (
-                    <ChevronDownIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
+                    <ChevronDownIcon className={`w-4 h-4 ml-1 ${isMainValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-400 dark:text-slate-400'}`} />
                 ) : (
-                    <ChevronLeftIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
+                    <ChevronLeftIcon className={`w-4 h-4 ml-1 ${isMainValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-400 dark:text-slate-400'}`} />
                 )}
             </button>
             {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
@@ -76,10 +79,11 @@ const DictVariable: React.FC<Props> = ({
             )}
         </div>
 
-        {isOpen &&
+        {!isMainValueConnected && isOpen && (
             Array.isArray(variable.value) &&
             (variable.value as NodeVariable[]).map((item: NodeVariable, index: number) => {
                 const type = interpretNodeVariableType(item);
+                const subVariableConnected = isSubValueConnected(nodeId, `${variable.handle}.${item.handle}`);
                 return <div key={item.handle + '-' + index} className="flex items-center pl-6 pr-6 pt-1 relative">
                     {item.has_in && isMirror && !onlyOut && (
                         <FakeConnector in/>
@@ -105,7 +109,9 @@ const DictVariable: React.FC<Props> = ({
                                 </div>
                             )}
                         </span>
-                        <span>{' ' + item.handle}: {item.value as string}</span>
+                        <span className={`${subVariableConnected ? 'text-yellow-300 flex items-center' : ''}`}>
+                            {' ' + item.handle}: {subVariableConnected ? <BoltIcon className={'w-4 h-4 text-yellow-300'} /> : item.value as string}
+                        </span>
                     </div>
                     {item.has_out && !isMirror && !disabled && !onlyIn && <Connector
                         out
@@ -119,7 +125,7 @@ const DictVariable: React.FC<Props> = ({
                         <FakeConnector out/>
                     )}
                 </div>
-            })}
+            }))}
     </>
 };
 

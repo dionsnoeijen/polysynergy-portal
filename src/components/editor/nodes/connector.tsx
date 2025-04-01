@@ -33,13 +33,17 @@ const Connector: React.FC<ConnectorProps> = ({
     let backgroundClasses;
     let iconColorClasses;
 
-    if (nodeVariableType === NodeVariableType.TruePath) {
+    const types = typeof nodeVariableType === "string"
+      ? nodeVariableType.split(",").map((s) => s.trim())
+      : [];
+
+    if (types.includes(NodeVariableType.TruePath)) {
         backgroundClasses = "ring-white dark:ring-white bg-green-400 dark:bg-green-400";
         iconColorClasses = "text-zinc-800 dark:text-zinc-800";
-    } else if (nodeVariableType === NodeVariableType.FalsePath) {
+    } else if (types.includes(NodeVariableType.FalsePath)) {
         backgroundClasses = "ring-white dark:ring-white bg-red-400 dark:bg-red-400";
         iconColorClasses = "text-zinc-800 dark:text-zinc-800";
-    } else if (nodeVariableType === NodeVariableType.Dependency) {
+    } else if (types.includes(NodeVariableType.Dependency)) {
         backgroundClasses = "ring-white dark:ring-white bg-fuchsia-400 dark:bg-fuchsia-400";
         iconColorClasses = "text-zinc-800 dark:text-zinc-800";
     } else {

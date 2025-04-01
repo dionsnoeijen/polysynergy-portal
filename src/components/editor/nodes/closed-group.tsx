@@ -111,6 +111,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
             onDoubleClick={handleCollapse}
             className={className + ` p-5`}
             style={{
+                width: `200px`,
                 left: preview ? '0px' : `${position.x}px`,
                 top: preview ? '0px' : `${position.y}px`,
             }}
@@ -119,7 +120,10 @@ const ClosedGroup: React.FC<GroupProps> = ({
             data-node-id={node.id}
         >
             <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
-            <GlobeAltIcon className={'w-10 h-10'}/>
+            <div className="flex items-center gap-2">
+                <GlobeAltIcon className={'w-10 h-10'}/>
+                <h3 className="font-bold text-sky-600 dark:text-white">{node.name}</h3>
+            </div>
             <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
         </div>
     )

@@ -1,6 +1,6 @@
 import React, {ReactElement, useEffect} from "react";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
-import {FormType, Service} from "@/types/types";
+import {FormType, Fundamental, Service} from "@/types/types";
 import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import useServicesStore from "@/stores/servicesStore";
 import useEditorStore from "@/stores/editorStore";
@@ -29,9 +29,10 @@ export default function ServiceTree(): ReactElement {
             title={`Services`}
             activeItem={activeServiceId}
             formEditingItem={formEditRecordId}
+            fundamental={Fundamental.Service}
             renderItem={(service: Service) => (
                 <div className="flex justify-between items-center w-full">
-                    <span className={`select-none`}>{service.name}</span>
+                    <span className={`select-none  dark:text-gray-200/80`}>{service.name}</span>
                     <div className="flex gap-2 mr-2">
                         <button
                             onClick={() => openForm(FormType.EditService, service.id)}

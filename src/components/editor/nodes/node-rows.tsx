@@ -27,7 +27,7 @@ import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
 import NodeVariables from "@/components/editor/nodes/rows/node-variables";
 
 import { Button } from "@/components/button";
-import { ChevronDownIcon, GlobeAltIcon, HomeIcon } from "@heroicons/react/24/outline";
+import {ChevronDownIcon, ChevronUpIcon, GlobeAltIcon, HomeIcon} from "@heroicons/react/24/outline";
 
 const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {size, handleResizeMouseDown} = useResizable(node);
@@ -86,7 +86,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                     </>
                 )}
                 {node?.icon && (
-                    <NodeIcon icon={node.icon} className={'border bg-white border-white/50 ml-3'}/>
+                    <NodeIcon icon={node.icon} className={`max-h-6 max-w-6 mr-2 ${node.has_enabled_switch ? 'ml-3' : ''}`}/>
                 )}
                 <h3 className={`font-bold truncate ${node.has_enabled_switch ? 'ml-2' : 'ml-0'} text-sky-600 dark:text-white`}>
                     {node.service
@@ -103,6 +103,11 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             </div>
             <div className={`flex flex-col w-full items-start overflow-visible ${node.view.disabled && 'select-none opacity-0'}`}>
                 <div className="w-full">
+                    <div
+                        className={`flex items-center justify-between w-full pl-5 pr-3 pt-1 pb-2 mb-1 relative border-b border-white/20`}
+                    >
+                        <b className={'text-sky-200 truncate'}>{node.handle}</b>
+                    </div>
                     {node.service && node.service.id && (
                         <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon}/>
                     )}
@@ -128,6 +133,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             onDoubleClick={isCollapsable() ? handleCollapse : undefined}
             className={className + ` p-5 w-auto h-auto inline-block items-center justify-center cursor-pointer`}
             style={{
+                width: `${size.width}px`,
                 left: preview ? '0px' : `${position.x}px`,
                 top: preview ? '0px' : `${position.y}px`,
             }}
@@ -138,15 +144,26 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             {node?.has_enabled_switch && (
                 <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
             )}
-            {node?.has_play_button ? (
-                <PlayButton disabled={node.view.disabled} nodeId={node.id} collapsed={true} />
-            ) : (
-                node?.icon ? (
-                    <NodeIcon icon={node.icon} className={'text-white w-10 h-10 max-w-10 max-h-10'}/>
+            <div className="flex items-center gap-2">
+                {node?.has_play_button ? (
+                    <PlayButton disabled={node.view.disabled} nodeId={node.id} centered={false} collapsed={true} />
                 ) : (
-                    <GlobeAltIcon className={'w-10 h-10'}/>
-                )
-            )}
+                    node?.icon ? (
+                        <NodeIcon icon={node.icon} className={'text-white w-10 h-10 max-w-10 max-h-10'}/>
+                    ) : (
+                        <GlobeAltIcon className={'w-10 h-10'}/>
+                    )
+                )}
+                <h3 className={`font-bold truncate ${node.has_enabled_switch ? 'ml-2' : 'ml-0'} text-sky-600 dark:text-white`}>
+                    {node.service
+                        ? (node.service.name.trim() === '' ? '...' : node.service.name)
+                        : node.name}
+                </h3>
+                <Button
+                    onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
+                    <ChevronUpIcon style={{color: 'white'}} className={'w-4 h-4'}/>
+                </Button>
+            </div>
             <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
         </div>
     );

@@ -2,10 +2,10 @@ import React, {useEffect, useState, useRef} from "react";
 import {Divider} from "@/components/divider";
 import {Button} from "@/components/button";
 import {Heading} from "@/components/heading";
+import {Node} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import Editor from "@monaco-editor/react";
-import {Node} from "@/types/types";
 
 const JsonEditorForm: React.FC = () => {
     const {getNode, updateNodeVariable} = useNodesStore();
@@ -64,9 +64,9 @@ const JsonEditorForm: React.FC = () => {
             <Divider className="my-0" soft bleed/>
 
             <section className="grid sm:grid-cols-1">
-                <div>
+                <div className="h-[500px] overflow-hidden">
                     <Editor
-                        height={`${editorHeight}px`}
+                        height={`100%`}
                         defaultLanguage="json"
                         defaultValue={json}
                         onChange={handleEditorChange}
@@ -75,6 +75,9 @@ const JsonEditorForm: React.FC = () => {
                         options={{
                             minimap: {enabled: false},
                             scrollBeyondLastLine: false,
+                            scrollbar: {
+                                alwaysConsumeMouseWheel: false
+                            },
                         }}
                     />
                 </div>

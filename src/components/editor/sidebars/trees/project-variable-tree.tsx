@@ -1,14 +1,13 @@
-import React, { ReactElement } from "react";
+import React, {ReactElement} from "react";
 import useEditorStore from "@/stores/editorStore";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
-import {FormType, NodeVariableWithId} from "@/types/types";
+import {FormType, Fundamental, NodeVariableWithId} from "@/types/types";
 import {PencilIcon} from "@heroicons/react/24/outline";
 import useProjectVariablesStore from "@/stores/projectVariablesStore";
 
 export default function ProjectVariableTree(): ReactElement {
     const projectVariables = useProjectVariablesStore((state) => state.projectVariables);
     const openForm = useEditorStore((state) => state.openForm);
-
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeProjectVariableId = useEditorStore((state) => state.activeProjectVariableId);
 
@@ -27,10 +26,11 @@ export default function ProjectVariableTree(): ReactElement {
             title="Project Variables"
             activeItem={activeProjectVariableId}
             formEditingItem={formEditRecordId}
+            fundamental={Fundamental.Variable}
             renderItem={(variable: NodeVariableWithId) => (
                 <div className="flex justify-between items-center w-full">
-                    <span className="select-none">
-                        {variable.name || variable.handle || variable.id} {/* Toon naam, handle of key */}
+                    <span className="select-none dark:text-gray-200/80">
+                        {variable.name || variable.handle || variable.id}
                     </span>
                     <div className="flex gap-2 mr-2">
                         <button

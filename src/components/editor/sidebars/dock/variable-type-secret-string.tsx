@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import useNodesStore from "@/stores/nodesStore";
-import { Input } from "@/components/input";
-import { Field, FieldGroup, Fieldset } from "@/components/fieldset";
-import { Button } from "@/components/button";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import { VariableTypeProps } from "@/types/types";
+import {Input} from "@/components/input";
+import {Field, FieldGroup, Fieldset} from "@/components/fieldset";
+import {Button} from "@/components/button";
+import {EyeIcon, EyeSlashIcon} from "@heroicons/react/24/outline";
+import {VariableTypeProps} from "@/types/types";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
+import useConnectionsStore from "@/stores/connectionsStore";
+import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 
 const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
     nodeId,
@@ -32,36 +34,44 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
 
     const displayValue = currentValue !== undefined ? currentValue : (variable.value as string) || "";
 
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+
     return (
-        <Fieldset>
-            {publishedButton && <LabelPublish nodeId={nodeId} variable={variable} />}
-            <Field>
-                <FieldGroup
-                    actions={
-                        <Button
-                            plain
-                            onClick={togglePasswordVisibility}
-                            className="!p-1"
-                            title={isPasswordVisible ? "Hide password" : "Show password"}
+        <>
+            {isValueConnected ? (
+                <ValueConnected variable={variable} />
+            ) : (
+                <Fieldset>
+                    {publishedButton && <LabelPublish nodeId={nodeId} variable={variable}/>}
+                    <Field>
+                        <FieldGroup
+                            actions={
+                                <Button
+                                    plain
+                                    onClick={togglePasswordVisibility}
+                                    className="!p-1"
+                                    title={isPasswordVisible ? "Hide password" : "Show password"}
+                                >
+                                    {isPasswordVisible ? (
+                                        <EyeSlashIcon className="w-4 h-4 text-gray-500 hover:text-gray-700"/>
+                                    ) : (
+                                        <EyeIcon className="w-4 h-4 text-gray-500 hover:text-gray-700"/>
+                                    )}
+                                </Button>
+                            }
                         >
-                            {isPasswordVisible ? (
-                                <EyeSlashIcon className="w-4 h-4 text-gray-500 hover:text-gray-700" />
-                            ) : (
-                                <EyeIcon className="w-4 h-4 text-gray-500 hover:text-gray-700" />
-                            )}
-                        </Button>
-                    }
-                >
-                    <Input
-                        type={isPasswordVisible ? "text" : "password"}
-                        value={displayValue}
-                        onChange={handleChange}
-                        placeholder={variable.handle}
-                        aria-label={variable.handle}
-                    />
-                </FieldGroup>
-            </Field>
-        </Fieldset>
+                            <Input
+                                type={isPasswordVisible ? "text" : "password"}
+                                value={displayValue}
+                                onChange={handleChange}
+                                placeholder={variable.handle}
+                                aria-label={variable.handle}
+                            />
+                        </FieldGroup>
+                    </Field>
+                </Fieldset>
+            )}
+        </>
     );
 };
 

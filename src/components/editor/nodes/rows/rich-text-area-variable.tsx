@@ -1,7 +1,9 @@
 import React from "react";
-import { NodeVariable } from "@/types/types";
+import {NodeVariable} from "@/types/types";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
+import {BoltIcon, DocumentTextIcon} from "@heroicons/react/24/outline";
+import useConnectionsStore from "@/stores/connectionsStore";
 
 type Props = {
     variable: NodeVariable;
@@ -21,32 +23,49 @@ const RichTextAreaVariable: React.FC<Props> = ({
     disabled = false,
     groupId,
     isMirror = false,
-}): React.ReactElement => (
-    <div className={`flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative ${disabled && 'opacity-0'}`}>
-        {variable.has_in && isMirror && !onlyOut && (
-            <FakeConnector in />
-        )}
-        {variable.has_in && !isMirror && !disabled && !onlyOut && <Connector
-            in
-            nodeId={nodeId}
-            handle={variable.handle}
-            disabled={disabled}
-            groupId={groupId}
-            nodeVariableType={variable.type}
-        />}
-        <div className="note-text" dangerouslySetInnerHTML={{ __html: variable.value as string }} />
-        {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
-            out
-            nodeId={nodeId}
-            handle={variable.handle}
-            disabled={disabled}
-            groupId={groupId}
-            nodeVariableType={variable.type}
-        />}
-        {variable.has_out && isMirror && !onlyIn && (
-            <FakeConnector out />
-        )}
-    </div>
-);
+}): React.ReactElement => {
+
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+
+    return (
+        <div
+            className={`flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative ${disabled && 'opacity-0'}`}>
+            {variable.has_in && isMirror && !onlyOut && (
+                <FakeConnector in />
+            )}
+            {variable.has_in && !isMirror && !disabled && !onlyOut && <Connector
+                in
+                nodeId={nodeId}
+                handle={variable.handle}
+                disabled={disabled}
+                groupId={groupId}
+                nodeVariableType={variable.type}
+            />}
+            {isValueConnected ? <span className="ml-1"><BoltIcon className={'w-4 h-4 text-yellow-300'} /></span> : (
+            <>
+                {variable.value ? (
+                    <div className="note-text" dangerouslySetInnerHTML={{__html: variable.value as string}}/>
+                ) : (
+                    <>
+                        <h3 className={`font-semibold truncate ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-600 dark:text-white'}`}>{variable.name}:</h3>
+                        <DocumentTextIcon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-400 dark:text-slate-400'}`} />
+                    </>
+                )}
+            </>
+            )}
+            {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
+                out
+                nodeId={nodeId}
+                handle={variable.handle}
+                disabled={disabled}
+                groupId={groupId}
+                nodeVariableType={variable.type}
+            />}
+            {variable.has_out && isMirror && !onlyIn && (
+                <FakeConnector out />
+            )}
+        </div>
+    );
+}
 
 export default RichTextAreaVariable;

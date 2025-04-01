@@ -8,12 +8,14 @@ type Props = {
     nodeId: string;
     disabled?: boolean;
     collapsed?: boolean;
+    centered?: boolean;
 };
 
 const PlayButton: React.FC<Props> = ({
     nodeId,
     disabled = false,
     collapsed = false,
+    centered = true
 }: Props) => {
     const { activeVersionId, activeProjectId } = useEditorStore();
     const { setMockConnections, setMockNodes } = useMockStore();
@@ -24,14 +26,25 @@ const PlayButton: React.FC<Props> = ({
         if (activeVersionId) {
             const response = await runMockApi(activeProjectId, activeVersionId, nodeId);
             const data = await response.json();
-            const result = JSON.parse(data.result.body);
-            setMockConnections(result.connections);
-            setMockNodes(result.nodes_order);
+
+            let result;
+            if (data.result.body) {
+                result = JSON.parse(data.result.body);
+            } else {
+                result = data.result;
+            }
+
+            if (result.connections && result.nodes_order) {
+                setMockConnections(result.connections);
+                setMockNodes(result.nodes_order);
+            } else {
+                console.error("No mock data returned", result);
+            }
         }
     }
 
     return (
-        <div className={`flex items-center justify-center rounded-md w-full relative ${collapsed ? 'p-0' : 'p-2 -mb-5'} ${disabled && 'select-none opacity-0'}`}>
+        <div className={`flex items-center justify-center rounded-md relative ${centered ? 'w-full' : ''} ${collapsed ? 'p-0' : 'p-2 -mb-5'} ${disabled && 'select-none opacity-0'}`}>
             <button
                 color="orange"
                 type="button"

@@ -4,7 +4,7 @@ import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import Link from "next/link";
 import useEditorStore from "@/stores/editorStore";
 import {PencilIcon} from "@heroicons/react/24/outline";
-import {FormType} from "@/types/types";
+import {FormType, Fundamental} from "@/types/types";
 
 export default function ScheduleTree(): ReactElement {
 
@@ -21,12 +21,12 @@ export default function ScheduleTree(): ReactElement {
             title={'Schedules'}
             activeItem={activeScheduleId}
             formEditingItem={formEditRecordId}
-            startsOpen={true}
+            fundamental={Fundamental.Schedule}
             renderItem={(schedule) => (
                 <>
                     <Link href={`/project/${activeProjectId}/schedule/${schedule.id}`}
                         title={`${schedule.name} - ${schedule.id}`}
-                        className={`block flex-1 truncate dark:hover:text-white pt-1 pb-1 ${(activeScheduleId === schedule.id || formEditRecordId === schedule.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
+                        className={`block flex-1 truncate dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeScheduleId === schedule.id || formEditRecordId === schedule.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
                     >
                         {schedule.name}
                     </Link>

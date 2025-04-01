@@ -75,7 +75,6 @@ export default function Editor() {
 
     useEffect(() => {
         updateConnectionsDirectly(connections);
-        clearMockStore();
     // eslint-disable-next-line
     }, [nodesToRender]);
 

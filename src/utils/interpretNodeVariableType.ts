@@ -1,10 +1,12 @@
 import {NodeVariable, NodeVariableType} from "@/types/types";
 
-export default function interpretNodeVariableType(variable: NodeVariable): {
+type ValidationType = {
     baseType: NodeVariableType;
     validationType: string;
     containsNone: boolean;
-} {
+}
+
+export default function interpretNodeVariableType(variable: NodeVariable): ValidationType {
     const types = variable.type.split('|').map((type) => type.trim());
     const containsNone = types.includes('None');
     if (types.indexOf('None') > -1) {
@@ -21,37 +23,37 @@ export default function interpretNodeVariableType(variable: NodeVariable): {
                 return { baseType: NodeVariableType.SecretString, validationType: NodeVariableType.SecretString, containsNone};
             }
             if (variable?.dock.text_area) {
-                return { baseType: NodeVariableType.TextArea, validationType: [NodeVariableType.TextArea, NodeVariableType.String].join(','), containsNone};
+                return { baseType: NodeVariableType.TextArea, validationType: [...types, NodeVariableType.TextArea].join(','), containsNone};
             }
             if (variable?.dock.rich_text_area) {
-                return { baseType: NodeVariableType.RichTextArea, validationType: [NodeVariableType.RichTextArea, NodeVariableType.String].join(','), containsNone};
+                return { baseType: NodeVariableType.RichTextArea, validationType: [...types, NodeVariableType.RichTextArea].join(','), containsNone};
             }
             if (variable?.dock.code_editor) {
                 return { baseType: NodeVariableType.Code, validationType: NodeVariableType.Code, containsNone};
             }
             if (variable?.dock.json_editor) {
-                return { baseType: NodeVariableType.Json, validationType: [NodeVariableType.Json, NodeVariableType.String].join(','), containsNone};
+                return { baseType: NodeVariableType.Json, validationType: [...types, NodeVariableType.Json].join(','), containsNone};
             }
         }
         return { baseType: NodeVariableType.String, validationType: types.join(','), containsNone};
     } else if (types.includes('int') || types.includes('float') || types.includes('number')) {
-        return { baseType: NodeVariableType.Number, validationType: NodeVariableType.Number, containsNone };
+        return { baseType: NodeVariableType.Number, validationType: types.join(','), containsNone };
     } else if (types.includes('bytes')) {
-        return { baseType: NodeVariableType.Bytes, validationType: [NodeVariableType.Bytes, NodeVariableType.String].join(','), containsNone };
+        return { baseType: NodeVariableType.Bytes, validationType: types.join(','), containsNone };
     } else if (types.includes('dict')) {
-        return { baseType: NodeVariableType.Dict, validationType: NodeVariableType.Dict, containsNone };
+        return { baseType: NodeVariableType.Dict, validationType: types.join(','), containsNone };
     } else if (types.includes('list')) {
         if (variable?.dock && variable?.dock?.files_editor) {
-            return { baseType: NodeVariableType.Files, validationType: [NodeVariableType.Files, NodeVariableType.List].join(','), containsNone }
+            return { baseType: NodeVariableType.Files, validationType: [...types, NodeVariableType.Files].join(','), containsNone }
         }
-        return { baseType: NodeVariableType.List, validationType: [NodeVariableType.List, NodeVariableType.Json], containsNone };
+        return { baseType: NodeVariableType.List, validationType: types.join(','), containsNone };
     } else if (types.includes('datetime')) {
-        return { baseType: NodeVariableType.DateTime, validationType: NodeVariableType.DateTime, containsNone };
+        return { baseType: NodeVariableType.DateTime, validationType: types.join(','), containsNone };
     } else if (types.includes('bool')) {
-        return { baseType: NodeVariableType.Boolean, validationType: NodeVariableType.Boolean, containsNone };
+        return { baseType: NodeVariableType.Boolean, validationType: types.join(','), containsNone };
     } else if (types.some((type) => type.startsWith('nodes.nodes'))) {
-        return { baseType: NodeVariableType.Dependency, validationType: NodeVariableType.Dependency, containsNone };
+        return { baseType: NodeVariableType.Dependency, validationType: types.join(','), containsNone };
     }
 
-    return { baseType: NodeVariableType.Unknown, validationType: NodeVariableType.Unknown, containsNone };
+    return { baseType: NodeVariableType.Unknown, validationType: types.join(','), containsNone };
 }

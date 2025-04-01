@@ -1,10 +1,10 @@
 import React, {ReactElement, useEffect} from "react";
+import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
+import {Config, FormType, Fundamental} from "@/types/types";
 import useConfigsStore from "@/stores/configsStore";
 import useEditorStore from "@/stores/editorStore";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
-import {Config, FormType} from "@/types/types";
-import {Link} from "@/components/link";
-import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 export default function ConfigTree(): ReactElement {
     const configs = useConfigsStore((state) => state.configs);
@@ -24,12 +24,13 @@ export default function ConfigTree(): ReactElement {
             title={`Configs`}
             activeItem={activeConfigId}
             formEditingItem={formEditRecordId}
+            fundamental={Fundamental.Config}
             renderItem={(config: Config) => (
                 <div className={`flex justify-between items-center w-full`}>
                     <Link
                         href={`/project/${activeProjectId}/config/${config.id}`}
                         title={`${config.name} - ${config.id}`}
-                        className={`block flex-1 truncate dark:hover:text-white pt-1 pb-1 ${(activeConfigId === config.id || formEditRecordId === config.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
+                        className={`block flex-1 truncate dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeConfigId === config.id || formEditRecordId === config.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
                     >
                         {config.name}
                     </Link>

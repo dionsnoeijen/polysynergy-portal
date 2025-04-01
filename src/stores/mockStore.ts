@@ -7,6 +7,7 @@ type MockConnection = {
     target_node_id: string;
     target_handle: string;
     killer: boolean;
+    touched: boolean;
 }
 
 type NodeVariables = {

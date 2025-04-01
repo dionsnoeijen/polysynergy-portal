@@ -1,12 +1,18 @@
 import React from "react";
 import useNodesStore from "@/stores/nodesStore";
-import { VariableTypeProps } from "@/types/types";
-import { Field, Fieldset } from "@/components/fieldset";
-import { Input } from "@/components/input";
-import { Select } from "@/components/select";
+import {VariableTypeProps} from "@/types/types";
+import {Field, Fieldset} from "@/components/fieldset";
+import {Input} from "@/components/input";
+import {Select} from "@/components/select";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
+import useConnectionsStore from "@/stores/connectionsStore";
+import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 
-const VariableTypeNumber: React.FC<VariableTypeProps> = ({nodeId, variable, publishedButton = true}): React.ReactElement => {
+const VariableTypeNumber: React.FC<VariableTypeProps> = ({
+    nodeId,
+    variable,
+    publishedButton = true
+}): React.ReactElement => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const value =
@@ -16,36 +22,44 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({nodeId, variable, publ
                 ? parseFloat(variable.value)
                 : "";
 
-    const handleChange = (e: React.ChangeEvent<HTMLSelectElement|HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const newValue = parseFloat(e.target.value);
         if (!isNaN(newValue)) {
             updateNodeVariable(nodeId, variable.handle, newValue);
         }
     };
 
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+
     return (
-        <Fieldset>
-            {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
-            <Field>
-                {variable.dock && variable.dock.select_values ? (
-                    <Select onChange={handleChange} defaultValue={value}>
-                        {Object.entries(variable.dock.select_values).map(([key, v]) => (
-                        <option key={key} value={key}>
-                            {v}
-                        </option>
-                        ))}
-                    </Select>
-                ) : (
-                    <Input
-                        type="number"
-                        value={value}
-                        onChange={handleChange}
-                        placeholder={variable.handle}
-                        aria-label={variable.handle}
-                    />
-                )}
-            </Field>
-        </Fieldset>
+        <>
+            {isValueConnected ? (
+                <ValueConnected variable={variable} />
+            ) : (
+                <Fieldset>
+                    {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable}/>)}
+                    <Field>
+                        {variable.dock && variable.dock.select_values ? (
+                            <Select onChange={handleChange} defaultValue={value}>
+                                {Object.entries(variable.dock.select_values).map(([key, v]) => (
+                                    <option key={key} value={key}>
+                                        {v}
+                                    </option>
+                                ))}
+                            </Select>
+                        ) : (
+                            <Input
+                                type="number"
+                                value={value}
+                                onChange={handleChange}
+                                placeholder={variable.handle}
+                                aria-label={variable.handle}
+                            />
+                        )}
+                    </Field>
+                </Fieldset>
+            )}
+        </>
     );
 };
 

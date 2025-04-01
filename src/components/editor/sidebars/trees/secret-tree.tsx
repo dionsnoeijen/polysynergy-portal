@@ -2,7 +2,7 @@ import React, {ReactElement, useEffect} from "react";
 import useEditorStore from "@/stores/editorStore";
 import useProjectSecretsStore from "@/stores/projectSecretsStore";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
-import {FormType, Secret} from "@/types/types";
+import {FormType, Fundamental, Secret} from "@/types/types";
 import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import {globalToLocal} from "@/utils/positionUtils";
@@ -56,9 +56,10 @@ export default function SecretTree(): ReactElement {
             title="Project Secrets"
             activeItem={activeProjectVariableId}
             formEditingItem={formEditRecordId}
+            fundamental={Fundamental.Secret}
             renderItem={(secret: Secret) => (
                 <div className="flex justify-between items-center w-full">
-                    <span className="select-none">{secret.key}</span>
+                    <span className="select-none dark:text-gray-200/80">{secret.key}</span>
                     <div className="flex gap-2 mr-2">
                         <button
                             onClick={() => handleEditVariable(secret.key)}

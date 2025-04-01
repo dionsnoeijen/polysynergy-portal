@@ -1,14 +1,18 @@
 import React, {ReactElement, useEffect} from "react";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
-import {FormType, Blueprint} from "@/types/types";
+import {FormType, Blueprint, Fundamental} from "@/types/types";
 import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import useBlueprintsStore from "@/stores/blueprintsStore";
 import useEditorStore from "@/stores/editorStore";
 import {Link} from "@/components/link";
 
 export default function BlueprintTree(): ReactElement {
-    const { blueprints, fetchBlueprints } = useBlueprintsStore();
-    const { openForm, formEditRecordId, activeBlueprintId, activeProjectId } = useEditorStore();
+    const blueprints = useBlueprintsStore((state) => state.blueprints);
+    const fetchBlueprints = useBlueprintsStore((state) => state.fetchBlueprints);
+    const openForm = useEditorStore((state) => state.openForm);
+    const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+    const activeBlueprintId = useEditorStore((state) => state.activeBlueprintId);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
 
     useEffect(() => {
         fetchBlueprints();
@@ -20,12 +24,13 @@ export default function BlueprintTree(): ReactElement {
             title={`Blueprints`}
             activeItem={activeBlueprintId}
             formEditingItem={formEditRecordId}
+            fundamental={Fundamental.Blueprint}
             renderItem={(blueprint: Blueprint) => (
                 <div className="flex justify-between items-center w-full">
                     <Link
                         href={`/project/${activeProjectId}/blueprint/${blueprint.id}`}
                         title={`${blueprint.name} - ${blueprint.id}`}
-                        className={`block flex-1 truncate dark:hover:text-white pt-1 pb-1 ${(activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
+                        className={`block flex-1 truncate  dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
                     >
                         {blueprint.name}
                     </Link>

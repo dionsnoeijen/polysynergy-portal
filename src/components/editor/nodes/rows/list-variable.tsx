@@ -1,9 +1,10 @@
 import React from "react";
 import {NodeVariable} from "@/types/types";
-import {Bars3Icon, ChevronDownIcon, ChevronLeftIcon} from "@heroicons/react/24/outline";
+import {Bars3Icon, BoltIcon, ChevronDownIcon, ChevronLeftIcon} from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
+import useConnectionsStore from "@/stores/connectionsStore";
 
 type Props = {
     variable: NodeVariable;
@@ -30,6 +31,7 @@ const ListVariable: React.FC<Props> = ({
 }) => {
 
     const type = interpretNodeVariableType(variable);
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
 
     return <>
         <div
@@ -46,23 +48,26 @@ const ListVariable: React.FC<Props> = ({
                 nodeVariableType={type.validationType}
             />}
             <div className="flex items-center truncate">
-                <h3 className="font-semibold truncate text-sky-600 dark:text-white">{variable.name}:</h3>
-                <Bars3Icon className="w-4 h-4 ml-1 text-sky-400 dark:text-slate-400"/>
+                <h3 className={`font-semibold truncate ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-600 dark:text-white'}`}>{variable.name}:</h3>
+                <Bars3Icon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-400 dark:text-slate-400'}`} />
+                {isValueConnected ? <span className="ml-1"><BoltIcon className={'w-4 h-4 text-yellow-300'} /></span> : <span className="ml-1">{variable.value as string}</span>}
             </div>
-            <button
-                type="button"
-                onClick={(e) => {
-                    e.preventDefault();
-                    onToggle();
-                }}
-                data-toggle="true"
-            >
-                {isOpen ? (
-                    <ChevronDownIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
-                ) : (
-                    <ChevronLeftIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
-                )}
-            </button>
+            {!isValueConnected && (
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onToggle();
+                    }}
+                    data-toggle="true"
+                >
+                    {isOpen ? (
+                        <ChevronDownIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
+                    ) : (
+                        <ChevronLeftIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
+                    )}
+                </button>
+            )}
             {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
                 out
                 nodeId={nodeId}

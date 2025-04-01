@@ -8,6 +8,8 @@ import {CheckCircleIcon, PencilIcon, XCircleIcon} from "@heroicons/react/24/outl
 import {Button} from "@/components/button";
 import {Fieldset} from "@/components/fieldset";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
+import useConnectionsStore from "@/stores/connectionsStore";
+import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 
 const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publishedButton = true }): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
@@ -18,83 +20,90 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
         openForm(FormType.EditDict, nodeId, variable);
     }
 
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+
     return (
-        <div>
-            {publishedButton && (
-            <div className="flex justify-between items-center w-full">
-                <Fieldset className={'w-full'}>
-                    <LabelPublish nodeId={nodeId} variable={variable} />
-                </Fieldset>
-            </div>
-            )}
-            <div className="border border-white/20 rounded-md">
-                <Table dense className={"bg-white/5"}>
-                    <TableHead>
-                        <TableRow>
-                            {!(variable.dock && variable.dock.in_switch === false) && <TableHeader className="!py-1 !pl-2 !pr-2">in</TableHeader>}
-                            <TableHeader className="!py-1">{variable.dock?.key_label || "key"}</TableHeader>
-                            <TableHeader className="!py-1">{variable.dock?.value_label || "value"}</TableHeader>
-                            {!(variable.dock && variable.dock.out_switch === false) && <TableHeader className="!py-1 !pl-2 !pr-2">out</TableHeader>}
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-
-                        {variable.value === null &&
-                            (
-                                <TableRow className="!py-1">
-                                    <TableCell colSpan={4} className="!py-1 !pl-2 !pr-2">
-                                        <Text>No data</Text>
-                                    </TableCell>
+        <>
+            {isValueConnected ? (
+                 <ValueConnected variable={variable} />
+            ) : (
+                <div>
+                    {publishedButton && (
+                        <div className="flex justify-between items-center w-full">
+                            <Fieldset className={'w-full'}>
+                                <LabelPublish nodeId={nodeId} variable={variable} />
+                            </Fieldset>
+                        </div>
+                    )}
+                    <div className="border border-white/20 rounded-md">
+                        <Table dense className={"bg-white/5"}>
+                            <TableHead>
+                                <TableRow>
+                                    {!(variable.dock && variable.dock.in_switch === false) && <TableHeader className="!py-1 !pl-2 !pr-2">in</TableHeader>}
+                                    <TableHeader className="!py-1">{variable.dock?.key_label || "key"}</TableHeader>
+                                    <TableHeader className="!py-1">{variable.dock?.value_label || "value"}</TableHeader>
+                                    {!(variable.dock && variable.dock.out_switch === false) && <TableHeader className="!py-1 !pl-2 !pr-2">out</TableHeader>}
                                 </TableRow>
-                            )
-                        }
-
-                        {isArray &&
-                            (variable.value as NodeVariable[]).map((item, index) => {
-                                if (
-                                    item.type === NodeVariableType.String ||
-                                    item.type === NodeVariableType.Number ||
-                                    item.type === NodeVariableType.Boolean ||
-                                    item.type === NodeVariableType.List ||
-                                    item.type === NodeVariableType.Dict
-                                ) {
-                                    return (
-                                        <TableRow key={item.handle + '-' + index}>
-                                            {!(variable.dock && variable.dock.in_switch === false) && <TableCell className="!p-1 !pl-2">
-                                                {item.has_in ? (<CheckCircleIcon className={"w-4 h-4"} />) : (<XCircleIcon className={'w-4 h-4'} />)}
-                                            </TableCell>}
-                                            <TableCell
-                                                className="!p-1 max-w-[100px] truncate overflow-hidden whitespace-nowrap"
-                                                title={item.handle}
-                                            >
-                                                {item.handle}
+                            </TableHead>
+                            <TableBody>
+                                {variable.value === null &&
+                                    (
+                                        <TableRow className="!py-1">
+                                            <TableCell colSpan={4} className="!py-1 !pl-2 !pr-2">
+                                                <Text>No data</Text>
                                             </TableCell>
-                                            <TableCell
-                                                className="!p-1 max-w-[200px] truncate overflow-hidden whitespace-nowrap"
-                                                title={item.value?.toString()}
-                                            >
-                                                {item.value?.toString()}
-                                            </TableCell>
-                                            {!(variable.dock && variable.dock.out_switch === false) &&
-                                            <TableCell className="!p-1 !pr-2">
-                                                {item.has_out ? (<CheckCircleIcon className={"w-4 h-4"}/>) : (<XCircleIcon className={'w-4 h-4'} />)}
-                                            </TableCell>}
                                         </TableRow>
-                                    );
+                                    )
                                 }
-                                return null;
-                            })}
-                    </TableBody>
-                </Table>
-                <Button
-                    plain
-                    className="w-full bg-white/5 hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0 !px-0 !py-0"
-                    onClick={() => onEdit(nodeId)}
-                >
-                    <PencilIcon className="w-4 h-4 inline text-slate-400"/>
-                </Button>
-            </div>
-        </div>
+                                {isArray &&
+                                    (variable.value as NodeVariable[]).map((item, index) => {
+                                        if (
+                                            item.type === 'string' || // Legacy string type (in case of dict it could be configured as string, not str)
+                                            item.type === NodeVariableType.String ||
+                                            item.type === NodeVariableType.Number ||
+                                            item.type === NodeVariableType.Boolean ||
+                                            item.type === NodeVariableType.List ||
+                                            item.type === NodeVariableType.Dict
+                                        ) {
+                                            return (
+                                                <TableRow key={item.handle + '-' + index}>
+                                                    {!(variable.dock && variable.dock.in_switch === false) && <TableCell className="!p-1 !pl-2">
+                                                        {item.has_in ? (<CheckCircleIcon className={"w-4 h-4"} />) : (<XCircleIcon className={'w-4 h-4'} />)}
+                                                    </TableCell>}
+                                                    <TableCell
+                                                        className="!p-1 max-w-[100px] truncate overflow-hidden whitespace-nowrap"
+                                                        title={item.handle}
+                                                    >
+                                                        {item.handle}
+                                                    </TableCell>
+                                                    <TableCell
+                                                        className="!p-1 max-w-[200px] truncate overflow-hidden whitespace-nowrap"
+                                                        title={item.value?.toString()}
+                                                    >
+                                                        {item.value?.toString()}
+                                                    </TableCell>
+                                                    {!(variable.dock && variable.dock.out_switch === false) &&
+                                                    <TableCell className="!p-1 !pr-2">
+                                                        {item.has_out ? (<CheckCircleIcon className={"w-4 h-4"}/>) : (<XCircleIcon className={'w-4 h-4'} />)}
+                                                    </TableCell>}
+                                                </TableRow>
+                                            );
+                                        }
+                                        return null;
+                                    })}
+                            </TableBody>
+                        </Table>
+                        <Button
+                            plain
+                            className="w-full bg-white/5 hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0 !px-0 !py-0"
+                            onClick={() => onEdit(nodeId)}
+                        >
+                            <PencilIcon className="w-4 h-4 inline text-slate-400"/>
+                        </Button>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 

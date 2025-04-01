@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import {ChevronDownIcon, ChevronLeftIcon, PlusIcon} from "@heroicons/react/24/outline";
-import { ListItemWithId } from "@/types/types";
+import {Fundamental, ListItemWithId} from "@/types/types";
 import {Button} from "@/components/button";
+import useEditorStore from "@/stores/editorStore";
 
 type ListProps<T extends ListItemWithId> = {
     items: T[];
@@ -11,7 +12,7 @@ type ListProps<T extends ListItemWithId> = {
     addButtonClick?: () => void;
     addDisabled?: boolean;
     title?: string;
-    startsOpen?: boolean;
+    fundamental: Fundamental;
 };
 
 export default function TreeList<T extends ListItemWithId>({
@@ -22,16 +23,25 @@ export default function TreeList<T extends ListItemWithId>({
     addButtonClick,
     addDisabled = false,
     title = "List",
-    startsOpen = false
+    fundamental
 }: ListProps<T>): React.JSX.Element {
-    const [isOpen, setIsOpen] = useState(startsOpen);
     const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
+    const openTree = useEditorStore((state) => state.openTree);
+    const closeTree = useEditorStore((state) => state.closeTree);
+    const isOpen = useEditorStore((state) => state.isTreeOpen(fundamental));
 
     const handleScroll = (e: React.UIEvent<HTMLUListElement>) => {
         const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-        // Een kleine marge om afrondingsfouten op te vangen
         setIsScrolledToBottom(scrollTop + clientHeight >= scrollHeight - 5);
     };
+
+    const handleTreeToggle = (isOpen: boolean) => {
+        if (isOpen) {
+            closeTree(fundamental);
+        } else {
+            openTree(fundamental);
+        }
+    }
 
     const getItemClassName = (item: T) => {
         const baseClasses =
@@ -57,7 +67,7 @@ export default function TreeList<T extends ListItemWithId>({
                 }`}
             >
                 <h4>{title}</h4>
-                <button type="button" onClick={() => setIsOpen(!isOpen)}>
+                <button type="button" onClick={() => handleTreeToggle(isOpen)}>
                     {isOpen ? (
                         <ChevronDownIcon className="w-5 h-5" />
                     ) : (
@@ -70,7 +80,7 @@ export default function TreeList<T extends ListItemWithId>({
                 <ul
                     onScroll={handleScroll}
                     className={`overflow-y-auto transition-all duration-300 ${
-                        isOpen ? "max-h-[10rem]" : "max-h-0"
+                        isOpen ? "max-h-[20rem]" : "max-h-0"
                     }`}
                 >
                     {items.map((item, index) => (
@@ -79,9 +89,9 @@ export default function TreeList<T extends ListItemWithId>({
                         </li>
                     ))}
                 </ul>
-                {isOpen && items.length > 5 && !isScrolledToBottom && (
-                    <div className="pointer-events-none absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-white dark:from-zinc-800" />
-                )}
+                {/*{isOpen && items.length > 5 && !isScrolledToBottom && (*/}
+                {/*    <div className="pointer-events-none absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-white dark:from-zinc-800" />*/}
+                {/*)}*/}
             </div>
 
             {addButtonClick && (

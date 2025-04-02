@@ -29,6 +29,7 @@ const NodeJump: React.FC<NodeProps> = ({ node }) => {
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
             data-type="node"
+            data-adding={node.view.adding}
             data-node-id={node.id}
         >
             {mockNode && <ExecutionOrder mockNode={mockNode} centered={true} />}

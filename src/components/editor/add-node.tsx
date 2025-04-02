@@ -74,7 +74,9 @@ const AddNode: React.FC = () => {
             collapsed: false
         };
 
-        addNode(node);
+        delete node.temp;
+
+        addNode(node, true);
 
         if (openGroup) {
             addNodeToGroup(openGroup, node.id);

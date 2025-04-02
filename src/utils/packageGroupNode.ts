@@ -39,6 +39,24 @@ export const promoteNodeInStateToService = (
     return node;
 };
 
+export const updateNodeInStateService = (
+    node: Node,
+    name: string,
+    description: string,
+    category: string,
+    icon: string,
+) => {
+    node.service = {
+        ...node.service as NodeService,
+        description,
+        name,
+        category,
+    };
+    node.icon = icon;
+
+    return node;
+}
+
 export const makeServiceFromNodeForStorage = (
     node: Node,
     nodes: Node[],

@@ -144,6 +144,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setActiveConfigId: (configId: string) => set({activeConfigId: configId}),
     activeBlueprintId: '',
     setActiveBlueprintId: (blueprintId: string) => set({activeBlueprintId: blueprintId}),
+
     activeVersionId: '',
     setActiveVersionId: (versionId: string) => set({activeVersionId: versionId}),
     activeProjectVariableId: '',
@@ -305,8 +306,12 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
         const uniqueConnectionsMap = new Map<string, Connection>();
         nestedNodes.forEach((node) => {
-            const inConnections = useConnectionsStore.getState().findInConnectionsByNodeId(node.id);
-            const outConnections = useConnectionsStore.getState().findOutConnectionsByNodeId(node.id);
+            const inConnections = useConnectionsStore
+                .getState()
+                .findInConnectionsByNodeId(node.id);
+            const outConnections = useConnectionsStore
+                .getState()
+                .findOutConnectionsByNodeId(node.id);
 
             [...inConnections, ...outConnections].forEach((connection) => {
                 const hasValidSource = nestedNodeIds.has(connection.sourceNodeId);
@@ -350,7 +355,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
         copiedPackage = unpackNode(copiedPackage);
 
         copiedPackage.nodes.forEach((node: Node) => {
-            useNodesStore.getState().addNode(node);
+            useNodesStore.getState().addNode(node, true);
         });
 
         if (copiedPackage.connections) {

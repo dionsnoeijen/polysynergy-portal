@@ -27,7 +27,11 @@ const StringVariable: React.FC<Props> = ({
     isMirror = false,
 }): React.ReactElement => {
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore(
+        (state) => state.isValueConnected(nodeId, variable.handle)
+    );
+
+    const validationType = interpretNodeVariableType(variable).validationType;
 
     return (
         <div className={`flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative ${disabled && 'opacity-0'}`}>
@@ -40,7 +44,7 @@ const StringVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={interpretNodeVariableType(variable).validationType}
+                nodeVariableType={validationType}
             />}
             <div className="flex items-center truncate">
                 <h3 className={`font-semibold truncate ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-600 dark:text-white'}`}>{variable.name}:</h3>
@@ -57,7 +61,7 @@ const StringVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={interpretNodeVariableType(variable).validationType}
+                nodeVariableType={validationType}
             />}
             {variable.has_out && isMirror && !onlyIn && (
                 <FakeConnector out />

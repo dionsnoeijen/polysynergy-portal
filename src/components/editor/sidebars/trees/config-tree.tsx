@@ -30,7 +30,7 @@ export default function ConfigTree(): ReactElement {
                     <Link
                         href={`/project/${activeProjectId}/config/${config.id}`}
                         title={`${config.name} - ${config.id}`}
-                        className={`block flex-1 truncate dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeConfigId === config.id || formEditRecordId === config.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
+                        className={`block flex-1 truncate dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeConfigId === config.id || formEditRecordId === config.id) ? 'dark:text-zinc-800' : 'dark:text-zinc-200'}`}
                     >
                         {config.name}
                     </Link>
@@ -38,14 +38,14 @@ export default function ConfigTree(): ReactElement {
                         <button
                             onClick={() => openForm(FormType.EditConfig, config.id)}
                             type="button"
-                            className={`p-2 rounded focus:outline-none active:text-zinc-200 group ${activeConfigId === config.id || formEditRecordId === config.id ? 'text-white' : 'text-zinc-500 '}`}
+                            className={`p-2 rounded focus:outline-none active:text-zinc-200 group ${activeConfigId === config.id || formEditRecordId === config.id ? 'text-zinc-800' : 'text-white'}`}
                         >
                             <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
                         </button>
                         <button
                             onClick={() => openForm(FormType.PlaceConfig, config.id)}
                             type="button"
-                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeConfigId === config.id || formEditRecordId === config.id ? 'text-white' : 'text-zinc-500 '}`}
+                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeConfigId === config.id || formEditRecordId === config.id ? 'text-zinc-800' : 'text-white'}`}
                         >
                             <PlusIcon className="w-4 h-4 transition-colors duration-200"/>
                         </button>

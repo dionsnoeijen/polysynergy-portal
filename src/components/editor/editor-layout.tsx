@@ -16,6 +16,7 @@ import VersionPublishedMenu from "@/components/editor/editormenus/version-publis
 import fetchAndApplyNodeSetup from "@/utils/fetchNodeSetup";
 import ClearMockViewMenu from "@/components/editor/editormenus/clear-mock-view-menu";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
+import TopLeftEditorMenu from "@/components/editor/editormenus/top-left-editor-menu";
 
 const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
@@ -224,9 +225,10 @@ export function EditorLayout({
                                 activeVersionId ? (
                                     <>
                                         <Editor key={'editor-' + activeVersionId} />
-                                        <SelectionsMenu key={'selections-menu-' + activeVersionId} />
-                                        <UndoRedoMenu key={'undo-redo-menu-' + activeVersionId}/>
-                                        <ClearMockViewMenu key={'clear-mock-view-menu-' + activeVersionId} />
+                                        {/*<SelectionsMenu key={'selections-menu-' + activeVersionId} />*/}
+                                        {/*<UndoRedoMenu key={'undo-redo-menu-' + activeVersionId}/>*/}
+                                        {/*<ClearMockViewMenu key={'clear-mock-view-menu-' + activeVersionId} />*/}
+                                        <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId} />
                                         <VersionPublishedMenu routeUuid={routeUuid} />
                                     </>
                                 ) : (

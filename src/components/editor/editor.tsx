@@ -116,6 +116,9 @@ export default function Editor() {
                 setDeleteNodesDialogOpen(true);
             }
         },
+        'a': () => {
+            setShowAddingNode(true);
+        },
         'shift+a': () => {
             setShowAddingNode(true);
         },
@@ -224,7 +227,7 @@ export default function Editor() {
                 ))}
 
                 {connections && connections
-                    .filter((connection) => !connection.hidden)
+                    .filter((connection) => (!connection.hidden && !connection.temp))
                     .map((connection) => (
                         <Connection
                             key={connection.id}

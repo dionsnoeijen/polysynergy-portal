@@ -22,6 +22,8 @@ export type Connection = {
     targetGroupId?: string;
     sourceGroupId?: string;
     isInGroup?: string;
+    // Temporary added for service editing
+    temp?: boolean;
 };
 
 export enum NodeEnabledConnector {
@@ -58,6 +60,7 @@ export enum FormType {
     EditConfig = 'editConfig',
     AddConfig = 'addConfig',
     PlaceConfig = 'placeConfig',
+    PublishedVariableForm = 'publishedVariableForm',
 }
 
 export enum InOut {
@@ -229,6 +232,8 @@ export type Node = {
     package?: Package;
     path: string;
     code: string;
+    // Temporary added for service editing
+    temp?: boolean;
 };
 
 export interface NodeProps {

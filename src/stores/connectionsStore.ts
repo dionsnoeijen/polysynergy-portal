@@ -4,6 +4,10 @@ import useNodesStore from "@/stores/nodesStore";
 
 type ConnectionsStore = {
     connections: Connection[];
+
+    addTempConnections: (connections: Connection[]) => void;
+    clearTempConnections: () => void;
+
     getConnection: (connectionId: string) => Connection | undefined;
     addConnection: (connection: Connection) => Connection | undefined;
     removeConnectionById: (connectionId: string) => void;
@@ -38,6 +42,24 @@ const memoizedResults = new Map();
 
 const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
     connections: [],
+
+    addTempConnections: (connections: Connection[]) => {
+        connections.map((connection) => {
+            connection.temp = true;
+        });
+        set((state) => ({
+            connections: [
+                ...state.connections,
+                ...connections,
+            ],
+        }));
+    },
+
+    clearTempConnections: () => {
+        set((state) => ({
+            connections: state.connections.filter((c) => !c.temp),
+        }));
+    },
 
     getConnection: (connectionId: string): Connection | undefined => {
         return useConnectionsStore.getState()

@@ -5,26 +5,29 @@ import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useServicesStore from "@/stores/servicesStore";
 
-import { Heading, Subheading } from "@/components/heading";
-import { Divider } from "@/components/divider";
-import { Button } from "@/components/button";
+import {Heading, Subheading} from "@/components/heading";
+import {Divider} from "@/components/divider";
+import {Button} from "@/components/button";
 import {FormType, NodeType, NodeVariable} from "@/types/types";
-import { Input } from "@/components/input";
-import { Text } from "@/components/text";
-import { makeServiceFromNodeForStorage, promoteNodeInStateToService } from "@/utils/packageGroupNode";
-import { storeService } from "@/api/servicesApi";
-import { Alert, AlertActions, AlertDescription, AlertTitle } from "@/components/alert";
-
-import Node from "@/components/editor/nodes/node";
+import {Input} from "@/components/input";
+import {Text} from "@/components/text";
+import {
+    makeServiceFromNodeForStorage,
+    promoteNodeInStateToService,
+} from "@/utils/packageGroupNode";
+import {storeService, updateService} from "@/api/servicesApi";
+import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import RichTextEditor from "@/components/rich-text-editor";
 import SvgSelector from "@/components/editor/forms/service/svg-selector";
 import findPublishedVariables from "@/utils/findPublishedVariables";
+import Node from "@/components/editor/nodes/node";
 
 const ServiceForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
     const formType = useEditorStore((state) => state.formType);
-    const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+    const selectedNodes = useEditorStore((state) => state.selectedNodes);
+    const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
 
     const nodes = useNodesStore((state) => state.nodes);
     const getNodesInGroup = useNodesStore((state) => state.getNodesInGroup);
@@ -33,9 +36,12 @@ const ServiceForm: React.FC = () => {
     const updateNodeVariablePublishedTitle = useNodesStore((state) => state.updateNodeVariablePublishedTitle);
     const getNodesByIds = useNodesStore((state) => state.getNodesByIds);
 
+    const clearTempNodes = useNodesStore((state) => state.clearTempNodes);
+    const clearTempConnections = useConnectionsStore((state) => state.clearTempConnections);
+
     const connections = useConnectionsStore((state) => state.connections);
-    const getService = useServicesStore((state) => state.getService);
     const fetchServices = useServicesStore((state) => state.fetchServices);
+    const deleteService = useServicesStore((state) => state.deleteService);
 
     const [name, setName] = useState("");
     const [category, setCategory] = useState("");
@@ -50,21 +56,15 @@ const ServiceForm: React.FC = () => {
 
     let node = undefined;
 
-    if (formType === FormType.AddService) {
+    if (formType === FormType.AddService || formType === FormType.EditService) {
         node = getNode(selectedNodes[0]);
     }
 
-    if (formType === FormType.EditService && formEditRecordId) {
-        node = getService(formEditRecordId);
-        if (node) {
-            node = node.node_setup.versions[0].content.nodes[0];
-        }
-    }
-
     const handleDelete = useCallback(() => {
+        deleteService(formEditRecordId as string);
         closeForm('Service deleted successfully');
         setShowDeleteAlert(false);
-    }, [closeForm]);
+    }, [closeForm, deleteService, formEditRecordId]);
 
     useEffect(() => {
         if (!showDeleteAlert) return;
@@ -88,12 +88,14 @@ const ServiceForm: React.FC = () => {
         setCategory(node.service?.category || "");
         setIcon(node.icon || "");
         setDescription(node.service?.description || "");
-        setNodeNames({ [node.handle]: node.name });
+        setNodeNames({ [node.id]: node.name });
         if (node.type === NodeType.Group) {
             const nodesInGroup = getNodesInGroup(node.id);
             const nodesByIds = getNodesByIds(nodesInGroup);
             nodesByIds.map((n) => {
-                setNodeNames((prev) => ({ ...prev, [n.id]: n.name }));
+                setNodeNames(
+                    (prev) => ({ ...prev, [n.id]: n.name })
+                );
             });
             const { variablesByHandle } = findPublishedVariables(nodesByIds);
             setPublishedVariables(variablesByHandle);
@@ -101,7 +103,7 @@ const ServiceForm: React.FC = () => {
             const { variablesByHandle } = findPublishedVariables([node]);
             setPublishedVariables(variablesByHandle);
         }
-    }, [getNodesByIds, getNodesInGroup, node]);
+    }, [ getNodesByIds, getNodesInGroup, node ]);
 
     if (formType === FormType.AddService) {
         if (selectedNodes.length > 1) {
@@ -143,6 +145,9 @@ const ServiceForm: React.FC = () => {
             delete node.service;
             node.icon = undefined;
         }
+        setSelectedNodes([]);
+        clearTempNodes();
+        clearTempConnections();
         closeForm();
     };
 
@@ -175,31 +180,57 @@ const ServiceForm: React.FC = () => {
 
         setError(null);
 
-        promoteNodeInStateToService(
-            node,
-            name,
-            description,
-            category,
-            icon
-        );
+        if (formType === FormType.EditService) {
+            if (!node.service || !formEditRecordId) return;
 
-        const nodeForStorage = makeServiceFromNodeForStorage(
-            node,
-            nodes,
-            connections,
-        );
+            node.service.name = name;
+            node.service.category = category;
+            node.service.description = description;
 
-        if (!nodeForStorage.id) return;
+            const nodeForStorage = makeServiceFromNodeForStorage(
+                node,
+                nodes,
+                connections,
+            );
 
-        await storeService(
-            nodeForStorage.id,
-            name,
-            category,
-            description,
-            nodeForStorage,
-        );
+            await updateService(
+                formEditRecordId,
+                name,
+                category,
+                description,
+                nodeForStorage
+            );
+        } else {
+            promoteNodeInStateToService(
+                node,
+                name,
+                description,
+                category,
+                icon
+            );
 
+            const nodeForStorage = makeServiceFromNodeForStorage(
+                node,
+                nodes,
+                connections,
+            );
+
+            if (!nodeForStorage.id) return;
+
+            await storeService(
+                nodeForStorage.id,
+                name,
+                category,
+                description,
+                nodeForStorage,
+            );
+        }
+
+        setSelectedNodes([]);
+        clearTempNodes();
+        clearTempConnections();
         closeForm();
+
         await fetchServices();
     };
 
@@ -321,25 +352,25 @@ const ServiceForm: React.FC = () => {
                     </Text>
                 </div>
                 <div>
-                    {Object.entries(publishedVariables).map(([nodeHandle, data], index) => (
+                    {Object.entries(publishedVariables).map(([nodeId, data], index) => (
                         data.variables.map((variable) => (
-                            <div key={`node-pv-${nodeHandle}-${index}-${variable.handle}`}>
+                            <div key={`node-pv-${nodeId}-${index}-${variable.handle}`}>
                                 {index > 0 && <Divider className={'mt-5 mb-5'} />}
                                 <div>
-                                    <Subheading className={'mb-1'}>{`${nodeNames[nodeHandle]} - ${variable.name}`}</Subheading>
+                                    <Subheading className={'mb-1'}>{`${nodeNames[data.nodeIds[0]]} - ${variable.name}`}</Subheading>
                                     <Input
                                         className={'mb-2'}
                                         placeholder={'Variable title'}
                                         value={variable.published_title as string}
                                         onChange={(e) => {
                                             const title: string = e.target.value;
-                                            updateNodeVariablePublishedTitle(nodeHandle, variable.handle, title);
+                                            updateNodeVariablePublishedTitle(data.nodeIds[0], variable.handle, title);
                                         }}
                                     />
                                     <RichTextEditor
-                                        value={variable.published_description || ""}
+                                        value={variable.published_description ?? ""}
                                         onChange={(description) => {
-                                            updateNodeVariablePublishedDescription(nodeHandle, variable.handle, description);
+                                            updateNodeVariablePublishedDescription(data.nodeIds[0], variable.handle, description);
                                         }}
                                     />
                                 </div>
@@ -372,7 +403,7 @@ const ServiceForm: React.FC = () => {
                         </div>
                         <div className="flex justify-end self-center">
                             <Button color="red" type="button" onClick={() => setShowDeleteAlert(true)}>
-                                Delete blueprint
+                                Delete service
                             </Button>
                         </div>
                     </section>

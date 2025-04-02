@@ -4,6 +4,7 @@ import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
 import {BoltIcon, DocumentTextIcon} from "@heroicons/react/24/outline";
 import useConnectionsStore from "@/stores/connectionsStore";
+import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 
 type Props = {
     variable: NodeVariable;
@@ -27,6 +28,8 @@ const TextAreaVariable: React.FC<Props> = ({
 
     const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
 
+    const validationType = interpretNodeVariableType(variable).validationType;
+
     return (
         <div className={`flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative ${disabled && 'opacity-0'}`}>
             {variable.has_in && isMirror && !onlyOut && (
@@ -38,7 +41,7 @@ const TextAreaVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={'string'}
+                nodeVariableType={validationType}
             />}
             <div className="flex items-center">
                 <h3 className={`font-semibold truncate ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-600 dark:text-white'}`}>{variable.name}:</h3>
@@ -51,7 +54,7 @@ const TextAreaVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={'string'}
+                nodeVariableType={validationType}
             />}
             {variable.has_out && isMirror && !onlyIn && (
                 <FakeConnector out />

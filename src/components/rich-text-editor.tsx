@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { Editor, EditorState, RichUtils } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
 import { stateFromHTML } from 'draft-js-import-html';
@@ -11,14 +11,38 @@ interface RichTextEditorProps {
   onChange: (html: string) => void;
 }
 
+const createEditorStateFromValue = (value?: string): EditorState => {
+  if (!value || value.trim() === "") {
+    return EditorState.createEmpty();
+  }
+
+  try {
+    const content = stateFromHTML(value);
+    if (!content?.getBlockMap) throw new Error("Invalid content");
+    return EditorState.createWithContent(content);
+  } catch (e) {
+    console.warn("Draft parse failed, using empty editor:", e);
+    return EditorState.createEmpty();
+  }
+};
+
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ value = "", onChange }) => {
-  const content = stateFromHTML(value || "");
-  const [editorState, setEditorState] = useState(EditorState.createWithContent(content));
+  const [editorState, setEditorState] = useState(() => createEditorStateFromValue(value));
+
+  useEffect(() => {
+    const currentHTML = stateToHTML(editorState.getCurrentContent());
+    if (currentHTML !== value) {
+      setEditorState(createEditorStateFromValue(value));
+    }
+  // eslint-disable-next-line
+  }, [value]);
 
   const handleEditorChange = (state: EditorState) => {
-    setEditorState(state);
-    const htmlContent = stateToHTML(state.getCurrentContent());
-    onChange(htmlContent);
+      setEditorState(state);
+      const content = state.getCurrentContent();
+      const isEmpty = !content.hasText() && content.getBlockMap().first()?.getType() === "unstyled";
+      const htmlContent = isEmpty ? "" : stateToHTML(content);
+      onChange(htmlContent);
   };
 
   const handleKeyCommand = (command: string, state: EditorState) => {

@@ -31,6 +31,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
             onContextMenu={handleContextMenu}
             onMouseDown={handleNodeMouseDown}
             data-type="node"
+            data-adding={node.view.adding}
             data-node-id={node.id}
         >
             {mockNode && <ExecutionOrder mockNode={mockNode} centered={true} />}
@@ -45,7 +46,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                     NodeVariableType.Number,
                     NodeVariableType.String,
                     NodeVariableType.TruePath
-                ]}
+                ].join(',')}
             />
             <Connector
                 in
@@ -58,7 +59,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                     NodeVariableType.Number,
                     NodeVariableType.String,
                     NodeVariableType.TruePath
-                ]}
+                ].join(',')}
             />
 
             {node.type === NodeComparisonType.LargerThan && (
@@ -83,7 +84,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 handle={NodeVariableType.TruePath}
                 className={`-translate-y-5 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
-                nodeVariableType={[NodeVariableType.TruePath, NodeVariableType.Number, NodeVariableType.String]}
+                nodeVariableType={[NodeVariableType.TruePath, NodeVariableType.Number, NodeVariableType.String].join(',')}
             />
             <Connector
                 out
@@ -91,7 +92,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 handle={NodeVariableType.FalsePath}
                 className={`translate-y-2 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
-                nodeVariableType={[NodeVariableType.FalsePath, NodeVariableType.Number, NodeVariableType.String]}
+                nodeVariableType={[NodeVariableType.FalsePath, NodeVariableType.Number, NodeVariableType.String].join(',')}
             />
         </div>
     );

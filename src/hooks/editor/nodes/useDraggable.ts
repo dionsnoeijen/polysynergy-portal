@@ -102,6 +102,8 @@ const useDraggable = () => {
     }, [setIsDragging, handleDraggableMouseMove, updateNodePosition, setIsPasting]);
 
     const onDragMouseDown = useCallback((e: React.MouseEvent) => {
+        if (e.currentTarget.getAttribute('data-adding') === 'true') return;
+
         const currentTime = Date.now();
         const timeSinceLastClick = currentTime - lastMouseDownTimeRef.current;
         lastMouseDownTimeRef.current = currentTime;

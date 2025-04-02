@@ -70,6 +70,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                 top: preview ? '0px' : `${position.y}px`,
             }}
             data-type="node"
+            data-adding={node.view.adding}
             data-node-id={node.id}
         >
             {mockNode && <ExecutionOrder mockNode={mockNode} centered={false}/>}

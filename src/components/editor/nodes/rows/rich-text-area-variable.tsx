@@ -4,6 +4,7 @@ import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
 import {BoltIcon, DocumentTextIcon} from "@heroicons/react/24/outline";
 import useConnectionsStore from "@/stores/connectionsStore";
+import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 
 type Props = {
     variable: NodeVariable;
@@ -27,6 +28,8 @@ const RichTextAreaVariable: React.FC<Props> = ({
 
     const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
 
+    const validationType = interpretNodeVariableType(variable).validationType;
+
     return (
         <div
             className={`flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative ${disabled && 'opacity-0'}`}>
@@ -39,7 +42,7 @@ const RichTextAreaVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={variable.type}
+                nodeVariableType={validationType}
             />}
             {isValueConnected ? <span className="ml-1"><BoltIcon className={'w-4 h-4 text-yellow-300'} /></span> : (
             <>
@@ -59,7 +62,7 @@ const RichTextAreaVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled}
                 groupId={groupId}
-                nodeVariableType={variable.type}
+                nodeVariableType={validationType}
             />}
             {variable.has_out && isMirror && !onlyIn && (
                 <FakeConnector out />

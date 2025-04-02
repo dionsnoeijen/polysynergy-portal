@@ -4,7 +4,7 @@ import {FormType, Blueprint, Fundamental} from "@/types/types";
 import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import useBlueprintsStore from "@/stores/blueprintsStore";
 import useEditorStore from "@/stores/editorStore";
-import {Link} from "@/components/link";
+import Link from "next/link";
 
 export default function BlueprintTree(): ReactElement {
     const blueprints = useBlueprintsStore((state) => state.blueprints);

@@ -8,6 +8,7 @@ type ValidationType = {
 
 export default function interpretNodeVariableType(variable: NodeVariable): ValidationType {
     const types = variable.type.split('|').map((type) => type.trim());
+
     const containsNone = types.includes('None');
     if (types.indexOf('None') > -1) {
         types.splice(types.indexOf('None'), 1);

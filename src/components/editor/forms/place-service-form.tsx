@@ -102,7 +102,10 @@ const PlaceServiceForm: React.FC = () => {
         );
 
         if (unpackedConnections.length > 0) {
-            unpackedConnections.forEach((c) => addConnection(c));
+            unpackedConnections.forEach((c) => {
+                delete c.temp;
+                addConnection(c)
+            });
         }
 
         const nodesToAdd =
@@ -121,6 +124,8 @@ const PlaceServiceForm: React.FC = () => {
                         }
                     }
                 });
+
+                delete nodeCopy.temp;
 
                 nodeCopy.view = {
                     x: nodeCopy.view.x + position.x,

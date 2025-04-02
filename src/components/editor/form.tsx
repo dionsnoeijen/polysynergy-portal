@@ -17,6 +17,7 @@ import ProjectPublishForm from "@/components/editor/forms/project-publish-form";
 import ConfigForm from "@/components/editor/forms/config-form";
 import FileEditorForm from "@/components/editor/forms/file-editor-form";
 import ListVariableForm from "@/components/editor/forms/list-variable-form";
+import PublishedVariableForm from "@/components/editor/forms/published-variable-form";
 
 const Form: React.FC = () => {
     const { formType } = useEditorStore();
@@ -96,6 +97,11 @@ const Form: React.FC = () => {
                 formType === FormType.ProjectPublish
             ) && (
                 <ProjectPublishForm />
+            )}
+            {(
+                formType === FormType.PublishedVariableForm
+            ) && (
+                <PublishedVariableForm />
             )}
         </div>
     );

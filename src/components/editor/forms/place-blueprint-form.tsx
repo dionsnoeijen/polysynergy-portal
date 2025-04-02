@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from "react";
-import useEditorStore from "@/stores/editorStore";
-import useNodesStore from "@/stores/nodesStore";
-import useConnectionsStore from "@/stores/connectionsStore";
 import { Heading, Subheading } from "@/components/heading";
 import { Blueprint, Connection, Node, NodeVariable, NodeVariableType, Package } from "@/types/types";
 import { Divider } from "@/components/divider";
@@ -10,6 +7,9 @@ import { Button } from "@/components/button";
 import { globalToLocal } from "@/utils/positionUtils";
 import { Text } from "@/components/text";
 import { VariableTypeComponents } from "@/components/editor/sidebars/dock";
+import useConnectionsStore from "@/stores/connectionsStore";
+import useNodesStore from "@/stores/nodesStore";
+import useEditorStore from "@/stores/editorStore";
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 import useBlueprintsStore from "@/stores/blueprintsStore";
 import findPublishedVariables from "@/utils/findPublishedVariables";

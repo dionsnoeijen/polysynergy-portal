@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import {ChevronDownIcon, ChevronLeftIcon, PlusIcon} from "@heroicons/react/24/outline";
 import {Fundamental, ListItemWithId} from "@/types/types";
 import {Button} from "@/components/button";
@@ -13,6 +13,7 @@ type ListProps<T extends ListItemWithId> = {
     addDisabled?: boolean;
     title?: string;
     fundamental: Fundamental;
+    toggleOpen?: (isOpen: boolean) => void;
 };
 
 export default function TreeList<T extends ListItemWithId>({
@@ -23,7 +24,8 @@ export default function TreeList<T extends ListItemWithId>({
     addButtonClick,
     addDisabled = false,
     title = "List",
-    fundamental
+    fundamental,
+    toggleOpen = () => {},
 }: ListProps<T>): React.JSX.Element {
     const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
     const openTree = useEditorStore((state) => state.openTree);
@@ -41,6 +43,7 @@ export default function TreeList<T extends ListItemWithId>({
         } else {
             openTree(fundamental);
         }
+        toggleOpen(!isOpen);
     }
 
     const getItemClassName = (item: T) => {
@@ -102,6 +105,7 @@ export default function TreeList<T extends ListItemWithId>({
                 >
                     <div className="flex items-center justify-between border-l border-b border-t border-r border-sky-500 dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
                         <Button
+                            disabled={addDisabled}
                             onClick={addButtonClick}
                             plain
                             className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0 !px-0 !py-0"
@@ -122,7 +126,6 @@ export default function TreeList<T extends ListItemWithId>({
                         plain
                         className="w-full hover:cursor-pointer p-0 border border-dotted border-white/50"
                     >
-                        {title}
                         <PlusIcon />
                     </Button>
                 </div>

@@ -6,6 +6,8 @@ import useConnectionsStore from "@/stores/connectionsStore";
 
 type NodesStore = {
     nodes: Node[];
+    addTempNodes: (nodes: Node[]) => void;
+    clearTempNodes: () => void;
     enableAllNodesView: () => void;
     enableNodesView: (nodeIds: string[]) => void;
     disableAllNodesViewExceptByIds: (nodeIds: string[]) => void;
@@ -16,7 +18,7 @@ type NodesStore = {
     toggleNodeViewCollapsedState: (nodeId: string) => void;
     toggleNodeVariableOpenState: (nodeId: string, variableHandle: string) => void;
     getNodeVariableOpenState: (nodeId: string, variableHandle: string) => boolean;
-    addNode: (node: Node) => void;
+    addNode: (node: Node, forceNewHandle?: boolean) => void;
     addGroupNode: (node: Partial<Node>) => void;
     removeNode: (nodeId: string) => void;
     updateNode: (nodeId: string, updatedFields: Partial<Node>) => void;
@@ -62,7 +64,7 @@ const nodesByIdsCache = new Map<string, Node[]>();
 
 export const createDefaultNode = (overrides = {}): Partial<Node> => ({
     id: uuidv4(),
-    handle: uniqueNamesGenerator({dictionaries: [adjectives, colors, animals]}),
+    handle: uniqueNamesGenerator({dictionaries: [adjectives, animals, colors]}),
     name: "Default Name",
     category: "hidden",
     type: NodeType.Rows,
@@ -75,7 +77,23 @@ export const createDefaultNode = (overrides = {}): Partial<Node> => ({
 
 const useNodesStore = create<NodesStore>((set, get) => ({
     nodes: [],
+
     trackedNodeId: null,
+
+    addTempNodes: (nodes) => {
+        nodes.map((node) => {
+            node.temp = true;
+        });
+        set((state) => ({
+            nodes: [...state.nodes, ...nodes]
+        }));
+    },
+
+    clearTempNodes: () => {
+        set((state) => ({
+            nodes: state.nodes.filter((node) => !node.temp)
+        }));
+    },
 
     toggleNodeViewCollapsedState: (nodeId: string) => {
         set((state) => ({
@@ -202,11 +220,10 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
         // If the flow state is going to be set to FlowState.FlowIn of FlowState.FlowStop,
         // First check if this is allowed by checking if there are one or
-        // more driving connections. Otherwise it makes no sense.
+        // more driving connections. Otherwise, it makes no sense.
         if ((flowState === FlowState.FlowIn || flowState === FlowState.FlowStop) &&
             drivingConnections.length > 0
         ) {
-            console.log('SETTING TO FLOWIN OR FLOWSTOP', flowState);
             set((state) => ({
                 nodes: state.nodes.map((node) =>
                     node.id === nodeId ? {
@@ -233,11 +250,20 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    addNode: (node) => {
+    addNode: (node, forceNewHandle = false) => {
         nodesByIdsCache.clear();
 
         node.id = node.id ? node.id : uuidv4();
-        node.handle = node.handle ? node.handle : uniqueNamesGenerator({dictionaries: [adjectives, colors, animals]});
+        if (forceNewHandle || !node.handle) {
+            node.handle = uniqueNamesGenerator({
+                dictionaries: [
+                    adjectives,
+                    animals,
+                    colors,
+                ]
+            });
+        }
+
         node.flowState = FlowState.Enabled;
         node.driven = false;
 
@@ -253,7 +279,9 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             };
         }
 
-        set((state) => ({ nodes: [...state.nodes, node],}));
+        set((state) => ({
+            nodes: [...state.nodes, node]
+        }));
     },
 
     addGroupNode: (node: Partial<Node>) => {
@@ -296,7 +324,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     updateNodePosition: (nodeId: string, x: number, y: number) => {
         nodesByIdsCache.clear();
-
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
@@ -380,7 +407,9 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             .getAllNodeIdsOfNodesThatAreInAClosedGroup();
 
         return get().nodes.filter(
-            (node) => !nodeIdsOfNodesInClosedGroups.includes(node.id)
+            (node) =>
+                !nodeIdsOfNodesInClosedGroups.includes(node.id) &&
+                !node.temp
         );
     },
 
@@ -402,6 +431,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     updateNodeVariablePublishedTitle: (nodeId: string, variableHandle: string, title: string) => {
         nodesByIdsCache.clear();
+
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId

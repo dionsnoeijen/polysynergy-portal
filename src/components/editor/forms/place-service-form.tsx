@@ -3,16 +3,15 @@ import useServicesStore from "@/stores/servicesStore";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import { Heading, Subheading } from "@/components/heading";
-import {Connection, Node, NodeVariable, NodeVariableType, Package, Service} from "@/types/types";
+
+import { Heading } from "@/components/heading";
+import { Connection, Node, NodeVariable, NodeVariableType, Package, Service } from "@/types/types";
 import { Divider } from "@/components/divider";
 import { unpackNode } from "@/utils/packageGroupNode";
 import { Button } from "@/components/button";
 import { globalToLocal } from "@/utils/positionUtils";
-import EditDictVariable from "@/components/editor/forms/variable/edit-dict-variable";
-import { Text } from "@/components/text";
-import { VariableTypeComponents } from "@/components/editor/sidebars/dock";
-import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
+
+import PublishedVariables from "@/components/editor/forms/variable/published-variables";
 
 const PlaceServiceForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -37,62 +36,12 @@ const PlaceServiceForm: React.FC = () => {
         if (!packagedData) return;
 
         const { nodes, connections } = unpackNode(packagedData);
-        const initialVariables: { [nodeId: string]: { [handle: string]: NodeVariable[] } } = {};
-        const initialSimpleVariables: { [nodeId: string]: { [handle: string]: string } } = {};
-        const pubVariables: { variable: NodeVariable; nodeId: string }[] = [];
 
-        nodes.forEach((node) => {
-            const dictVariables = node.variables.filter(
-                (variable) => variable.published && variable.type === NodeVariableType.Dict
-            );
-            const otherVariables = node.variables.filter(
-                (variable) => variable.published && variable.type !== NodeVariableType.Dict
-            );
-            if (dictVariables.length > 0) {
-                initialVariables[node.id] = {};
-                dictVariables.forEach((variable) => {
-                    initialVariables[node.id][variable.handle] = (variable.value as NodeVariable[]) || [];
-                    pubVariables.push({ variable, nodeId: node.id });
-                });
-            }
-            if (otherVariables.length > 0) {
-                initialSimpleVariables[node.id] = {};
-                otherVariables.forEach((variable) => {
-                    initialSimpleVariables[node.id][variable.handle] = (variable.value as string) || "";
-                    pubVariables.push({ variable, nodeId: node.id });
-                });
-            }
-        });
-
-        setVariables(initialVariables);
-        setSimpleVariables(initialSimpleVariables);
-        setPublishedVariables(pubVariables);
         setUnpackedNodes(nodes);
         setUnpackedConnections(connections || []);
     }, [service]);
 
     if (!service) return null;
-
-    const handleVariableChange = (nodeId: string, updatedVariables: NodeVariable[], handle?: string) => {
-        if (!handle) return;
-        setVariables((prev) => ({
-            ...prev,
-            [nodeId]: {
-                ...prev[nodeId],
-                [handle]: updatedVariables,
-            },
-        }));
-    };
-
-    const handleSimpleVariableChange = (nodeId: string, handle: string, value: string) => {
-        setSimpleVariables((prev) => ({
-            ...prev,
-            [nodeId]: {
-                ...prev[nodeId],
-                [handle]: value,
-            },
-        }));
-    };
 
     const handleSubmit = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -147,7 +96,6 @@ const PlaceServiceForm: React.FC = () => {
         }
 
         closeForm();
-
     };
 
     return (
@@ -155,52 +103,15 @@ const PlaceServiceForm: React.FC = () => {
             <Heading>{service.name}</Heading>
             <Divider className="my-10" soft bleed />
 
-            {publishedVariables.map(({ variable, nodeId }) => {
-                const { baseType } = interpretNodeVariableType(variable);
-                if (baseType === NodeVariableType.Dict) {
-                    return (
-                        <div key={nodeId + "-" + variable.handle}>
-                            <Subheading>{`${variable.published_title}`}</Subheading>
-                            {variable.published_description && (
-                                <div className="mb-4 rounded-md border border-white/10 p-4">
-                                    <Text dangerouslySetInnerHTML={{ __html: variable.published_description }} />
-                                </div>
-                            )}
-                            <EditDictVariable
-                                title={`${variable.handle}`}
-                                onlyValues={true}
-                                variables={variables[nodeId]?.[variable.handle] || []}
-                                handle={variable.handle}
-                                onChange={(updatedVariables, handle) =>
-                                    handleVariableChange(nodeId, updatedVariables, handle)
-                                }
-                            />
-                            <Divider className="my-10" soft bleed />
-                        </div>
-                    );
-                } else {
-                    const VariableComponent = VariableTypeComponents[baseType];
-                    return VariableComponent ? (
-                        <div key={nodeId + "-" + variable.handle}>
-                            <Subheading>{`${variable.published_title}`}</Subheading>
-                            {variable.published_description && (
-                                <div className="mb-4 rounded-md border border-white/10 p-4">
-                                    <Text dangerouslySetInnerHTML={{ __html: variable.published_description }} />
-                                </div>
-                            )}
-                            <VariableComponent
-                                nodeId={nodeId}
-                                variable={variable}
-                                publishedButton={false}
-                                // @ts-expect-error - @todo: Test this form and fix the typing
-                                onChange={(value) => handleSimpleVariableChange(nodeId, variable.handle, value)}
-                                currentValue={simpleVariables[nodeId]?.[variable.handle]}
-                            />
-                            <Divider className="my-10" soft bleed />
-                        </div>
-                    ) : null;
-                }
-            })}
+            <PublishedVariables
+                nodes={unpackedNodes}
+                variables={variables}
+                setVariables={setVariables}
+                simpleVariables={simpleVariables}
+                setSimpleVariables={setSimpleVariables}
+                publishedVariables={publishedVariables}
+                setPublishedVariables={setPublishedVariables}
+            />
 
             <div className="flex justify-end gap-4 p-10">
                 <Button type="button" onClick={() => closeForm()} plain>

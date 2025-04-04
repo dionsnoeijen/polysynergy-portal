@@ -55,7 +55,11 @@ const NodeVariables: React.FC<Props> = ({
     return (
         <>
             {variables.map(({ variable, nodeId }) => {
-                if (!variable || !nodeId) return null;
+                if (!variable) return null;
+                if (!nodeId) {
+                    // In case of editing the node (by coding), there is no nodeId
+                    nodeId = 'temp-id';
+                }
                 const isOpen = getNodeVariableOpenState(nodeId, variable.handle);
                 return getVariableComponent(variable, isOpen, handleToggle, nodeId, node, isMirror, onlyIn, onlyOut);
             })}

@@ -2,7 +2,6 @@ import React from "react";
 
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore  from "@/stores/nodesStore";
-import useServicesStore from "@/stores/servicesStore";
 
 import clsx from "clsx";
 import Heading from "@/components/editor/sidebars/elements/heading";
@@ -24,7 +23,7 @@ import NodeHandle from "@/components/editor/sidebars/dock/node-handle";
 import VariableTypeJson from "@/components/editor/sidebars/dock/variable-type-json";
 import VariableTypeFiles from "@/components/editor/sidebars/dock/variable-type-files";
 
-import {FormType, Node, NodeVariable, NodeVariableType, Service} from "@/types/types";
+import {Node, NodeVariable, NodeVariableType} from "@/types/types";
 import {Button} from "@/components/button";
 import {InformationCircleIcon} from "@heroicons/react/24/outline";
 

@@ -43,6 +43,7 @@ type NodesStore = {
     isNodeDeletable: (nodeIds: string[]) => boolean;
     getAllNestedNodesByIds: (nodeIds: string[]) => Node[];
     getNodesByPath: (path: string) => Node[] | undefined;
+    leadsToPlayConfig: (startNodeId: string) => Node | undefined;
 
     openGroup: (nodeId: string) => void;
     isNodeInGroup: (nodeId: string) => string | null;
@@ -68,7 +69,7 @@ export const createDefaultNode = (overrides = {}): Partial<Node> => ({
     name: "Default Name",
     category: "hidden",
     type: NodeType.Rows,
-    view: { x: 0, y: 0, width: 200, height: 200, collapsed: false },
+    view: {x: 0, y: 0, width: 200, height: 200, collapsed: false},
     flowState: FlowState.Enabled,
     driven: false,
     variables: [],
@@ -788,7 +789,34 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     getNodesByPath: (path: string): Node[] | undefined => {
         const state = get();
         return state.nodes.filter((node) => node.path === path);
-    }
+    },
+
+    leadsToPlayConfig: (startNodeId: string): Node | undefined => {
+        const visited = new Set<string>();
+
+        const dfs = (nodeId: string): Node | undefined => {
+            if (visited.has(nodeId)) return undefined;
+            visited.add(nodeId);
+
+            const node = get().getNode(nodeId);
+            if (!node) return undefined;
+
+            if (node.path === "nodes.nodes.play.config.PlayConfig") return node;
+
+            const inConnections = useConnectionsStore
+                .getState()
+                .findInConnectionsByNodeId(nodeId);
+
+            for (const conn of inConnections) {
+                const result = dfs(conn.sourceNodeId);
+                if (result) return result;
+            }
+
+            return undefined;
+        };
+
+        return dfs(startNodeId);
+    },
 }));
 
 export default useNodesStore;

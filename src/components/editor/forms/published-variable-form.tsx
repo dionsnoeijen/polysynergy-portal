@@ -1,8 +1,16 @@
 import {Heading} from "@/components/heading";
 import {Divider} from "@/components/divider";
-import React, {useEffect, useState} from "react";
 import {Button} from "@/components/button";
-import {Fundamental} from "@/types/types";
+import {
+    Blueprint,
+    Config,
+    Fundamental,
+    NodeVariable,
+    Route,
+    Schedule,
+    Service
+} from "@/types/types";
+import React, {useEffect, useState} from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
@@ -10,11 +18,13 @@ import useSchedulesStore from "@/stores/schedulesStore";
 import useServicesStore from "@/stores/servicesStore";
 import useConfigsStore from "@/stores/configsStore";
 import useBlueprintsStore from "@/stores/blueprintsStore";
+import PublishedVariables from "@/components/editor/forms/variable/published-variables";
+import {formatSegments} from "@/utils/formatters";
 
 const PublishedVariableForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
-
-    const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
+    const nodes = useNodesStore((state) => state.nodes);
+    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
     const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
@@ -29,8 +39,11 @@ const PublishedVariableForm: React.FC = () => {
     const getBlueprint = useBlueprintsStore((state) => state.getBlueprint);
 
     const [error, setError] = useState<string | null>(null);
-    const [activeItem, setActiveItem] = useState<any>(null);
+    const [activeItem, setActiveItem] = useState<Route|Schedule|Service|Config|Blueprint|null|undefined>();
     const [activeFundamental, setActiveFundamental] = useState<Fundamental|null>(null);
+    const [publishedVariables, setPublishedVariables] = useState<{ variable: NodeVariable; nodeId: string }[]>([]);
+    const [variables, setVariables] = useState<{ [nodeId: string]: { [handle: string]: NodeVariable[] } }>({});
+    const [simpleVariables, setSimpleVariables] = useState<{ [nodeId: string]: { [handle: string]: string } }>({});
 
     useEffect(() => {
         if (!activeRouteId && !activeScheduleId && !activeServiceId && !activeConfigId && !activeBlueprintId) {
@@ -74,21 +87,51 @@ const PublishedVariableForm: React.FC = () => {
         closeForm();
     };
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        Object.entries(variables).forEach(([nodeId, handles]) => {
+            Object.entries(handles).forEach(([handle, value]) => {
+                updateNodeVariable(nodeId, handle, value);
+            });
+        });
+
+        Object.entries(simpleVariables).forEach(([nodeId, handles]) => {
+            Object.entries(handles).forEach(([handle, value]) => {
+                updateNodeVariable(nodeId, handle, value);
+            });
+        });
+
+        closeForm();
+    };
+
     return (
-        <form method={'post'} className={'p-10'}>
+        <form onSubmit={handleSubmit} className={'p-10'}>
             <Heading>{
                 activeFundamental &&
                 activeFundamental.charAt(0).toUpperCase() +
                 activeFundamental.slice(1)
-            }: {activeItem?.name}</Heading>
+            }: {activeFundamental === Fundamental.Route ?
+                '/' + formatSegments((activeItem as Route)?.segments) :
+                (activeItem as Schedule|Service|Config)?.name}
+            </Heading>
+
+            <Divider className="my-10" soft bleed />
+
+            <PublishedVariables
+                nodes={nodes}
+                variables={variables}
+                setVariables={setVariables}
+                simpleVariables={simpleVariables}
+                setSimpleVariables={setSimpleVariables}
+                publishedVariables={publishedVariables}
+                setPublishedVariables={setPublishedVariables}
+            />
+
             <Divider className="my-10" soft bleed />
 
             <div className="flex justify-end gap-4">
-                {error && (
-                    <div className="text-red-500">
-                        {error}
-                    </div>
-                )}
+                {error && (<div className="text-red-500">{error}</div>)}
                 <Button type="button" onClick={handleCancel} plain>
                     Cancel
                 </Button>

@@ -1,6 +1,6 @@
 import React from "react";
 import { NodeVariable } from "@/types/types";
-import {BoltIcon, DocumentTextIcon, ForwardIcon} from "@heroicons/react/24/outline";
+import {BoltIcon, ForwardIcon} from "@heroicons/react/24/outline";
 import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";

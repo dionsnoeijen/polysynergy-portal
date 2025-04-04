@@ -19,8 +19,8 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
 
     return (
         <div
-            className={`absolute select-none flex items-center justify-center ring-2 bg-orange-400/60 backdrop-blur-lg backdrop-opacity-60 rounded-[50%] ${
-                selectedNodes.includes(node.id) ? "ring-white shadow-2xl" : "ring-orange-200/90 shadow-sm"
+            className={`absolute select-none flex items-center justify-center ring-orange-300 bg-zinc-800 bg-opacity-50 backdrop-blur-lg backdrop-opacity-60 rounded-[50%] ${
+                selectedNodes.includes(node.id) ? "shadow-2xl ring-4" : "shadow-sm ring-2"
             } ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'} ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}`}
             style={{
                 left: `${position.x}px`,
@@ -40,7 +40,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 nodeId={node.id}
                 handle="a"
                 iconClassName="text-white dark:text-white"
-                className={`-translate-y-5 ring-orange-200/50 bg-orange-400 dark:bg-orange-400 ${node.view.disabled && 'select-none opacity-0'}`}
+                className={`-translate-y-5 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
                 nodeVariableType={[
                     NodeVariableType.Number,
@@ -53,7 +53,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 nodeId={node.id}
                 handle="b"
                 iconClassName="text-white dark:text-white"
-                className={`translate-y-2 ring-orange-200/50 bg-orange-400 dark:bg-orange-400 ${node.view.disabled && 'select-none opacity-0'}`}
+                className={`translate-y-2 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
                 nodeVariableType={[
                     NodeVariableType.Number,

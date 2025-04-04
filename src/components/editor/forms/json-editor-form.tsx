@@ -11,7 +11,7 @@ const JsonEditorForm: React.FC = () => {
     const {getNode, updateNodeVariable} = useNodesStore();
     const {closeForm, formEditVariable, formEditRecordId} = useEditorStore();
     const [node, setNode] = useState<Node>();
-    const [editorHeight, setEditorHeight] = useState(400);
+    // const [editorHeight, setEditorHeight] = useState(400);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const editorRef = useRef<any>(null);
     const [json, setJson] = useState<string | undefined>();
@@ -32,8 +32,8 @@ const JsonEditorForm: React.FC = () => {
         editorRef.current = editor;
 
         const updateHeight = () => {
-            const contentHeight = editor.getContentHeight();
-            setEditorHeight(contentHeight + 20); // Voeg wat padding toe
+            // const contentHeight = editor.getContentHeight();
+            // setEditorHeight(contentHeight + 20); // Voeg wat padding toe
         };
 
         updateHeight();

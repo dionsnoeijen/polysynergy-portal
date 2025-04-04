@@ -5,7 +5,6 @@ import React, {useRef, useEffect, useCallback, useMemo, useState} from 'react';
 import useEditorStore from "@/stores/editorStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
-import useMockStore from "@/stores/mockStore";
 
 import {useZoom} from "@/hooks/editor/useZoom";
 import {usePan} from "@/hooks/editor/usePan";
@@ -53,7 +52,6 @@ export default function Editor() {
     const nodes = useNodesStore((state) => state.nodes);
 
     const connections = useConnectionsStore((state) => state.connections);
-    const clearMockStore = useMockStore((state) => state.clearMockStore);
 
     const {handleDeleteSelectedNodes} = useDeleteNode();
     const {handleZoom} = useZoom();

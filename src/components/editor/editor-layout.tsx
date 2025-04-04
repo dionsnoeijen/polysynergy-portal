@@ -2,21 +2,20 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon} from "@heroicons/react/24/outline";
+import {usePathname} from "next/navigation";
 import ItemManager from "@/components/editor/sidebars/item-manager";
 import Dock from "@/components/editor/sidebars/dock";
-import useEditorStore from "@/stores/editorStore";
 import Form from "@/components/editor/form";
 import Docs from "@/components/editor/docs";
-import SelectionsMenu from "@/components/editor/editormenus/selections-menu";
-import UndoRedoMenu from "@/components/editor/editormenus/undo-redo-menu";
 import BottomBar from "@/components/editor/bottombars/bottom-bar";
 import ContextMenu from "@/components/editor/context-menu";
 import dynamic from 'next/dynamic';
 import VersionPublishedMenu from "@/components/editor/editormenus/version-published-menu";
 import fetchAndApplyNodeSetup from "@/utils/fetchNodeSetup";
-import ClearMockViewMenu from "@/components/editor/editormenus/clear-mock-view-menu";
-import useAvailableNodeStore from "@/stores/availableNodesStore";
 import TopLeftEditorMenu from "@/components/editor/editormenus/top-left-editor-menu";
+import useEditorStore from "@/stores/editorStore";
+import useAvailableNodeStore from "@/stores/availableNodesStore";
+import useMockStore from "@/stores/mockStore";
 
 const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
@@ -62,6 +61,13 @@ export function EditorLayout({
     const setActiveConfigId = useEditorStore((state) => state.setActiveConfigId);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const closeFormMessage = useEditorStore((state) => state.closeFormMessage);
+
+    const pathname = usePathname();
+    const clearMockStore = useMockStore((state) => state.clearMockStore);
+
+    useEffect(() => {
+        clearMockStore();
+    }, [clearMockStore, pathname]);
 
     useEffect(() => {
         setHeight({horizontalEditorLayout: window.innerHeight * 0.85});

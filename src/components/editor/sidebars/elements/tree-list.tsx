@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import {ChevronDownIcon, ChevronLeftIcon, PlusIcon} from "@heroicons/react/24/outline";
 import {Fundamental, ListItemWithId} from "@/types/types";
 import {Button} from "@/components/button";
@@ -27,15 +27,9 @@ export default function TreeList<T extends ListItemWithId>({
     fundamental,
     toggleOpen = () => {},
 }: ListProps<T>): React.JSX.Element {
-    const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
     const openTree = useEditorStore((state) => state.openTree);
     const closeTree = useEditorStore((state) => state.closeTree);
     const isOpen = useEditorStore((state) => state.isTreeOpen(fundamental));
-
-    const handleScroll = (e: React.UIEvent<HTMLUListElement>) => {
-        const { scrollTop, clientHeight, scrollHeight } = e.currentTarget;
-        setIsScrolledToBottom(scrollTop + clientHeight >= scrollHeight - 5);
-    };
 
     const handleTreeToggle = (isOpen: boolean) => {
         if (isOpen) {
@@ -81,7 +75,6 @@ export default function TreeList<T extends ListItemWithId>({
 
             <div className="relative">
                 <ul
-                    onScroll={handleScroll}
                     className={`overflow-y-auto transition-all duration-300 ${
                         isOpen ? "max-h-[20rem]" : "max-h-0"
                     }`}

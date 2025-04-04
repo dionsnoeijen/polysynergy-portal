@@ -14,7 +14,6 @@ import {
 } from '@/components/sidebar'
 import { SidebarLayout } from '@/components/sidebar-layout'
 import {
-    ChartBarIcon,
     UsersIcon,
 } from '@heroicons/react/24/outline'
 import {
@@ -61,10 +60,6 @@ export function ApplicationLayout({
                             <SidebarItem href="/" current={pathname === '/'}>
                                 <HomeIcon />
                                 <SidebarLabel>Projects</SidebarLabel>
-                            </SidebarItem>
-                            <SidebarItem href="/stats" current={pathname.startsWith('/stats')}>
-                                <ChartBarIcon />
-                                <SidebarLabel>Stats</SidebarLabel>
                             </SidebarItem>
                             <SidebarItem href="/accounts" current={pathname.startsWith('/accounts')}>
                                 <UsersIcon />

@@ -49,7 +49,7 @@ export default function ServiceTree(): ReactElement {
 
         addTempNodes(serviceNodes);
         addTempConnections(serviceConnections);
-        setSelectedNodes([topLevelNode.id]);
+        setSelectedNodes([topLevelNode.id as string]);
 
         openForm(FormType.EditService, service.id);
     };

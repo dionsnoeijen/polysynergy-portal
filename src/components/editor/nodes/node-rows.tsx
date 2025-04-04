@@ -142,6 +142,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             data-type="node"
             data-node-id={node.id}
         >
+            {mockNode && <ExecutionOrder mockNode={mockNode} centered={false}/>}
             {node?.has_enabled_switch && (
                 <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
             )}

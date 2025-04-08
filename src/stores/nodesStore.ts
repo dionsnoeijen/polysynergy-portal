@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 import {v4 as uuidv4} from "uuid";
-import {FlowState, Group, Node, NodeType, NodeVariable} from "@/types/types";
+import {FlowState, Group, Node, NodeType, NodeVariable, NodeVariableType} from "@/types/types";
 import {adjectives, animals, colors, uniqueNamesGenerator} from 'unique-names-generator';
 import useConnectionsStore from "@/stores/connectionsStore";
 
@@ -44,6 +44,7 @@ type NodesStore = {
     getAllNestedNodesByIds: (nodeIds: string[]) => Node[];
     getNodesByPath: (path: string) => Node[] | undefined;
     leadsToPlayConfig: (startNodeId: string) => Node | undefined;
+    findMainPlayNode: () => Node | undefined;
 
     openGroup: (nodeId: string) => void;
     isNodeInGroup: (nodeId: string) => string | null;
@@ -427,6 +428,20 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     getNodeVariable: (nodeId, variableHandle) => {
         const node = get().getNode(nodeId);
+
+        if (!node) return undefined;
+
+        if (variableHandle === 'node') {
+            return {
+                handle: 'node',
+                name: node.name,
+                type: NodeVariableType.Node,
+                value: null,
+                published: false,
+                has_in: true
+            }
+        }
+
         return node?.variables.find((variable) => variable.handle === variableHandle);
     },
 
@@ -817,6 +832,15 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
         return dfs(startNodeId);
     },
+
+    findMainPlayNode: (): Node | undefined => {
+        const nodes = get().nodes;
+
+        return nodes.find((node) =>
+            node.path === "nodes.nodes.mock.mock_schedule.MockSchedule" ||
+            node.path === "nodes.nodes.mock.mock_http_request.MockHttpRequest"
+        );
+    }
 }));
 
 export default useNodesStore;

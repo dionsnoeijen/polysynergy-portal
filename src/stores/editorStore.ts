@@ -371,6 +371,14 @@ const useEditorStore = create<EditorState>((set, get) => ({
             isPasting: true
         });
 
+        const openGroup = get().openGroup;
+
+        if (openGroup) {
+            pastedNodeIds.map((nodeId) => {
+                useNodesStore.getState().addNodeToGroup(openGroup, nodeId);
+            });
+        }
+
         return pastedNodeIds;
     },
 }));

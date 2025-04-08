@@ -64,7 +64,8 @@ export const storeService = async (
     name: string,
     category: string,
     description: string,
-    packagedData: Package
+    packagedData: Package,
+    projectIds: string[]
 ) => {
     try {
         const idToken = getIdToken();
@@ -78,14 +79,12 @@ export const storeService = async (
             body: JSON.stringify({
                 id,
                 name,
-                metadata: {
-                    category,
-                    description
-                },
+                metadata: { category, description },
                 node_setup_content: {
                     nodes: packagedData.nodes,
                     connections: packagedData.connections
-                }
+                },
+                project_ids: projectIds,
             }),
         });
 
@@ -101,10 +100,10 @@ export const storeService = async (
     }
 };
 
-export const fetchServices = async () => {
+export const fetchServices = async (projectId: string) => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${config.API_URL}/services/`, {
+        const response = await fetch(`${config.API_URL}/services/?project_id=${projectId}`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${idToken}`,

@@ -61,6 +61,7 @@ export enum FormType {
     AddConfig = 'addConfig',
     PlaceConfig = 'placeConfig',
     PublishedVariableForm = 'publishedVariableForm',
+    EditTemplate = 'editTemplate'
 }
 
 export enum InOut {
@@ -103,8 +104,10 @@ export enum NodeVariableType {
     RichTextArea = 'richtextarea',
     Code = 'code',
     Json = 'json',
+    Template = 'template',
     Files = 'files',
-    Dependency = 'dependency'
+    Dependency = 'dependency',
+    Node = 'node',
 }
 
 export enum NodeType {
@@ -154,6 +157,17 @@ export type Dock = {
     key_label?: string;
     type_label?: string;
     value_label?: string;
+    type_field?: boolean;
+    type_field_default?: string;
+    in_switch_default?: boolean;
+    in_switch_enabled?: boolean;
+    in_type_override?: string;
+    out_switch_default?: boolean;
+    out_switch_enabled?: boolean;
+    out_type_override?: string;
+    key_field?: boolean;
+    value_field?: boolean;
+    template_editor?: boolean;
 };
 
 export type NodeVariable = {
@@ -286,6 +300,7 @@ export type Service = {
     name: string;
     metadata: Metadata;
     node_setup: NodeSetup;
+    project_ids?: string[];
 };
 
 export enum HttpMethod {

@@ -26,13 +26,55 @@ export const globalToLocal = (globalX: number, globalY: number) => {
     };
 };
 
+// const buildSelector = (
+//     type: InOut,
+//     handle: string,
+//     nodeId: string,
+//     groupId?: string
+// ) => {
+//     if (!groupId) {
+//         groupId = 'something';
+//     }
+//     return `[data-type="${type}"][data-handle="${handle}"][data-node-id="${nodeId}"],
+//     [data-type="${type}"][data-handle="${handle}"][data-group-id="${groupId}"][data-node-id="${nodeId}"]`;
+// }
+
 const buildSelector = (type: InOut, handle: string, nodeId: string) => {
     return `[data-type="${type}"][data-handle="${handle}"][data-node-id="${nodeId}"],
     [data-type="${type}"][data-handle="${handle}"][data-group-id="${nodeId}"]`;
 }
+//
+// const buildSelector = (
+//     type: InOut,
+//     handle: string,
+//     nodeId: string,
+//     groupId?: string
+// ): string => {
+//     const selectors = [
+//         `[data-type="${type}"][data-handle="${handle}"][data-node-id="${nodeId}"]`,
+//     ];
+//
+//     if (groupId) {
+//         selectors.push(
+//             `[data-type="${type}"][data-handle="${handle}"][data-group-id="${groupId}"][data-node-id="${nodeId}"]`
+//         );
+//     } else {
+//         // Voor connectie richting group zelf
+//         selectors.push(
+//             `[data-type="${type}"][data-handle="${handle}"][data-group-id="${nodeId}"]`
+//         );
+//     }
+//
+//     return selectors.join(",");
+// };
 
-export const calculateConnectorPositionByAttributes = (nodeId: string, handle: string, type: InOut) => {
-    let selector = buildSelector(type, handle, nodeId);
+export const calculateConnectorPositionByAttributes = (
+    nodeId: string,
+    handle: string,
+    type: InOut,
+    groupId?: string
+) => {
+    let selector = buildSelector(type, handle, nodeId, groupId);
     let target = document.querySelector(selector) as HTMLElement;
 
     if (!target) {

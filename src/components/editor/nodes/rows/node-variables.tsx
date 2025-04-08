@@ -16,6 +16,8 @@ import useNodesStore from "@/stores/nodesStore";
 import useToggleConnectionCollapse from "@/hooks/editor/nodes/useToggleConnectionCollapse";
 import FileVariable from "@/components/editor/nodes/rows/file-variable";
 import DependencyVariable from "@/components/editor/nodes/rows/dependency-variable";
+import NodeVariablePlaceholder from "@/components/editor/nodes/rows/node-variable";
+import TemplateVariable from "@/components/editor/nodes/rows/template-variable";
 
 type Props = {
     node: Node;
@@ -122,6 +124,10 @@ const getVariableComponent = (
             return <FileVariable key={key} {...commonProps} />;
         case NodeVariableType.Dependency:
             return <DependencyVariable key={key} {...commonProps} />;
+        case NodeVariableType.Template:
+            return <TemplateVariable key={key} {...commonProps} />;
+        case NodeVariableType.Node:
+            return <NodeVariablePlaceholder key={key} {...commonProps} />;
         case NodeVariableType.Boolean:
         case NodeVariableType.TruePath:
         case NodeVariableType.FalsePath:

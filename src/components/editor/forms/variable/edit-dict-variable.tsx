@@ -51,14 +51,15 @@ const EditDictVariable: React.FC<Props> = ({
     };
 
     const addVariable = () => {
-        setNewVariable({
+        const newVariable = {
             handle: "",
             type: NodeVariableType.String,
             value: "",
-            has_in: false,
-            has_out: false,
+            has_in: dock?.in_switch_default ?? false,
+            has_out: dock?.out_switch_default ?? false,
             published: false,
-        });
+        };
+        setNewVariable(newVariable);
         onChange([...variables, newVariable], handle);
     };
 
@@ -78,9 +79,9 @@ const EditDictVariable: React.FC<Props> = ({
                     <TableHead>
                         <TableRow>
                             {!(dock && dock.in_switch === false) && <TableHeader>In</TableHeader>}
-                            <TableHeader>{dock?.key_label || "Key"}</TableHeader>
-                            <TableHeader>{dock?.type_label || "Type"}</TableHeader>
-                            <TableHeader>{dock?.value_label || "Value"}</TableHeader>
+                            {!(dock && dock.key_field === false) && <TableHeader>{dock?.key_label || "Key"}</TableHeader>}
+                            {!(dock && dock.type_field === false) && <TableHeader>{dock?.type_label || "Type"}</TableHeader>}
+                            {!(dock && dock.value_field === false) && <TableHeader>{dock?.value_label || "Value"}</TableHeader>}
                             {!(dock && dock.out_switch === false) && <TableHeader>Out</TableHeader>}
                             <TableHeader>Actions</TableHeader>
                         </TableRow>
@@ -92,17 +93,17 @@ const EditDictVariable: React.FC<Props> = ({
                                     <Switch
                                         checked={variable.has_in}
                                         onChange={(checked) => updateVariable(index, "has_in", checked)}
-                                        disabled={onlyValues}
+                                        disabled={onlyValues || dock?.in_switch_enabled === false}
                                     />
                                 </TableCell>}
-                                <TableCell>
+                                {!(dock && dock.key_field === false) && <TableCell>
                                     <Input
                                         value={variable.handle}
                                         onChange={(e) => updateVariable(index, "handle", e.target.value)}
                                         disabled={onlyValues}
                                     />
-                                </TableCell>
-                                <TableCell>
+                                </TableCell>}
+                                {!(dock && dock.type_field === false) && <TableCell>
                                     <Select
                                         value={variable.type}
                                         onChange={(e) =>
@@ -116,18 +117,18 @@ const EditDictVariable: React.FC<Props> = ({
                                         <option value={NodeVariableType.List}>List</option>
                                         <option value={NodeVariableType.Dict}>Dict</option>
                                     </Select>
-                                </TableCell>
-                                <TableCell>
+                                </TableCell>}
+                                {!(dock && dock.value_field === false) && <TableCell>
                                     <Input
                                         value={String(variable.value)}
                                         onChange={(e) => updateVariable(index, "value", e.target.value)}
                                     />
-                                </TableCell>
+                                </TableCell>}
                                 {!(dock && dock.out_switch === false) && <TableCell>
                                     <Switch
                                         checked={variable.has_out}
                                         onChange={(checked) => updateVariable(index, "has_out", checked)}
-                                        disabled={onlyValues}
+                                        disabled={onlyValues || dock?.out_switch_enabled === false}
                                     />
                                 </TableCell>}
                                 <TableCell>

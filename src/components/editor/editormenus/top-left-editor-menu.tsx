@@ -4,15 +4,20 @@ import useMockStore from "@/stores/mockStore";
 import {
     AdjustmentsHorizontalIcon,
     ArrowTurnDownLeftIcon,
-    ArrowTurnDownRightIcon
+    ArrowTurnDownRightIcon,
+    PlayIcon,
+    ArrowUturnUpIcon,
+    PlusIcon,
+    CursorArrowRaysIcon,
+    StopIcon
 } from "@heroicons/react/24/outline";
 import {Divider} from "@/components/divider";
 import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
-import {ArrowUturnUpIcon, PlusIcon, CursorArrowRaysIcon, StopIcon} from "@heroicons/react/16/solid";
 import {FormType} from "@/types/types";
+import useNodesStore from "@/stores/nodesStore";
+import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
 
 const TopLeftEditorMenu: React.FC = () => {
-
     const clickSelect = useEditorStore((state) => state.clickSelect);
     const boxSelect = useEditorStore((state) => state.boxSelect);
     const setClickSelect = useEditorStore((state) => state.setClickSelect);
@@ -32,6 +37,8 @@ const TopLeftEditorMenu: React.FC = () => {
 
     const clearMockStore = useMockStore((state) => state.clearMockStore);
     const hasMockData = useMockStore((state) => state.hasMockData());
+    const mainPlayNode = useNodesStore((state) => state.findMainPlayNode());
+    const handlePlay = useHandlePlay();
 
     useKeyBindings({
         'c': () => {
@@ -83,6 +90,14 @@ const TopLeftEditorMenu: React.FC = () => {
                     onMouseDown={clearMockStore}
                 >
                     <ArrowUturnUpIcon className="w-4 h-4" />
+                </button>
+                <button
+                    disabled={!mainPlayNode}
+                    type="button"
+                    className={`w-full text-lg font-semibold text-white rounded-full p-2 hover:bg-zinc-600`}
+                    onMouseDown={(e) => handlePlay(e, mainPlayNode?.id as string)}
+                >
+                    <PlayIcon className="w-4 h-4" />
                 </button>
             </div>
 

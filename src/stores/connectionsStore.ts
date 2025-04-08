@@ -25,6 +25,7 @@ type ConnectionsStore = {
     showConnectionsInsideOpenGroup: (group: Node) => Connection[];
     getConnectionsNotInAGroup: () => Connection[];
     showConnectionsOutsideGroup: () => Connection[];
+    hideConnectionsOutsideGroup: () => Connection[];
     getConnectionsInsideGroup: (group: Node) => Connection[];
     updateConnectionEnd: (
         connectionId: string,
@@ -283,6 +284,23 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             .showConnectionsByIds(showConnections.map((c) => c.id));
 
         return showConnections;
+    },
+
+    hideConnectionsOutsideGroup: (): Connection[] => {
+        memoizedResults.clear();
+
+        useConnectionsStore.getState().hideAllConnections();
+
+        const hideConnections = useConnectionsStore
+            .getState()
+            .getConnectionsNotInAGroup();
+
+        console.log(hideConnections);
+
+        useConnectionsStore.getState()
+            .hideConnectionsByIds(hideConnections.map((c) => c.id));
+
+        return hideConnections;
     },
 
     showConnectionsInsideOpenGroup: (group: Node): Connection[] => {

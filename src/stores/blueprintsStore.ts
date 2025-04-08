@@ -36,8 +36,10 @@ const useBlueprintsStore = create<BlueprintsStore>((
     },
 
     fetchBlueprints: async () => {
+        const { activeProjectId } = useEditorStore.getState();
+        if (!activeProjectId) return;
         try {
-            const data: Blueprint[] = await fetchBlueprintsAPI();
+            const data: Blueprint[] = await fetchBlueprintsAPI(activeProjectId);
             set({ blueprints: data });
         } catch (error) {
             console.error('Failed to fetch blueprints:', error);

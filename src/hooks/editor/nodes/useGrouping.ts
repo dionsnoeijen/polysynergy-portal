@@ -65,8 +65,6 @@ const useGrouping = () => {
 
         const groupId = uuidv4();
 
-        // const groupId = addGroup({nodes: selectedNodes});
-
         const connectionsToRemove: Connection[] = [];
         const connectionsToAssignToGroup: Connection[] = [];
 
@@ -148,6 +146,7 @@ const useGrouping = () => {
         openGroupStore(groupId);
         showGroup(groupId);
         disableAllNodesViewExceptByIds([...selectedNodes]);
+        openGroup(groupId);
     };
 
     const closeGroup = (
@@ -156,12 +155,12 @@ const useGrouping = () => {
         const group = getGroupById(groupId);
 
         if (!group || !group.group || !group.group.nodes) return;
-        const bounds = getNodeBoundsFromDOM(group?.group?.nodes);
-
-        const closedGroupNodeWidth = group.view.width / 2;
-        const closedGroupNodeHeight = group.view.height / 2;
-        const x = (bounds.minX + (bounds.maxX - bounds.minX) / 2) - closedGroupNodeWidth;
-        const y = (bounds.minY + (bounds.maxY - bounds.minY) / 2) - closedGroupNodeHeight;
+        // const bounds = getNodeBoundsFromDOM(group?.group?.nodes);
+        //
+        // const closedGroupNodeWidth = group.view.width / 2;
+        // const closedGroupNodeHeight = group.view.height / 2;
+        // const x = (bounds.minX + (bounds.maxX - bounds.minX) / 2) - closedGroupNodeWidth;
+        // const y = (bounds.minY + (bounds.maxY - bounds.minY) / 2) - closedGroupNodeHeight;
 
         closeGroupStore(groupId);
         hideGroup(groupId);
@@ -176,7 +175,7 @@ const useGrouping = () => {
             setOpenGroup(null);
         }
 
-        updateNodePosition(groupId, x, y);
+        // updateNodePosition(groupId, x, y);
         setSelectedNodes([]);
 
         // 1: See if the group we are closing, is part of another group, if so, display
@@ -200,7 +199,7 @@ const useGrouping = () => {
             showConnections = showConnectionsOutsideGroup();
         }
         setTimeout(() => {
-            updateNodesDirectly([groupId], 0, 0, {[groupId]: {x, y}});
+            // updateNodesDirectly([groupId], 0, 0, {[groupId]: {x, y}});
             updateConnectionsDirectly(showConnections);
         }, 0);
     };
@@ -251,7 +250,6 @@ const useGrouping = () => {
         const connections = [...inConnections, ...outConnections];
 
         removeConnections(connections);
-        // removeGroupStore(groupId);
         removeNode(groupId);
         enableAllNodesView();
     };

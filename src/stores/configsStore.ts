@@ -33,8 +33,10 @@ const useConfigsStore = create<ConfigsStore>((
     },
 
     fetchConfigs: async () => {
+        const { activeProjectId } = useEditorStore.getState();
+        if (!activeProjectId) return;
         try {
-            const data: Config[] = await fetchConfigsAPI();
+            const data: Config[] = await fetchConfigsAPI(activeProjectId);
             set({configs: data});
         } catch (error) {
             console.error('Failed to fetch configs:', error);

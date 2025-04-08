@@ -18,6 +18,8 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         return { baseType: NodeVariableType.TruePath, validationType: types.join(','), containsNone };
     } else if (types.includes('false_path')) {
         return { baseType: NodeVariableType.FalsePath, validationType: types.join(','), containsNone };
+    } else if (types.includes('node')) {
+        return { baseType: NodeVariableType.Node, validationType: [...types, NodeVariableType.TruePath].join(','), containsNone };
     } else if (types.includes('str') || types.includes('string')) {
         if (variable.dock) {
             if (variable?.dock.secret) {
@@ -28,6 +30,9 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
             }
             if (variable?.dock.rich_text_area) {
                 return { baseType: NodeVariableType.RichTextArea, validationType: [...types, NodeVariableType.RichTextArea].join(','), containsNone};
+            }
+            if (variable?.dock.template_editor) {
+                return { baseType: NodeVariableType.Template, validationType: [...types, NodeVariableType.String].join(','), containsNone};
             }
             if (variable?.dock.code_editor) {
                 return { baseType: NodeVariableType.Code, validationType: NodeVariableType.Code, containsNone};

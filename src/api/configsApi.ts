@@ -46,11 +46,11 @@ export const fetchConfig = async (configId: string): Promise<Config> => {
     return response.json();
 }
 
-export const fetchConfigs = async (): Promise<Config[]> => {
+export const fetchConfigs = async (projectId: string): Promise<Config[]> => {
     try {
         const idToken = getIdToken();
         const response = await fetch(
-            `${apiConfig.API_URL}/configs/`,
+            `${apiConfig.API_URL}/configs/?project_id=${projectId}`,
             {
                 headers: {
                     Accept: "application/json",

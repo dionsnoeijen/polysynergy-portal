@@ -41,7 +41,7 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
                                 <TableRow>
                                     {!(variable.dock && variable.dock.in_switch === false) && <TableHeader className="!py-1 !pl-2 !pr-2">in</TableHeader>}
                                     <TableHeader className="!py-1">{variable.dock?.key_label || "key"}</TableHeader>
-                                    <TableHeader className="!py-1">{variable.dock?.value_label || "value"}</TableHeader>
+                                    {!(variable.dock && variable.dock.value_field === false) && <TableHeader className="!py-1">{variable.dock?.value_label || "value"}</TableHeader>}
                                     {!(variable.dock && variable.dock.out_switch === false) && <TableHeader className="!py-1 !pl-2 !pr-2">out</TableHeader>}
                                 </TableRow>
                             </TableHead>

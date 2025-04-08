@@ -26,6 +26,7 @@ import VariableTypeFiles from "@/components/editor/sidebars/dock/variable-type-f
 import {Node, NodeVariable, NodeVariableType} from "@/types/types";
 import {Button} from "@/components/button";
 import {InformationCircleIcon} from "@heroicons/react/24/outline";
+import VariableTypeTemplate from "@/components/editor/sidebars/dock/variable-type-template";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -49,6 +50,8 @@ export const VariableTypeComponents = {
     [NodeVariableType.Code]: VariableTypeCode,
     [NodeVariableType.Json]: VariableTypeJson,
     [NodeVariableType.Files]: VariableTypeFiles,
+    [NodeVariableType.Template]: VariableTypeTemplate,
+    [NodeVariableType.Node]: null,
 };
 
 const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {

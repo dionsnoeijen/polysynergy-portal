@@ -40,15 +40,18 @@ export const fetchBlueprint = async (blueprintId: string): Promise<Blueprint> =>
     return response.json();
 };
 
-export const fetchBlueprints = async (): Promise<Blueprint[]> => {
+export const fetchBlueprints = async (projectId: string): Promise<Blueprint[]> => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${config.API_URL}/blueprints/`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${idToken}`,
-            },
-        });
+        const response = await fetch(
+            `${config.API_URL}/blueprints/?project_id=${projectId}`,
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${idToken}`,
+                },
+            }
+        );
 
         return response.json();
     } catch (error) {

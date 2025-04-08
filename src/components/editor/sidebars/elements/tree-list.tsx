@@ -119,7 +119,7 @@ export default function TreeList<T extends ListItemWithId>({
                         plain
                         className="w-full hover:cursor-pointer p-0 border border-dotted border-white/50"
                     >
-                        <PlusIcon />
+                        {title} <PlusIcon />
                     </Button>
                 </div>
             )}

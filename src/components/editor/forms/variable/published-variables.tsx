@@ -32,15 +32,15 @@ type TabItem = {
 };
 
 const PublishedVariables: React.FC<Props> = ({
-    nodes,
-    variables,
-    setVariables,
-    simpleVariables,
-    setSimpleVariables,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    publishedVariables,
-    setPublishedVariables,
-}) => {
+                                                 nodes,
+                                                 variables,
+                                                 setVariables,
+                                                 simpleVariables,
+                                                 setSimpleVariables,
+                                                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                                 publishedVariables,
+                                                 setPublishedVariables,
+                                             }) => {
     const leadsToPlayConfig = useNodesStore((state) => state.leadsToPlayConfig);
     const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
 
@@ -168,52 +168,58 @@ const PublishedVariables: React.FC<Props> = ({
                 </div>
             )}
 
-            {activeTab?.group.variables.map(({variable, nodeId}) => {
-                const {baseType} = interpretNodeVariableType(variable);
-                if (baseType === NodeVariableType.Dict) {
-                    return (
-                        <div key={nodeId + "-" + variable.handle}>
-                            <Subheading>{variable.published_title}</Subheading>
-                            {variable.published_description && (
-                                <div className="mb-4 rounded-md border border-white/10 p-4">
-                                    <Text dangerouslySetInnerHTML={{__html: variable.published_description}}/>
-                                </div>
-                            )}
-                            <EditDictVariable
-                                title={variable.handle}
-                                onlyValues={true}
-                                variables={variables[nodeId]?.[variable.handle] || []}
-                                handle={variable.handle}
-                                onChange={(updatedVariables, handle) =>
-                                    handleVariableChange(nodeId, updatedVariables, handle)
-                                }
-                            />
-                            <Divider className="my-10" soft bleed/>
-                        </div>
-                    );
-                } else {
-                    const VariableComponent = VariableTypeComponents[baseType];
-                    return VariableComponent ? (
-                        <div key={nodeId + "-" + variable.handle}>
-                            <Subheading>{variable.published_title}</Subheading>
-                            {variable.published_description && (
-                                <div className="mb-4 rounded-md border border-white/10 p-4">
-                                    <Text dangerouslySetInnerHTML={{__html: variable.published_description}}/>
-                                </div>
-                            )}
-                            <VariableComponent
-                                nodeId={nodeId}
-                                variable={variable}
-                                publishedButton={false}
-                                // @ts-expect-error value is ambiguous
-                                onChange={(value) => handleSimpleVariableChange(nodeId, variable.handle, value)}
-                                currentValue={simpleVariables[nodeId]?.[variable.handle]}
-                            />
-                            <Divider className="my-10" soft bleed/>
-                        </div>
-                    ) : null;
-                }
-            })}
+            {!activeTab || activeTab?.group.variables.length === 0 ? (
+                <div className="rounded-md border border-white/10 p-4 text-white/60 text-sm italic">
+                    No published variables
+                </div>
+            ) : (
+                activeTab?.group.variables.map(({variable, nodeId}) => {
+                    const {baseType} = interpretNodeVariableType(variable);
+                    if (baseType === NodeVariableType.Dict) {
+                        return (
+                            <div key={nodeId + "-" + variable.handle}>
+                                <Subheading>{variable.published_title}</Subheading>
+                                {variable.published_description && (
+                                    <div className="mb-4 rounded-md border border-white/10 p-4">
+                                        <Text dangerouslySetInnerHTML={{__html: variable.published_description}}/>
+                                    </div>
+                                )}
+                                <EditDictVariable
+                                    title={variable.handle}
+                                    onlyValues={true}
+                                    variables={variables[nodeId]?.[variable.handle] || []}
+                                    handle={variable.handle}
+                                    onChange={(updatedVariables, handle) =>
+                                        handleVariableChange(nodeId, updatedVariables, handle)
+                                    }
+                                />
+                                <Divider className="my-10" soft bleed/>
+                            </div>
+                        );
+                    } else {
+                        const VariableComponent = VariableTypeComponents[baseType];
+                        return VariableComponent ? (
+                            <div key={nodeId + "-" + variable.handle}>
+                                <Subheading>{variable.published_title}</Subheading>
+                                {variable.published_description && (
+                                    <div className="mb-4 rounded-md border border-white/10 p-4">
+                                        <Text dangerouslySetInnerHTML={{__html: variable.published_description}}/>
+                                    </div>
+                                )}
+                                <VariableComponent
+                                    nodeId={nodeId}
+                                    variable={variable}
+                                    publishedButton={false}
+                                    // @ts-expect-error value is ambiguous
+                                    onChange={(value) => handleSimpleVariableChange(nodeId, variable.handle, value)}
+                                    currentValue={simpleVariables[nodeId]?.[variable.handle]}
+                                />
+                                <Divider className="my-10" soft bleed/>
+                            </div>
+                        ) : null;
+                    }
+                })
+            )}
 
             {activeTab?.group.playConfigNode && (
                 <div className="pt-4 border-t border-white/10 flex justify-end">

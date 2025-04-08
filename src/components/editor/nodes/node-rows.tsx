@@ -104,11 +104,11 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             </div>
             <div className={`flex flex-col w-full items-start overflow-visible ${node.view.disabled && 'select-none opacity-0'}`}>
                 <div className="w-full">
-                    <div
-                        className={`flex items-center justify-between w-full pl-5 pr-3 pt-1 pb-2 mb-1 relative border-b border-white/20`}
-                    >
-                        <b className={'text-sky-200 truncate'}>{node.handle}</b>
-                    </div>
+                    {node.category !== NodeType.Note && (
+                        <div className={`flex items-center justify-between w-full pl-5 pr-3 pt-1 pb-2 mb-1 relative border-b border-white/20`}>
+                            <b className={'text-sky-200 truncate'}>{node.handle}</b>
+                        </div>
+                    )}
                     {node.service && node.service.id && (
                         <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon}/>
                     )}

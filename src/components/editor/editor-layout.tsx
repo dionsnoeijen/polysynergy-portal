@@ -16,6 +16,7 @@ import TopLeftEditorMenu from "@/components/editor/editormenus/top-left-editor-m
 import useEditorStore from "@/stores/editorStore";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useMockStore from "@/stores/mockStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 
 const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
@@ -64,6 +65,8 @@ export function EditorLayout({
 
     const pathname = usePathname();
     const clearMockStore = useMockStore((state) => state.clearMockStore);
+
+    const removeConnectionById = useConnectionsStore((state) => state.removeConnectionById);
 
     useEffect(() => {
         clearMockStore();
@@ -155,6 +158,9 @@ export function EditorLayout({
                 window.debugMode = !window.debugMode;
                 console.log("Debug mode is:", window.debugMode);
             };
+            window.snipeConnection = function (connectionId: string) {
+                removeConnectionById(connectionId);
+            }
         }
 
         if (resizing) {
@@ -169,7 +175,7 @@ export function EditorLayout({
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', stopResizing);
         };
-    }, [resizing, handleMouseMove, stopResizing]);
+    }, [resizing, handleMouseMove, stopResizing, removeConnectionById]);
 
     const toggleCloseItemManager = () => {
         setItemManagerClosed(prev => !prev);

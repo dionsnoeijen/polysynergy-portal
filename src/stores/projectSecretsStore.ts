@@ -31,7 +31,7 @@ const useProjectSecretsStore = create<ProjectSecretsStore>((set, get) => ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const transformedSecrets = data.secrets.map((s: any) => ({
         id: s.ARN,
-        key: s.Name,
+        key: s.Name.split("@")[1],
         value: "",
         projectId: activeProjectId,
         description: s.Description || "",

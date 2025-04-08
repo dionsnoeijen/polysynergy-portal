@@ -11,12 +11,10 @@ import {Button} from "@/components/button";
 import {FormType, NodeType, NodeVariable} from "@/types/types";
 import {Input} from "@/components/input";
 import {Text} from "@/components/text";
-import {
-    makeServiceFromNodeForStorage,
-    promoteNodeInStateToService,
-} from "@/utils/packageGroupNode";
-import {storeService, updateService} from "@/api/servicesApi";
+import {makeServiceFromNodeForStorage, promoteNodeInStateToService} from "@/utils/packageGroupNode";
+import {updateService} from "@/api/servicesApi";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
+
 import RichTextEditor from "@/components/rich-text-editor";
 import SvgSelector from "@/components/editor/forms/service/svg-selector";
 import findPublishedVariables from "@/utils/findPublishedVariables";
@@ -42,6 +40,7 @@ const ServiceForm: React.FC = () => {
     const connections = useConnectionsStore((state) => state.connections);
     const fetchServices = useServicesStore((state) => state.fetchServices);
     const deleteService = useServicesStore((state) => state.deleteService);
+    const storeService = useServicesStore((state) => state.storeService);
 
     const [name, setName] = useState("");
     const [category, setCategory] = useState("");

@@ -15,7 +15,7 @@ const Grid: React.FC<GridProps> = ({ zoomFactor, position }) => {
 
     return (
         <div
-            className="absolute inset-0 pointer-events-none"
+            className="absolute inset-0 pointer-events-none z-10"
             style={{
                 backgroundImage: theme === 'dark' ? `
                     linear-gradient(90deg, rgba(200, 200, 200, ${0.1 * zoomFactor}) 1px, transparent 1px),

@@ -3,8 +3,7 @@ import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import {Connection} from "@/types/types";
 import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
-import {getNodeBoundsFromDOM, getNodeBoundsFromState} from "@/utils/positionUtils";
-import {updateNodesDirectly} from "@/utils/updateNodesDirectly";
+import {getNodeBoundsFromState} from "@/utils/positionUtils";
 import {NodeType} from "@/types/types";
 import {v4 as uuidv4} from "uuid";
 
@@ -12,9 +11,6 @@ const useGrouping = () => {
     const {
         selectedNodes,
         setSelectedNodes,
-        setOpenGroup,
-        closeGroup: closeGroupEditorStore,
-        openGroup: currentOpenGroup
     } = useEditorStore();
     const {
         closeGroup: closeGroupStore,
@@ -28,14 +24,14 @@ const useGrouping = () => {
         isNodeInGroup,
         addNodeToGroup,
         addGroupNode,
-        updateNodePosition,
         updateNodePositionByDelta,
         disableAllNodesViewExceptByIds,
         enableAllNodesView,
         enableNodesView,
         removeNode,
         getNode,
-        disableNodeView
+        disableNodeView,
+        openedGroup: currentOpenGroup
     } = useNodesStore();
     const {
         findInConnectionsByNodeId,
@@ -141,7 +137,6 @@ const useGrouping = () => {
             hideGroup(currentOpenGroup);
         }
 
-        setOpenGroup(groupId);
         setSelectedNodes([]);
         openGroupStore(groupId);
         showGroup(groupId);
@@ -155,27 +150,16 @@ const useGrouping = () => {
         const group = getGroupById(groupId);
 
         if (!group || !group.group || !group.group.nodes) return;
-        // const bounds = getNodeBoundsFromDOM(group?.group?.nodes);
-        //
-        // const closedGroupNodeWidth = group.view.width / 2;
-        // const closedGroupNodeHeight = group.view.height / 2;
-        // const x = (bounds.minX + (bounds.maxX - bounds.minX) / 2) - closedGroupNodeWidth;
-        // const y = (bounds.minY + (bounds.maxY - bounds.minY) / 2) - closedGroupNodeHeight;
 
         closeGroupStore(groupId);
         hideGroup(groupId);
-        closeGroupEditorStore();
 
-        const {groupStack: newStack} = useEditorStore.getState();
+        const {groupStack: newStack} = useNodesStore.getState();
         const parentGroupId = newStack[newStack.length - 1];
         if (parentGroupId) {
             showGroup(parentGroupId);
-            setOpenGroup(parentGroupId);
-        } else {
-            setOpenGroup(null);
         }
 
-        // updateNodePosition(groupId, x, y);
         setSelectedNodes([]);
 
         // 1: See if the group we are closing, is part of another group, if so, display
@@ -234,7 +218,7 @@ const useGrouping = () => {
 
         openGroupStore(groupId);
         showGroup(groupId);
-        setOpenGroup(groupId);
+        // setOpenGroup(groupId);
         setSelectedNodes([]);
 
         disableAllNodesViewExceptByIds([...nodesInGroup]);
@@ -291,7 +275,6 @@ const useGrouping = () => {
             removeConnections(connections);
 
             if (node.type === NodeType.Group) {
-                // deleteGroup(nodeId);
                 removeNode(nodeId);
             } else {
                 removeNode(nodeId);

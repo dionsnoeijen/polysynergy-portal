@@ -178,11 +178,6 @@ export const resetNodeView = (
     });
 
     if (connections === undefined) return;
-
-    connections.forEach((connection) => {
-        connection.startX = (connection.startX || 0) - originalX;
-        connection.endX = (connection.endX || 0) - originalX;
-    });
 };
 
 export const unpackNode = (packagedData: Package): Package => {

@@ -28,24 +28,28 @@ import AddNode from "@/components/editor/add-node";
 import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import PointZeroIndicator from "@/components/editor/point-zero-indicator";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
+import clsx from "clsx";
+import {EditorMode} from "@/types/types";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
     const mousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
     const zoomFactor = useEditorStore((state) => state.zoomFactor);
+    const panPosition = useEditorStore((state) => state.panPosition);
     const setEditorPosition = useEditorStore((state) => state.setEditorPosition);
     const isDragging = useEditorStore((state) => state.isDragging);
-    const panPosition = useEditorStore((state) => state.panPosition);
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const deleteNodesDialogOpen = useEditorStore((state) => state.deleteNodesDialogOpen);
     const setDeleteNodesDialogOpen = useEditorStore((state) => state.setDeleteNodesDialogOpen);
     const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
     const openContextMenu = useEditorStore((state) => state.openContextMenu);
     const copySelectedNodes = useEditorStore((state) => state.copySelectedNodes);
+    const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
     const pasteNodes = useEditorStore((state) => state.pasteNodes);
     const isPasting = useEditorStore((state) => state.isPasting);
     const isDraft = useEditorStore((state) => state.isDraft);
+    const editorMode = useEditorStore((state) => state.editorMode);
 
     const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
     const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
@@ -60,6 +64,8 @@ export default function Editor() {
     const {createGroup} = useGrouping();
     const {startDraggingAfterPaste} = useDraggable();
 
+    const [isSpacePressed, setIsSpacePressed] = useState(false);
+    const [isMouseDown, setIsMouseDown] = useState(false);
     const [isInteracted, setIsInteracted] = useState(false);
 
     useGlobalStoreListenersWithImmediateSave();
@@ -149,6 +155,33 @@ export default function Editor() {
         }
     });
 
+    useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            setIsSpacePressed(true);
+
+            useEditorStore.getState().setEditorModeWithMemory(EditorMode.Pan);
+        }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+        if (e.code === 'Space') {
+            setIsSpacePressed(false);
+            const { previousEditorMode } = useEditorStore.getState();
+            useEditorStore.getState().setEditorMode(previousEditorMode);
+        }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+    };
+}, []);
+
     const handleConfirmDelete = () => {
         handleDeleteSelectedNodes(selectedNodes);
         setDeleteNodesDialogOpen(false);
@@ -160,6 +193,7 @@ export default function Editor() {
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
+        e.stopPropagation();
         openContextMenu(
             e.clientX,
             e.clientY,
@@ -175,19 +209,44 @@ export default function Editor() {
     return (
         <div
             data-type="editor"
-            className={`relative w-full h-full overflow-hidden rounded-md`}
+            className={clsx(
+                "relative w-full h-full overflow-hidden rounded-md",
+                nodeToMoveToGroupId ? "cursor-crosshair" :
+                editorMode === EditorMode.Pan && isMouseDown ? "cursor-grabbing" :
+                editorMode === EditorMode.Pan ? "cursor-grab" :
+                "cursor-default"
+            )}
             onWheel={handleWheel}
             onMouseDown={(e) => {
-                handleEditorMouseDown();
-                handlePanMouseDown(e);
+                setIsMouseDown(true);
+                switch (editorMode) {
+                    case EditorMode.Pan:
+                        handlePanMouseDown(e);
+                        break;
+                    case EditorMode.Select:
+                        handleEditorMouseDown();
+                        break;
+                    case EditorMode.BoxSelect:
+                        // eventueel BoxSelect-handling
+                        break;
+                    case EditorMode.Draw:
+                        // laat DrawingLayer dit zelf doen, pointer-events aan etc.
+                        break;
+                }
             }}
             onMouseMove={(e) => {
                 handleMousePositionUpdate(e);
                 if (isDragging || isPasting) return;
                 handleMouseMove(e);
             }}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            onMouseUp={()=> {
+                setIsMouseDown(false);
+                handleMouseUp();
+            }}
+            onMouseLeave={() => {
+                setIsMouseDown(false);
+                handleMouseUp();
+            }}
             onContextMenu={isDraft ? handleContextMenu : () => {}}
             ref={contentRef}
         >

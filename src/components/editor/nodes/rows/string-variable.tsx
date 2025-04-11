@@ -42,6 +42,7 @@ const StringVariable: React.FC<Props> = ({
                 in
                 nodeId={nodeId}
                 handle={variable.handle}
+                parentHandle={variable.parentHandle}
                 disabled={disabled}
                 groupId={groupId}
                 nodeVariableType={validationType}
@@ -59,6 +60,7 @@ const StringVariable: React.FC<Props> = ({
                 out
                 nodeId={nodeId}
                 handle={variable.handle}
+                parentHandle={variable.parentHandle}
                 disabled={disabled}
                 groupId={groupId}
                 nodeVariableType={validationType}

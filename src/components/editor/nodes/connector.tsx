@@ -7,6 +7,7 @@ import clsx from "clsx";
 type ConnectorProps = {
     nodeId: string;
     handle?: string;
+    parentHandle?: string;
     className?: string;
     iconClassName?: string;
     disabled?: boolean;
@@ -20,6 +21,7 @@ type ConnectorProps = {
 const Connector: React.FC<ConnectorProps> = ({
     nodeId,
     handle,
+    parentHandle,
     in: isIn,
     out: isOut,
     className,
@@ -63,7 +65,7 @@ const Connector: React.FC<ConnectorProps> = ({
             data-node-id={nodeId}
             data-variable-type={nodeVariableType}
             data-group-id={groupId}
-            data-handle={handle}
+            data-handle={parentHandle ? parentHandle + '.' + handle : handle}
             data-enabled={!disabled}
             className={clsx(
                 "w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 cursor-pointer",

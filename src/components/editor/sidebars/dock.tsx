@@ -36,6 +36,8 @@ export const VariableTypeComponents = {
     [NodeVariableType.String]: VariableTypeString,
     [NodeVariableType.Bytes]: VariableTypeBytes,
     [NodeVariableType.Number]: VariableTypeNumber,
+    [NodeVariableType.Int]: VariableTypeNumber,
+    [NodeVariableType.Float]: VariableTypeNumber,
     [NodeVariableType.Dict]: VariableTypeDict,
     [NodeVariableType.Boolean]: VariableTypeBoolean,
     [NodeVariableType.List]: VariableTypeList,
@@ -56,7 +58,7 @@ export const VariableTypeComponents = {
 
 const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
-    const openGroup = useEditorStore((state) => state.openGroup);
+    const openedGroup = useNodesStore((state) => state.openedGroup);
     const nodes = useNodesStore((state) => state.nodes);
     const openDocs = useEditorStore((state) => state.openDocs);
 
@@ -64,7 +66,7 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
         nodes.find((n) => n.id === selectedNodes[0]) : null;
 
     const { group, variablesForGroup } = useVariablesForGroup(
-        openGroup || (node?.id ?? null)
+        openedGroup || (node?.id ?? null)
     );
 
     return (
@@ -99,7 +101,9 @@ const Dock: React.FC<Props> = ({ className, toggleClose, ...props }) => {
 
                         {variablesForGroup?.inVariables && variablesForGroup?.inVariables.length > 0 && (
                             <VariableGroup title="In Variables">
-                                {variablesForGroup.inVariables.map(({ variable, nodeId }) => {
+                                {variablesForGroup.inVariables
+                                    .filter((item): item is { variable: NodeVariable; nodeId: string } => !!item)
+                                    .map(({ variable, nodeId }) => {
                                     if (!variable || !variable.has_dock) return null;
                                     const { baseType } = interpretNodeVariableType(variable);
                                     const VariableComponent = VariableTypeComponents[baseType];

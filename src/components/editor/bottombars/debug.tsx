@@ -6,12 +6,15 @@ import useConnectionsStore from "@/stores/connectionsStore";
 import {useTheme} from 'next-themes';
 import dynamic from "next/dynamic";
 import useEditorStore from "@/stores/editorStore";
+import {Divider} from "@/components/divider";
 
 const ReactJson = dynamic(() => import('react-json-view'), {ssr: false});
 
 const Debug: React.FC = (): React.ReactElement => {
-    const {nodes} = useNodesStore();
-    const {connections} = useConnectionsStore();
+    const nodes = useNodesStore((state) => state.nodes);
+    const groupStack = useNodesStore((state) => state.groupStack);
+    const openedGroup = useNodesStore((state) => state.openedGroup);
+    const connections = useConnectionsStore((state) => state.connections);
     const editor = useEditorStore();
 
     const {theme} = useTheme();
@@ -19,12 +22,20 @@ const Debug: React.FC = (): React.ReactElement => {
     const [nodesSnapshot, setNodesSnapshot] = useState(nodes);
     const [connectionsSnapshot, setConnectionsSnapshot] = useState(connections);
     const [editorSnapshot, setEditorSnapshot] = useState(editor);
+    const [groupSnapshot, setGroupSnapshot] = useState({
+        groupStack: groupStack,
+        openedGroup: openedGroup,
+    });
 
     useEffect(() => {
         const interval = setInterval(() => {
             setNodesSnapshot(nodes);
             setConnectionsSnapshot(connections);
             setEditorSnapshot(editor);
+            setGroupSnapshot({
+                groupStack: groupStack,
+                openedGroup: openedGroup,
+            });
         }, 2000);
 
         return () => clearInterval(interval);
@@ -65,6 +76,14 @@ const Debug: React.FC = (): React.ReactElement => {
             <h3>Editor</h3>
         </div>
         <div className="flex-1 overflow-auto">
+            <ReactJson
+                src={groupSnapshot}
+                theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
+                collapsed={false}
+                displayDataTypes={true}
+                indentWidth={2}
+            />
+            <Divider bleed />
             <ReactJson
                 src={editorSnapshot}
                 theme={theme === 'dark' ? 'monokai' : 'rjv-default'}

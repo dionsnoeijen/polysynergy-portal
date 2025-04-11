@@ -26,47 +26,14 @@ export const globalToLocal = (globalX: number, globalY: number) => {
     };
 };
 
-// const buildSelector = (
-//     type: InOut,
-//     handle: string,
-//     nodeId: string,
-//     groupId?: string
-// ) => {
-//     if (!groupId) {
-//         groupId = 'something';
-//     }
-//     return `[data-type="${type}"][data-handle="${handle}"][data-node-id="${nodeId}"],
-//     [data-type="${type}"][data-handle="${handle}"][data-group-id="${groupId}"][data-node-id="${nodeId}"]`;
-// }
-
-const buildSelector = (type: InOut, handle: string, nodeId: string) => {
+const buildSelector = (
+    type: InOut,
+    handle: string,
+    nodeId: string,
+) => {
     return `[data-type="${type}"][data-handle="${handle}"][data-node-id="${nodeId}"],
-    [data-type="${type}"][data-handle="${handle}"][data-group-id="${nodeId}"]`;
+            [data-type="${type}"][data-handle="${handle}"][data-group-id="${nodeId}"]`;
 }
-//
-// const buildSelector = (
-//     type: InOut,
-//     handle: string,
-//     nodeId: string,
-//     groupId?: string
-// ): string => {
-//     const selectors = [
-//         `[data-type="${type}"][data-handle="${handle}"][data-node-id="${nodeId}"]`,
-//     ];
-//
-//     if (groupId) {
-//         selectors.push(
-//             `[data-type="${type}"][data-handle="${handle}"][data-group-id="${groupId}"][data-node-id="${nodeId}"]`
-//         );
-//     } else {
-//         // Voor connectie richting group zelf
-//         selectors.push(
-//             `[data-type="${type}"][data-handle="${handle}"][data-group-id="${nodeId}"]`
-//         );
-//     }
-//
-//     return selectors.join(",");
-// };
 
 export const calculateConnectorPositionByAttributes = (
     nodeId: string,
@@ -74,8 +41,12 @@ export const calculateConnectorPositionByAttributes = (
     type: InOut,
     groupId?: string
 ) => {
-    let selector = buildSelector(type, handle, nodeId, groupId);
+    let selector = buildSelector(type, handle, nodeId);
     let target = document.querySelector(selector) as HTMLElement;
+
+    if (handle === 'collapsed') {
+        console.log('collapsed', selector, target);
+    }
 
     if (!target) {
         const handleParts = handle.split('.');
@@ -84,6 +55,11 @@ export const calculateConnectorPositionByAttributes = (
             selector = buildSelector(type, newHandle, nodeId);
             target = document.querySelector(selector) as HTMLElement;
         }
+    }
+
+    if (!target && groupId) {
+        selector = buildSelector(type, NodeCollapsedConnector.Collapsed, groupId);
+        target = document.querySelector(selector) as HTMLElement;
     }
 
     if (!target) {

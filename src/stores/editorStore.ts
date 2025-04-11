@@ -1,5 +1,5 @@
 import {create} from 'zustand';
-import {Connection, FormType, Fundamental, Node, NodeVariable, Package} from "@/types/types";
+import {Connection, EditorMode, FormType, Fundamental, Node, NodeVariable, Package} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import {gatherAllIds, replaceIdsInJsonString, unpackNode} from "@/utils/packageGroupNode";
@@ -18,11 +18,14 @@ export type ContextMenu = {
 };
 
 type EditorState = {
-    debugBarAvailable: boolean;
+    // Nominee for a "per node setup" basis
     zoomFactor: number;
     setZoomFactor: (factor: number) => void;
     panPosition: { x: number; y: number };
     setPanPosition: (position: { x: number; y: number }) => void;
+
+    // Editor store native
+    debugBarAvailable: boolean;
     isDragging: boolean;
     setIsDragging: (dragging: boolean) => void;
     isDrawingConnection: string;
@@ -40,31 +43,27 @@ type EditorState = {
     setMousePosition: (position: { x: number; y: number }) => void;
     selectedNodes: string[];
     setSelectedNodes: (nodes: string[]) => void;
-    clickSelect: boolean;
-    setClickSelect: (clickSelect: boolean) => void;
     shiftSelectMore: boolean;
     setShiftSelectMore: (shiftSelectMore: boolean) => void;
     controlDeselectOne: boolean;
     setControlDeselectOne: (controlDeselectOne: boolean) => void;
-    boxSelect: boolean;
-    setBoxSelect: (boxSelect: boolean) => void;
     bottomBarView: BottomBarView;
     setBottomBarView: (view: BottomBarView) => void;
     contextMenu: ContextMenu;
     openContextMenu: (x: number, y: number, items: Array<{ label: string; action: () => void }>) => void;
     closeContextMenu: () => void;
-    groupStack: string[];
-    openGroup: string | null;
-    setOpenGroup: (groupId: string | null) => void;
-    closeGroup: () => void;
+
+    editorMode: EditorMode;
+    previousEditorMode: EditorMode;
+    setEditorMode: (mode: EditorMode) => void;
+    setEditorModeWithMemory: (mode: EditorMode) => void;
+
     deleteNodesDialogOpen: boolean;
     setDeleteNodesDialogOpen: (isOpen: boolean) => void;
-
     addingNode: string | null;
     setAddingNode: (nodeId: string | null) => void;
     showAddingNode: boolean;
     setShowAddingNode: (show: boolean) => void;
-
     activeProjectId: string;
     setActiveProjectId: (projectId: string) => void;
     activeRouteId?: string;
@@ -98,7 +97,6 @@ type EditorState = {
 
     showDocs: boolean;
     docsMarkdown: string,
-
     openDocs: (markdown: string) => void;
     closeDocs: () => void;
 
@@ -116,6 +114,9 @@ type EditorState = {
     pastedNodeIds: string[];
     setPastedNodeIds: (nodeIds: string[]) => void;
     pasteNodes: () => string[];
+
+    nodeToMoveToGroupId: string | null,
+    setNodeToMoveToGroupId: (id: string | null) => void;
 };
 
 const useEditorStore = create<EditorState>((set, get) => ({
@@ -131,6 +132,9 @@ const useEditorStore = create<EditorState>((set, get) => ({
     formType: null,
     formEditVariable: null,
     formEditRecordId: null,
+
+    nodeToMoveToGroupId: null,
+    setNodeToMoveToGroupId: (id) => set({nodeToMoveToGroupId: id}),
 
     activeProjectId: '',
     setActiveProjectId: (projectId: string) => set({activeProjectId: projectId}),
@@ -152,16 +156,16 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
     treeOpen: [Fundamental.Route, Fundamental.Schedule],
     openTree: (tree) => set((state) => {
-    if (state.treeOpen.includes(tree)) {
-        return state;
-    }
-    return { treeOpen: [...state.treeOpen, tree] };
+        if (state.treeOpen.includes(tree)) {
+            return state;
+        }
+        return {treeOpen: [...state.treeOpen, tree]};
     }),
     closeTree: (tree) => set((state) => {
         if (!state.treeOpen.includes(tree)) {
             return state;
         }
-        return { treeOpen: state.treeOpen.filter((t) => t !== tree) };
+        return {treeOpen: state.treeOpen.filter((t) => t !== tree)};
     }),
     isTreeOpen: (tree) => get().treeOpen.includes(tree),
 
@@ -222,14 +226,10 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setMousePosition: (position) => set({mousePosition: position}),
     selectedNodes: [],
     setSelectedNodes: (nodes) => set({selectedNodes: nodes}),
-    clickSelect: true,
-    setClickSelect: (clickSelect) => set({clickSelect: clickSelect}),
     shiftSelectMore: false,
     setShiftSelectMore: (shiftSelectMore) => set({shiftSelectMore: shiftSelectMore}),
     controlDeselectOne: false,
     setControlDeselectOne: (controlDeselectOne) => set({controlDeselectOne: controlDeselectOne}),
-    boxSelect: false,
-    setBoxSelect: (boxSelect) => set({boxSelect: boxSelect}),
     bottomBarView: BottomBarView.Output,
     setBottomBarView: (view) => set({bottomBarView: view}),
     contextMenu: {visible: false, x: 0, y: 0, items: []},
@@ -237,35 +237,6 @@ const useEditorStore = create<EditorState>((set, get) => ({
         set({contextMenu: {visible: true, x, y, items}}),
     closeContextMenu: () =>
         set({contextMenu: {visible: false, x: 0, y: 0, items: []}}),
-    groupStack: [],
-    openGroup: null,
-    setOpenGroup: (groupId: string | null) => {
-        const {groupStack} = get();
-        if (groupId) {
-            if (groupStack[groupStack.length - 1] !== groupId) {
-                set((state) => ({
-                    groupStack: [...state.groupStack, groupId],
-                    openGroup: groupId,
-                }));
-            }
-        } else {
-            set({
-                groupStack: [],
-                openGroup: null,
-            });
-        }
-    },
-    closeGroup: () => {
-        const {groupStack} = get();
-        if (groupStack.length > 0) {
-            const newStack = [...groupStack];
-            newStack.pop();
-            set({
-                groupStack: newStack,
-                openGroup: newStack.length > 0 ? newStack[newStack.length - 1] : null,
-            });
-        }
-    },
     deleteNodesDialogOpen: false,
     setDeleteNodesDialogOpen: (isOpen) => set({deleteNodesDialogOpen: isOpen}),
     addingNode: null,
@@ -342,11 +313,25 @@ const useEditorStore = create<EditorState>((set, get) => ({
         set({copiedPackage: packagedData});
     },
 
+    editorMode: EditorMode.Select,
+    previousEditorMode: EditorMode.Select,
+    setEditorMode: (mode: EditorMode) => set({ editorMode: mode }),
+    setEditorModeWithMemory: (mode: EditorMode) => set((state) => {
+        if (state.editorMode === EditorMode.Pan) {
+            return {}; // blijf in pan, niet opnieuw switchen
+        }
+
+        return {
+            previousEditorMode: state.editorMode,
+            editorMode: mode,
+        };
+    }),
+
     isPasting: false,
     setIsPasting: (isPasting) => set({isPasting: isPasting}),
 
     pastedNodeIds: [],
-    setPastedNodeIds: (nodeIds) => set({ pastedNodeIds: nodeIds }),
+    setPastedNodeIds: (nodeIds) => set({pastedNodeIds: nodeIds}),
 
     pasteNodes: (): string[] => {
         let copiedPackage = get().copiedPackage;
@@ -371,7 +356,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
             isPasting: true
         });
 
-        const openGroup = get().openGroup;
+        const openGroup = useNodesStore.getState().openedGroup;
 
         if (openGroup) {
             pastedNodeIds.map((nodeId) => {

@@ -60,10 +60,6 @@ export function useAutoAddRouteNodes() {
 
         const connection: ConnectionType = {
             id: uuidv4(),
-            startX: 300,
-            startY: 305.7555338541667,
-            endX: 300,
-            endY: 305.7555338541667,
             sourceNodeId: mockRouteNode.id,
             sourceHandle: "true_path",
             hidden: false,

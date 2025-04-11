@@ -37,14 +37,6 @@ const useResizable = (node: Node) => {
             const newWidth = Math.max(100, sizeRef.current.width + deltaX);
 
             setSize((prevSize) => ({ ...prevSize, width: newWidth }));
-
-            const outConnections = findOutConnectionsByNodeId(node.id);
-            outConnections.forEach((connection) => {
-                updateConnection({
-                    ...connection,
-                    startX: connection.startX + deltaX,
-                });
-            });
         };
 
         const handleMouseUp = () => {

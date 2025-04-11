@@ -17,6 +17,7 @@ import useEditorStore from "@/stores/editorStore";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useMockStore from "@/stores/mockStore";
 import useConnectionsStore from "@/stores/connectionsStore";
+import DrawingLayer from "@/components/editor/drawing/drawing-layer";
 
 const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
@@ -62,6 +63,8 @@ export function EditorLayout({
     const setActiveConfigId = useEditorStore((state) => state.setActiveConfigId);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const closeFormMessage = useEditorStore((state) => state.closeFormMessage);
+    const zoomFactor = useEditorStore((state) => state.zoomFactor);
+    const panPosition = useEditorStore((state) => state.panPosition);
 
     const pathname = usePathname();
     const clearMockStore = useMockStore((state) => state.clearMockStore);
@@ -115,7 +118,19 @@ export function EditorLayout({
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [configUuid, projectUuid, routeUuid, scheduleUuid, blueprintUuid, fetchAvailableNodes, setActiveProjectId, setActiveBlueprintId, setActiveScheduleId, setActiveRouteId, setActiveConfigId]);
+    }, [
+        configUuid,
+        projectUuid,
+        routeUuid,
+        scheduleUuid,
+        blueprintUuid,
+        fetchAvailableNodes,
+        setActiveProjectId,
+        setActiveBlueprintId,
+        setActiveScheduleId,
+        setActiveRouteId,
+        setActiveConfigId
+    ]);
 
 
     const startResizing = useCallback((resizeWhat: ResizeWhat) => {
@@ -236,10 +251,8 @@ export function EditorLayout({
                             projectUuid && (routeUuid || scheduleUuid || blueprintUuid || configUuid) ? (
                                 activeVersionId ? (
                                     <>
+                                        <DrawingLayer panPosition={panPosition} zoomFactor={zoomFactor} />
                                         <Editor key={'editor-' + activeVersionId} />
-                                        {/*<SelectionsMenu key={'selections-menu-' + activeVersionId} />*/}
-                                        {/*<UndoRedoMenu key={'undo-redo-menu-' + activeVersionId}/>*/}
-                                        {/*<ClearMockViewMenu key={'clear-mock-view-menu-' + activeVersionId} />*/}
                                         <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId} />
                                         <VersionPublishedMenu routeUuid={routeUuid} />
                                     </>

@@ -23,10 +23,10 @@ export const useConnectorHandlers = (
     } = useConnectionsStore();
     const {
         setIsDrawingConnection,
-        openGroup,
     } = useEditorStore();
     const {
-        setNodeFlowState
+        setNodeFlowState,
+        openedGroup
     } = useNodesStore();
 
     const startedFromGroup = useRef(false);
@@ -122,8 +122,6 @@ export const useConnectorHandlers = (
                 }
                 const targetHandle = target.getAttribute("data-handle") as string;
 
-                console.log('TARGET HANDLE', targetHandle);
-
                 const nodeGroupTarget = target.closest('[data-type="closed-group"]');
                 const connection = getConnection(existingConnection.id);
 
@@ -174,10 +172,6 @@ export const useConnectorHandlers = (
         const id = uuidv4();
         const connection = addConnection({
             id,
-            startX: x,
-            startY: y,
-            endX: x,
-            endY: y,
             sourceNodeId: nodeId,
             sourceHandle: handle as string,
         });
@@ -239,7 +233,7 @@ export const useConnectorHandlers = (
                 if (connection) {
                     connection.targetHandle = targetHandle;
                     connection.targetNodeId = targetNodeId;
-                    connection.isInGroup = openGroup as string;
+                    connection.isInGroup = openedGroup as string;
                     if (nodeGroupTarget && targetGroupId && groupId) {
                         connection.sourceGroupId = groupId;
                         connection.targetGroupId = targetGroupId;

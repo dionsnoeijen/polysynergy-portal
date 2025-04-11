@@ -1,39 +1,29 @@
-import React, {useCallback} from "react";
+import React from "react";
 import useEditorStore from "@/stores/editorStore";
 import useMockStore from "@/stores/mockStore";
 import {
     AdjustmentsHorizontalIcon,
     ArrowTurnDownLeftIcon,
     ArrowTurnDownRightIcon,
-    PlayIcon,
     ArrowUturnUpIcon,
-    PlusIcon,
     CursorArrowRaysIcon,
+    PaintBrushIcon,
+    PlayIcon,
+    PlusIcon,
     StopIcon
 } from "@heroicons/react/24/outline";
 import {Divider} from "@/components/divider";
 import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
-import {FormType} from "@/types/types";
+import {EditorMode, FormType} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
 
 const TopLeftEditorMenu: React.FC = () => {
-    const clickSelect = useEditorStore((state) => state.clickSelect);
-    const boxSelect = useEditorStore((state) => state.boxSelect);
-    const setClickSelect = useEditorStore((state) => state.setClickSelect);
-    const setBoxSelect = useEditorStore((state) => state.setBoxSelect);
     const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
     const openForm = useEditorStore((state) => state.openForm);
 
-    const handleClickSelect = useCallback(() => {
-        setBoxSelect(false);
-        setClickSelect(true);
-    }, [setBoxSelect, setClickSelect]);
-
-    const handleBoxSelect = useCallback(() => {
-        setClickSelect(false);
-        setBoxSelect(true);
-    }, [setClickSelect, setBoxSelect]);
+    const editorMode = useEditorStore((state) => state.editorMode);
+    const setEditorMode = useEditorStore((state) => state.setEditorMode);
 
     const clearMockStore = useMockStore((state) => state.clearMockStore);
     const hasMockData = useMockStore((state) => state.hasMockData());
@@ -44,12 +34,12 @@ const TopLeftEditorMenu: React.FC = () => {
         'c': () => {
             clearMockStore();
         },
-    });
-
-    useKeyBindings({
         'b': () => {
-            handleBoxSelect();
+            setEditorMode(EditorMode.BoxSelect);
         },
+        'd': () => {
+            setEditorMode(EditorMode.Draw);
+        }
     });
 
     return (
@@ -106,7 +96,7 @@ const TopLeftEditorMenu: React.FC = () => {
             <div className="flex flex-col items-start justify-center w-full h-full rounded-full hover:bg-zinc-600">
                 <button
                     type="button"
-                    className={`w-full text-lg font-semibold text-white rounded-sm p-2`}
+                    className={`w-full text-lg font-semibold text-white rounded-full p-2`}
                     onMouseDown={() => openForm(FormType.PublishedVariableForm)}
                 >
                     <AdjustmentsHorizontalIcon className="w-4 h-4" />
@@ -115,18 +105,30 @@ const TopLeftEditorMenu: React.FC = () => {
 
             <Divider className={'mt-1 mb-1'} />
 
+            <div className="flex flex-col items-start justify-center w-full h-full rounded-full hover:bg-zinc-600">
+                <button
+                    type="button"
+                    className={`w-full text-lg font-semibold text-white rounded-full p-2 ${editorMode === EditorMode.Draw ? 'bg-sky-500' : 'bg-transparent'}`}
+                    onMouseDown={() => {setEditorMode(EditorMode.Draw)}}
+                >
+                    <PaintBrushIcon className="w-4 h-4" />
+                </button>
+            </div>
+
+            <Divider className={'mt-1 mb-1'} />
+
             <div className="flex flex-col items-start justify-center w-full h-full">
                 <button
                     type="button"
-                    className={`w-full text-lg font-semibold text-white rounded-full p-2 hover:bg-zinc-600 ${boxSelect ? 'bg-sky-500' : 'bg-transparent'}`}
-                    onMouseDown={handleBoxSelect}
+                    className={`w-full text-lg font-semibold text-white rounded-full p-2 hover:bg-zinc-600 ${editorMode === EditorMode.BoxSelect ? 'bg-sky-500' : 'bg-transparent'}`}
+                    onMouseDown={() => {setEditorMode(EditorMode.BoxSelect)}}
                 >
                     <StopIcon className="w-4 h-4" />
                 </button>
                 <button
                     type="button"
-                    className={`w-full text-lg font-semibold text-white rounded-full p-2 hover:bg-zinc-600 ${clickSelect ? 'bg-sky-500' : 'bg-transparent'}`}
-                    onMouseDown={handleClickSelect}
+                    className={`w-full text-lg font-semibold text-white rounded-full p-2 hover:bg-zinc-600 ${editorMode === EditorMode.Select ? 'bg-sky-500' : 'bg-transparent'}`}
+                    onMouseDown={() => {setEditorMode(EditorMode.Select)}}
                 >
                     <CursorArrowRaysIcon className="w-4 h-4" />
                 </button>

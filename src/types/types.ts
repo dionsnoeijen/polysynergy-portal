@@ -1,3 +1,4 @@
+
 declare global {
     interface Window {
         debugMode: boolean;
@@ -7,10 +8,6 @@ declare global {
 
 export type Connection = {
     id: string;
-    startX: number;
-    startY: number;
-    endX: number;
-    endY: number;
     sourceNodeId: string;
     sourceHandle: string;
     targetNodeId?: string;
@@ -99,6 +96,7 @@ export enum NodeVariableType {
     TruePath = 'true_path',
     FalsePath = 'false_path',
     Unknown = 'unknown',
+    Dependency = 'dependency',
     SecretString = 'secretstring',
     TextArea = 'textarea',
     RichTextArea = 'richtextarea',
@@ -106,8 +104,9 @@ export enum NodeVariableType {
     Json = 'json',
     Template = 'template',
     Files = 'files',
-    Dependency = 'dependency',
     Node = 'node',
+    Int = 'int',
+    Float = 'float',
 }
 
 export enum NodeType {
@@ -173,6 +172,7 @@ export type Dock = {
 export type NodeVariable = {
     name?: string;
     handle: string;
+    parentHandle?: string;
     value: null | string | number | boolean | string[] | NodeVariable[];
     published: boolean;
     published_title?: string;
@@ -326,6 +326,10 @@ export interface NodeSetupVersion {
     content: {
         nodes: Node[],
         connections: Connection[],
+        groups: {
+            groupStack: string[],
+            openedGroup: string|null,
+        }
     };
     published: boolean;
     draft: boolean;
@@ -407,7 +411,7 @@ export interface State {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
 }
-export type StoreName = 'nodes' | 'connections';
+export type StoreName = 'nodes' | 'connections' | 'groups';
 
 export type VariableTypeProps = {
     nodeId: string;
@@ -425,3 +429,10 @@ export type Secret = {
     description?: string;
     createdDate?: string;
 };
+
+export enum EditorMode {
+    Select = 'select',
+    BoxSelect = 'box-select',
+    Draw = 'draw',
+    Pan = 'pan'
+}

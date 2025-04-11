@@ -5,7 +5,7 @@ import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
 import useNodesStore from "@/stores/nodesStore";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 
-import { GroupProps, NodeCollapsedConnector } from "@/types/types";
+import {GroupProps, NodeCollapsedConnector, NodeVariable} from "@/types/types";
 import { ChevronDownIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/button";
 
@@ -25,8 +25,11 @@ const ClosedGroup: React.FC<GroupProps> = ({
     const ref = useAutoResize(node);
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const openContextMenu = useEditorStore((state) => state.openContextMenu);
+    const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
+    const setNodeToMoveToGroupId = useEditorStore((state) => state.setNodeToMoveToGroupId);
     const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
     const position = useNodePlacement(node);
+    const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
 
     const {openGroup, deleteGroup} = useGrouping();
     const {variablesForGroup} = useVariablesForGroup(node.id, false);
@@ -34,10 +37,12 @@ const ClosedGroup: React.FC<GroupProps> = ({
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
+        e.stopPropagation();
         openContextMenu(
             e.clientX,
             e.clientY,
             [
+                { label: "Move To Group", action: () => setNodeToMoveToGroupId(node.id) },
                 { label: "Open Group", action: () => openGroup(node.id) },
                 { label: "Delete Group", action: () => deleteGroup(node.id) },
             ]
@@ -61,7 +66,15 @@ const ClosedGroup: React.FC<GroupProps> = ({
             data-type="closed-group"
             data-node-id={isMirror ? ('mirror-' + node.id) : node.id}
             onContextMenu={!preview ? handleContextMenu : () => {}}
-            onMouseDown={!preview ? handleNodeMouseDown : () => {}}
+            onMouseDown={(e) => {
+                if (preview) return;
+                if (nodeToMoveToGroupId && nodeToMoveToGroupId !== node.id) {
+                    addNodeToGroup(node.id, nodeToMoveToGroupId);
+                    setNodeToMoveToGroupId(null);
+                } else {
+                    handleNodeMouseDown(e);
+                }
+            }}
             onDoubleClick={() => openGroup(node.id)}
             title={node.category + ' > ' + node.name + ' > ' + (isMirror ? ('mirror-' + node.id) : node.id)}
             style={{
@@ -93,7 +106,9 @@ const ClosedGroup: React.FC<GroupProps> = ({
             <div className="flex w-full gap-4">
                 {variablesForGroup?.inVariables && variablesForGroup?.inVariables?.length > 0 && (
                 <div className="flex-1 flex flex-col">
-                    <NodeVariables node={node} variables={variablesForGroup.inVariables} isMirror={isMirror} onlyIn={true} />
+                    <NodeVariables node={node} variables={variablesForGroup.inVariables.filter(
+                        (v): v is { variable: NodeVariable; nodeId: string } => v !== null
+                    )} isMirror={isMirror} onlyIn={true} />
                 </div>
                 )}
                 {variablesForGroup?.outVariables && variablesForGroup?.outVariables?.length > 0 && (
@@ -115,7 +130,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
                 left: preview ? '0px' : `${position.x}px`,
                 top: preview ? '0px' : `${position.y}px`,
             }}
-            title={node.category + ' > ' + node.name}
+            title={node.category + ' > ' + node.id + ' > ' + node.name}
             data-type="closed-group"
             data-node-id={node.id}
         >

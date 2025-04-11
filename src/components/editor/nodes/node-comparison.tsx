@@ -43,6 +43,8 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 className={`-translate-y-5 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
                 nodeVariableType={[
+                    NodeVariableType.Int,
+                    NodeVariableType.Float,
                     NodeVariableType.Number,
                     NodeVariableType.String,
                     NodeVariableType.TruePath
@@ -56,6 +58,8 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 className={`translate-y-2 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}
                 nodeVariableType={[
+                    NodeVariableType.Int,
+                    NodeVariableType.Float,
                     NodeVariableType.Number,
                     NodeVariableType.String,
                     NodeVariableType.TruePath

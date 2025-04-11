@@ -52,10 +52,6 @@ export function useAutoAddScheduleNodes() {
 
         const connection: ConnectionType = {
             id: uuidv4(),
-            startX: 0,
-            startY: 0,
-            endX: 0,
-            endY: 0,
             sourceNodeId: mockScheduleNode.id,
             sourceHandle: "true_path",
             targetHandle: "node",

@@ -1,4 +1,4 @@
-import React, {useRef, useCallback, useLayoutEffect, useState, useEffect} from "react";
+import React, {useRef, useLayoutEffect, useState, useEffect} from "react";
 import {Connection as ConnectionProps} from "@/types/types";
 import { useTheme } from "next-themes";
 import useMockStore from "@/stores/mockStore";
@@ -47,25 +47,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
     const dotRadius = 6.5;
     const dashArray = connection.collapsed ? "4 4" : "0";
 
-    const updatePathAndDots = useCallback(() => {
-        if (!pathRef.current || !startDotRef.current || !endDotRef.current) return;
-
-        const controlPointX = (connection.startX + connection.endX) / 2;
-        const pathData = `M ${connection.startX},${connection.startY} 
-                      C ${controlPointX},${connection.startY} 
-                        ${controlPointX},${connection.endY} 
-                        ${connection.endX},${connection.endY}`;
-        pathRef.current.setAttribute("d", pathData);
-
-        startDotRef.current.style.left = `${connection.startX - dotRadius}px`;
-        startDotRef.current.style.top = `${connection.startY - dotRadius}px`;
-
-        endDotRef.current.style.left = `${connection.endX - dotRadius}px`;
-        endDotRef.current.style.top = `${connection.endY - dotRadius}px`;
-    }, [connection]);
-
     useLayoutEffect(() => {
-        updatePathAndDots();
         const length = pathRef.current?.getTotalLength();
         if (length) {
             const midpoint = length / 2;
@@ -75,7 +57,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
             }
         }
         setIsReady(true);
-    }, [connection, updatePathAndDots]);
+    }, [connection]);
 
     return (
         <>

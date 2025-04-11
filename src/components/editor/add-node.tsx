@@ -16,7 +16,7 @@ const AddNode: React.FC = () => {
     const showAddingNode = useEditorStore((state) => state.showAddingNode);
     const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
     const setAddingNode = useEditorStore((state) => state.setAddingNode);
-    const openGroup = useEditorStore((state) => state.openGroup);
+    const openedGroup = useNodesStore((state) => state.openedGroup);
     const openForm = useEditorStore((state) => state.openForm);
 
     const filteredAvailableNodes = useAvailableNodeStore((state) => state.filteredAvailableNodes);
@@ -78,11 +78,11 @@ const AddNode: React.FC = () => {
 
         addNode(node, true);
 
-        if (openGroup) {
-            addNodeToGroup(openGroup, node.id);
+        if (openedGroup) {
+            addNodeToGroup(openedGroup, node.id);
         }
     // eslint-disable-next-line
-    }, [addNode, addNodeToGroup, getAvailableNodeById, openGroup, setAddingNode, setShowAddingNode, setSearchPhrase, resetSelectedNodeIndex]);
+    }, [addNode, addNodeToGroup, getAvailableNodeById, openedGroup, setAddingNode, setShowAddingNode, setSearchPhrase, resetSelectedNodeIndex]);
 
     const handleAddNewNode = () => {
         openForm(FormType.AddNode);

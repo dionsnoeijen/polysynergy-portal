@@ -31,6 +31,7 @@ type NodesStore = {
     getNodes: () => Node[];
     getNodesByIds: (nodeIds: string[]) => Node[];
     getNodeVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
+    getNodeSubVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
     updateNodeVariablePublishedTitle: (nodeId: string, variableHandle: string, title: string) => void;
     updateNodeVariablePublishedDescription: (nodeId: string, variableHandle: string, description: string) => void;
     getNodesToRender: () => Node[];
@@ -60,6 +61,10 @@ type NodesStore = {
     getGroupById: (nodeId: string) => Node | undefined;
     getAllNodeIdsOfNodesThatAreInAClosedGroup: () => string[];
     updateGroup: (nodeId: string, group: Partial<Group>) => void;
+
+    groupStack: string[];
+    openedGroup: string | null;
+    initGroups: (groupStack: string[], openedGroup: string | null) => void;
 };
 
 const nodesByIdsCache = new Map<string, Node[]>();
@@ -81,6 +86,17 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     nodes: [],
 
     trackedNodeId: null,
+
+    groupStack: [],
+
+    openedGroup: null,
+
+    initGroups: (groupStack: string[], openedGroup: string | null) => {
+        set({
+            groupStack,
+            openedGroup
+        });
+    },
 
     addTempNodes: (nodes) => {
         nodes.map((node) => {
@@ -445,6 +461,19 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         return node?.variables.find((variable) => variable.handle === variableHandle);
     },
 
+    getNodeSubVariable: (nodeId, variableHandle) => {
+        const node = get().getNode(nodeId);
+        if (!node) return undefined;
+        const variableHandleParts = variableHandle.split('.');
+        const fullVariable = get().getNodeVariable(nodeId, variableHandleParts[0]);
+        if (!fullVariable) return undefined;
+        const subVariable = (fullVariable?.value as NodeVariable[]).find((variable) => variable.handle === variableHandleParts[1]);
+        if (!subVariable) return undefined;
+        subVariable.name = fullVariable.name + '.' + subVariable.handle;
+        subVariable.parentHandle = fullVariable.handle;
+        return subVariable;
+    },
+
     updateNodeVariablePublishedTitle: (nodeId: string, variableHandle: string, title: string) => {
         nodesByIdsCache.clear();
 
@@ -557,6 +586,21 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     openGroup: (nodeId: string) => {
+        const {groupStack} = get();
+        if (nodeId) {
+            if (groupStack[groupStack.length - 1] !== nodeId) {
+                set((state) => ({
+                    groupStack: [...state.groupStack, nodeId],
+                    openedGroup: nodeId,
+                }));
+            }
+        } else {
+            set({
+                groupStack: [],
+                openedGroup: null,
+            });
+        }
+
         set((state: NodesStore) => ({
             nodes: state.nodes.map((node: Node) =>
                 node.id === nodeId && node.type === NodeType.Group
@@ -587,6 +631,31 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     closeGroup: (nodeId: string) => {
+        const {groupStack} = get();
+        if (groupStack.length > 0) {
+            const newStack = [...groupStack];
+            newStack.pop();
+            set({
+                groupStack: newStack,
+                openedGroup: newStack.length > 0 ? newStack[newStack.length - 1] : null,
+            });
+        }
+
+        // On some occasions (not sure what the cause is, the stack
+        // can contain a node that is not a group. This is a workaround
+        // to clean the groupStack and openedGroup
+        if (groupStack.length > 0) {
+            const updatedGroupStack = get().groupStack;
+            const lastGroupId = updatedGroupStack[updatedGroupStack.length - 1];
+            const lastGroupNode = get().nodes.find((node) => node.id === lastGroupId && node.type === NodeType.Group);
+            if (!lastGroupNode) {
+                set({
+                    groupStack: [],
+                    openedGroup: null,
+                });
+            }
+        }
+
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId && node.type === NodeType.Group

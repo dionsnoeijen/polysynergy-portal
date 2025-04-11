@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, {useEffect, useState} from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
+import {EditorMode} from "@/types/types";
 
 const BoxSelect: React.FC = (): React.ReactElement => {
-    const {
-        setSelectedNodes,
-        boxSelect,
-        setBoxSelect,
-        setClickSelect,
-        editorPosition,
-        panPosition,
-        zoomFactor
-    } = useEditorStore();
+    const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
+    const editorPosition = useEditorStore((state) => state.editorPosition);
+    const panPosition = useEditorStore((state) => state.panPosition);
+    const zoomFactor = useEditorStore((state) => state.zoomFactor);
+
+    const editorMode = useEditorStore((state) => state.editorMode);
+    const setEditorMode = useEditorStore((state) => state.setEditorMode);
+
+
     const { getNodesToRender } = useNodesStore();
     const [isSelecting, setIsSelecting] = useState(false);
     const [boxStart, setBoxStart] = useState<{ x: number; y: number } | null>(null);
@@ -52,8 +53,7 @@ const BoxSelect: React.FC = (): React.ReactElement => {
             setSelectedNodes(selectedNodes.map((node) => node.id));
             setBoxStart(null);
             setBoxEnd(null);
-            setBoxSelect(false);
-            setClickSelect(true);
+            setEditorMode(EditorMode.Select);
         };
 
         if (isSelecting) {
@@ -65,21 +65,10 @@ const BoxSelect: React.FC = (): React.ReactElement => {
             document.removeEventListener("mousemove", handleBoxMouseMove);
             document.removeEventListener("mouseup", handleBoxMouseUp);
         };
-    }, [
-        isSelecting,
-        boxStart,
-        boxEnd,
-        setBoxSelect,
-        setSelectedNodes,
-        getNodesToRender,
-        setClickSelect,
-        editorPosition,
-        panPosition,
-        zoomFactor
-    ]);
+    }, [isSelecting, boxStart, boxEnd, editorMode, setSelectedNodes, getNodesToRender, editorPosition, panPosition, zoomFactor, setEditorMode]);
 
     const handleBoxMouseDown = (e: React.MouseEvent) => {
-        if (!boxSelect) return;
+        if (editorMode !== EditorMode.BoxSelect) return;
 
         setIsSelecting(true);
         setBoxStart({
@@ -106,7 +95,7 @@ const BoxSelect: React.FC = (): React.ReactElement => {
             className="absolute w-full h-full"
             onMouseDown={handleBoxMouseDown}
             style={{
-                pointerEvents: boxSelect ? "auto" : "none",
+                pointerEvents: editorMode === EditorMode.BoxSelect ? "auto" : "none",
             }}
         >
             {isSelecting && <div

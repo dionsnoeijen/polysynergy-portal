@@ -17,8 +17,9 @@ import useEditorStore from "@/stores/editorStore";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useMockStore from "@/stores/mockStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import DrawingLayer from "@/components/editor/drawing/drawing-layer";
+import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
 
+const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false })
 const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
 });
@@ -70,6 +71,8 @@ export function EditorLayout({
     const clearMockStore = useMockStore((state) => state.clearMockStore);
 
     const removeConnectionById = useConnectionsStore((state) => state.removeConnectionById);
+
+    const isExecuting = useMockStore((state) => state.isExecuting);
 
     useEffect(() => {
         clearMockStore();
@@ -173,6 +176,7 @@ export function EditorLayout({
                 window.debugMode = !window.debugMode;
                 console.log("Debug mode is:", window.debugMode);
             };
+            // @ts-expect-error value is ambiguous
             window.snipeConnection = function (connectionId: string) {
                 removeConnectionById(connectionId);
             }
@@ -206,6 +210,14 @@ export function EditorLayout({
 
     return (
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
+            {isExecuting && (
+                <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+                    <div className="bg-white dark:bg-zinc-800 p-4 rounded-lg shadow-lg flex items-center gap-2">
+                        <div className="animate-spin h-5 w-5 border-2 border-sky-500 border-t-transparent rounded-full"></div>
+                        <span className="text-white">Executing...</span>
+                    </div>
+                </div>
+            )}
             {closeFormMessage && (
                 <>
                     <div className="z-20 fixed top-0 left-0 right-0 h-[1px] bg-green-500 animate-progress"></div>
@@ -253,6 +265,7 @@ export function EditorLayout({
                                     <>
                                         <DrawingLayer panPosition={panPosition} zoomFactor={zoomFactor} />
                                         <Editor key={'editor-' + activeVersionId} />
+                                        <BottomDrawToolbar />
                                         <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId} />
                                         <VersionPublishedMenu routeUuid={routeUuid} />
                                     </>

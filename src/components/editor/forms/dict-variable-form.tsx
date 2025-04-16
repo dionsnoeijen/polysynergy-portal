@@ -30,7 +30,7 @@ const DictVariableForm: React.FC = () => {
     useEffect(() => {
         if (!formEditRecordId) return;
         setNode(getNode(formEditRecordId));
-    }, [ getNode, formEditRecordId, formType, formEditVariable ]);
+    }, [ getNode, formEditRecordId, formType, formEditVariable?.published ]);
 
     return (
         <form onSubmit={handleSubmit} method={"post"} className={"p-10"}>
@@ -38,7 +38,13 @@ const DictVariableForm: React.FC = () => {
 
             <Divider className="my-10" soft bleed />
 
-            <EditDictVariable title="Array values" dock={formEditVariable?.dock} variables={variables} onChange={setVariables} />
+            <EditDictVariable
+                title="Array values"
+                dock={formEditVariable?.dock}
+                variables={variables}
+                onChange={setVariables}
+                published={formEditVariable?.published}
+            />
 
             <Divider className="my-10" soft bleed />
 

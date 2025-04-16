@@ -28,17 +28,8 @@ const useProjectSecretsStore = create<ProjectSecretsStore>((set, get) => ({
     try {
       if (!activeProjectId) return;
       const data = await fetchProjectSecretsAPI(activeProjectId);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const transformedSecrets = data.secrets.map((s: any) => ({
-        id: s.ARN,
-        key: s.Name.split("@")[1],
-        value: "",
-        projectId: activeProjectId,
-        description: s.Description || "",
-        createdDate: s.CreatedDate,
-      }));
-      set({ secrets: transformedSecrets });
-      return transformedSecrets;
+      set({ secrets: data.secrets });
+      return data;
     } catch (error) {
       console.error("Failed to fetch secrets:", error);
     }

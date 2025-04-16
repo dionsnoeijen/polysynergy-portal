@@ -12,10 +12,11 @@ import { Button } from "@/components/button";
 import { globalToLocal } from "@/utils/positionUtils";
 
 import PublishedVariables from "@/components/editor/forms/variable/published-variables";
+import {adjectives, animals, colors, uniqueNamesGenerator} from "unique-names-generator";
 
 const PlaceServiceForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
-    const openGroup = useEditorStore((state) => state.openGroup);
+    const openedGroup = useNodesStore((state) => state.openedGroup);
     const addNode = useNodesStore((state) => state.addNode);
     const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
@@ -76,6 +77,8 @@ const PlaceServiceForm: React.FC = () => {
 
                 delete nodeCopy.temp;
 
+                nodeCopy.handle = uniqueNamesGenerator({dictionaries: [adjectives, animals, colors]});
+
                 nodeCopy.view = {
                     x: nodeCopy.view.x + position.x,
                     y: nodeCopy.view.y + position.y,
@@ -91,8 +94,8 @@ const PlaceServiceForm: React.FC = () => {
 
         nodesToAdd.forEach((n) => addNode(n));
 
-        if (openGroup && nodesToAdd.length > 0) {
-            addNodeToGroup(openGroup, nodesToAdd[0].id);
+        if (openedGroup && nodesToAdd.length > 0) {
+            addNodeToGroup(openedGroup, nodesToAdd[0].id);
         }
 
         closeForm();

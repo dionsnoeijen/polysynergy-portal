@@ -5,7 +5,7 @@ import { Switch } from "@/components/switch";
 import { Input } from "@/components/input";
 import { Select } from "@/components/select";
 import { Button } from "@/components/button";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {ArrowRightCircleIcon, PlusIcon, TrashIcon} from "@heroicons/react/24/outline";
 import {Dock, NodeVariable, NodeVariableType} from "@/types/types";
 
 type Props = {
@@ -15,6 +15,7 @@ type Props = {
     onlyValues?: boolean;
     handle?: string;
     dock?: Dock;
+    published?: boolean;
 };
 
 const EditDictVariable: React.FC<Props> = ({
@@ -23,7 +24,8 @@ const EditDictVariable: React.FC<Props> = ({
     onChange,
     onlyValues = false,
     handle,
-    dock
+    dock,
+    published = false,
 }) => {
     const [newVariable, setNewVariable] = useState<NodeVariable>({
         handle: "",
@@ -31,7 +33,7 @@ const EditDictVariable: React.FC<Props> = ({
         value: "",
         has_in: false,
         has_out: false,
-        published: false,
+        published: published,
     });
 
     const updateVariable = (
@@ -50,6 +52,12 @@ const EditDictVariable: React.FC<Props> = ({
         onChange(updatedVariables, handle);
     };
 
+    const togglePublished = (index: number) => {
+        const updatedVariables = [...variables];
+        updatedVariables[index] = {...updatedVariables[index], published: !updatedVariables[index].published};
+        onChange(updatedVariables, handle);
+    };
+
     const addVariable = () => {
         const newVariable = {
             handle: "",
@@ -57,7 +65,7 @@ const EditDictVariable: React.FC<Props> = ({
             value: "",
             has_in: dock?.in_switch_default ?? false,
             has_out: dock?.out_switch_default ?? false,
-            published: false,
+            published: published,
         };
         setNewVariable(newVariable);
         onChange([...variables, newVariable], handle);
@@ -135,6 +143,11 @@ const EditDictVariable: React.FC<Props> = ({
                                     <Button plain onClick={() => removeVariable(index)}>
                                         <TrashIcon className="w-4 h-4" />
                                     </Button>
+                                    {published && (
+                                    <Button plain className={`${variable.published && 'bg-sky-500 hover:bg-sky-600'}`} onClick={() => togglePublished(index)}>
+                                        <ArrowRightCircleIcon className={`w-4 h-4 text-gray-500 hover:text-gray-700 ${variable.published && '!text-white'}`} />
+                                    </Button>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}

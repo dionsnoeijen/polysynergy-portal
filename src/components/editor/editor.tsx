@@ -33,7 +33,7 @@ import {EditorMode} from "@/types/types";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
-    const mousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+    const mousePositionRef = useRef<{ x: number; y: number }>({x: 0, y: 0});
 
     const zoomFactor = useEditorStore((state) => state.zoomFactor);
     const panPosition = useEditorStore((state) => state.panPosition);
@@ -50,6 +50,7 @@ export default function Editor() {
     const isPasting = useEditorStore((state) => state.isPasting);
     const isDraft = useEditorStore((state) => state.isDraft);
     const editorMode = useEditorStore((state) => state.editorMode);
+    const isFormOpen = useEditorStore((state) => state.isFormOpen);
 
     const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
     const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
@@ -64,6 +65,7 @@ export default function Editor() {
     const {createGroup} = useGrouping();
     const {startDraggingAfterPaste} = useDraggable();
 
+    // eslint-disable-next-line
     const [isSpacePressed, setIsSpacePressed] = useState(false);
     const [isMouseDown, setIsMouseDown] = useState(false);
     const [isInteracted, setIsInteracted] = useState(false);
@@ -79,13 +81,13 @@ export default function Editor() {
 
     useEffect(() => {
         updateConnectionsDirectly(connections);
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [nodesToRender]);
 
     const updateEditorPosition = useCallback(() => {
         if (contentRef.current) {
             const rect = contentRef.current.getBoundingClientRect();
-            setEditorPosition({ x: rect.left, y: rect.top });
+            setEditorPosition({x: rect.left, y: rect.top});
         }
     }, [setEditorPosition]);
 
@@ -96,13 +98,8 @@ export default function Editor() {
     }, [setEditorPosition, updateEditorPosition]);
 
     const handleMousePositionUpdate = useCallback((e: React.MouseEvent) => {
-        mousePositionRef.current = { x: e.clientX, y: e.clientY };
+        mousePositionRef.current = {x: e.clientX, y: e.clientY};
     }, []);
-
-    const handleWheel = (e: React.WheelEvent) => {
-        if (!contentRef.current) return;
-        handleZoom(e, contentRef.current.getBoundingClientRect());
-    };
 
     useKeyBindings({
         'delete': () => {
@@ -156,31 +153,50 @@ export default function Editor() {
     });
 
     useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.code === 'Space') {
-            e.preventDefault();
-            setIsSpacePressed(true);
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement;
+            const tag = target.tagName.toLowerCase();
+            const isTextInput = ['input', 'textarea'].includes(tag) || target.isContentEditable;
 
-            useEditorStore.getState().setEditorModeWithMemory(EditorMode.Pan);
-        }
-    };
+            if (isTextInput) return;
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-        if (e.code === 'Space') {
-            setIsSpacePressed(false);
-            const { previousEditorMode } = useEditorStore.getState();
-            useEditorStore.getState().setEditorMode(previousEditorMode);
-        }
-    };
+            if (e.code === 'Space') {
+                e.preventDefault();
+                setIsSpacePressed(true);
+                useEditorStore.getState().setEditorModeWithMemory(EditorMode.Pan);
+            }
+        };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (e.code === 'Space') {
+                setIsSpacePressed(false);
+                const {previousEditorMode} = useEditorStore.getState();
+                useEditorStore.getState().setEditorMode(previousEditorMode);
+            }
+        };
 
-    return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-    };
-}, []);
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleWheelGlobal = (e: WheelEvent) => {
+            const contentEl = contentRef.current;
+            if (!contentEl) return;
+            const hoveredEl = document.elementFromPoint(e.clientX, e.clientY);
+            if (hoveredEl?.closest('[data-type="editor"], [data-type="drawing-layer"]')) {
+                e.preventDefault();
+                handleZoom(e as unknown as React.WheelEvent, contentEl.getBoundingClientRect());
+            }
+        };
+        window.addEventListener('wheel', handleWheelGlobal, {passive: false});
+        return () => window.removeEventListener('wheel', handleWheelGlobal);
+    }, [handleZoom]);
 
     const handleConfirmDelete = () => {
         handleDeleteSelectedNodes(selectedNodes);
@@ -210,13 +226,13 @@ export default function Editor() {
         <div
             data-type="editor"
             className={clsx(
-                "relative w-full h-full overflow-hidden rounded-md",
+                "relative w-full h-full rounded-md",
+                isFormOpen() ? 'overflow-scroll' : 'overflow-hidden',
                 nodeToMoveToGroupId ? "cursor-crosshair" :
-                editorMode === EditorMode.Pan && isMouseDown ? "cursor-grabbing" :
-                editorMode === EditorMode.Pan ? "cursor-grab" :
-                "cursor-default"
+                    editorMode === EditorMode.Pan && isMouseDown ? "cursor-grabbing" :
+                        editorMode === EditorMode.Pan ? "cursor-grab" :
+                            "cursor-default"
             )}
-            onWheel={handleWheel}
             onMouseDown={(e) => {
                 setIsMouseDown(true);
                 switch (editorMode) {
@@ -239,7 +255,7 @@ export default function Editor() {
                 if (isDragging || isPasting) return;
                 handleMouseMove(e);
             }}
-            onMouseUp={()=> {
+            onMouseUp={() => {
                 setIsMouseDown(false);
                 handleMouseUp();
             }}
@@ -247,7 +263,8 @@ export default function Editor() {
                 setIsMouseDown(false);
                 handleMouseUp();
             }}
-            onContextMenu={isDraft ? handleContextMenu : () => {}}
+            onContextMenu={isDraft ? handleContextMenu : () => {
+            }}
             ref={contentRef}
         >
             {!isDraft && (
@@ -267,20 +284,20 @@ export default function Editor() {
                 </div>
             )}
 
-            <Grid zoomFactor={zoomFactor} position={panPosition} />
+            <Grid zoomFactor={zoomFactor} position={panPosition}/>
 
             <div
-                style={{ transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomFactor})` }}
+                style={{transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomFactor})`}}
                 className="absolute top-0 left-0 w-0 h-0 overflow-visible"
             >
-                <PointZeroIndicator />
+                <PointZeroIndicator/>
 
                 {getOpenGroups().map((group) => (
-                    <OpenGroup key={group.id} node={group} />
+                    <OpenGroup key={group.id} node={group}/>
                 ))}
 
                 {nodesToRender.map((node) => (
-                    <Node key={node.id} node={node} />
+                    <Node key={node.id} node={node}/>
                 ))}
 
                 {connections && connections
@@ -293,8 +310,8 @@ export default function Editor() {
                     ))}
             </div>
 
-            <BoxSelect />
-            <AddNode />
+            <BoxSelect/>
+            <AddNode/>
 
             <DeleteDialog
                 isOpen={deleteNodesDialogOpen}

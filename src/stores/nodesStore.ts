@@ -3,6 +3,7 @@ import {v4 as uuidv4} from "uuid";
 import {FlowState, Group, Node, NodeType, NodeVariable, NodeVariableType} from "@/types/types";
 import {adjectives, animals, colors, uniqueNamesGenerator} from 'unique-names-generator';
 import useConnectionsStore from "@/stores/connectionsStore";
+import useEditorStore from "@/stores/editorStore";
 
 type NodesStore = {
     nodes: Node[];
@@ -32,6 +33,7 @@ type NodesStore = {
     getNodesByIds: (nodeIds: string[]) => Node[];
     getNodeVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
     getNodeSubVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
+    getSecretNodes: () => Node[];
     updateNodeVariablePublishedTitle: (nodeId: string, variableHandle: string, title: string) => void;
     updateNodeVariablePublishedDescription: (nodeId: string, variableHandle: string, description: string) => void;
     getNodesToRender: () => Node[];
@@ -461,6 +463,12 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         return node?.variables.find((variable) => variable.handle === variableHandle);
     },
 
+    getSecretNodes: (): Node[] => {
+        return get().nodes.filter(
+            (node) => node.path === 'nodes.nodes.secret.variable_secret.VariableSecret'
+        );
+    },
+
     getNodeSubVariable: (nodeId, variableHandle) => {
         const node = get().getNode(nodeId);
         if (!node) return undefined;
@@ -546,8 +554,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     toggleNodeVariablePublished: (nodeId: string, variableHandle: string) => {
         nodesByIdsCache.clear();
 
-        set((state) => ({
-            nodes: state.nodes.map((node) =>
+        set((state) => {
+            const updatedNodes = state.nodes.map((node) =>
                 node.id === nodeId
                     ? {
                         ...node,
@@ -561,8 +569,24 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                         ),
                     }
                     : node
-            ),
-        }));
+            );
+
+            const editorStore = useEditorStore.getState();
+            const isEditingThisVar =
+                editorStore.formEditRecordId === nodeId &&
+                editorStore.formEditVariable?.handle === variableHandle;
+
+            if (isEditingThisVar) {
+                useEditorStore.setState({
+                    formEditVariable: {
+                        ...editorStore.formEditVariable,
+                        published: !editorStore?.formEditVariable?.published,
+                    } as NodeVariable,
+                });
+            }
+
+            return {nodes: updatedNodes};
+        });
     },
 
     updateNodeHandle: (nodeId: string, handle: string) => {

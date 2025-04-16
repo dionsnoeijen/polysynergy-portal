@@ -6,7 +6,6 @@ import {Input} from "@/components/input";
 import {Button} from "@/components/button";
 import {Secret, FormType} from "@/types/types";
 import {EyeIcon, EyeSlashIcon} from "@heroicons/react/24/outline";
-
 import {
     createProjectSecretAPI,
     updateProjectSecretAPI,
@@ -16,12 +15,15 @@ import {
 import {Text} from "@/components/text";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import {useParams, useRouter} from "next/navigation";
+import useProjectSecretsStore from "@/stores/projectSecretsStore";
+import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
 
 const ProjectSecretsForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
     const formType = useEditorStore((state) => state.formType);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
+    const fetchSecrets = useProjectSecretsStore((state) => state.fetchSecrets);
 
     const params = useParams();
     const router = useRouter();
@@ -31,17 +33,19 @@ const ProjectSecretsForm: React.FC = () => {
     const [isSecretVisible, setIsSecretVisible] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+    const [isSecretFetched, setIsSecretFetched] = useState(false);
 
     useEffect(() => {
-        if (formType === FormType.EditProjectSecret && formEditRecordId && activeProjectId) {
+        if (formType === FormType.EditProjectSecret &&
+            formEditRecordId &&
+            activeProjectId
+        ) {
             fetchProjectSecretDetailAPI(activeProjectId, formEditRecordId)
                 .then((data: Secret) => {
                     const fetched: Secret = data;
                     if (fetched) {
                         setKey(fetched.key);
-                        if (fetched.value) {
-                            setSecretValue(fetched.value);
-                        }
+                        setIsSecretFetched(true);
                     }
                 })
                 .catch(() => {
@@ -62,8 +66,9 @@ const ProjectSecretsForm: React.FC = () => {
             } else if (activeProjectId) {
                 await createProjectSecretAPI(activeProjectId, key, secretValue);
             }
+            await fetchSecrets();
             closeForm();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message || "An error occurred.");
         }
@@ -79,21 +84,40 @@ const ProjectSecretsForm: React.FC = () => {
     };
 
     const handleDelete = useCallback(async () => {
-        await deleteProjectSecretAPI(activeProjectId as string, formEditRecordId as string)
+        await deleteProjectSecretAPI(activeProjectId as string, formEditRecordId as string);
+
         closeForm('Secret deleted successfully');
+
         setShowDeleteAlert(false);
-        router.push(`/projects/${params.projectUuid}`);
-    }, [activeProjectId, closeForm, formEditRecordId, params.projectUuid, router]);
+
+        await fetchSecretsWithRetry(fetchSecrets);
+
+        let specific = '';
+        if (params.routeUuid) {
+            specific = '/route/' + params.routeUuid;
+        } else if (params.scheduleUuid) {
+            specific = '/schedule/' + params.scheduleUuid;
+        } else if (params.blueprintUuid) {
+            specific = '/blueprint/' + params.blueprintUuid;
+        }
+
+        router.push(`/project/${params.projectUuid}${specific}`);
+    }, [activeProjectId, closeForm, fetchSecrets, formEditRecordId, params.blueprintUuid, params.projectUuid, params.routeUuid, params.scheduleUuid, router]);
 
     return (
         <form onSubmit={handleSubmit} className="p-10">
             <Heading>
                 {formType === FormType.EditProjectSecret ? "Edit Secret" : "Add Secret"}
             </Heading>
-            <Text>
-                The secret values are only available to you (the logged-in user). No one else can view these values.
-            </Text>
+            <Text>The secret values are only available to you (the logged-in user). No one else can view these
+                values.</Text>
             <Divider className="my-10" soft bleed/>
+            {isSecretFetched && (
+                <div className="rounded-md border border-white/10 p-4 text-white/60 text-sm italic mb-4">
+                    <Text>The secret value is fetched from the server. You can update it if needed, but you cannot view
+                        the contents of the secret.</Text>
+                </div>
+            )}
             {error && <p className="text-red-500 mb-4">{error}</p>}
             <div className="flex flex-col md:flex-row md:gap-4">
                 <div className="flex-1 mb-4">
@@ -112,7 +136,7 @@ const ProjectSecretsForm: React.FC = () => {
                             type={isSecretVisible ? "text" : "password"}
                             value={secretValue}
                             onChange={(e) => setSecretValue(e.target.value)}
-                            placeholder="Enter secret value"
+                            placeholder={isSecretFetched ? '**********' : 'Enter secret value'}
                         />
                         <button
                             type="button"

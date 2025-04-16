@@ -1,5 +1,5 @@
 import {Node, NodeVariable, NodeVariableType} from "@/types/types";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 import {Subheading} from "@/components/heading";
 import {Text} from "@/components/text";
@@ -7,7 +7,17 @@ import {Divider} from "@/components/divider";
 import {VariableTypeComponents} from "@/components/editor/sidebars/dock";
 import EditDictVariable from "@/components/editor/forms/variable/edit-dict-variable";
 import useNodesStore from "@/stores/nodesStore";
-import {PlayIcon} from "@heroicons/react/24/outline";
+import {CheckCircleIcon, LinkIcon, PlayIcon} from "@heroicons/react/24/outline";
+import useProjectSecretsStore from "@/stores/projectSecretsStore";
+import {Input} from "@/components/input";
+import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
+
+type VariableIdentifier = {
+    variable: NodeVariable;
+    nodeId: string;
+    nodeServiceHandle?: string;
+    nodeServiceVariant?: number;
+}
 
 type Props = {
     nodes: Node[];
@@ -15,13 +25,15 @@ type Props = {
     setVariables: React.Dispatch<React.SetStateAction<{ [nodeId: string]: { [handle: string]: NodeVariable[] } }>>;
     simpleVariables: { [nodeId: string]: { [handle: string]: string } };
     setSimpleVariables: React.Dispatch<React.SetStateAction<{ [nodeId: string]: { [handle: string]: string } }>>;
-    publishedVariables: { variable: NodeVariable; nodeId: string }[];
-    setPublishedVariables: React.Dispatch<React.SetStateAction<{ variable: NodeVariable; nodeId: string }[]>>;
+    publishedVariables: VariableIdentifier[];
+    setPublishedVariables: React.Dispatch<React.SetStateAction<VariableIdentifier[]>>;
+    secretVariables: { key: string, value: string }[];
+    setSecretVariables: React.Dispatch<React.SetStateAction<{ key: string, value: string }[]>>;
 };
 
 type GroupedPublishedVariable = {
     playConfigNode?: Node;
-    variables: { variable: NodeVariable; nodeId: string }[];
+    variables: VariableIdentifier[];
 };
 
 type TabItem = {
@@ -30,6 +42,10 @@ type TabItem = {
     info: string;
     group: GroupedPublishedVariable;
 };
+
+const SECRET_IDENTIFIER = 'secret::internal';
+const SECRET_EXISTS = 0;
+const SECRET_MUST_BE_CREATED = 1;
 
 const PublishedVariables: React.FC<Props> = ({
                                                  nodes,
@@ -40,39 +56,93 @@ const PublishedVariables: React.FC<Props> = ({
                                                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                                  publishedVariables,
                                                  setPublishedVariables,
+                                                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                                 secretVariables,
+                                                 setSecretVariables
                                              }) => {
     const leadsToPlayConfig = useNodesStore((state) => state.leadsToPlayConfig);
     const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
+    const getSecretNodes = useNodesStore((state) => state.getSecretNodes);
+    const secrets = useProjectSecretsStore((state) => state.secrets);
+    const handlePlay = useHandlePlay();
 
     const [tabs, setTabs] = useState<TabItem[]>([]);
     const [activeTabKey, setActiveTabKey] = useState<string>("default");
 
+    const syncMap = useMemo(() => {
+        const map = new Map<string, { nodeId: string; handle: string }[]>();
+        publishedVariables.forEach((pv) => {
+            if (!pv.nodeServiceHandle) return;
+            const syncKey = `${pv.nodeServiceHandle}::${pv.nodeServiceVariant ?? 1}::${pv.variable.handle}`;
+            if (!map.has(syncKey)) map.set(syncKey, []);
+            map.get(syncKey)!.push({nodeId: pv.nodeId, handle: pv.variable.handle});
+        });
+        return map;
+    }, [publishedVariables]);
+
     const handleVariableChange = (nodeId: string, updatedVariables: NodeVariable[], handle?: string) => {
         if (!handle) return;
-        setVariables((prev) => ({
-            ...prev,
-            [nodeId]: {
-                ...prev[nodeId],
-                [handle]: updatedVariables,
-            },
-        }));
+
+        const syncKey = publishedVariables.find(
+            (pv) => pv.nodeId === nodeId && pv.variable.handle === handle
+        );
+        if (!syncKey?.nodeServiceHandle) return;
+
+        const key = `${syncKey.nodeServiceHandle}::${syncKey.nodeServiceVariant ?? 1}::${handle}`;
+        const synced = syncMap.get(key) || [{nodeId, handle}];
+
+        setVariables((prev) => {
+            const updated = {...prev};
+            for (const {nodeId, handle} of synced) {
+                if (!updated[nodeId]) updated[nodeId] = {};
+                updated[nodeId][handle] = updatedVariables;
+            }
+            return updated;
+        });
     };
 
     const handleSimpleVariableChange = (nodeId: string, handle: string, value: string) => {
-        setSimpleVariables((prev) => ({
-            ...prev,
-            [nodeId]: {
-                ...prev[nodeId],
-                [handle]: value,
-            },
-        }));
+        const syncKey = publishedVariables.find(
+            (pv) => pv.nodeId === nodeId && pv.variable.handle === handle
+        );
+        if (!syncKey?.nodeServiceHandle) return;
+
+        const key = `${syncKey.nodeServiceHandle}::${syncKey.nodeServiceVariant ?? 1}::${handle}`;
+        const synced = syncMap.get(key) || [{nodeId, handle}];
+
+        setSimpleVariables((prev) => {
+            const updated = {...prev};
+            for (const {nodeId, handle} of synced) {
+                if (!updated[nodeId]) updated[nodeId] = {};
+                updated[nodeId][handle] = value;
+            }
+            return updated;
+        });
     };
+
+    const handleSecretCreation = async (secretKey: string, value: string) => {
+        const exists = secrets.find((s) => s.key === secretKey);
+        if (exists) {
+            console.log('Secret already exists:', exists);
+            return;
+        }
+        setSecretVariables(prev => {
+            if (prev.some(secret => secret.key === secretKey)) {
+                return prev.map(secret =>
+                    secret.key === secretKey ? { ...secret, value } : secret
+                );
+            } else {
+                return [...prev, { key: secretKey, value }];
+            }
+        });
+    }
 
     useEffect(() => {
         const initialVariables: { [nodeId: string]: { [handle: string]: NodeVariable[] } } = {};
         const initialSimpleVariables: { [nodeId: string]: { [handle: string]: string } } = {};
-        const pubVariables: { variable: NodeVariable; nodeId: string }[] = [];
+        const pubVariables: VariableIdentifier[] = [];
 
+        // First collect all published variables
         nodes.forEach((node) => {
             const dictVariables = node.variables.filter(
                 (variable) => variable.published && variable.type === NodeVariableType.Dict
@@ -84,14 +154,24 @@ const PublishedVariables: React.FC<Props> = ({
                 initialVariables[node.id] = {};
                 dictVariables.forEach((variable) => {
                     initialVariables[node.id][variable.handle] = (variable.value as NodeVariable[]) || [];
-                    pubVariables.push({variable, nodeId: node.id});
+                    pubVariables.push({
+                        variable,
+                        nodeId: node.id,
+                        nodeServiceHandle: node.service?.handle,
+                        nodeServiceVariant: node.service?.variant,
+                    });
                 });
             }
             if (otherVariables.length > 0) {
                 initialSimpleVariables[node.id] = {};
                 otherVariables.forEach((variable) => {
                     initialSimpleVariables[node.id][variable.handle] = (variable.value as string) || "";
-                    pubVariables.push({variable, nodeId: node.id});
+                    pubVariables.push({
+                        variable,
+                        nodeId: node.id,
+                        nodeServiceHandle: node.service?.handle,
+                        nodeServiceVariant: node.service?.variant,
+                    });
                 });
             }
         });
@@ -100,42 +180,102 @@ const PublishedVariables: React.FC<Props> = ({
         setSimpleVariables(initialSimpleVariables);
         setPublishedVariables(pubVariables);
 
-        const groupedMap: Map<string | null, GroupedPublishedVariable> = new Map();
+        const tabItems: TabItem[] = [];
 
-        for (const pv of pubVariables) {
-            const playConfigNode = leadsToPlayConfig(pv.nodeId);
-            const groupKey = playConfigNode?.id ?? null;
-
-            if (!groupedMap.has(groupKey)) {
-                groupedMap.set(groupKey, {
-                    playConfigNode,
-                    variables: [],
-                });
+        // Always create the Configuration tab first
+        const configTab: TabItem = {
+            key: "config",
+            title: "Configuration",
+            info: "",
+            group: {
+                playConfigNode: undefined,
+                variables: []
             }
+        };
 
-            groupedMap.get(groupKey)!.variables.push(pv);
-        }
+        // Always create the Secrets tab second
+        const secretsTab: TabItem = {
+            key: "secrets",
+            title: "Secrets",
+            info: "Sensitive data, such as passwords or API keys, are created as a secret.",
+            group: {
+                playConfigNode: undefined,
+                variables: []
+            }
+        };
 
-        const tabItems: TabItem[] = Array.from(groupedMap.entries()).map(([key, group]) => {
-            const rawTitle = group.playConfigNode
-                ? getNodeVariable(group.playConfigNode.id, "title")?.value
-                : undefined;
-
-            const rawInfo = group.playConfigNode
-                ? getNodeVariable(group.playConfigNode.id, "info")?.value
-                : undefined;
-
+        // Find all play button nodes
+        const playButtonNodes = nodes.filter(node => {
+            if (!node.has_play_button) return false;
+            const title = getNodeVariable(node.id, "title")?.value;
+            return typeof title === "string" && title.trim() !== "";
+        });
+        
+        const playButtonTabs: TabItem[] = playButtonNodes.map(node => {
+            const title = getNodeVariable(node.id, "title")?.value as string;
+            const info = getNodeVariable(node.id, "info")?.value as string;
+            
             return {
-                key: key ?? "default",
-                title: typeof rawTitle === "string" ? rawTitle : "Configuration",
-                info: typeof rawInfo === "string" ? rawInfo : "",
-                group,
+                key: node.id,
+                title: title,
+                info: info || "",
+                group: {
+                    playConfigNode: node,
+                    variables: []
+                }
             };
         });
 
+        // Distribute published variables
+        for (const pv of pubVariables) {
+            const playConfigNode = leadsToPlayConfig(pv.nodeId);
+            if (playConfigNode) {
+                // Add to the corresponding play button tab
+                const playButtonTab = playButtonTabs.find(tab => tab.key === playConfigNode.id);
+                if (playButtonTab) {
+                    playButtonTab.group.variables.push(pv);
+                }
+            } else {
+                // Add to the config tab
+                configTab.group.variables.push(pv);
+            }
+        }
+
+        // Handle secret nodes
+        const secretNodes = getSecretNodes();
+        secretNodes.forEach((node) => {
+            node.variables.forEach((variable: NodeVariable) => {
+                const exists = secrets.find((s) => s.key === variable.value);
+                const secretVar = {
+                    variable: variable,
+                    nodeId: node.id,
+                    nodeServiceHandle: SECRET_IDENTIFIER,
+                    nodeServiceVariant: exists ? SECRET_EXISTS : SECRET_MUST_BE_CREATED,
+                };
+
+                // Check if this secret leads to a play button
+                const playConfigNode = leadsToPlayConfig(node.id);
+                if (playConfigNode) {
+                    // Add to the corresponding play button tab
+                    const playButtonTab = playButtonTabs.find(tab => tab.key === playConfigNode.id);
+                    if (playButtonTab) {
+                        playButtonTab.group.variables.push(secretVar);
+                    }
+                } else {
+                    // Add to the secrets tab
+                    secretsTab.group.variables.push(secretVar);
+                }
+            });
+        });
+
+        // Add tabs in the correct order
+        tabItems.push(configTab);
+        tabItems.push(secretsTab);
+        tabItems.push(...playButtonTabs);
+
         setTabs(tabItems);
         setActiveTabKey(tabItems[0]?.key ?? "default");
-    }, [getNodeVariable, leadsToPlayConfig, nodes, setPublishedVariables, setSimpleVariables, setVariables]);
+    }, [getNodeVariable, getSecretNodes, leadsToPlayConfig, nodes, secrets, setPublishedVariables, setSimpleVariables, setVariables]);
 
     const triggerPlayConfig = (node: Node) => {
         console.log("Executing config node:", node.id);
@@ -173,12 +313,58 @@ const PublishedVariables: React.FC<Props> = ({
                     No published variables
                 </div>
             ) : (
-                activeTab?.group.variables.map(({variable, nodeId}) => {
+                activeTab?.group.variables.map(({variable, nodeId, nodeServiceHandle, nodeServiceVariant}) => {
                     const {baseType} = interpretNodeVariableType(variable);
-                    if (baseType === NodeVariableType.Dict) {
+                    const syncKey = `${nodeServiceHandle}::${nodeServiceVariant ?? 1}::${variable.handle}`;
+                    let isSynced = false;
+                    if (syncMap.has(syncKey)) {
+                        const synced = syncMap.get(syncKey);
+                        isSynced = synced?.some(({nodeId: id}) => id === nodeId) ?? false;
+                    }
+
+                    if (nodeServiceHandle === SECRET_IDENTIFIER) {
+                        if (nodeServiceVariant === SECRET_EXISTS) {
+                            return (
+                                <div key={nodeId + "-" + variable.handle}>
+                                    <Subheading>
+                                        <span className="inline-flex items-center gap-2">
+                                            Secret: {variable.value as string} Exists:
+                                            <CheckCircleIcon className={'w-4 h-5 text-green-500'}/>
+                                        </span>
+                                    </Subheading>
+                                    <Divider className="my-10" soft bleed/>
+                                </div>
+                            );
+                        } else {
+                            return (
+                                <div key={nodeId + "-" + variable.handle}>
+                                    <Subheading>
+                                        <span className="inline-flex items-center gap-2">
+                                            Secret: {variable.value as string}
+                                        </span>
+                                    </Subheading>
+                                    <Input
+                                        type={"password"}
+                                        onChange={(e) => handleSecretCreation(variable.value as string, e.currentTarget.value as string)}
+                                        placeholder={'******'}
+                                        aria-label={variable.handle}
+                                    />
+                                    <Divider className="my-10" soft bleed/>
+                                </div>
+                            );
+                        }
+                    } else if (baseType === NodeVariableType.Dict) {
                         return (
                             <div key={nodeId + "-" + variable.handle}>
-                                <Subheading>{variable.published_title}</Subheading>
+                                <Subheading>
+                                    <span className="inline-flex items-center gap-2">
+                                    {variable.published_title}
+                                        {isSynced && <LinkIcon
+                                            className="w-4 h-4"
+                                            title={`Synced with ${nodeServiceHandle} ${nodeServiceVariant ?? 1}`}
+                                        />}
+                                    </span>
+                                </Subheading>
                                 {variable.published_description && (
                                     <div className="mb-4 rounded-md border border-white/10 p-4">
                                         <Text dangerouslySetInnerHTML={{__html: variable.published_description}}/>
@@ -198,9 +384,18 @@ const PublishedVariables: React.FC<Props> = ({
                         );
                     } else {
                         const VariableComponent = VariableTypeComponents[baseType];
+
                         return VariableComponent ? (
                             <div key={nodeId + "-" + variable.handle}>
-                                <Subheading>{variable.published_title}</Subheading>
+                                <Subheading>
+                                    <span className="inline-flex items-center gap-2">
+                                    {variable.published_title}
+                                        {isSynced && <LinkIcon
+                                            className="w-4 h-4 text-white/60"
+                                            title={`Synced with ${nodeServiceHandle} ${nodeServiceVariant ?? 1}`}
+                                        />}
+                                    </span>
+                                </Subheading>
                                 {variable.published_description && (
                                     <div className="mb-4 rounded-md border border-white/10 p-4">
                                         <Text dangerouslySetInnerHTML={{__html: variable.published_description}}/>
@@ -226,7 +421,7 @@ const PublishedVariables: React.FC<Props> = ({
                     <button
                         type="button"
                         className="flex items-center gap-2 rounded bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition"
-                        onClick={() => triggerPlayConfig(activeTab.group.playConfigNode!)}
+                        onClick={(e) => handlePlay(e, activeTab.group.playConfigNode!.id)}
                     >
                         <PlayIcon className="h-5 w-5"/>
                         Voer configuratie uit

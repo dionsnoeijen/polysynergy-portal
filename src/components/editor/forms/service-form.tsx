@@ -5,6 +5,8 @@ import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useServicesStore from "@/stores/servicesStore";
 
+import {adjectives, animals, colors, uniqueNamesGenerator} from 'unique-names-generator';
+
 import {Heading, Subheading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Button} from "@/components/button";
@@ -132,6 +134,8 @@ const ServiceForm: React.FC = () => {
     if (!node.service) {
         node.service = {
             id: "temp-id",
+            handle: uniqueNamesGenerator({dictionaries: [adjectives, animals, colors]}),
+            variant: 1,
             name: "",
             description: "",
             category: "",
@@ -360,7 +364,7 @@ const ServiceForm: React.FC = () => {
                                     <Input
                                         className={'mb-2'}
                                         placeholder={'Variable title'}
-                                        value={variable.published_title as string}
+                                        value={variable.published_title ?? ''}
                                         onChange={(e) => {
                                             const title: string = e.target.value;
                                             updateNodeVariablePublishedTitle(data.nodeIds[0], variable.handle, title);

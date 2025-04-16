@@ -4,7 +4,7 @@ import useMockStore from "@/stores/mockStore";
 
 export const useHandlePlay = () => {
     const { activeVersionId, activeProjectId } = useEditorStore();
-    const { setMockConnections, setMockNodes } = useMockStore();
+    const { setMockConnections, setMockNodes, setIsExecuting } = useMockStore();
 
     return async (e: React.MouseEvent, nodeId: string) => {
         e.preventDefault();
@@ -13,6 +13,7 @@ export const useHandlePlay = () => {
         if (!activeVersionId) return;
 
         try {
+            setIsExecuting(true);
             const response = await runMockApi(activeProjectId, activeVersionId, nodeId);
             const data = await response.json();
 
@@ -26,6 +27,8 @@ export const useHandlePlay = () => {
             }
         } catch (err) {
             console.error("Play failed", err);
+        } finally {
+            setIsExecuting(false);
         }
     };
 };

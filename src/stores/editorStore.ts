@@ -34,6 +34,7 @@ type EditorState = {
     formType: FormType | null;
     formEditRecordId: string | null;
     formEditVariable?: NodeVariable | null;
+    isFormOpen: () => boolean;
     openForm: (type: FormType, formEditRecordId?: null | string, variable?: NodeVariable) => void;
     closeForm: (closeFormMessage?: string | null) => void;
     closeFormMessage?: string | null;
@@ -53,6 +54,7 @@ type EditorState = {
     openContextMenu: (x: number, y: number, items: Array<{ label: string; action: () => void }>) => void;
     closeContextMenu: () => void;
 
+    // Editor mode
     editorMode: EditorMode;
     previousEditorMode: EditorMode;
     setEditorMode: (mode: EditorMode) => void;
@@ -190,6 +192,8 @@ const useEditorStore = create<EditorState>((set, get) => ({
         showDocs: false,
         docsMarkdown: '',
     }),
+
+    isFormOpen: () => get().showForm,
 
     openForm: (
         type: FormType,

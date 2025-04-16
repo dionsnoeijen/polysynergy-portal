@@ -32,6 +32,8 @@ type MockState = {
     getMockConnection: (connectionId: string) => MockConnection | undefined;
     clearMockStore: () => void;
     hasMockData: () => boolean;
+    isExecuting: boolean;
+    setIsExecuting: (isExecuting: boolean) => void;
 };
 
 const useMockStore = create<MockState>((set, get) => ({
@@ -63,7 +65,9 @@ const useMockStore = create<MockState>((set, get) => ({
     },
     hasMockData: () => {
         return get().mockConnections.length > 0 || get().mockNodes.length > 0
-    }
+    },
+    isExecuting: false,
+    setIsExecuting: (isExecuting) => set({ isExecuting })
 }));
 
 export default useMockStore;

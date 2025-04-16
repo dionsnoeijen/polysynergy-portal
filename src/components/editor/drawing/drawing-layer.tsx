@@ -1,76 +1,110 @@
 'use client'
 
-import React, {useState} from 'react'
-import useEditorStore from "@/stores/editorStore";
-
-type Point = { x: number; y: number }
+import React, {useEffect, useRef, useState} from 'react'
+import {Stage, Layer, Rect, Transformer} from 'react-konva'
+import useEditorStore from '@/stores/editorStore'
+import {EditorMode} from '@/types/types'
 
 export default function DrawingLayer({
-    panPosition,
-    zoomFactor,
-}: {
+                                         panPosition,
+                                         zoomFactor,
+                                     }: {
     panPosition: { x: number; y: number }
     zoomFactor: number
 }) {
-    const [lines, setLines] = useState<Point[][]>([]);
-    const [currentLine, setCurrentLine] = useState<Point[] | null>(null);
+    const editorMode = useEditorStore((state) => state.editorMode)
+    const [canvasSize, setCanvasSize] = useState({width: 0, height: 0})
+    const containerRef = useRef<HTMLDivElement>(null)
+    const rectRef = useRef<any>(null)
+    const transformerRef = useRef<any>(null)
+    const [isSelected, setIsSelected] = useState(false)
 
-    const editorMode = useEditorStore((state) => state.editorMode);
-
-    const handleMouseDown = (e: React.MouseEvent) => {
-        const point = getPoint(e);
-        console.log('HANDLE DRAW MOUSE DOWN');
-        setCurrentLine([point]);
-    }
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        if (!currentLine) return
-        const point = getPoint(e)
-        setCurrentLine([...currentLine, point])
-    }
-
-    const handleMouseUp = () => {
-        if (currentLine) {
-            setLines([...lines, currentLine])
-            setCurrentLine(null)
+    useEffect(() => {
+        const updateSize = () => {
+            if (containerRef.current) {
+                const {width, height} = containerRef.current.getBoundingClientRect()
+                setCanvasSize({width, height})
+            }
         }
-    }
 
-    const getPoint = (e: React.MouseEvent): Point => {
-        const svg = e.currentTarget as SVGSVGElement
-        const pt = svg.createSVGPoint()
-        pt.x = e.clientX
-        pt.y = e.clientY
-        const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse())
-        return {x: svgP.x, y: svgP.y}
-    }
+        updateSize()
 
-    const renderLine = (points: Point[], index: number) => (
-        <polyline
-            key={index}
-            fill="none"
-            stroke="black"
-            strokeWidth={2}
-            points={points.map((p) => `${p.x},${p.y}`).join(' ')}
-        />
-    )
+        const observer = new ResizeObserver(updateSize)
+        if (containerRef.current) observer.observe(containerRef.current)
+
+        return () => {
+            if (containerRef.current) observer.unobserve(containerRef.current)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (isSelected && transformerRef.current && rectRef.current) {
+            transformerRef.current.nodes([rectRef.current])
+            transformerRef.current.getLayer().batchDraw()
+        }
+    }, [isSelected])
 
     return (
         <div
-            className={`absolute top-0 left-0 z-5 w-full h-full bg-red-500/20`}
-            // onMouseDown={handleMouseDown}
-            // onMouseMove={handleMouseMove}
-            // onMouseUp={handleMouseUp}
+            data-type="drawing-layer"
+            ref={containerRef}
+            className={`absolute top-0 left-0 w-full h-full z-20 ${
+                editorMode !== EditorMode.Draw ? 'pointer-events-none' : ''
+            }`}
         >
-            <svg
-                className="absolute top-0 left-0 w-0 h-0 z-50 pointer-events-none overflow-visible"
-                style={{
-                    transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomFactor})`,
+            <Stage
+                width={canvasSize.width}
+                height={canvasSize.height}
+                scaleX={zoomFactor}
+                scaleY={zoomFactor}
+                x={panPosition.x}
+                y={panPosition.y}
+                onMouseDown={(e) => {
+                    // deselect when clicked outside
+                    const clickedOnEmpty = e.target === e.target.getStage()
+                    if (clickedOnEmpty) setIsSelected(false)
                 }}
             >
-                {lines.map(renderLine)}
-                {currentLine && renderLine(currentLine, -1)}
-            </svg>
+                <Layer>
+                    {/*<Rect*/}
+                    {/*    ref={rectRef}*/}
+                    {/*    x={100}*/}
+                    {/*    y={100}*/}
+                    {/*    width={200}*/}
+                    {/*    height={100}*/}
+                    {/*    fill="skyblue"*/}
+                    {/*    draggable*/}
+                    {/*    stroke="black"*/}
+                    {/*    strokeWidth={1}*/}
+                    {/*    rotation={0}*/}
+                    {/*    onClick={() => setIsSelected(true)}*/}
+                    {/*    onTap={() => setIsSelected(true)} // for mobile*/}
+                    {/*/>*/}
+                    {/*{isSelected && (*/}
+                    {/*    <Transformer*/}
+                    {/*        ref={transformerRef}*/}
+                    {/*        rotateEnabled={true}*/}
+                    {/*        keepRatio={false} // <--- dit is belangrijk!*/}
+                    {/*        enabledAnchors={[*/}
+                    {/*            'top-left',*/}
+                    {/*            'top-right',*/}
+                    {/*            'bottom-left',*/}
+                    {/*            'bottom-right',*/}
+                    {/*            'middle-left',*/}
+                    {/*            'middle-right',*/}
+                    {/*            'top-center',*/}
+                    {/*            'bottom-center',*/}
+                    {/*        ]}*/}
+                    {/*        boundBoxFunc={(oldBox, newBox) => {*/}
+                    {/*            if (newBox.width < 20 || newBox.height < 20) {*/}
+                    {/*                return oldBox*/}
+                    {/*            }*/}
+                    {/*            return newBox*/}
+                    {/*        }}*/}
+                    {/*    />*/}
+                    {/*)}*/}
+                </Layer>
+            </Stage>
         </div>
     )
 }

@@ -26,7 +26,7 @@ export default function SecretTree(): ReactElement {
         openForm(FormType.EditProjectSecret, key);
     };
 
-    const handleAddSecretNode = (mouseX: number, mouseY: number, id: string) => {
+    const handleAddSecretNode = (mouseX: number, mouseY: number, key: string) => {
         const node = getAvailableNodeByPath('nodes.nodes.secret.variable_secret.VariableSecret');
         if (!node) return;
 
@@ -42,9 +42,9 @@ export default function SecretTree(): ReactElement {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const secretIdVar = node.variables.find((v: any) => v.handle === "secret_id");
+        const secretIdVar = node.variables.find((v: any) => v.handle === "true_path");
         if (secretIdVar) {
-            secretIdVar.value = id;
+            secretIdVar.value = key;
         }
 
         addNode(node);
@@ -73,7 +73,7 @@ export default function SecretTree(): ReactElement {
                             <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
                         </button>
                         <button
-                            onClick={(e: React.MouseEvent) => handleAddSecretNode(e.clientX, e.clientY, secret.id)}
+                            onClick={(e: React.MouseEvent) => handleAddSecretNode(e.clientX, e.clientY, secret.key)}
                             type="button"
                             className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group`}
                         >

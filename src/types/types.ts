@@ -209,6 +209,8 @@ export type Package = {
 
 export type NodeService = {
     id: string;
+    handle: string;
+    variant: number;
     name: string;
     description: string;
     category: string;

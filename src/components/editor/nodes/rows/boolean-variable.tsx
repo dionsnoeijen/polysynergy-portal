@@ -49,6 +49,7 @@ const BooleanVariable: React.FC<Props> = ({
                 ) : (
                     <XCircleIcon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-400 dark:text-slate-400'}`} />
                 )}
+                {variable.value && <span className="ml-1">{variable.value as string}</span>}
                 {isValueConnected && <span className="ml-1"><BoltIcon className={'w-4 h-4 text-yellow-300'} /></span>}
             </div>
             {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector

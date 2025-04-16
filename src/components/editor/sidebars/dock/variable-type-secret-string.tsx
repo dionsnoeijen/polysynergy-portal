@@ -64,7 +64,7 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
                                 type={isPasswordVisible ? "text" : "password"}
                                 value={displayValue}
                                 onChange={handleChange}
-                                placeholder={variable.handle}
+                                placeholder={'******'}
                                 aria-label={variable.handle}
                             />
                         </FieldGroup>

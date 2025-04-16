@@ -12,7 +12,7 @@ import { Button } from "@/components/button";
 import { globalToLocal } from "@/utils/positionUtils";
 
 import PublishedVariables from "@/components/editor/forms/variable/published-variables";
-import {adjectives, animals, colors, uniqueNamesGenerator} from "unique-names-generator";
+import { adjectives, animals, colors, uniqueNamesGenerator } from "unique-names-generator";
 
 const PlaceServiceForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -29,6 +29,7 @@ const PlaceServiceForm: React.FC = () => {
     const [publishedVariables, setPublishedVariables] = useState<{ variable: NodeVariable; nodeId: string }[]>([]);
     const [unpackedNodes, setUnpackedNodes] = useState<Node[]>([]);
     const [unpackedConnections, setUnpackedConnections] = useState<Connection[]>([]);
+    const [secretVariables, setSecretVariables] = useState<{ key: string, value: string }[]>([]);
 
     useEffect(() => {
         if (!service) return;
@@ -114,6 +115,8 @@ const PlaceServiceForm: React.FC = () => {
                 setSimpleVariables={setSimpleVariables}
                 publishedVariables={publishedVariables}
                 setPublishedVariables={setPublishedVariables}
+                secretVariables={secretVariables}
+                setSecretVariables={setSecretVariables}
             />
 
             <div className="flex justify-end gap-4 p-10">

@@ -277,10 +277,6 @@ const PublishedVariables: React.FC<Props> = ({
         setActiveTabKey(tabItems[0]?.key ?? "default");
     }, [getNodeVariable, getSecretNodes, leadsToPlayConfig, nodes, secrets, setPublishedVariables, setSimpleVariables, setVariables]);
 
-    const triggerPlayConfig = (node: Node) => {
-        console.log("Executing config node:", node.id);
-    };
-
     const activeTab = tabs.find((tab) => tab.key === activeTabKey);
 
     return (

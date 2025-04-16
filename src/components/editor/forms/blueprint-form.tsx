@@ -117,7 +117,7 @@ const BlueprintForm: React.FC = () => {
                 <div>
                     <RichTextEditor
                         value={description}
-                        onChange={(description) => setDescription(description)}
+                        onChange={(description: string) => setDescription(description)}
                     />
                 </div>
             </section>

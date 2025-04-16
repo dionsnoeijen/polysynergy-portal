@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Subheading } from "@/components/heading";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table";
 import { Switch } from "@/components/switch";
@@ -27,15 +27,6 @@ const EditDictVariable: React.FC<Props> = ({
     dock,
     published = false,
 }) => {
-    const [newVariable, setNewVariable] = useState<NodeVariable>({
-        handle: "",
-        type: NodeVariableType.String,
-        value: "",
-        has_in: false,
-        has_out: false,
-        published: published,
-    });
-
     const updateVariable = (
         index: number,
         key: keyof NodeVariable,
@@ -67,7 +58,6 @@ const EditDictVariable: React.FC<Props> = ({
             has_out: dock?.out_switch_default ?? false,
             published: published,
         };
-        setNewVariable(newVariable);
         onChange([...variables, newVariable], handle);
     };
 

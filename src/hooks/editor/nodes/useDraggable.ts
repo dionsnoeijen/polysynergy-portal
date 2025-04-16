@@ -11,13 +11,12 @@ const useDraggable = () => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const zoomFactor = useEditorStore((state) => state.zoomFactor);
     const setIsDragging = useEditorStore((state) => state.setIsDragging);
-    const openGroup = useEditorStore((state) => state.openGroup);
     const panPosition = useEditorStore((state) => state.panPosition);
     const editorPosition = useEditorStore((state) => state.editorPosition);
     const isPasting = useEditorStore((state) => state.isPasting);
     const setIsPasting = useEditorStore((state) => state.setIsPasting);
 
-    const { getNode, updateNodePosition } = useNodesStore();
+    const { getNode, updateNodePosition, openedGroup } = useNodesStore();
     const { findInConnectionsByNodeId, findOutConnectionsByNodeId } = useConnectionsStore();
 
     const selectedNodesRef = useRef<string[]>(selectedNodes);
@@ -38,14 +37,14 @@ const useDraggable = () => {
             const outConnections = findOutConnectionsByNodeId(nodeId, true);
             allConnections.push(...inConnections, ...outConnections);
         });
-        if (openGroup) {
-            const groupInConnections = findInConnectionsByNodeId(openGroup as string);
-            const groupOutConnections = findOutConnectionsByNodeId(openGroup as string);
+        if (openedGroup) {
+            const groupInConnections = findInConnectionsByNodeId(openedGroup);
+            const groupOutConnections = findOutConnectionsByNodeId(openedGroup);
             allConnections.push(...groupInConnections, ...groupOutConnections);
         }
         return allConnections;
     // eslint-disable-next-line
-    }, [findInConnectionsByNodeId, findOutConnectionsByNodeId, openGroup]);
+    }, [findInConnectionsByNodeId, findOutConnectionsByNodeId, openedGroup]);
 
     const handleDraggableMouseMove = useCallback(
         (moveEvent: MouseEvent) => {

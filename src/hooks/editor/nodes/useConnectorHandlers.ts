@@ -1,5 +1,5 @@
 import React, {useRef} from "react";
-import {calculateConnectorPosition, globalToLocal} from "@/utils/positionUtils";
+import {globalToLocal} from "@/utils/positionUtils";
 import {v4 as uuidv4} from "uuid";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
@@ -164,10 +164,6 @@ export const useConnectorHandlers = (
         if (!isGroup && isIn) return;
 
         startedFromGroup.current = isGroup;
-
-        const {x, y} = calculateConnectorPosition(
-            e.currentTarget as HTMLElement,
-        );
 
         const id = uuidv4();
         const connection = addConnection({

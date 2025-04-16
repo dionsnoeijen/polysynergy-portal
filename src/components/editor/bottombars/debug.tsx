@@ -39,7 +39,7 @@ const Debug: React.FC = (): React.ReactElement => {
         }, 2000);
 
         return () => clearInterval(interval);
-    }, [nodes, connections, editor]);
+    }, [nodes, connections, editor, groupStack, openedGroup]);
 
     return (
         <div className="flex h-full">

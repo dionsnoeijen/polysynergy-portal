@@ -1,8 +1,5 @@
 import React from "react";
 import { PlayCircleIcon } from "@heroicons/react/24/outline";
-import useEditorStore from "@/stores/editorStore";
-import useMockStore from "@/stores/mockStore";
-import { runMockApi } from "@/api/runApi";
 import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
 
 type Props = {

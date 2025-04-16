@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
-import useConnectionsStore from '@/stores/connectionsStore';
 import { Node } from '@/types/types';
 import {snapToGrid} from "@/utils/snapToGrid";
 
@@ -15,7 +14,6 @@ const useResizable = (node: Node) => {
     const [ isResizing, setIsResizing ] = useState(false);
     const { zoomFactor } = useEditorStore();
     const { updateNodeWidth } = useNodesStore();
-    const { findOutConnectionsByNodeId, updateConnection } = useConnectionsStore();
 
     const sizeRef = useRef(size);
     sizeRef.current = size;
@@ -53,13 +51,7 @@ const useResizable = (node: Node) => {
 
         window.addEventListener("mousemove", handleMouseMove);
         window.addEventListener("mouseup", handleMouseUp);
-    }, [
-        zoomFactor,
-        node.id,
-        updateNodeWidth,
-        findOutConnectionsByNodeId,
-        updateConnection
-    ]);
+    }, [zoomFactor, node.id, updateNodeWidth]);
 
     return {
         size,

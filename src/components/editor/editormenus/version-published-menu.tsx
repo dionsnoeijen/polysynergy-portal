@@ -30,7 +30,14 @@ export default function VersionPublishedMenu({ routeUuid }: VersionPublishedMenu
     const isSaving = useEditorStore((state) => state.isSaving);
     const isPublished = useEditorStore((state) => state.isPublished);
 
-    const latestStates: Record<StoreName, State> = { nodes, connections };
+    const latestStates: Record<StoreName, State> = { 
+        nodes, 
+        connections,
+        groups: {
+            groupStack: [],
+            openedGroup: null
+        }
+    };
 
     const [showPublishAlert, setShowPublishAlert] = useState(false);
     const [showDraftAlert, setShowDraftAlert] = useState(false);

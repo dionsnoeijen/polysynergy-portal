@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import useEditorStore from "@/stores/editorStore";
+import {EditorMode} from "@/types/types";
 
 export const useDeselectOnClickOutside = () => {
-    const { setSelectedNodes, isDragging, setIsDragging, boxSelect } = useEditorStore();
+    const { setSelectedNodes, isDragging, setIsDragging, editorMode } = useEditorStore();
     const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
 
     const handleEditorMouseDown = () => {
@@ -21,7 +22,7 @@ export const useDeselectOnClickOutside = () => {
                 setClickTimeout(null);
 
                 const target = e.target as HTMLElement | null;
-                if (!isDragging && !boxSelect && (
+                if (!isDragging && editorMode !== EditorMode.BoxSelect && (
                     target?.getAttribute('data-type') === 'editor' ||
                     target?.getAttribute('data-type') === 'open-group'
                 )) {
@@ -33,7 +34,7 @@ export const useDeselectOnClickOutside = () => {
 
         window.addEventListener("mouseup", handleMouseUp);
         return () => window.removeEventListener("mouseup", handleMouseUp);
-    }, [clickTimeout, isDragging, boxSelect, setSelectedNodes, setIsDragging]);
+    }, [clickTimeout, isDragging, editorMode, setSelectedNodes, setIsDragging]);
 
     return { handleEditorMouseDown };
 };

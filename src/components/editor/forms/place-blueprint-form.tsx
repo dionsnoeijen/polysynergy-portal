@@ -27,6 +27,7 @@ const PlaceBlueprintForm: React.FC = () => {
     const [variables, setVariables] = useState<{ [handle: string]: { [variableHandle: string]: NodeVariable[] } }>({});
     const [simpleVariables, setSimpleVariables] = useState<{ [handle: string]: { [variableHandle: string]: string } }>({});
     const [publishedVariables, setPublishedVariables] = useState<{ variable: NodeVariable; nodeId: string }[]>([]);
+    const [secretVariables, setSecretVariables] = useState<{ key: string, value: string }[]>([]);
     const [unpackedNodes, setUnpackedNodes] = useState<Node[]>([]);
     const [unpackedConnections, setUnpackedConnections] = useState<Connection[]>([]);
 
@@ -112,6 +113,8 @@ const PlaceBlueprintForm: React.FC = () => {
                 setSimpleVariables={setSimpleVariables}
                 publishedVariables={publishedVariables}
                 setPublishedVariables={setPublishedVariables}
+                secretVariables={secretVariables}
+                setSecretVariables={setSecretVariables}
             />
 
             <Divider className="my-10" soft bleed />

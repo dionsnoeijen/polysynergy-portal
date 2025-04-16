@@ -13,6 +13,13 @@ const nextConfig: NextConfig = {
         NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL: process.env.NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL,
         NEXT_PUBLIC_POLYSYNERGY_API: process.env.NEXT_PUBLIC_POLYSYNERGY_API,
     },
+    webpack: (config) => {
+        config.resolve.fallback = {
+            ...config.resolve.fallback,
+            canvas: false,
+        };
+        return config;
+    },
 };
 
 export default nextConfig;

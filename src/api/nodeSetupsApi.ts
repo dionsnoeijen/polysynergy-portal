@@ -1,5 +1,5 @@
 import { getIdToken } from "@/api/auth/authToken";
-import {State, StoreName} from "@/types/types";
+import {Fundamental, State, StoreName} from "@/types/types";
 import config from "@/config";
 
 export const fetchNodeSetupVersionAPI = async (
@@ -25,12 +25,9 @@ export const updateNodeSetupVersionAPI = async (
     versionId: string,
     projectId: string,
     content: Record<StoreName, State>,
-    type: "route" | "schedule" | "blueprint"
+    type: Fundamental
 ): Promise<Response> => {
     const idToken = getIdToken();
-
-    console.log(setupId, projectId, content, type);
-
     return fetch(
         `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/${projectId}/`,
         {

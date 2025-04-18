@@ -60,8 +60,6 @@ export default function useGlobalStoreListenersWithImmediateSave() {
                     }
                 };
 
-                console.log(activeProjectId);
-
                 if (activeRouteId) {
                     await updateNodeSetupVersionAPI(activeRouteId, activeVersionId, activeProjectId, currentState, Fundamental.Route);
                 } else if (activeScheduleId) {

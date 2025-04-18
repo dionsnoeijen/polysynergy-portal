@@ -261,7 +261,7 @@ export interface GroupProps extends NodeProps {
     isMirror?: boolean;
 }
 
-export type Schedule = {
+export type Schedule = ListItemWithId &  {
     id?: string | null;
     name: string;
     cron_expression: string;

@@ -67,7 +67,7 @@ const ScheduleForm: React.FC = () => {
         if (!validateForm()) return;
 
         const payload: Schedule = {
-            id: formEditRecordId,
+            id: formEditRecordId ?? undefined,
             name,
             cron_expression: cronExpression,
             start_time,

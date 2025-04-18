@@ -6,9 +6,7 @@ import SidebarTenantHeader from "@/components/sidebar/sidebar-tenant-header";
 import ScheduleTree from "@/components/editor/sidebars/trees/schedule-tree";
 import ServiceTree from "@/components/editor/sidebars/trees/service-tree";
 import BlueprintTree from "@/components/editor/sidebars/trees/blueprint-tree";
-import ProjectVariableTree from "@/components/editor/sidebars/trees/project-variable-tree";
 import SecretTree from "@/components/editor/sidebars/trees/secret-tree";
-import ConfigTree from "@/components/editor/sidebars/trees/config-tree";
 
 export default function ItemManager({
                                         className,

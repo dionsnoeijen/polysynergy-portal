@@ -23,6 +23,7 @@ import {fetchSchedule} from "@/api/schedulesApi";
 
 const ProjectPublishForm: React.FC = (): React.ReactElement => {
     const closeForm = useEditorStore((state) => state.closeForm);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
 
     const routes = useDynamicRoutesStore((state) => state.routes);
     const deleteDynamicRoute = useDynamicRoutesStore((state) => state.deleteDynamicRoute);
@@ -132,6 +133,7 @@ const ProjectPublishForm: React.FC = (): React.ReactElement => {
         await createNodeSetupVersionDraftAPI(
             routeId,
             nodeSetupVersionId,
+            activeProjectId,
             version.content,
             'route'
         );
@@ -192,6 +194,7 @@ const ProjectPublishForm: React.FC = (): React.ReactElement => {
         await createNodeSetupVersionDraftAPI(
             scheduleId,
             nodeSetupVersionId,
+            activeProjectId,
             version.content,
             'schedule'
         );

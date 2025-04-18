@@ -267,7 +267,7 @@ export function EditorLayout({
                                         <Editor key={'editor-' + activeVersionId} />
                                         <BottomDrawToolbar />
                                         <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId} />
-                                        <VersionPublishedMenu routeUuid={routeUuid} />
+                                        <VersionPublishedMenu routeUuid={routeUuid} scheduleUuid={scheduleUuid} />
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">

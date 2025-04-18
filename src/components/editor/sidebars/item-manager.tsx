@@ -24,10 +24,10 @@ export default function ItemManager({
                 <RouteTree />
                 <ScheduleTree />
                 <BlueprintTree />
-                <ConfigTree />
+                {/* Disabled for now: <ConfigTree />*/}
                 <ServiceTree />
                 <SecretTree />
-                <ProjectVariableTree />
+                {/* Disabled for now: <ProjectVariableTree />*/}
             </div>
             <div className={'-mb-2'}>
                 <SidebarTenantHeader/>

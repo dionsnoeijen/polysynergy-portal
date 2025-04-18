@@ -262,7 +262,7 @@ export interface GroupProps extends NodeProps {
 }
 
 export type Schedule = {
-    id?: string;
+    id?: string | null;
     name: string;
     cron_expression: string;
     start_time: Date;

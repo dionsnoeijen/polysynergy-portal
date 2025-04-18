@@ -8,7 +8,7 @@ import { Fundamental } from "@/types/types";
 let lastSaveTime = 0;
 let debounceTimeout: NodeJS.Timeout | null = null;
 let pendingSave = false;
-let savingInProgress = false; // <== DIT IS DE FIX
+let savingInProgress = false;
 
 export default function useGlobalStoreListenersWithImmediateSave() {
     const {
@@ -17,6 +17,7 @@ export default function useGlobalStoreListenersWithImmediateSave() {
         activeBlueprintId,
         activeConfigId,
         activeVersionId,
+        activeProjectId,
         setIsSaving,
     } = useEditorStore();
 
@@ -59,14 +60,16 @@ export default function useGlobalStoreListenersWithImmediateSave() {
                     }
                 };
 
+                console.log(activeProjectId);
+
                 if (activeRouteId) {
-                    await updateNodeSetupVersionAPI(activeRouteId, activeVersionId, currentState, Fundamental.Route);
+                    await updateNodeSetupVersionAPI(activeRouteId, activeVersionId, activeProjectId, currentState, Fundamental.Route);
                 } else if (activeScheduleId) {
-                    await updateNodeSetupVersionAPI(activeScheduleId, activeVersionId, currentState, Fundamental.Schedule);
+                    await updateNodeSetupVersionAPI(activeScheduleId, activeVersionId, activeProjectId, currentState, Fundamental.Schedule);
                 } else if (activeBlueprintId) {
-                    await updateNodeSetupVersionAPI(activeBlueprintId, activeVersionId, currentState, Fundamental.Blueprint);
+                    await updateNodeSetupVersionAPI(activeBlueprintId, activeVersionId, activeProjectId, currentState, Fundamental.Blueprint);
                 } else if (activeConfigId) {
-                    await updateNodeSetupVersionAPI(activeConfigId, activeVersionId, currentState, Fundamental.Config);
+                    await updateNodeSetupVersionAPI(activeConfigId, activeVersionId, activeProjectId, currentState, Fundamental.Config);
                 }
 
                 lastSaveTime = Date.now();

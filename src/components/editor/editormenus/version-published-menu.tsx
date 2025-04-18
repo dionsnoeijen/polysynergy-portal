@@ -5,7 +5,11 @@ import { Select } from '@/components/select';
 import { Button } from '@/components/button';
 import useDynamicRoutesStore from '@/stores/dynamicRoutesStore';
 import {ArrowRightCircleIcon, Bars3Icon, BarsArrowDownIcon} from '@heroicons/react/24/outline';
-import {createNodeSetupVersionDraftAPI, publishNodeSetupRouteVersionAPI} from "@/api/nodeSetupsApi";
+import {
+    createNodeSetupVersionDraftAPI,
+    publishNodeSetupRouteVersionAPI,
+    publishNodeSetupScheduleVersionAPI
+} from "@/api/nodeSetupsApi";
 import useEditorStore from "@/stores/editorStore";
 import fetchAndApplyNodeSetup from "@/utils/fetchNodeSetup";
 import SavingIndicator from "@/components/saving-indicator";
@@ -13,19 +17,24 @@ import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/al
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import {FormType, State, StoreName} from "@/types/types";
+import useSchedulesStore from "@/stores/schedulesStore";
 
-type VersionPublishedMenuProps = { routeUuid?: string; };
+type VersionPublishedMenuProps = { routeUuid?: string; scheduleUuid?: string };
 
-export default function VersionPublishedMenu({ routeUuid }: VersionPublishedMenuProps) {
+export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: VersionPublishedMenuProps) {
     const nodes = useNodesStore((state) => state.nodes);
     const connections = useConnectionsStore((state) => state.connections);
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
+    const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const openForm = useEditorStore((state) => state.openForm);
 
     const routes = useDynamicRoutesStore((state) => state.routes);
     const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
+    const getSchedule = useSchedulesStore((state) => state.getSchedule);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const fetchDynamicRoutes = useDynamicRoutesStore((state) => state.fetchDynamicRoutes);
+    const fetchSchedules = useSchedulesStore((state) => state.fetchSchedules);
     const setActiveVersionId = useEditorStore((state) => state.setActiveVersionId);
     const isSaving = useEditorStore((state) => state.isSaving);
     const isPublished = useEditorStore((state) => state.isPublished);
@@ -54,6 +63,12 @@ export default function VersionPublishedMenu({ routeUuid }: VersionPublishedMenu
 
     const handleVersionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newVersionId = e.target.value;
+
+        if (scheduleUuid) {
+            await fetchAndApplyNodeSetup({ scheduleId: scheduleUuid, versionId: newVersionId });
+            return;
+        }
+
         await fetchAndApplyNodeSetup({ routeId: routeUuid, versionId: newVersionId });
     };
 
@@ -62,14 +77,29 @@ export default function VersionPublishedMenu({ routeUuid }: VersionPublishedMenu
     };
 
     const handleDraft = async () => {
-        const response = await createNodeSetupVersionDraftAPI(
-            activeRouteId as string,
-            activeVersionId as string,
-            latestStates,
-            'route'
-        );
-        await fetchDynamicRoutes();
-        setActiveVersionId(response.new_version_id);
+
+        if (scheduleUuid) {
+            const response = await createNodeSetupVersionDraftAPI(
+                activeScheduleId as string,
+                activeVersionId as string,
+                activeProjectId as string,
+                latestStates,
+                'schedule'
+            );
+            await fetchSchedules();
+            setActiveVersionId(response.new_version_id);
+        } else {
+            const response = await createNodeSetupVersionDraftAPI(
+                activeRouteId as string,
+                activeVersionId as string,
+                activeProjectId as string,
+                latestStates,
+                'route'
+            );
+            await fetchDynamicRoutes();
+            setActiveVersionId(response.new_version_id);
+        }
+
         setShowDraftAlert(false);
     }
 
@@ -78,19 +108,29 @@ export default function VersionPublishedMenu({ routeUuid }: VersionPublishedMenu
     };
 
     const handlePublish = async () => {
-        await publishNodeSetupRouteVersionAPI(activeVersionId as string);
+        if (scheduleUuid) {
+            await publishNodeSetupScheduleVersionAPI(activeVersionId as string);
+        } else {
+            await publishNodeSetupRouteVersionAPI(activeVersionId as string);
+        }
         setShowPublishAlert(false);
     }
 
     const routeData = getDynamicRoute(routeUuid as string);
-    if (!routeData || !routeData.versions) {
+    const scheduleData = getSchedule(scheduleUuid as string);
+
+    console.log('routeData', routeData, 'activeRouteId', activeRouteId, 'activeVersionId', activeVersionId);
+
+    if ((!routeData || !routeData.versions) && (!scheduleData || !scheduleData.versions)) {
+        console.log('No route data or schedule data found');
+
         return null;
     }
 
     return (
         <div className="absolute bottom-5 right-5 flex items-center gap-2 p-2 bg-white/70 dark:bg-black/30 rounded shadow z-50">
             <Select value={activeVersionId} onChange={handleVersionChange}>
-                {routeData.versions.map((version: {
+                {routeData ? routeData?.versions?.map((version: {
                     id: string;
                     version_number: number;
                     published: boolean;
@@ -113,15 +153,39 @@ export default function VersionPublishedMenu({ routeUuid }: VersionPublishedMenu
                             {label.join(' ')}
                         </option>
                     );
-                })}
+                }): null}
+                {scheduleData ? scheduleData?.versions?.map((version: {
+                    id: string;
+                    version_number: number;
+                    published: boolean;
+                    draft: boolean;
+                }) => {
+                    const label = [ `v${version.version_number}`];
+
+                    if (version.published) {
+                        label.push('(published)');
+                    }
+                    if (!version.published && !version.draft) {
+                        label.push('(history)');
+                    }
+                    if (version.draft) {
+                        label.push('(draft)');
+                    }
+
+                    return (
+                        <option key={version.id} value={version.id}>
+                            {label.join(' ')}
+                        </option>
+                    );
+                }): null}
             </Select>
-            <Button disabled={isPublished} onClick={handlePublishClick}>
+            <Button title="Publish to production" disabled={isPublished} onClick={handlePublishClick}>
                 <ArrowRightCircleIcon className="h-6 w-6" />
             </Button>
-            <Button onClick={handleDraftClick} >
+            <Button title="Create a new draft" onClick={handleDraftClick} >
                 <BarsArrowDownIcon className="h-6 w-6" />
             </Button>
-            <Button onClick={() => openForm(FormType.ProjectPublish)}>
+            <Button title="Show the publish overview" onClick={() => openForm(FormType.ProjectPublish)}>
                 <Bars3Icon className="h-6 w-6" />
             </Button>
             <SavingIndicator isSaving={isSaving} />

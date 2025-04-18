@@ -32,7 +32,7 @@ type EditorState = {
     setIsDrawingConnection: (drawing: string) => void;
     showForm: boolean;
     formType: FormType | null;
-    formEditRecordId: string | null;
+    formEditRecordId: string | null | undefined;
     formEditVariable?: NodeVariable | null;
     isFormOpen: () => boolean;
     openForm: (type: FormType, formEditRecordId?: null | string, variable?: NodeVariable) => void;

@@ -23,12 +23,16 @@ export const fetchNodeSetupVersionAPI = async (
 export const updateNodeSetupVersionAPI = async (
     setupId: string,
     versionId: string,
+    projectId: string,
     content: Record<StoreName, State>,
-    type: "route" | "schedule" | "blueprint" | "config"
+    type: "route" | "schedule" | "blueprint"
 ): Promise<Response> => {
     const idToken = getIdToken();
+
+    console.log(setupId, projectId, content, type);
+
     return fetch(
-        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/`,
+        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/${projectId}/`,
         {
             method: "PUT",
             headers: {
@@ -112,12 +116,14 @@ export const unpublishNodeSetupScheduleVersionAPI = (
 export const createNodeSetupVersionDraftAPI = async (
     setupId: string,
     versionId: string,
+    projectId: string,
     content: Record<StoreName, State>,
     type: "route" | "schedule" | "blueprint"
 ) => {
     const idToken = getIdToken();
+
     const response = await fetch(
-        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/`,
+        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/${projectId}/`,
         {
             method: "POST",
             headers: {

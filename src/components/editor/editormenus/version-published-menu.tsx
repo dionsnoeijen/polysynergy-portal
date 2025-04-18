@@ -16,7 +16,7 @@ import SavingIndicator from "@/components/saving-indicator";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import {FormType, State, StoreName} from "@/types/types";
+import {FormType, Fundamental, State, StoreName} from "@/types/types";
 import useSchedulesStore from "@/stores/schedulesStore";
 
 type VersionPublishedMenuProps = { routeUuid?: string; scheduleUuid?: string };
@@ -78,13 +78,15 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
 
     const handleDraft = async () => {
 
+        console.log('Handle draft', scheduleUuid, routeUuid);
+
         if (scheduleUuid) {
             const response = await createNodeSetupVersionDraftAPI(
                 activeScheduleId as string,
                 activeVersionId as string,
                 activeProjectId as string,
                 latestStates,
-                'schedule'
+                Fundamental.Schedule
             );
             await fetchSchedules();
             setActiveVersionId(response.new_version_id);
@@ -94,13 +96,13 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
                 activeVersionId as string,
                 activeProjectId as string,
                 latestStates,
-                'route'
+                Fundamental.Route
             );
             await fetchDynamicRoutes();
             setActiveVersionId(response.new_version_id);
         }
 
-        setShowDraftAlert(false);
+        // setShowDraftAlert(false);
     }
 
     const handlePublishClick = async () => {
@@ -118,8 +120,6 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
 
     const routeData = getDynamicRoute(routeUuid as string);
     const scheduleData = getSchedule(scheduleUuid as string);
-
-    console.log('routeData', routeData, 'activeRouteId', activeRouteId, 'activeVersionId', activeVersionId);
 
     if ((!routeData || !routeData.versions) && (!scheduleData || !scheduleData.versions)) {
         console.log('No route data or schedule data found');

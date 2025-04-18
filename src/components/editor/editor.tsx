@@ -269,7 +269,7 @@ export default function Editor() {
         >
             {!isDraft && (
                 <div
-                    className={`absolute top-0 left-0 w-full h-full z-50 pointer-events-auto 
+                    className={`absolute top-0 left-0 w-full h-full z-20 pointer-events-auto 
                         shadow-[inset_0_0_15px_5px_rgba(34,197,94,0.7)]
                         ${isInteracted ? "bg-transparent" : "bg-green-500/40"}`}
                     onClick={() => setIsInteracted(true)}

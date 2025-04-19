@@ -3,7 +3,7 @@
 import {Heading, Subheading} from '@/components/heading';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/table';
 import {ApplicationLayout} from "@/app/application-layout";
-import {useState, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import {PencilIcon, PlusIcon, TrashIcon, CheckIcon, ArrowUturnLeftIcon} from "@heroicons/react/24/outline";
 import {Button} from "@/components/button";
 import {Input} from "@/components/input";

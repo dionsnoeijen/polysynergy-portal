@@ -42,7 +42,9 @@ type ConnectionsStore = {
 const memoizedResults = new Map();
 
 const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
-    connections: [],
+    connections: [
+
+    ],
 
     addTempConnections: (connections: Connection[]) => {
         connections.map((connection) => {

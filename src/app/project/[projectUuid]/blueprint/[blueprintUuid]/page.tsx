@@ -4,7 +4,7 @@ import { EditorLayout } from "@/components/editor/editor-layout";
 import { useParams } from 'next/navigation';
 import React from "react";
 
-export default function Route() {
+export default function Blueprint() {
     const { projectUuid, blueprintUuid } = useParams() as { projectUuid: string, blueprintUuid: string };
 
     return (

@@ -14,7 +14,7 @@ import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publishedButton = true }): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
 
-    const { openForm } = useEditorStore();
+    const openForm = useEditorStore((state) => state.openForm);
 
     const onEdit = (nodeId: string) => {
         openForm(FormType.EditDict, nodeId, variable);

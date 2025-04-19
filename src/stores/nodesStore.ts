@@ -48,6 +48,7 @@ type NodesStore = {
     getNodesByPath: (path: string) => Node[] | undefined;
     leadsToPlayConfig: (startNodeId: string) => Node | undefined;
     findMainPlayNode: () => Node | undefined;
+    detachService: (nodeId: string) => Node | undefined;
 
     openGroup: (nodeId: string) => void;
     isNodeInGroup: (nodeId: string) => string | null;
@@ -933,6 +934,27 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             node.path === "nodes.nodes.mock.mock_schedule.MockSchedule" ||
             node.path === "nodes.nodes.mock.mock_http_request.MockHttpRequest"
         );
+    },
+
+    detachService: (nodeId: string): Node | undefined => {
+        const nodes = get().nodes;
+        const node = nodes.find((node) => node.id === nodeId);
+
+        if (!node) return undefined;
+
+        // Remove the node.service property
+        const updatedNode = {
+            ...node,
+            service: undefined,
+        };
+
+        // Update the node in the store
+        set((state) => ({
+            nodes: state.nodes.map((n) => (n.id === nodeId ? updatedNode : n)),
+        }));
+
+        return node;
+
     }
 }));
 

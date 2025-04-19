@@ -158,14 +158,20 @@ const styles = {
   },
 }
 
+export type ButtonColor = keyof typeof styles.colors;
+
 type ButtonProps = (
-  | { color?: keyof typeof styles.colors; outline?: never; plain?: never }
+  | { color?: ButtonColor; outline?: never; plain?: never }
   | { color?: never; outline: true; plain?: never }
   | { color?: never; outline?: never; plain: true }
-) & { className?: string; children: React.ReactNode } & (
-    | Omit<Headless.ButtonProps, 'as' | 'className'>
-    | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
-  )
+) & {
+  className?: string;
+  children: React.ReactNode;
+  fullWidth?: boolean;
+} & (
+  | Omit<Headless.ButtonProps, 'as' | 'className'>
+  | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
+);
 
 export const Button = forwardRef(function Button(
     { color, outline, plain, className, children, ...props }: ButtonProps & { fullWidth?: boolean },

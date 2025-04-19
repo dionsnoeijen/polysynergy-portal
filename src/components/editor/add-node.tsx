@@ -11,6 +11,7 @@ import { useMousePosition } from "@/hooks/editor/useMousePosition";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/button";
 import { FormType } from "@/types/types";
+// import useWhyDidYouUpdate from "@/hooks/useWhyDidYouUpdate";
 
 const AddNode: React.FC = () => {
     const showAddingNode = useEditorStore((state) => state.showAddingNode);
@@ -34,6 +35,8 @@ const AddNode: React.FC = () => {
 
     const inputRef = useRef<HTMLInputElement | null>(null);
     const modalRef = useRef<HTMLDivElement | null>(null);
+
+    // useWhyDidYouUpdate("AddNode", {showAddingNode, openedGroup, openForm, filteredAvailableNodes, selectedNodeIndex, searchPhrase, addNode});
 
     useEffect(() => {
         if (showAddingNode && inputRef.current) {

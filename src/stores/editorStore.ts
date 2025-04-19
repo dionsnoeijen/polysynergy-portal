@@ -23,6 +23,10 @@ type EditorState = {
     setZoomFactor: (factor: number) => void;
     panPosition: { x: number; y: number };
     setPanPosition: (position: { x: number; y: number }) => void;
+    isPanning: boolean;
+    isZooming: boolean;
+    setIsPanning: (isPanning: boolean) => void;
+    setIsZooming: (isZooming: boolean) => void;
 
     // Editor store native
     debugBarAvailable: boolean;
@@ -130,6 +134,10 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setPanPosition: (position) => set({panPosition: position}),
     isDragging: false,
     setIsDragging: (dragging) => set({isDragging: dragging}),
+    isZooming: false,
+    setIsZooming: (zooming) => set({isZooming: zooming}),
+    isPanning: false,
+    setIsPanning: (isPanning) => set({isPanning: isPanning}),
     showForm: false,
     formType: null,
     formEditVariable: null,

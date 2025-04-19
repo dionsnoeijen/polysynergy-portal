@@ -22,6 +22,7 @@ import useSchedulesStore from "@/stores/schedulesStore";
 type VersionPublishedMenuProps = { routeUuid?: string; scheduleUuid?: string };
 
 export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: VersionPublishedMenuProps) {
+
     const nodes = useNodesStore((state) => state.nodes);
     const connections = useConnectionsStore((state) => state.connections);
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
@@ -122,8 +123,6 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
     const scheduleData = getSchedule(scheduleUuid as string);
 
     if ((!routeData || !routeData.versions) && (!scheduleData || !scheduleData.versions)) {
-        console.log('No route data or schedule data found');
-
         return null;
     }
 

@@ -1,8 +1,10 @@
 import useEditorStore from "@/stores/editorStore";
+import React, { useRef } from "react";
 
 export const useZoom = () => {
-    const { zoomFactor, setZoomFactor, panPosition, setPanPosition } = useEditorStore();
+    const { zoomFactor, setZoomFactor, panPosition, setPanPosition, setIsZooming } = useEditorStore();
     const zoomIntensity = 0.0025;
+    const zoomTimeoutRef = useRef<NodeJS.Timeout | null>(null); // useRef to hold the timeout ID
 
     const handleZoom = (
         e: React.WheelEvent,
@@ -24,8 +26,19 @@ export const useZoom = () => {
         const newTranslateX = relativeMouseX - contentMousePosX * (width * scaleRatio);
         const newTranslateY = relativeMouseY - contentMousePosY * (height * scaleRatio);
 
+        setIsZooming(true);
         setZoomFactor(newZoomFactor);
         setPanPosition({ x: newTranslateX, y: newTranslateY });
+
+        // Clear the previous timeout
+        if (zoomTimeoutRef.current) {
+            clearTimeout(zoomTimeoutRef.current);
+        }
+
+        // Set a new timeout to disable isZooming after 150ms
+        zoomTimeoutRef.current = setTimeout(() => {
+            setIsZooming(false);
+        }, 150);
     };
 
     return { handleZoom };

@@ -1,10 +1,14 @@
-import { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import useEditorStore from "@/stores/editorStore";
 import {EditorMode} from "@/types/types";
 
 export const usePan = () => {
-    const { panPosition, setPanPosition, editorMode } = useEditorStore();
-    const [ isPanning, setIsPanning ] = useState(false);
+    const panPosition = useEditorStore((state) => state.panPosition);
+    const setPanPosition = useEditorStore((state) => state.setPanPosition);
+    const editorMode = useEditorStore((state) => state.editorMode);
+    const isPanning = useEditorStore((state) => state.isPanning);
+    const setIsPanning = useEditorStore((state) => state.setIsPanning);
+
     const startPanPosition = useRef({ x: 0, y: 0 });
 
     const handlePanMouseDown = (e: React.MouseEvent) => {
@@ -18,9 +22,11 @@ export const usePan = () => {
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!isPanning || editorMode === EditorMode.BoxSelect) return;
-        setPanPosition({
-            x: e.clientX - startPanPosition.current.x,
-            y: e.clientY - startPanPosition.current.y,
+        requestAnimationFrame(() => {
+            setPanPosition({
+                x: e.clientX - startPanPosition.current.x,
+                y: e.clientY - startPanPosition.current.y,
+            });
         });
     };
 

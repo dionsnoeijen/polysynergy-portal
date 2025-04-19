@@ -1,5 +1,4 @@
 'use client';
-
 import React, {useCallback, useEffect, useState} from 'react';
 import {ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon} from "@heroicons/react/24/outline";
 import {usePathname} from "next/navigation";
@@ -24,7 +23,7 @@ const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
 });
 
-export function EditorLayout({
+const EditorLayout = ({
     projectUuid,
     routeUuid,
     scheduleUuid,
@@ -36,7 +35,7 @@ export function EditorLayout({
     scheduleUuid?: string,
     blueprintUuid?: string,
     configUuid?: string,
-}) {
+}) => {
 
     enum ResizeWhat {
         ItemManager = 'itemManager',
@@ -64,9 +63,7 @@ export function EditorLayout({
     const setActiveConfigId = useEditorStore((state) => state.setActiveConfigId);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const closeFormMessage = useEditorStore((state) => state.closeFormMessage);
-    const zoomFactor = useEditorStore((state) => state.zoomFactor);
-    const panPosition = useEditorStore((state) => state.panPosition);
-
+    const setEditorPosition = useEditorStore((state) => state.setEditorPosition);
     const pathname = usePathname();
     const clearMockStore = useMockStore((state) => state.clearMockStore);
 
@@ -152,6 +149,7 @@ export function EditorLayout({
                 const newHeight = e.clientY;
                 const newWidth = e.clientX;
                 if (resizing === ResizeWhat.ItemManager) {
+                    updateEditorPosition();
                     setWidth((prev) => ({...prev, itemManager: Math.max(newWidth, 100)}));
                 } else if (resizing === ResizeWhat.Dock) {
                     const dockWidth = window.innerWidth - newWidth;
@@ -196,8 +194,19 @@ export function EditorLayout({
         };
     }, [resizing, handleMouseMove, stopResizing, removeConnectionById]);
 
+    const updateEditorPosition = useCallback(() => {
+        const editor = document.querySelector('[data-type="editor"]') as HTMLElement;
+        if (editor) {
+            const rect = editor.getBoundingClientRect();
+            setEditorPosition({x: rect.left, y: rect.top});
+        }
+    }, [setEditorPosition]);
+
     const toggleCloseItemManager = () => {
         setItemManagerClosed(prev => !prev);
+        setTimeout(() => {
+            updateEditorPosition();
+        }, 200);
     };
 
     const toggleCloseDock = () => {
@@ -207,6 +216,10 @@ export function EditorLayout({
     const toggleCloseOutput = () => {
         setOutputClosed(prev => !prev);
     };
+
+    // useEffect(() => {
+    //   console.count('EditorLayout render count');
+    // }, []);
 
     return (
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
@@ -263,7 +276,7 @@ export function EditorLayout({
                             projectUuid && (routeUuid || scheduleUuid || blueprintUuid || configUuid) ? (
                                 activeVersionId ? (
                                     <>
-                                        <DrawingLayer panPosition={panPosition} zoomFactor={zoomFactor} />
+                                        {/*<DrawingLayer panPosition={panPosition} zoomFactor={zoomFactor} />*/}
                                         <Editor key={'editor-' + activeVersionId} />
                                         <BottomDrawToolbar />
                                         <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId} />
@@ -351,3 +364,5 @@ export function EditorLayout({
         </div>
     );
 }
+
+export { EditorLayout };

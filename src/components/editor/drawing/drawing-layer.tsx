@@ -7,9 +7,9 @@ import useEditorStore from '@/stores/editorStore'
 import {EditorMode} from '@/types/types'
 
 export default function DrawingLayer({
-                                         panPosition,
-                                         zoomFactor,
-                                     }: {
+    panPosition,
+    zoomFactor,
+}: {
     panPosition: { x: number; y: number }
     zoomFactor: number
 }) {

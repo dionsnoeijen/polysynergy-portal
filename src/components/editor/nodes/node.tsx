@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {NodeJumpType, NodeProps, NodeType} from "@/types/types";
 import NodeRows from "@/components/editor/nodes/node-rows";
 import NodeComparison from "@/components/editor/nodes/node-comparison";
@@ -10,6 +10,7 @@ const Node: React.FC<NodeProps> = ({ node, preview = false }) => {
     if (node.category === NodeType.Jump && node.type === NodeJumpType.To) {
         return <NodeJump node={node} preview={preview} />;
     }
+
     switch (node.category) {
         case NodeType.Comparison:
             return <NodeComparison node={node} preview={preview} />;

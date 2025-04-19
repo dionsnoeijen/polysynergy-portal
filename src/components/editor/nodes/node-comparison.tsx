@@ -11,7 +11,7 @@ import useMockStore from "@/stores/mockStore";
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
 
 const NodeComparison: React.FC<NodeProps> = ({ node }) => {
-    const { selectedNodes } = useEditorStore();
+    const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);

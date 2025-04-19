@@ -3,13 +3,12 @@
 import React from 'react';
 import { useTheme } from 'next-themes';
 import {GRID_SIZE} from "@/utils/snapToGrid";
+import useEditorStore from "@/stores/editorStore";
 
-type GridProps = {
-    zoomFactor: number;
-    position: { x: number; y: number };
-};
+const Grid: React.FC = () => {
 
-const Grid: React.FC<GridProps> = ({ zoomFactor, position }) => {
+    const zoomFactor = useEditorStore((state) => state.zoomFactor);
+    const panPosition = useEditorStore((state) => state.panPosition);
 
     const { theme } = useTheme();
 
@@ -34,7 +33,7 @@ const Grid: React.FC<GridProps> = ({ zoomFactor, position }) => {
                     ${(GRID_SIZE*5) * zoomFactor}px ${(GRID_SIZE*5) * zoomFactor}px, 
                     ${(GRID_SIZE*5) * zoomFactor}px ${(GRID_SIZE*5) * zoomFactor}px
                 `,
-                backgroundPosition: `${position.x}px ${position.y}px`,
+                backgroundPosition: `${panPosition.x}px ${panPosition.y}px`,
             }}
         />
     );

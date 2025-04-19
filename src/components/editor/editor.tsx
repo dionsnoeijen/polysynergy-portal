@@ -34,9 +34,8 @@ import {EditorMode} from "@/types/types";
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
     const mousePositionRef = useRef<{ x: number; y: number }>({x: 0, y: 0});
+    const transformLayerRef = useRef<HTMLDivElement>(null);
 
-    const zoomFactor = useEditorStore((state) => state.zoomFactor);
-    const panPosition = useEditorStore((state) => state.panPosition);
     const setEditorPosition = useEditorStore((state) => state.setEditorPosition);
     const isDragging = useEditorStore((state) => state.isDragging);
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
@@ -222,6 +221,31 @@ export default function Editor() {
         );
     };
 
+    useEffect(() => {
+        const applyTransform = (state: { panPosition: { x: number, y: number}, zoomFactor: number}) => {
+            const {x, y} = state.panPosition;
+            const zoom = state.zoomFactor;
+
+            if (transformLayerRef.current) {
+                transformLayerRef.current.style.transform = `translate(${x}px, ${y}px) scale(${zoom})`;
+            }
+        };
+
+        applyTransform(useEditorStore.getState());
+
+        const unsubscribe = useEditorStore.subscribe((state, prevState) => {
+            if (
+                state.panPosition.x !== prevState.panPosition.x ||
+                state.panPosition.y !== prevState.panPosition.y ||
+                state.zoomFactor !== prevState.zoomFactor
+            ) {
+                applyTransform(state);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+
     return (
         <div
             data-type="editor"
@@ -284,11 +308,17 @@ export default function Editor() {
                 </div>
             )}
 
-            <Grid zoomFactor={zoomFactor} position={panPosition}/>
+            <Grid/>
 
             <div
-                style={{transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomFactor})`}}
-                className="absolute top-0 left-0 w-0 h-0 overflow-visible"
+                ref={transformLayerRef}
+                style={{
+                    willChange: 'transform',
+                    transformOrigin: '0 0',
+                    width: '1px',
+                    height: '1px'
+                }}
+                className="absolute inset-0 overflow-visible"
             >
                 <PointZeroIndicator/>
 
@@ -310,7 +340,7 @@ export default function Editor() {
                     ))}
             </div>
 
-            <BoxSelect/>
+            {editorMode === EditorMode.BoxSelect && <BoxSelect/>}
             <AddNode/>
 
             <DeleteDialog

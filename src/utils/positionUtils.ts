@@ -2,7 +2,9 @@ import {InOut, NodeCollapsedConnector} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 
-export const calculateConnectorPosition = (target: HTMLElement) => {
+export const calculateConnectorPosition = (
+    target: HTMLElement,
+) => {
     const {editorPosition, panPosition, zoomFactor} = useEditorStore.getState();
     const rect = target.getBoundingClientRect();
     const x = (rect.left + rect.width / 2 - editorPosition.x - panPosition.x) / zoomFactor;
@@ -65,6 +67,12 @@ export const calculateConnectorPositionByAttributes = (
     if (!target) {
         selector = buildSelector(type, NodeCollapsedConnector.Collapsed, nodeId);
         target = document.querySelector(selector) as HTMLElement;
+    }
+
+    const editor = document.querySelector(`[data-type="editor"]`) as HTMLElement;
+
+    if (!editor) {
+        return {x: 0, y: 0};
     }
 
     if (!target) {

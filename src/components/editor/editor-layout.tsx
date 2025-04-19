@@ -18,7 +18,7 @@ import useMockStore from "@/stores/mockStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
 
-const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false })
+// const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false })
 const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
 });
@@ -132,6 +132,13 @@ const EditorLayout = ({
         setActiveConfigId
     ]);
 
+    const updateEditorPosition = useCallback(() => {
+        const editor = document.querySelector('[data-type="editor"]') as HTMLElement;
+        if (editor) {
+            const rect = editor.getBoundingClientRect();
+            setEditorPosition({x: rect.left, y: rect.top});
+        }
+    }, [setEditorPosition]);
 
     const startResizing = useCallback((resizeWhat: ResizeWhat) => {
         setResizing(resizeWhat);
@@ -160,6 +167,7 @@ const EditorLayout = ({
             }
         },
         [
+            updateEditorPosition,
             ResizeWhat.Dock,
             ResizeWhat.ItemManager,
             ResizeWhat.Output,
@@ -193,14 +201,6 @@ const EditorLayout = ({
             document.removeEventListener('mouseup', stopResizing);
         };
     }, [resizing, handleMouseMove, stopResizing, removeConnectionById]);
-
-    const updateEditorPosition = useCallback(() => {
-        const editor = document.querySelector('[data-type="editor"]') as HTMLElement;
-        if (editor) {
-            const rect = editor.getBoundingClientRect();
-            setEditorPosition({x: rect.left, y: rect.top});
-        }
-    }, [setEditorPosition]);
 
     const toggleCloseItemManager = () => {
         setItemManagerClosed(prev => !prev);

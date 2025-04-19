@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React from "react";
 import {NodeJumpType, NodeProps, NodeType} from "@/types/types";
 import NodeRows from "@/components/editor/nodes/node-rows";
 import NodeComparison from "@/components/editor/nodes/node-comparison";

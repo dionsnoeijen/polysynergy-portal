@@ -127,7 +127,7 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
     }
 
     return (
-        <div className="absolute bottom-5 right-5 flex items-center gap-2 p-2 bg-white/70 dark:bg-black/30 rounded shadow z-50">
+        <div className="absolute bottom-5 right-5 flex items-center gap-2 p-2 bg-zinc-800 bg-opacity-80 border border-white/25 rounded-xl z-50">
             <Select value={activeVersionId} onChange={handleVersionChange}>
                 {routeData ? routeData?.versions?.map((version: {
                     id: string;
@@ -178,13 +178,13 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
                     );
                 }): null}
             </Select>
-            <Button title="Publish to production" disabled={isPublished} onClick={handlePublishClick}>
+            <Button plain title="Publish to production" disabled={isPublished} onClick={handlePublishClick}>
                 <ArrowRightCircleIcon className="h-6 w-6" />
             </Button>
-            <Button title="Create a new draft" onClick={handleDraftClick} >
+            <Button plain title="Create a new draft" onClick={handleDraftClick} >
                 <BarsArrowDownIcon className="h-6 w-6" />
             </Button>
-            <Button title="Show the publish overview" onClick={() => openForm(FormType.ProjectPublish)}>
+            <Button plain title="Show the publish overview" onClick={() => openForm(FormType.ProjectPublish)}>
                 <Bars3Icon className="h-6 w-6" />
             </Button>
             <SavingIndicator isSaving={isSaving} />

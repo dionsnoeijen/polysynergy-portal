@@ -6,7 +6,7 @@ import Output from "@/components/editor/bottombars/output";
 import Logs from "@/components/editor/bottombars/logs";
 
 const BottomBar: React.FC = (): React.ReactElement => {
-    const { bottomBarView } = useEditorStore();
+    const bottomBarView = useEditorStore((state) => state.bottomBarView);
 
     return (
         <>

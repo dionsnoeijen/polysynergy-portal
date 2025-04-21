@@ -6,7 +6,7 @@ import {ChevronLeftIcon} from "@heroicons/react/24/outline";
 import {Button} from "@/components/button";
 
 const Output: React.FC = (): React.ReactElement => {
-    const {mockNodes} = useMockStore();
+    const mockNodes = useMockStore(state => state.mockNodes);
     const {theme} = useTheme();
 
     const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
@@ -14,6 +14,8 @@ const Output: React.FC = (): React.ReactElement => {
     const toggleNode = (id: string) => {
         setExpandedNodes(prev => ({...prev, [id]: !prev[id]}));
     };
+
+    const reversedNodes = [...mockNodes].reverse(); // ✅ veilig kopiëren
 
     return (
         <div className="flex h-full">
@@ -23,8 +25,8 @@ const Output: React.FC = (): React.ReactElement => {
                     <h3>Node</h3>
                 </div>
                 <div className="flex-1 overflow-auto">
-                    {mockNodes.reverse().map((node, index) => (
-                        <div key={`${index}-${node.id}`} className="border-b border-white/10 p-2">
+                    {reversedNodes.map((node, index) => (
+                        <div key={node.id} className="border-b border-white/10 p-2">
                             <div className="flex justify-between items-center">
                                 <span className="inline-flex items-center gap-2">
                                     <span className="flex items-center justify-center w-8 h-8 rounded-full bg-sky-500 text-white">

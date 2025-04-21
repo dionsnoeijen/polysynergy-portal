@@ -1,5 +1,5 @@
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
-import React, {ReactElement, useEffect} from "react";
+import React, {ReactElement} from "react";
 import {PencilIcon} from "@heroicons/react/24/outline";
 import {formatSegments} from "@/utils/formatters";
 import {FormType, Fundamental} from "@/types/types";
@@ -9,15 +9,10 @@ import Link from "next/link";
 
 export default function RouteTree(): ReactElement {
     const routes = useDynamicRoutesStore((state) => state.routes);
-    const fetchDynamicRoutes = useDynamicRoutesStore((state) => state.fetchDynamicRoutes);
     const openForm = useEditorStore((state) => state.openForm);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
-
-    useEffect(() => {
-        fetchDynamicRoutes();
-    }, [fetchDynamicRoutes]);
 
     return (
         <TreeList

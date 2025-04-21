@@ -1,4 +1,4 @@
-import {ReactElement, useEffect} from "react";
+import {ReactElement} from "react";
 import useSchedulesStore from "@/stores/schedulesStore";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import Link from "next/link";
@@ -8,12 +8,11 @@ import {FormType, Fundamental, Schedule} from "@/types/types";
 
 export default function ScheduleTree(): ReactElement {
 
-    const { schedules, fetchSchedules } = useSchedulesStore();
-    const { openForm, formEditRecordId, activeScheduleId, activeProjectId } = useEditorStore();
-
-    useEffect(() => {
-        fetchSchedules();
-    }, [fetchSchedules]);
+    const schedules = useSchedulesStore((state) => state.schedules);
+    const openForm = useEditorStore((state) => state.openForm);
+    const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+    const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
 
     return (
         <TreeList

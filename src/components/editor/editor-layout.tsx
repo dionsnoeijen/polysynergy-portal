@@ -17,6 +17,7 @@ import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useMockStore from "@/stores/mockStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
+import {useAutoFetch} from "@/hooks/editor/useAutoFetch";
 
 // const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false })
 const Editor = dynamic(() => import('@/components/editor/editor'), {
@@ -131,6 +132,8 @@ const EditorLayout = ({
         setActiveRouteId,
         setActiveConfigId
     ]);
+
+    useAutoFetch();
 
     const updateEditorPosition = useCallback(() => {
         const editor = document.querySelector('[data-type="editor"]') as HTMLElement;

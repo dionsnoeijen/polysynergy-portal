@@ -1,6 +1,6 @@
 'use client';
 
-import React, {ReactElement, useEffect} from "react";
+import React, {ReactElement} from "react";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import {FormType, Blueprint, Fundamental} from "@/types/types";
 import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
@@ -14,10 +14,6 @@ export default function BlueprintTree(): ReactElement {
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeBlueprintId = useEditorStore((state) => state.activeBlueprintId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
-
-    useEffect(() => {
-        useBlueprintsStore.getState().fetchBlueprints();
-    }, []);
 
     return (
         <TreeList

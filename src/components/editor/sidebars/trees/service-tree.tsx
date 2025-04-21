@@ -10,7 +10,6 @@ import useConnectionsStore from "@/stores/connectionsStore";
 
 export default function ServiceTree(): ReactElement {
     const services = useServicesStore((state) => state.services);
-    const fetchServices = useServicesStore((state) => state.fetchServices);
     const openForm = useEditorStore((state) => state.openForm);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeServiceId = useEditorStore((state) => state.activeServiceId);
@@ -26,10 +25,6 @@ export default function ServiceTree(): ReactElement {
     useEffect(() => {
         setAddDisabled(!(selectedNodes.length === 1));
     }, [selectedNodes]);
-
-    useEffect(() => {
-        fetchServices();
-    }, [fetchServices]);
 
     const handleEditService = (service: Service) => {
         const serviceNodes = service.node_setup.versions[0].content.nodes;

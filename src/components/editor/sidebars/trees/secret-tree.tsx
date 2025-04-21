@@ -1,4 +1,4 @@
-import React, {ReactElement, useEffect} from "react";
+import React, {ReactElement} from "react";
 import useEditorStore from "@/stores/editorStore";
 import useProjectSecretsStore from "@/stores/projectSecretsStore";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
@@ -11,16 +11,11 @@ import {v4 as uuidv4} from "uuid";
 
 export default function SecretTree(): ReactElement {
     const secrets = useProjectSecretsStore((state) => state.secrets);
-    const fetchSecrets = useProjectSecretsStore((state) => state.fetchSecrets);
     const openForm = useEditorStore((state) => state.openForm);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeProjectVariableId = useEditorStore((state) => state.activeProjectVariableId);
     const getAvailableNodeByPath = useAvailableNodeStore((state) => state.getAvailableNodeByPath);
     const addNode = useNodesStore((state) => state.addNode);
-
-    useEffect(() => {
-        fetchSecrets();
-    }, [fetchSecrets]);
 
     const handleEditVariable = (key: string) => {
         openForm(FormType.EditProjectSecret, key);

@@ -1,4 +1,4 @@
-import React, {ReactElement, useEffect} from "react";
+import React, {ReactElement} from "react";
 import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import {Config, FormType, Fundamental} from "@/types/types";
 import useConfigsStore from "@/stores/configsStore";
@@ -8,15 +8,10 @@ import Link from "next/link";
 
 export default function ConfigTree(): ReactElement {
     const configs = useConfigsStore((state) => state.configs);
-    const fetchConfigs = useConfigsStore((state) => state.fetchConfigs);
     const openForm = useEditorStore((state) => state.openForm);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeConfigId = useEditorStore((state) => state.activeConfigId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
-
-    useEffect(() => {
-        fetchConfigs();
-    }, [fetchConfigs]);
 
     return (
         <TreeList

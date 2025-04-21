@@ -100,7 +100,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
 
             {node.service && node.service.id && (
                 <div className={`flex w-full ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
-                    <ServiceHeading nodeName={node.name} preview={preview} service={node.service} icon={node.icon}/>
+                    <ServiceHeading nodeName={node.name} preview={preview} node={node} icon={node.icon}/>
                 </div>
             )}
             <div className="flex w-full gap-4">

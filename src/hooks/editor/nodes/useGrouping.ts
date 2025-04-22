@@ -84,7 +84,7 @@ const useGrouping = () => {
 
                 const isGroupToNewGroup =
                     connection.sourceGroupId &&
-                    selectedNodes.includes(connection.targetNodeId ?? '') ;
+                    selectedNodes.includes(connection.targetNodeId ?? '');
 
                 const keep = (sourceInside && targetInside) || isGroupToNodeOrGroup;
 
@@ -260,30 +260,27 @@ const useGrouping = () => {
 
     const deleteGroup = (groupId: string) => {
         const group = getGroupById(groupId);
-        if (!group || !group?.group || !group?.group?.nodes) return;
+        if (!group || !group.group || !group.group.nodes) return;
 
-        const inConnections = findInConnectionsByNodeId(groupId);
-        const outConnections = findOutConnectionsByNodeId(groupId);
-
-        const connections = [...inConnections, ...outConnections];
-
-        removeConnections(connections);
-
-        group.group.nodes.forEach((nodeId) => {
-            const node = getNode(nodeId);
+        const removeGroupRecursively = (id: string) => {
+            const node = getNode(id);
             if (!node) return;
 
-            const inConnections = findInConnectionsByNodeId(nodeId);
-            const outConnections = findOutConnectionsByNodeId(nodeId);
-            const connections = [...inConnections, ...outConnections];
-            removeConnections(connections);
-
-            if (node.type === NodeType.Group) {
-                removeNode(nodeId);
-            } else {
-                removeNode(nodeId);
+            if (node.type === NodeType.Group && node.group?.nodes) {
+                node.group.nodes.forEach(removeGroupRecursively);
             }
-        });
+
+            const inConnections = findInConnectionsByNodeId(id);
+            const outConnections = findOutConnectionsByNodeId(id);
+            removeConnections([...inConnections, ...outConnections]);
+            removeNode(id);
+        };
+
+        group.group.nodes.forEach(removeGroupRecursively);
+
+        const groupIn = findInConnectionsByNodeId(groupId);
+        const groupOut = findOutConnectionsByNodeId(groupId);
+        removeConnections([...groupIn, ...groupOut]);
 
         removeGroupStore(groupId);
     };

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useLayoutEffect, useRef} from "react";
 import useEditorStore from "@/stores/editorStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
@@ -6,8 +6,8 @@ import useNodesStore from "@/stores/nodesStore";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 
 import {GroupProps, NodeCollapsedConnector, NodeVariable} from "@/types/types";
-import { ChevronDownIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
-import { Button } from "@/components/button";
+import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
+import {Button} from "@/components/button";
 
 import Connector from "@/components/editor/nodes/connector";
 import ServiceHeading from "@/components/editor/nodes/rows/service-heading";
@@ -19,11 +19,12 @@ import useAutoResize from "@/hooks/editor/nodes/useAutoResize";
 import {ConfirmAlert} from "@/components/confirm-alert";
 
 const ClosedGroup: React.FC<GroupProps> = ({
-    node,
-    isMirror = false,
-    preview = false
-}): React.ReactElement => {
+                                               node,
+                                               isMirror = false,
+                                               preview = false
+                                           }): React.ReactElement => {
     const ref = useAutoResize(node);
+    const measureRef = useRef<HTMLDivElement>(null);
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const openContextMenu = useEditorStore((state) => state.openContextMenu);
     const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
@@ -31,6 +32,11 @@ const ClosedGroup: React.FC<GroupProps> = ({
     const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
     const position = useNodePlacement(node);
     const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
+
+    const [height, setHeight] = useState(0);
+    const isPanning = useEditorStore((state) => state.isPanning);
+    const isZooming = useEditorStore((state) => state.isZooming);
+    const zoomFactor = useEditorStore((state) => state.zoomFactor);
 
     const {openGroup, deleteGroup, dissolveGroup} = useGrouping();
     const {variablesForGroup} = useVariablesForGroup(node.id, false);
@@ -45,9 +51,9 @@ const ClosedGroup: React.FC<GroupProps> = ({
             e.clientX,
             e.clientY,
             [
-                { label: "Move To Group", action: () => setNodeToMoveToGroupId(node.id) },
-                { label: "Open Group", action: () => openGroup(node.id) },
-                { label: "Delete Group", action: () => deleteGroup(node.id) },
+                {label: "Move To Group", action: () => setNodeToMoveToGroupId(node.id)},
+                {label: "Open Group", action: () => openGroup(node.id)},
+                {label: "Delete Group", action: () => deleteGroup(node.id)},
 
                 // @todo: Dissolving from a closed group requires finding the internal
                 //    connections and showing them, because they have a status of hidden
@@ -72,12 +78,20 @@ const ClosedGroup: React.FC<GroupProps> = ({
         ${useNodeColor(node, selectedNodes.includes(node.id), undefined, false)}
         `.replace(/\s+/g, ' ').trim();
 
+    useLayoutEffect(() => {
+        if (measureRef.current && !isPanning && !isZooming) {
+            setHeight(measureRef.current.getBoundingClientRect().height / zoomFactor);
+            console.log('height', measureRef.current.getBoundingClientRect().height / zoomFactor);
+        }
+    }, [isPanning, isZooming, zoomFactor, node.id, measureRef]);
+
     return !node.view.collapsed ? (
         <div
             className={className}
             data-type="closed-group"
             data-node-id={isMirror ? ('mirror-' + node.id) : node.id}
-            onContextMenu={!preview ? handleContextMenu : () => {}}
+            onContextMenu={!preview ? handleContextMenu : () => {
+            }}
             onMouseDown={(e) => {
                 if (preview) return;
                 if (nodeToMoveToGroupId && nodeToMoveToGroupId !== node.id) {
@@ -87,62 +101,72 @@ const ClosedGroup: React.FC<GroupProps> = ({
                     handleNodeMouseDown(e);
                 }
             }}
+            ref={measureRef}
             onDoubleClick={() => openGroup(node.id)}
             title={node.category + ' > ' + node.name + ' > ' + (isMirror ? ('mirror-' + node.id) : node.id)}
             style={{
                 left: preview ? '0px' : `${position.x}px`,
                 top: preview ? '0px' : `${position.y}px`,
+                minWidth: `${node.view.width}px`,
+                height: isPanning || isZooming ? `${height}px` : 'auto',
             }}
         >
-            <div
-                className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
-                {node?.icon && (
-                    <NodeIcon icon={node.icon} className={'border bg-white border-white/50 mr-3'} />
-                )}
-                <h3 className="font-bold truncate text-sky-600 dark:text-white">
-                    {node.service
-                      ? (node.service.name.trim() === '' ? '...' : node.service.name)
-                      : node.name}
-                </h3>
-                <Button
-                    onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
-                    <ChevronDownIcon style={{color: 'white'}} className={'w-4 h-4'}/>
-                </Button>
-            </div>
+            {!(isPanning || isZooming) && (
+                <>
+                    <div
+                        className={`flex items-center border-b border-white/20 p-2 w-full overflow-visible relative pl-5 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
+                        {node?.icon && (
+                            <NodeIcon icon={node.icon} className={'border bg-white border-white/50 mr-3'}/>
+                        )}
+                        <h3 className="font-bold truncate text-sky-600 dark:text-white">
+                            {node.service
+                                ? (node.service.name.trim() === '' ? '...' : node.service.name)
+                                : node.name}
+                        </h3>
+                        <Button
+                            onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
+                            <ChevronDownIcon style={{color: 'white'}} className={'w-4 h-4'}/>
+                        </Button>
+                    </div>
 
-            {node.service && node.service.id && (
-                <div className={`flex w-full ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
-                    <ServiceHeading nodeName={node.name} preview={preview} node={node} icon={node.icon}/>
-                </div>
+                    {node.service && node.service.id && (
+                        <div className={`flex w-full ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
+                            <ServiceHeading nodeName={node.name} preview={preview} node={node} icon={node.icon}/>
+                        </div>
+                    )}
+                    <div className="flex w-full gap-4">
+                        {variablesForGroup?.inVariables && variablesForGroup?.inVariables?.length > 0 && (
+                            <div className="flex-1 flex flex-col">
+                                <NodeVariables node={node} variables={variablesForGroup.inVariables.filter(
+                                    (v): v is { variable: NodeVariable; nodeId: string } => v !== null
+                                )} isMirror={isMirror} onlyIn={true}/>
+                            </div>
+                        )}
+                        {variablesForGroup?.outVariables && variablesForGroup?.outVariables?.length > 0 && (
+                            <div className="flex-1 flex flex-col">
+                                <NodeVariables node={node} variables={variablesForGroup.outVariables}
+                                               isMirror={isMirror} onlyOut={true}/>
+                            </div>
+                        )}
+                    </div>
+
+                    <ConfirmAlert
+                        open={isDissolveDialogOpen}
+                        onClose={() => setIsDissolveDialogOpen(false)}
+                        onConfirm={handleConfirmDissolve}
+                        title={'Confirm Dissolve Group'}
+                        description={'Are you sure you want to dissolve this group? This action cannot be undone.'}
+                    />
+                </>
             )}
-            <div className="flex w-full gap-4">
-                {variablesForGroup?.inVariables && variablesForGroup?.inVariables?.length > 0 && (
-                <div className="flex-1 flex flex-col">
-                    <NodeVariables node={node} variables={variablesForGroup.inVariables.filter(
-                        (v): v is { variable: NodeVariable; nodeId: string } => v !== null
-                    )} isMirror={isMirror} onlyIn={true} />
-                </div>
-                )}
-                {variablesForGroup?.outVariables && variablesForGroup?.outVariables?.length > 0 && (
-                <div className="flex-1 flex flex-col">
-                    <NodeVariables node={node} variables={variablesForGroup.outVariables} isMirror={isMirror} onlyOut={true} />
-                </div>
-                )}
-            </div>
-
-            <ConfirmAlert
-                open={isDissolveDialogOpen}
-                onClose={() => setIsDissolveDialogOpen(false)}
-                onConfirm={handleConfirmDissolve}
-                title={'Confirm Dissolve Group'}
-                description={'Are you sure you want to dissolve this group? This action cannot be undone.'}
-            />
         </div>
     ) : (
         <div
             ref={ref}
-            onContextMenu={!preview ? handleContextMenu : () => {}}
-            onMouseDown={!preview ? handleNodeMouseDown : () => {}}
+            onContextMenu={!preview ? handleContextMenu : () => {
+            }}
+            onMouseDown={!preview ? handleNodeMouseDown : () => {
+            }}
             onDoubleClick={handleCollapse}
             className={className + ` p-5`}
             style={{

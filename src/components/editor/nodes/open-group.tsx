@@ -5,9 +5,6 @@ import useConnectionsStore from "@/stores/connectionsStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import ConnectorGroup from "@/components/editor/nodes/connector-group";
 import ClosedGroup from "@/components/editor/nodes/closed-group";
-
-import { Dialog, DialogTitle, DialogDescription, DialogBody, DialogActions } from "@/components/dialog";
-import { Button } from "@/components/button";
 import { MARGIN } from "@/utils/constants";
 import { getNodeBoundsFromDOM } from "@/utils/positionUtils";
 import {ConfirmAlert} from "@/components/confirm-alert";

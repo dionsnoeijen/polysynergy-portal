@@ -37,5 +37,16 @@ export function useAutoFetch() {
         if (services.length === 0 && !hasServicesInitialFetched) {
             useServicesStore.getState().fetchServices();
         }
-    }, [blueprints.length, routes.length, schedules.length, secrets.length, services.length]);
+    }, [
+        blueprints.length,
+        routes.length,
+        schedules.length,
+        secrets.length,
+        services.length,
+        hasBlueprintsInitialFetched,
+        hasRoutesInitialFetched,
+        hasSchedulesInitialFetched,
+        hasSecretsInitialFetched,
+        hasServicesInitialFetched
+    ]);
 }

@@ -17,19 +17,21 @@ type ListProps<T extends ListItemWithId> = {
 };
 
 export default function TreeList<T extends ListItemWithId>({
-    items,
-    activeItem = null,
-    formEditingItem = null,
-    renderItem,
-    addButtonClick,
-    addDisabled = false,
-    title = "List",
-    fundamental,
-    toggleOpen = () => {},
-}: ListProps<T>): React.JSX.Element {
+                                                               items,
+                                                               activeItem = null,
+                                                               formEditingItem = null,
+                                                               renderItem,
+                                                               addButtonClick,
+                                                               addDisabled = false,
+                                                               title = "List",
+                                                               fundamental,
+                                                               toggleOpen = () => {
+                                                               },
+                                                           }: ListProps<T>): React.JSX.Element {
     const openTree = useEditorStore((state) => state.openTree);
     const closeTree = useEditorStore((state) => state.closeTree);
     const isOpen = useEditorStore((state) => state.isTreeOpen(fundamental));
+    const isFormOpen = useEditorStore((state) => state.isFormOpen());
 
     const handleTreeToggle = (isOpen: boolean) => {
         if (isOpen) {
@@ -50,79 +52,90 @@ export default function TreeList<T extends ListItemWithId>({
         const bgClass = isEditing
             ? "bg-sky-200 dark:bg-sky-200"
             : isActive
-            ? "bg-sky-500 dark:bg-sky-500"
-            : "odd:bg-zinc-200/80 even:bg-transparent dark:odd:bg-zinc-800 dark:even:bg-zinc-800/50";
+                ? "bg-sky-500 dark:bg-sky-500"
+                : "odd:bg-zinc-200/80 even:bg-transparent dark:odd:bg-zinc-800 dark:even:bg-zinc-800/50";
 
         return `${baseClasses} ${bgClass}`;
     };
 
     return items.length > 0 ? (
-        <div className="mt-[10px]">
-            <div
-                className={`flex items-center shadow-sm justify-between border border-sky-500 p-1 pl-2 pr-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
-                    isOpen ? " rounded-bl-none rounded-br-none" : ""
-                }`}
-            >
-                <h4>{title}</h4>
-                <button type="button" onClick={() => handleTreeToggle(isOpen)}>
-                    {isOpen ? (
-                        <ChevronDownIcon className="w-5 h-5" />
-                    ) : (
-                        <ChevronLeftIcon className="w-5 h-5" />
-                    )}
-                </button>
-            </div>
-
-            <div className="relative">
-                <ul
-                    className={`overflow-y-auto transition-all duration-300 ${
-                        isOpen ? "max-h-[20rem]" : "max-h-0"
-                    }`}
-                >
-                    {items.map((item, index) => (
-                        <li className={getItemClassName(item)} key={index}>
-                            {renderItem(item)}
-                        </li>
-                    ))}
-                </ul>
-                {/*{isOpen && items.length > 5 && !isScrolledToBottom && (*/}
-                {/*    <div className="pointer-events-none absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-white dark:from-zinc-800" />*/}
-                {/*)}*/}
-            </div>
-
-            {addButtonClick && (
+        <div className="relative">
+            {isFormOpen && (
+                <div className="absolute inset-0 z-10 bg-black/10 cursor-not-allowed"/>
+            )}
+            <div className="mt-[10px]">
                 <div
-                    className={`transition-all duration-300 overflow-hidden ${
-                        isOpen ? "max-h-12 opacity-100" : "max-h-0 opacity-0"
+                    className={`flex items-center shadow-sm justify-between border border-sky-500 p-1 pl-2 pr-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
+                        isOpen ? " rounded-bl-none rounded-br-none" : ""
                     }`}
                 >
-                    <div className="flex items-center justify-between border-l border-b border-t border-r border-sky-500 dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
+                    <h4>{title}</h4>
+                    <button type="button" onClick={() => handleTreeToggle(isOpen)}>
+                        {isOpen ? (
+                            <ChevronDownIcon className="w-5 h-5"/>
+                        ) : (
+                            <ChevronLeftIcon className="w-5 h-5"/>
+                        )}
+                    </button>
+                </div>
+
+                <div className="relative">
+                    <ul
+                        className={`overflow-y-auto transition-all duration-300 ${
+                            isOpen ? "max-h-[20rem]" : "max-h-0"
+                        }`}
+                    >
+                        {items.map((item, index) => (
+                            <li className={getItemClassName(item)} key={index}>
+                                {renderItem(item)}
+                            </li>
+                        ))}
+                    </ul>
+                    {/*{isOpen && items.length > 5 && !isScrolledToBottom && (*/}
+                    {/*    <div className="pointer-events-none absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-white dark:from-zinc-800" />*/}
+                    {/*)}*/}
+                </div>
+
+                {addButtonClick && (
+                    <div
+                        className={`transition-all duration-300 overflow-hidden ${
+                            isOpen ? "max-h-12 opacity-100" : "max-h-0 opacity-0"
+                        }`}
+                    >
+                        <div
+                            className="flex items-center justify-between border-l border-b border-t border-r border-sky-500 dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
+                            <Button
+                                disabled={addDisabled}
+                                onClick={addButtonClick}
+                                plain
+                                className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0 !px-0 !py-0"
+                            >
+                                <PlusIcon/>
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    ) : (
+        <div className="relative">
+            {isFormOpen && (
+                <div className="absolute inset-0 z-10 bg-black/10 cursor-not-allowed"/>
+            )}
+            <div className="mt-[10px]">
+                {addButtonClick && (
+                    <div>
                         <Button
                             disabled={addDisabled}
                             onClick={addButtonClick}
                             plain
-                            className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0 !px-0 !py-0"
+                            className="w-full hover:cursor-pointer p-0 border border-dotted border-white/50"
                         >
-                            <PlusIcon />
+                            {title} <PlusIcon/>
                         </Button>
                     </div>
-                </div>
-            )}
-        </div>
-    ) : (
-        <div className="mt-[10px]">
-            {addButtonClick && (
-                <div>
-                    <Button
-                        disabled={addDisabled}
-                        onClick={addButtonClick}
-                        plain
-                        className="w-full hover:cursor-pointer p-0 border border-dotted border-white/50"
-                    >
-                        {title} <PlusIcon />
-                    </Button>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }

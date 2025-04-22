@@ -1,5 +1,8 @@
 import { create } from 'zustand';
-import { fetchProjects as fetchProjectsAPI } from "@/api/projectsApi";
+import {
+    fetchProjects as fetchProjectsAPI,
+    fetchProject as fetchProjectAPI,
+} from "@/api/projectsApi";
 import { Project } from "@/types/types";
 
 type ProjectsStore = {
@@ -8,6 +11,7 @@ type ProjectsStore = {
     removeProject: (projectId: string) => void;
     getProject: (projectId: string) => Project | undefined;
     getProjects: () => Project[];
+    fetchProject: (projectId: string) => Promise<Project | undefined>;
     fetchProjects: (trashed: boolean) => Promise<void>;
 };
 
@@ -28,6 +32,17 @@ const useProjectsStore = create<ProjectsStore>((set) => ({
 
     getProjects: ():Project[] => {
         return useProjectsStore.getState().projects;
+    },
+
+    fetchProject: async (projectId: string) => {
+        if (!projectId) return;
+        try {
+            const data: Project = await fetchProjectAPI(projectId);
+            useProjectsStore.getState().addProject(data);
+            return data;
+        } catch (error) {
+            console.error('Failed to fetch project:', error);
+        }
     },
 
     fetchProjects: async (trashed = false) => {

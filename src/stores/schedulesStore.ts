@@ -9,6 +9,7 @@ import useEditorStore from "@/stores/editorStore";
 import { Schedule } from '@/types/types';
 
 type SchedulesStore = {
+    hasInitialFetched: boolean;
     schedules: Schedule[];
     getSchedule: (scheduleId: string) => Schedule | undefined;
     fetchSchedules: () => Promise<void>;
@@ -20,6 +21,8 @@ type SchedulesStore = {
 const useSchedulesStore = create<SchedulesStore>((
     set: Parameters<StateCreator<SchedulesStore>>[0]
 ) => ({
+    hasInitialFetched: false,
+
     schedules: [],
 
     getSchedule: (scheduleId): Schedule | undefined => {
@@ -31,7 +34,7 @@ const useSchedulesStore = create<SchedulesStore>((
         if (!activeProjectId) return;
         try {
             const data: Schedule[] = await fetchSchedulesAPI(activeProjectId);
-            set({ schedules: data });
+            set({ schedules: data, hasInitialFetched: true });
         } catch (error) {
             console.error('Failed to fetch schedules:', error);
         }

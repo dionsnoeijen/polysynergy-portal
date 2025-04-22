@@ -28,7 +28,7 @@ export default function ItemManager({
                 {/* Disabled for now: <ProjectVariableTree />*/}
             </div>
             <div className={'-mb-2'}>
-                <SidebarTenantHeader/>
+                <SidebarTenantHeader />
             </div>
         </div>
     );

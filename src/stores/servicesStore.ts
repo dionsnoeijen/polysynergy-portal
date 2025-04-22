@@ -7,6 +7,7 @@ import {storeService as storeServiceAPI} from "@/api/servicesApi";
 import useEditorStore from "@/stores/editorStore";
 
 type ServicesStore = {
+    hasInitialFetched: boolean;
     services: Service[];
     getService: (serviceId: string) => Service | undefined;
     storeService: (id: string, name: string, category: string, description: string, packagedData: Package) => Promise<void>;
@@ -18,6 +19,8 @@ const useServicesStore = create<ServicesStore>((
     set: Parameters<StateCreator<ServicesStore>>[0],
     get: () => ServicesStore
 ) => ({
+    hasInitialFetched: false,
+
     services: [],
 
     getService: (serviceId: string): Service | undefined => {
@@ -25,7 +28,7 @@ const useServicesStore = create<ServicesStore>((
     },
 
     storeService: async (id: string, name: string, category: string, description: string, packagedData: Package) => {
-        const { activeProjectId } = useEditorStore.getState();
+        const {activeProjectId} = useEditorStore.getState();
         try {
             const response = await storeServiceAPI(id, name, category, description, packagedData, [activeProjectId]);
             set((state) => ({services: [...state.services, response]}));
@@ -35,11 +38,11 @@ const useServicesStore = create<ServicesStore>((
     },
 
     fetchServices: async () => {
-        const { activeProjectId } = useEditorStore.getState();
+        const {activeProjectId} = useEditorStore.getState();
         if (!activeProjectId) return;
         try {
             const data: Service[] = await fetchServicesAPI(activeProjectId);
-            set({services: data});
+            set({services: data, hasInitialFetched: true});
         } catch (error) {
             console.error('Failed to fetch services:', error);
         }

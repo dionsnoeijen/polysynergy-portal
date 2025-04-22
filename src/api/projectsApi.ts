@@ -21,6 +21,25 @@ export const fetchProjects = async ({ trashed = false }: { trashed?: boolean }) 
     return response.json();
 };
 
+export const fetchProject = async (projectId: string) => {
+    const idToken = getIdToken();
+    const response = await fetch(
+        `${config.API_URL}/projects/${projectId}/`,
+        {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch project');
+    }
+
+    return response.json();
+};
+
 export const createProject = async (name: string) => {
     const idToken = getIdToken();
     const response = await fetch(`${config.API_URL}/projects/`, {

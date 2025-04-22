@@ -7,6 +7,7 @@ import {
 import useEditorStore from "@/stores/editorStore";
 
 type BlueprintsStore = {
+    hasInitialFetched: boolean;
     blueprints: Blueprint[];
     getBlueprint: (blueprintId: string) => Blueprint | undefined;
     fetchBlueprints: () => Promise<void>;
@@ -17,6 +18,8 @@ const useBlueprintsStore = create<BlueprintsStore>((
     set: Parameters<StateCreator<BlueprintsStore>>[0],
     get: () => BlueprintsStore,
 ) => ({
+    hasInitialFetched: false,
+
     blueprints: [],
 
     getBlueprint: (blueprintId: string): Blueprint | undefined => {
@@ -40,7 +43,7 @@ const useBlueprintsStore = create<BlueprintsStore>((
         if (!activeProjectId) return;
         try {
             const data: Blueprint[] = await fetchBlueprintsAPI(activeProjectId);
-            set({ blueprints: data });
+            set({ blueprints: data, hasInitialFetched: true });
         } catch (error) {
             console.error('Failed to fetch blueprints:', error);
         }

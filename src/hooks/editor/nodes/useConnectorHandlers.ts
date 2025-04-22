@@ -17,7 +17,7 @@ function resolveTargetMeta(targetEl: HTMLElement): {
     const nodeGroupTarget = targetEl.closest('[data-type="closed-group"]') as HTMLElement | null;
     const targetGroupId = nodeGroupTarget?.getAttribute("data-node-id") ?? targetEl.getAttribute("data-group-id") ?? undefined;
 
-    return { targetNodeId, targetHandle, targetGroupId };
+    return {targetNodeId, targetHandle, targetGroupId};
 }
 
 export const useConnectorHandlers = (
@@ -124,28 +124,28 @@ export const useConnectorHandlers = (
             undimCommectors();
 
             if (target) {
-    const connection = getConnection(existingConnection.id);
-    if (!connection) return;
+                const connection = getConnection(existingConnection.id);
+                if (!connection) return;
 
-    const { targetNodeId, targetHandle, targetGroupId } = resolveTargetMeta(target);
+                const {targetNodeId, targetHandle, targetGroupId} = resolveTargetMeta(target);
 
-    if (targetNodeId === connection.sourceNodeId) {
-        removeConnectionById(connection.id);
-        setIsDrawingConnection("");
-        return;
-    }
+                if (targetNodeId === connection.sourceNodeId) {
+                    removeConnectionById(connection.id);
+                    setIsDrawingConnection("");
+                    return;
+                }
 
-    Object.assign(connection, {
-        targetNodeId,
-        targetHandle,
-        targetGroupId,
-    });
+                Object.assign(connection, {
+                    targetNodeId,
+                    targetHandle,
+                    targetGroupId,
+                });
 
-    const updatedConnection = updateConnectionsDirectly([connection]);
-    updatedConnection.forEach((upd) => {
-        updateConnection({ ...connection, ...upd });
-    });
-} else {
+                const updatedConnection = updateConnectionsDirectly([connection]);
+                updatedConnection.forEach((upd) => {
+                    updateConnection({...connection, ...upd});
+                });
+            } else {
                 removeConnectionById(existingConnection.id);
             }
 

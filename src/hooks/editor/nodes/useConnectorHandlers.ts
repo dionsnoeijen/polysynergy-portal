@@ -7,6 +7,19 @@ import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 import {FlowState, NodeEnabledConnector} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 
+function resolveTargetMeta(targetEl: HTMLElement): {
+    targetNodeId: string;
+    targetHandle: string;
+    targetGroupId?: string;
+} {
+    const targetHandle = targetEl.getAttribute("data-handle")!;
+    const targetNodeId = targetEl.getAttribute("data-node-id") || targetEl.getAttribute("data-group-id")!;
+    const nodeGroupTarget = targetEl.closest('[data-type="closed-group"]') as HTMLElement | null;
+    const targetGroupId = nodeGroupTarget?.getAttribute("data-node-id") ?? targetEl.getAttribute("data-group-id") ?? undefined;
+
+    return { targetNodeId, targetHandle, targetGroupId };
+}
+
 export const useConnectorHandlers = (
     isIn: boolean = false,
     isOut: boolean = false,
@@ -111,32 +124,28 @@ export const useConnectorHandlers = (
             undimCommectors();
 
             if (target) {
-                const targetNodeId = !isGroup ?
-                    target.getAttribute("data-node-id") as string :
-                    target.getAttribute("data-group-id") as string;
+    const connection = getConnection(existingConnection.id);
+    if (!connection) return;
 
-                if (targetNodeId === existingConnection.sourceNodeId) {
-                    removeConnectionById(existingConnection.id);
-                    setIsDrawingConnection("");
-                    return;
-                }
-                const targetHandle = target.getAttribute("data-handle") as string;
+    const { targetNodeId, targetHandle, targetGroupId } = resolveTargetMeta(target);
 
-                const nodeGroupTarget = target.closest('[data-type="closed-group"]');
-                const connection = getConnection(existingConnection.id);
+    if (targetNodeId === connection.sourceNodeId) {
+        removeConnectionById(connection.id);
+        setIsDrawingConnection("");
+        return;
+    }
 
-                if (connection) {
-                    connection.targetHandle = targetHandle;
-                    connection.targetNodeId = targetNodeId;
-                    if (nodeGroupTarget) {
-                        connection.targetGroupId = nodeGroupTarget.getAttribute("data-node-id") as string;
-                    }
-                    const updatedConnection = updateConnectionsDirectly([connection]);
-                    updatedConnection.forEach((upd) => {
-                        updateConnection({...connection, ...upd});
-                    });
-                }
-            } else {
+    Object.assign(connection, {
+        targetNodeId,
+        targetHandle,
+        targetGroupId,
+    });
+
+    const updatedConnection = updateConnectionsDirectly([connection]);
+    updatedConnection.forEach((upd) => {
+        updateConnection({ ...connection, ...upd });
+    });
+} else {
                 removeConnectionById(existingConnection.id);
             }
 

@@ -86,8 +86,19 @@ const PublishedVariables: React.FC<Props> = ({
         const syncKey = publishedVariables.find(
             (pv) => pv.nodeId === nodeId && pv.variable.handle === handle
         );
-        if (!syncKey?.nodeServiceHandle) return;
 
+        // No service? Only update the specific node
+        if (!syncKey?.nodeServiceHandle) {
+            setVariables((prev) => {
+                const updated = {...prev};
+                if (!updated[nodeId]) updated[nodeId] = {};
+                updated[nodeId][handle] = updatedVariables;
+                return updated;
+            });
+            return;
+        }
+
+        // With service? Sync the value between service instances
         const key = `${syncKey.nodeServiceHandle}::${syncKey.nodeServiceVariant ?? 1}::${handle}`;
         const synced = syncMap.get(key) || [{nodeId, handle}];
 
@@ -129,10 +140,10 @@ const PublishedVariables: React.FC<Props> = ({
         setSecretVariables(prev => {
             if (prev.some(secret => secret.key === secretKey)) {
                 return prev.map(secret =>
-                    secret.key === secretKey ? { ...secret, value } : secret
+                    secret.key === secretKey ? {...secret, value} : secret
                 );
             } else {
-                return [...prev, { key: secretKey, value }];
+                return [...prev, {key: secretKey, value}];
             }
         });
     }
@@ -142,7 +153,6 @@ const PublishedVariables: React.FC<Props> = ({
         const initialSimpleVariables: { [nodeId: string]: { [handle: string]: string } } = {};
         const pubVariables: VariableIdentifier[] = [];
 
-        // First collect all published variables
         nodes.forEach((node) => {
             const dictVariables = node.variables.filter(
                 (variable) => variable.published && variable.type === NodeVariableType.Dict
@@ -210,11 +220,11 @@ const PublishedVariables: React.FC<Props> = ({
             const title = getNodeVariable(node.id, "title")?.value;
             return typeof title === "string" && title.trim() !== "";
         });
-        
+
         const playButtonTabs: TabItem[] = playButtonNodes.map(node => {
             const title = getNodeVariable(node.id, "title")?.value as string;
             const info = getNodeVariable(node.id, "info")?.value as string;
-            
+
             return {
                 key: node.id,
                 title: title,

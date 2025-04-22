@@ -145,7 +145,7 @@ const AddNode: React.FC = () => {
                 <div
                     ref={modalRef}
                     onWheel={(e) => e.stopPropagation()}
-                    className="fixed p-4 bg-black/90 rounded-lg shadow-lg w-[700px] h-[395px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-2/3 z-10"
+                    className="fixed p-4 bg-black/90 rounded-lg shadow-lg w-[700px] h-[395px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-2/3 z-30"
                 >
                     <InputGroup>
                         <MagnifyingGlassIcon data-slot="icon" className="h-5 w-5 text-zinc-500" />

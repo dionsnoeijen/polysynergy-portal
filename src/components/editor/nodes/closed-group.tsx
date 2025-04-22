@@ -32,6 +32,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
     const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
     const position = useNodePlacement(node);
     const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
+    const updateNodeWidth = useNodesStore((state) => state.updateNodeWidth);
 
     const [height, setHeight] = useState(0);
     const isPanning = useEditorStore((state) => state.isPanning);
@@ -80,10 +81,13 @@ const ClosedGroup: React.FC<GroupProps> = ({
 
     useLayoutEffect(() => {
         if (measureRef.current && !isPanning && !isZooming) {
-            setHeight(measureRef.current.getBoundingClientRect().height / zoomFactor);
-            console.log('height', measureRef.current.getBoundingClientRect().height / zoomFactor);
+            const rect = measureRef.current.getBoundingClientRect();
+            const newHeight = rect.height / zoomFactor;
+            const newWidth = rect.width / zoomFactor;
+            setHeight(newHeight);
+            updateNodeWidth(node.id, newWidth);
         }
-    }, [isPanning, isZooming, zoomFactor, node.id, measureRef]);
+    }, [isPanning, isZooming, zoomFactor, node.id, updateNodeWidth]);
 
     return !node.view.collapsed ? (
         <div
@@ -170,7 +174,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
             onDoubleClick={handleCollapse}
             className={className + ` p-5`}
             style={{
-                width: `200px`,
+                width: `${node.view.width}px`,
                 left: preview ? '0px' : `${position.x}px`,
                 top: preview ? '0px' : `${position.y}px`,
             }}

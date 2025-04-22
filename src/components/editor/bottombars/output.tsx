@@ -30,7 +30,7 @@ const Output: React.FC = (): React.ReactElement => {
                             <div className="flex justify-between items-center">
                                 <span className="inline-flex items-center gap-2">
                                     <span className="flex items-center justify-center w-8 h-8 rounded-full bg-sky-500 text-white">
-                                        {index + 1}
+                                        {reversedNodes.length - index}
                                     </span>
                                     <span className="text-sm font-bold">{node.type}</span>:
                                     <span className="text-[0.5rem] font-light">{node.id}</span>

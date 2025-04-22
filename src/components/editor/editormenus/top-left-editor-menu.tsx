@@ -47,7 +47,7 @@ const TopLeftEditorMenu: React.FC = () => {
     });
 
     return (
-        <div className="bg-zinc-800 bg-opacity-80 border border-white/25 p-2 rounded-xl absolute z-10 left-5 top-5 flex flex-col items-center justify-center">
+        <div className="bg-zinc-800 bg-opacity-80 border border-white/25 p-2 rounded-xl absolute z-auto left-5 top-5 flex flex-col items-center justify-center">
             <div className="flex flex-col items-start justify-center w-full h-full">
                 <button
                     className={`group w-full text-lg font-semibold text-white rounded p-2 bg-zinc-300 hover:bg-zinc-600`}

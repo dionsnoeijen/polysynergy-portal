@@ -66,8 +66,6 @@ export const deleteProjectSecretAPI = async (
 ): Promise<{ message: string }> => {
     const idToken = getIdToken();
 
-    console.log(projectId, secretId);
-
     const response = await fetch(
         `${config.API_URL}/projects/${projectId}/secrets/${secretId}/`,
         {

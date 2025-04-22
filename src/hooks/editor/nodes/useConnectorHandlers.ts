@@ -235,6 +235,12 @@ export const useConnectorHandlers = (
                     }
                 }
 
+                if (targetHandle === "collapsed") {
+                    removeConnectionById(id);
+                    setIsDrawingConnection("");
+                    return;
+                }
+
                 if (connection) {
                     connection.targetHandle = targetHandle;
                     connection.targetNodeId = targetNodeId;

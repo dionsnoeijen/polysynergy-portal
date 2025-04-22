@@ -46,10 +46,6 @@ export const calculateConnectorPositionByAttributes = (
     let selector = buildSelector(type, handle, nodeId);
     let target = document.querySelector(selector) as HTMLElement;
 
-    if (handle === 'collapsed') {
-        console.log('collapsed', selector, target);
-    }
-
     if (!target) {
         const handleParts = handle.split('.');
         if (handleParts.length > 1) {

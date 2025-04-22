@@ -322,8 +322,6 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             .getState()
             .getConnectionsNotInAGroup();
 
-        console.log(hideConnections);
-
         useConnectionsStore.getState()
             .hideConnectionsByIds(hideConnections.map((c) => c.id));
 

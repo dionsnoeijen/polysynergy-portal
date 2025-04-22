@@ -8,39 +8,37 @@ import {NodeType} from "@/types/types";
 import {v4 as uuidv4} from "uuid";
 
 const useGrouping = () => {
-    const {
-        selectedNodes,
-        setSelectedNodes,
-    } = useEditorStore();
-    const {
-        closeGroup: closeGroupStore,
-        openGroup: openGroupStore,
-        hideGroup,
-        showGroup,
-        removeGroup: removeGroupStore,
-        removeNodeFromGroup: removeNodeFromGroupStore,
-        getNodesInGroup,
-        getGroupById,
-        isNodeInGroup,
-        addNodeToGroup,
-        addGroupNode,
-        updateNodePositionByDelta,
-        disableAllNodesViewExceptByIds,
-        enableAllNodesView,
-        enableNodesView,
-        removeNode,
-        getNode,
-        disableNodeView,
-        openedGroup: currentOpenGroup
-    } = useNodesStore();
-    const {
-        findInConnectionsByNodeId,
-        findOutConnectionsByNodeId,
-        removeConnections,
-        showConnectionsInsideOpenGroup,
-        showConnectionsOutsideGroup,
-        updateConnection
-    } = useConnectionsStore();
+    const selectedNodes = useEditorStore((state) => state.selectedNodes);
+    const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
+
+    const closeGroupStore = useNodesStore((state) => state.closeGroup);
+    const openGroupStore = useNodesStore((state) => state.openGroup);
+    const dissolveGroupStore = useNodesStore((state) => state.dissolveGroup);
+    const hideGroup = useNodesStore((state) => state.hideGroup);
+    const showGroup = useNodesStore((state) => state.showGroup);
+    const removeGroupStore = useNodesStore((state) => state.removeGroup);
+    const removeNodeFromGroupStore = useNodesStore((state) => state.removeNodeFromGroup);
+    const getNodesInGroup = useNodesStore((state) => state.getNodesInGroup);
+    const getGroupById = useNodesStore((state) => state.getGroupById);
+    const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);
+    const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
+    const addGroupNode = useNodesStore((state) => state.addGroupNode);
+    const updateNodePositionByDelta = useNodesStore((state) => state.updateNodePositionByDelta);
+    const disableAllNodesViewExceptByIds = useNodesStore((state) => state.disableAllNodesViewExceptByIds);
+    const enableAllNodesView = useNodesStore((state) => state.enableAllNodesView);
+    const enableNodesView = useNodesStore((state) => state.enableNodesView);
+    const removeNode = useNodesStore((state) => state.removeNode);
+    const getNode = useNodesStore((state) => state.getNode);
+    const disableNodeView = useNodesStore((state) => state.disableNodeView);
+    const currentOpenGroup = useNodesStore((state) => state.openedGroup);
+
+    const findInConnectionsByNodeId = useConnectionsStore((state) => state.findInConnectionsByNodeId);
+    const findOutConnectionsByNodeId = useConnectionsStore((state) => state.findOutConnectionsByNodeId);
+    const removeConnections = useConnectionsStore((state) => state.removeConnections);
+    const showConnectionsInsideOpenGroup = useConnectionsStore((state) => state.showConnectionsInsideOpenGroup);
+    const showConnectionsOutsideGroup = useConnectionsStore((state) => state.showConnectionsOutsideGroup);
+    const updateConnection = useConnectionsStore((state) => state.updateConnection);
+    const takeConnectionsOutOfGroup = useConnectionsStore((state) => state.takeConnectionsOutOfGroup);
 
     const createGroup = () => {
         if (selectedNodes.length < 2) return;
@@ -71,20 +69,26 @@ const useGrouping = () => {
 
             const filterOutside = (connection: Connection) => {
                 const sourceInside =
-                    selectedNodes.includes(connection.sourceNodeId) ||
-                    (connection.sourceGroupId && selectedNodes.includes(connection.sourceGroupId)) ||
-                    (connection.sourceGroupId === groupId);
+                    selectedNodes.includes(connection.sourceNodeId ?? '') ||
+                    selectedNodes.includes(connection.sourceGroupId ?? '') ||
+                    connection.sourceGroupId === groupId;
 
                 const targetInside =
-                    selectedNodes.includes(connection.targetNodeId as string) ||
-                    (connection.targetGroupId && selectedNodes.includes(connection.targetGroupId)) ||
-                    (connection.targetGroupId === groupId);
+                    selectedNodes.includes(connection.targetNodeId ?? '') ||
+                    selectedNodes.includes(connection.targetGroupId ?? '') ||
+                    connection.targetGroupId === groupId;
 
                 const isGroupToNodeOrGroup =
-                    (connection.sourceGroupId && selectedNodes.includes(connection.targetNodeId as string)) ||
+                    (connection.sourceGroupId && selectedNodes.includes(connection.targetNodeId ?? '')) ||
                     (connection.targetGroupId && selectedNodes.includes(connection.sourceNodeId));
 
-                return !(sourceInside && targetInside) && !isGroupToNodeOrGroup;
+                const isGroupToNewGroup =
+                    connection.sourceGroupId &&
+                    selectedNodes.includes(connection.targetNodeId ?? '') ;
+
+                const keep = (sourceInside && targetInside) || isGroupToNodeOrGroup;
+
+                return !keep || isGroupToNewGroup;
             };
 
             connectionsToRemove.push(
@@ -218,7 +222,6 @@ const useGrouping = () => {
 
         openGroupStore(groupId);
         showGroup(groupId);
-        // setOpenGroup(groupId);
         setSelectedNodes([]);
 
         disableAllNodesViewExceptByIds([...nodesInGroup]);
@@ -232,9 +235,10 @@ const useGrouping = () => {
         const inConnections = findInConnectionsByNodeId(groupId, true);
         const outConnections = findOutConnectionsByNodeId(groupId, true);
         const connections = [...inConnections, ...outConnections];
-
+        takeConnectionsOutOfGroup(groupId);
         removeConnections(connections);
         removeNode(groupId);
+        dissolveGroupStore(groupId);
         enableAllNodesView();
     };
 

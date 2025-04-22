@@ -18,7 +18,7 @@ export type Connection = {
     touched?: boolean;
     targetGroupId?: string;
     sourceGroupId?: string;
-    isInGroup?: string;
+    isInGroup?: string | null;
     // Temporary added for service editing
     temp?: boolean;
 };

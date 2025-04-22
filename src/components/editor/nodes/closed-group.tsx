@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import useEditorStore from "@/stores/editorStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
@@ -16,6 +16,7 @@ import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
 import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
 import NodeVariables from "@/components/editor/nodes/rows/node-variables";
 import useAutoResize from "@/hooks/editor/nodes/useAutoResize";
+import {ConfirmAlert} from "@/components/confirm-alert";
 
 const ClosedGroup: React.FC<GroupProps> = ({
     node,
@@ -31,9 +32,11 @@ const ClosedGroup: React.FC<GroupProps> = ({
     const position = useNodePlacement(node);
     const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
 
-    const {openGroup, deleteGroup} = useGrouping();
+    const {openGroup, deleteGroup, dissolveGroup} = useGrouping();
     const {variablesForGroup} = useVariablesForGroup(node.id, false);
     const {handleNodeMouseDown} = useNodeMouseDown(node);
+
+    const [isDissolveDialogOpen, setIsDissolveDialogOpen] = useState(false);
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -45,12 +48,21 @@ const ClosedGroup: React.FC<GroupProps> = ({
                 { label: "Move To Group", action: () => setNodeToMoveToGroupId(node.id) },
                 { label: "Open Group", action: () => openGroup(node.id) },
                 { label: "Delete Group", action: () => deleteGroup(node.id) },
+
+                // @todo: Dissolving from a closed group requires finding the internal
+                //    connections and showing them, because they have a status of hidden
+                // { label: "Dissolve Group", action: () => setIsDissolveDialogOpen(true) }
             ]
         );
     };
 
     const handleCollapse = () => {
         toggleNodeViewCollapsedState(node.id);
+    };
+
+    const handleConfirmDissolve = () => {
+        dissolveGroup(node.id);
+        setIsDissolveDialogOpen(false);
     };
 
     const className = `
@@ -117,6 +129,14 @@ const ClosedGroup: React.FC<GroupProps> = ({
                 </div>
                 )}
             </div>
+
+            <ConfirmAlert
+                open={isDissolveDialogOpen}
+                onClose={() => setIsDissolveDialogOpen(false)}
+                onConfirm={handleConfirmDissolve}
+                title={'Confirm Dissolve Group'}
+                description={'Are you sure you want to dissolve this group? This action cannot be undone.'}
+            />
         </div>
     ) : (
         <div
@@ -140,6 +160,14 @@ const ClosedGroup: React.FC<GroupProps> = ({
                 <h3 className="font-bold text-sky-600 dark:text-white">{node.name}</h3>
             </div>
             <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
+
+            <ConfirmAlert
+                open={isDissolveDialogOpen}
+                onClose={() => setIsDissolveDialogOpen(false)}
+                onConfirm={handleConfirmDissolve}
+                title={'Confirm Dissolve Group'}
+                description={'Are you sure you want to dissolve this group? This action cannot be undone.'}
+            />
         </div>
     )
 };

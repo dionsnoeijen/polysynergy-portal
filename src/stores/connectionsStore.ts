@@ -27,6 +27,7 @@ type ConnectionsStore = {
     showConnectionsOutsideGroup: () => Connection[];
     hideConnectionsOutsideGroup: () => Connection[];
     getConnectionsInsideGroup: (group: Node) => Connection[];
+    takeConnectionsOutOfGroup: (groupId: string) => Connection[];
     updateConnectionEnd: (
         connectionId: string,
         endX: number,
@@ -42,9 +43,7 @@ type ConnectionsStore = {
 const memoizedResults = new Map();
 
 const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
-    connections: [
-
-    ],
+    connections: [],
 
     addTempConnections: (connections: Connection[]) => {
         connections.map((connection) => {
@@ -82,7 +81,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         set((state) => ({
             connections: [
                 ...state.connections,
-                { ...connection, hidden: connection.hidden ?? false },
+                {...connection, hidden: connection.hidden ?? false},
             ],
         }));
 
@@ -152,7 +151,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         set((state) => ({
             connections: state.connections.map((c) => {
                 if (c.id === connection.id) {
-                    return { ...c, ...connection };
+                    return {...c, ...connection};
                 }
                 return c;
             }),
@@ -246,14 +245,14 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
     hideAllConnections: () => {
         memoizedResults.clear();
         set((state) => ({
-            connections: state.connections.map((c) => ({ ...c, hidden: true })),
+            connections: state.connections.map((c) => ({...c, hidden: true})),
         }));
     },
 
     showAllConnections: () => {
         memoizedResults.clear();
         set((state) => ({
-            connections: state.connections.map((c) => ({ ...c, hidden: false })),
+            connections: state.connections.map((c) => ({...c, hidden: false})),
         }));
     },
 
@@ -261,7 +260,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         memoizedResults.clear();
         set((state) => ({
             connections: state.connections.map((c) => (
-                connectionIds.includes(c.id) ? { ...c, hidden: true } : c)),
+                connectionIds.includes(c.id) ? {...c, hidden: true} : c)),
         }));
     },
 
@@ -269,7 +268,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         memoizedResults.clear();
         set((state) => ({
             connections: state.connections.map((c) => (
-                connectionIds.includes(c.id) ? { ...c, hidden: false } : c)),
+                connectionIds.includes(c.id) ? {...c, hidden: false} : c)),
         }));
     },
 
@@ -340,6 +339,26 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         return connectionsInOpenGroup;
     },
 
+    takeConnectionsOutOfGroup: (groupId: string): Connection[] => {
+        memoizedResults.clear();
+
+        const connectionsInGroup: Connection[] = get().connections.filter(
+            (connection) => connection.isInGroup === groupId
+        );
+
+        if (connectionsInGroup.length === 0) {
+            return [];
+        }
+
+        set((state) => ({
+            connections: state.connections.map((c): Connection =>
+                c.isInGroup === groupId ? {...c, isInGroup: null} : c
+            ),
+        }));
+
+        return connectionsInGroup;
+    },
+
     updateConnectionEnd: (
         connectionId: string,
         endX: number,
@@ -355,16 +374,16 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         }
         set((state) => ({
             connections: state.connections.map((c) => (
-                c.id === connectionId ? { ...c, endX, endY, targetNodeId, targetHandle } : c)),
+                c.id === connectionId ? {...c, endX, endY, targetNodeId, targetHandle} : c)),
         }));
     },
 
     clearConnections: () => {
-        set({ connections: [] });
+        set({connections: []});
     },
 
     initConnections: (connections: Connection[]) => {
-        set({ connections });
+        set({connections});
     },
 
     isValueConnected: (nodeId: string, handle: string): boolean => {

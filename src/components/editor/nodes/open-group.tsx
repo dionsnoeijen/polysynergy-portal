@@ -10,6 +10,7 @@ import { Dialog, DialogTitle, DialogDescription, DialogBody, DialogActions } fro
 import { Button } from "@/components/button";
 import { MARGIN } from "@/utils/constants";
 import { getNodeBoundsFromDOM } from "@/utils/positionUtils";
+import {ConfirmAlert} from "@/components/confirm-alert";
 
 type GroupProps = { node: Node };
 
@@ -157,22 +158,13 @@ const OpenGroup: React.FC<GroupProps> = ({node}): null | React.ReactElement => {
                 <ConnectorGroup out groupId={node.id}/>
             </div>
 
-            <Dialog size="md" className={'rounded-sm'} open={isDialogOpen} onClose={handleCancelDissolve}>
-                <DialogTitle>Confirm Dissolve Group</DialogTitle>
-                <DialogDescription>
-                    Are you sure you want to dissolve this group? This action cannot be undone.
-                </DialogDescription>
-                <DialogBody>
-                </DialogBody>
-                <DialogActions>
-                    <Button outline onClick={handleCancelDissolve}>
-                        Cancel
-                    </Button>
-                    <Button color="red" onClick={handleConfirmDissolve}>
-                        Dissolve
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <ConfirmAlert
+                open={isDialogOpen}
+                onClose={() => setIsDialogOpen(false)}
+                onConfirm={handleConfirmDissolve}
+                title={'Confirm Dissolve Group'}
+                description={'Are you sure you want to dissolve this group? This action cannot be undone.'}
+            />
         </>
     );
 };

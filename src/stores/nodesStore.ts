@@ -64,6 +64,7 @@ type NodesStore = {
     getGroupById: (nodeId: string) => Node | undefined;
     getAllNodeIdsOfNodesThatAreInAClosedGroup: () => string[];
     updateGroup: (nodeId: string, group: Partial<Group>) => void;
+    dissolveGroup: (groupId: string) => void;
 
     groupStack: string[];
     openedGroup: string | null;
@@ -639,6 +640,17 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     : node
             ),
         }));
+    },
+
+    dissolveGroup: (groupId: string) => {
+        const {groupStack} = get();
+
+        // Remove from groupStack by id
+        const newStack = groupStack.filter((id) => id !== groupId);
+        set({
+            groupStack: newStack,
+            openedGroup: newStack.length > 0 ? newStack[newStack.length - 1] : null,
+        });
     },
 
     isNodeInGroup: (nodeId: string): string | null => {

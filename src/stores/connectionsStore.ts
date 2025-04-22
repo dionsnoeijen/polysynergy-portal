@@ -75,6 +75,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         fromHandle: string,
         toHandle: string
     ) => {
+        memoizedResults.clear();
         const { connections } = get();
         const updated = connections.map((c) => {
             if (c.targetNodeId === nodeId && c.targetHandle === fromHandle) {
@@ -365,6 +366,8 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
     },
 
     removeConnectionsLinkedToVariable: (nodeId: string, variableName: string) => {
+        memoizedResults.clear();
+
         const { connections } = get();
 
         const isRelevantConnection = (c: Connection) =>

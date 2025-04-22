@@ -28,7 +28,7 @@ const DictVariableForm: React.FC = () => {
         e.preventDefault();
         if (!formEditRecordId || !formEditVariable) return;
 
-        const oldVars = formEditVariable.value || [];
+        const oldVars: NodeVariable[] = formEditVariable.value as NodeVariable[] || [];
         const newVars = variables;
 
         const getDictVariableDiff = (
@@ -92,6 +92,21 @@ const DictVariableForm: React.FC = () => {
                 `${formEditVariable.handle}.${from}`,
                 `${formEditVariable.handle}.${to}`
             );
+        });
+
+        oldVars.forEach((oldVar) => {
+            const newVar = newVars.find((v) => v.handle === oldVar.handle);
+            if (!newVar) return;
+
+            const fullHandle = `${formEditVariable.handle}.${oldVar.handle}`;
+
+            if (oldVar.has_in && !newVar.has_in) {
+                removeConnectionsLinkedToVariable(formEditRecordId, fullHandle);
+            }
+
+            if (oldVar.has_out && !newVar.has_out) {
+                removeConnectionsLinkedToVariable(formEditRecordId, fullHandle);
+            }
         });
 
         updateNodeVariable(formEditRecordId, formEditVariable.handle, newVars);

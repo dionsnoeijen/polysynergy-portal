@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect} from "react";
 import useServicesStore from "@/stores/servicesStore";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 
-import { Heading } from "@/components/heading";
-import { Connection, Node, NodeVariable, NodeVariableType, Package, Service } from "@/types/types";
-import { Divider } from "@/components/divider";
-import { unpackNode } from "@/utils/packageGroupNode";
-import { Button } from "@/components/button";
-import { globalToLocal } from "@/utils/positionUtils";
+import {Heading} from "@/components/heading";
+import {Connection, Node, NodeVariable, NodeVariableType, Package, Service} from "@/types/types";
+import {Divider} from "@/components/divider";
+import {unpackNode} from "@/utils/packageGroupNode";
+import {Button} from "@/components/button";
+import {globalToLocal} from "@/utils/positionUtils";
 
 import PublishedVariables from "@/components/editor/forms/variable/published-variables";
-import { adjectives, animals, colors, uniqueNamesGenerator } from "unique-names-generator";
+import {adjectives, animals, colors, uniqueNamesGenerator} from "unique-names-generator";
 
 const PlaceServiceForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
     const openedGroup = useNodesStore((state) => state.openedGroup);
     const addNode = useNodesStore((state) => state.addNode);
+    const getNodesByServiceHandleAndVariant = useNodesStore((state) => state.getNodesByServiceHandleAndVariant);
     const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const addConnection = useConnectionsStore((state) => state.addConnection);
@@ -37,11 +38,41 @@ const PlaceServiceForm: React.FC = () => {
         const packagedData: Package = service.node_setup.versions[0].content;
         if (!packagedData) return;
 
-        const { nodes, connections } = unpackNode(packagedData);
-
-        setUnpackedNodes(nodes);
+        const {nodes: packagedNodes, connections} = unpackNode(packagedData);
         setUnpackedConnections(connections || []);
-    }, [service]);
+
+        const updatedNodes = packagedNodes.map((pkgNode) => {
+            const handle = pkgNode.service?.handle;
+            const variant = pkgNode.service?.variant;
+
+            if (!handle || variant === undefined) return pkgNode;
+
+            const existingNodes = getNodesByServiceHandleAndVariant(handle, variant);
+            if (existingNodes.length === 0) return pkgNode;
+
+            const referenceNode = existingNodes[0];
+
+            const updatedVars = pkgNode.variables.map((v) => {
+                if (!v.published) return v;
+
+                const matchingVar = referenceNode.variables.find((rv) => rv.handle === v.handle);
+                if (!matchingVar) return v;
+
+                return {
+                    ...v,
+                    value: matchingVar.value,
+                    _disabled: true,
+                };
+            });
+
+            return {
+                ...pkgNode,
+                variables: updatedVars,
+            };
+        });
+
+        setUnpackedNodes(updatedNodes);
+    }, [service, getNodesByServiceHandleAndVariant]);
 
     if (!service) return null;
 
@@ -61,9 +92,9 @@ const PlaceServiceForm: React.FC = () => {
 
         const nodesToAdd =
             unpackedNodes.map((n, index) => {
-                const nodeCopy = { ...n, variables: [...n.variables] };
+                const nodeCopy = {...n, variables: [...n.variables]};
 
-                publishedVariables.forEach(({ variable, nodeId }) => {
+                publishedVariables.forEach(({variable, nodeId}) => {
                     if (nodeCopy.id === nodeId) {
                         const targetVariable = nodeCopy.variables.find((v) => v.handle === variable.handle);
                         if (targetVariable) {
@@ -105,7 +136,7 @@ const PlaceServiceForm: React.FC = () => {
     return (
         <form method="post" className="p-10">
             <Heading>{service.name}</Heading>
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             <PublishedVariables
                 nodes={unpackedNodes}

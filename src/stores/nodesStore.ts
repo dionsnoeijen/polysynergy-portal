@@ -69,6 +69,7 @@ type NodesStore = {
     groupStack: string[];
     openedGroup: string | null;
     initGroups: (groupStack: string[], openedGroup: string | null) => void;
+    getNodesByServiceHandleAndVariant: (handle: string, variant: number) => Node[];
 };
 
 const nodesByIdsCache = new Map<string, Node[]>();
@@ -100,6 +101,14 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             groupStack,
             openedGroup
         });
+    },
+
+    getNodesByServiceHandleAndVariant: (handle: string, variant: number): Node[] => {
+        return get().nodes.filter(
+            (node) =>
+                node.service?.handle === handle &&
+                node.service?.variant === variant
+        );
     },
 
     addTempNodes: (nodes) => {
@@ -944,7 +953,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
         return nodes.find((node) =>
             node.path === "nodes.nodes.mock.mock_schedule.MockSchedule" ||
-            node.path === "nodes.nodes.mock.mock_http_request.MockHttpRequest"
+            node.path === "nodes.nodes.mock.mock_route_request.MockRouteRequest"
         );
     },
 

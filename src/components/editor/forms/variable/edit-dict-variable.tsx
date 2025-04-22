@@ -35,7 +35,7 @@ const EditDictVariable: React.FC<Props> = ({
         const updatedVariables = [...variables];
         if (key === "handle") {
             // @todo: Make optional
-            // const validValue = (value as string).replace(/[^a-z-_]/g, '');
+            //    const validValue = (value as string).replace(/[^a-z-_]/g, '');
             updatedVariables[index] = {...updatedVariables[index], [key]: value as string};
         } else {
             updatedVariables[index] = {...updatedVariables[index], [key]: value};

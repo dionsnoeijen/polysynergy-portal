@@ -8,6 +8,12 @@ type ConnectionsStore = {
     addTempConnections: (connections: Connection[]) => void;
     clearTempConnections: () => void;
 
+    updateConnectionsHandle: (
+        nodeId: string,
+        fromHandle: string,
+        toHandle: string
+    ) => void;
+
     getConnection: (connectionId: string) => Connection | undefined;
     addConnection: (connection: Connection) => Connection | undefined;
     removeConnectionById: (connectionId: string) => void;
@@ -27,6 +33,7 @@ type ConnectionsStore = {
     showConnectionsOutsideGroup: () => Connection[];
     hideConnectionsOutsideGroup: () => Connection[];
     getConnectionsInsideGroup: (group: Node) => Connection[];
+    removeConnectionsLinkedToVariable: (nodeId: string, variableName: string) => void;
     takeConnectionsOutOfGroup: (groupId: string) => Connection[];
     updateConnectionEnd: (
         connectionId: string,
@@ -61,6 +68,24 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         set((state) => ({
             connections: state.connections.filter((c) => !c.temp),
         }));
+    },
+
+    updateConnectionsHandle: (
+        nodeId: string,
+        fromHandle: string,
+        toHandle: string
+    ) => {
+        const { connections } = get();
+        const updated = connections.map((c) => {
+            if (c.targetNodeId === nodeId && c.targetHandle === fromHandle) {
+                return { ...c, targetHandle: toHandle };
+            }
+            if (c.sourceNodeId === nodeId && c.sourceHandle === fromHandle) {
+                return { ...c, sourceHandle: toHandle };
+            }
+            return c;
+        });
+        set({ connections: updated });
     },
 
     getConnection: (connectionId: string): Connection | undefined => {
@@ -337,6 +362,20 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         }
 
         return connectionsInOpenGroup;
+    },
+
+    removeConnectionsLinkedToVariable: (nodeId: string, variableName: string) => {
+        const { connections } = get();
+
+        const isRelevantConnection = (c: Connection) =>
+            (c.targetNodeId === nodeId && c.targetHandle?.startsWith(variableName)) ||
+            (c.sourceNodeId === nodeId && c.sourceHandle?.startsWith(variableName));
+
+        const connectionsToRemove = connections.filter(isRelevantConnection);
+
+        if (connectionsToRemove.length > 0) {
+            get().removeConnections(connectionsToRemove);
+        }
     },
 
     takeConnectionsOutOfGroup: (groupId: string): Connection[] => {

@@ -70,7 +70,7 @@ const EditorLayout = ({
 
     const removeConnectionById = useConnectionsStore((state) => state.removeConnectionById);
 
-    const isExecuting = useMockStore((state) => state.isExecuting);
+    const isExecuting = useEditorStore((state) => state.isExecuting);
 
     useEffect(() => {
         clearMockStore();
@@ -230,7 +230,7 @@ const EditorLayout = ({
                 <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
                     <div className="bg-white dark:bg-zinc-800 p-4 rounded-lg shadow-lg flex items-center gap-2">
                         <div className="animate-spin h-5 w-5 border-2 border-sky-500 border-t-transparent rounded-full"></div>
-                        <span className="text-white">Executing...</span>
+                        <span className="text-white">{isExecuting}</span>
                     </div>
                 </div>
             )}

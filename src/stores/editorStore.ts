@@ -123,10 +123,16 @@ type EditorState = {
 
     nodeToMoveToGroupId: string | null,
     setNodeToMoveToGroupId: (id: string | null) => void;
+
+    isExecuting: string | null;
+    setIsExecuting: (isExecuting: string | null) => void;
 };
 
 const useEditorStore = create<EditorState>((set, get) => ({
     debugBarAvailable: true,
+
+    isExecuting: null,
+    setIsExecuting: (isExecuting) => set({isExecuting: isExecuting}),
 
     zoomFactor: .75,
     setZoomFactor: (factor) => set({zoomFactor: factor}),

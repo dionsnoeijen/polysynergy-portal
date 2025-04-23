@@ -13,11 +13,11 @@ import {
 import useEditorStore from "@/stores/editorStore";
 import fetchAndApplyNodeSetup from "@/utils/fetchNodeSetup";
 import SavingIndicator from "@/components/saving-indicator";
-import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import {FormType, Fundamental, State, StoreName} from "@/types/types";
+import {FormType, Fundamental, Route, Schedule, State, StoreName} from "@/types/types";
 import useSchedulesStore from "@/stores/schedulesStore";
+import {ConfirmAlert} from "@/components/confirm-alert";
 
 type VersionPublishedMenuProps = { routeUuid?: string; scheduleUuid?: string };
 
@@ -39,6 +39,9 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
     const setActiveVersionId = useEditorStore((state) => state.setActiveVersionId);
     const isSaving = useEditorStore((state) => state.isSaving);
     const isPublished = useEditorStore((state) => state.isPublished);
+    const setIsPublished = useEditorStore((state) => state.setIsPublished);
+    const setIsDraft = useEditorStore((state) => state.setIsDraft);
+    const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
 
     const latestStates: Record<StoreName, State> = { 
         nodes, 
@@ -52,15 +55,32 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
     const [showPublishAlert, setShowPublishAlert] = useState(false);
     const [showDraftAlert, setShowDraftAlert] = useState(false);
 
-    useEffect(() => {
-        const routeData = getDynamicRoute(routeUuid as string);
-        if (!routeData || !routeData.id) return;
+    const [scheduleData, setScheduleData] = useState<Schedule|undefined|null>(null);
+    const [routeData, setRouteData] = useState<Route|undefined|null>(null);
 
-        const highestVersion = routeData.versions
-            ?.sort((a, b) => b.version_number - a.version_number)[0];
+    useEffect(() => {
+        if (!routeUuid && !scheduleUuid) return;
+
+        let highestVersion = null;
+
+        if (scheduleUuid) {
+            const response = getSchedule(scheduleUuid as string);
+            setScheduleData(response);
+            if (!scheduleData || !scheduleData.id) return;
+            highestVersion = scheduleData.versions
+                ?.sort((a, b) => b.version_number - a.version_number)[0];
+        }
+
+        if (routeUuid) {
+            const response = getDynamicRoute(routeUuid as string);
+            setRouteData(response);
+            if (!routeData || !routeData.id) return;
+            highestVersion = routeData.versions
+                ?.sort((a, b) => b.version_number - a.version_number)[0];
+        }
 
         setActiveVersionId(highestVersion?.id || '');
-    }, [routeUuid, routes, getDynamicRoute, setActiveVersionId]);
+    }, [routeUuid, routes, getDynamicRoute, setActiveVersionId, scheduleUuid, getSchedule, scheduleData, routeData]);
 
     const handleVersionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newVersionId = e.target.value;
@@ -78,9 +98,8 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
     };
 
     const handleDraft = async () => {
-
-        console.log('Handle draft', scheduleUuid, routeUuid);
-
+        setShowDraftAlert(false);
+        setIsExecuting('Creating draft...');
         if (scheduleUuid) {
             const response = await createNodeSetupVersionDraftAPI(
                 activeScheduleId as string,
@@ -90,6 +109,9 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
                 Fundamental.Schedule
             );
             await fetchSchedules();
+            const versionResponse = getSchedule(scheduleUuid as string);
+            setScheduleData(versionResponse);
+            console.log(versionResponse);
             setActiveVersionId(response.new_version_id);
         } else {
             const response = await createNodeSetupVersionDraftAPI(
@@ -100,10 +122,14 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
                 Fundamental.Route
             );
             await fetchDynamicRoutes();
+            const versionResponse = getDynamicRoute(routeUuid as string);
+            setRouteData(versionResponse);
             setActiveVersionId(response.new_version_id);
         }
 
-        // setShowDraftAlert(false);
+        setIsExecuting(null);
+        setIsDraft(true);
+        setIsPublished(false);
     }
 
     const handlePublishClick = async () => {
@@ -111,16 +137,23 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
     };
 
     const handlePublish = async () => {
+        setShowPublishAlert(false);
+        setIsExecuting('Publishing to production...');
         if (scheduleUuid) {
             await publishNodeSetupScheduleVersionAPI(activeVersionId as string);
+            await fetchSchedules();
+            const versionResponse = getSchedule(scheduleUuid as string);
+            setScheduleData(versionResponse);
         } else {
             await publishNodeSetupRouteVersionAPI(activeVersionId as string);
+            await fetchDynamicRoutes();
+            const versionResponse = getDynamicRoute(routeUuid as string);
+            setRouteData(versionResponse);
         }
-        setShowPublishAlert(false);
+        setIsExecuting(null);
+        setIsDraft(false);
+        setIsPublished(true);
     }
-
-    const routeData = getDynamicRoute(routeUuid as string);
-    const scheduleData = getSchedule(scheduleUuid as string);
 
     if ((!routeData || !routeData.versions) && (!scheduleData || !scheduleData.versions)) {
         return null;
@@ -189,35 +222,21 @@ export default function VersionPublishedMenu({ routeUuid, scheduleUuid }: Versio
             </Button>
             <SavingIndicator isSaving={isSaving} />
 
-            {showPublishAlert && (
-                <Alert size="md" className="text-center" open={showPublishAlert} onClose={() => setShowPublishAlert(false)}>
-                    <AlertTitle>This will publish the node setup to production?</AlertTitle>
-                    <AlertDescription>Do you want to proceed?</AlertDescription>
-                    <AlertActions>
-                        <Button onClick={() => setShowPublishAlert(false)} plain>
-                            Cancel
-                        </Button>
-                        <Button color="red" onClick={handlePublish}>
-                            Yes, publish
-                        </Button>
-                    </AlertActions>
-                </Alert>
-            )}
+            <ConfirmAlert
+                open={showPublishAlert}
+                onClose={() => setShowPublishAlert(false)}
+                onConfirm={handlePublish}
+                title={'This will publish the node setup to production?'}
+                description={'Do you want to proceed?'}
+            />
 
-            {showDraftAlert && (
-                <Alert size="md" className="text-center" open={showDraftAlert} onClose={() => setShowDraftAlert(false)}>
-                    <AlertTitle>This will create a draft from the currently active node setup?</AlertTitle>
-                    <AlertDescription>Do you want to proceed?</AlertDescription>
-                    <AlertActions>
-                        <Button onClick={() => setShowDraftAlert(false)} plain>
-                            Cancel
-                        </Button>
-                        <Button color="red" onClick={handleDraft}>
-                            Yes, create draft
-                        </Button>
-                    </AlertActions>
-                </Alert>
-            )}
+            <ConfirmAlert
+                open={showDraftAlert}
+                onClose={() => setShowDraftAlert(false)}
+                onConfirm={handleDraft}
+                title={'This will create a draft from the currently active node setup?'}
+                description={'Do you want to proceed?'}
+            />
         </div>
     );
 }

@@ -46,7 +46,7 @@ const styles = {
     // Dark mode
     'dark:border-white/15 dark:text-white dark:[--btn-bg:transparent] dark:data-[active]:bg-white/5 dark:data-[hover]:bg-white/5',
     // Icon
-    '[--btn-icon:theme(colors.zinc.500)] data-[active]:[--btn-icon:theme(colors.zinc.700)] data-[hover]:[--btn-icon:theme(colors.zinc.700)] dark:data-[active]:[--btn-icon:theme(colors.zinc.400)] dark:data-[hover]:[--btn-icon:theme(colors.zinc.400)]',
+    '[--btn-icon:theme(colors.zinc.200)] data-[active]:[--btn-icon:theme(colors.zinc.300)] data-[hover]:[--btn-icon:theme(colors.zinc.300)] dark:data-[active]:[--btn-icon:theme(colors.zinc.200)] dark:data-[hover]:[--btn-icon:theme(colors.zinc.200)]',
   ],
   plain: [
     // Base
@@ -97,7 +97,7 @@ const styles = {
     ],
     red: [
       'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.red.600)] [--btn-border:theme(colors.red.700/90%)]',
-      '[--btn-icon:theme(colors.red.300)] data-[active]:[--btn-icon:theme(colors.red.200)] data-[hover]:[--btn-icon:theme(colors.red.200)]',
+      '[--btn-icon:theme(colors.red.200)] data-[active]:[--btn-icon:theme(colors.red.100)] data-[hover]:[--btn-icon:theme(colors.red.100)]',
     ],
     orange: [
       'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.orange.500)] [--btn-border:theme(colors.orange.600/90%)]',
@@ -109,7 +109,7 @@ const styles = {
     ],
     yellow: [
       'text-yellow-950 [--btn-hover-overlay:theme(colors.white/25%)] [--btn-bg:theme(colors.yellow.300)] [--btn-border:theme(colors.yellow.400/80%)]',
-      '[--btn-icon:theme(colors.yellow.600)] data-[active]:[--btn-icon:theme(colors.yellow.700)] data-[hover]:[--btn-icon:theme(colors.yellow.700)]',
+      '[--btn-icon:theme(colors.yellow.800)] data-[active]:[--btn-icon:theme(colors.yellow.900)] data-[hover]:[--btn-icon:theme(colors.yellow.900)]',
     ],
     lime: [
       'text-lime-950 [--btn-hover-overlay:theme(colors.white/25%)] [--btn-bg:theme(colors.lime.300)] [--btn-border:theme(colors.lime.400/80%)]',
@@ -117,7 +117,7 @@ const styles = {
     ],
     green: [
       'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.green.600)] [--btn-border:theme(colors.green.700/90%)]',
-      '[--btn-icon:theme(colors.white/60%)] data-[active]:[--btn-icon:theme(colors.white/80%)] data-[hover]:[--btn-icon:theme(colors.white/80%)]',
+      '[--btn-icon:theme(colors.white/70%)] data-[active]:[--btn-icon:theme(colors.white/90%)] data-[hover]:[--btn-icon:theme(colors.white/90%)]',
     ],
     emerald: [
       'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.emerald.600)] [--btn-border:theme(colors.emerald.700/90%)]',

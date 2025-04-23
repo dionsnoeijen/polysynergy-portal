@@ -23,7 +23,7 @@ const Output: React.FC = (): React.ReactElement => {
             <div className="w-1/2 min-w-[300px] border-r border-white/10 h-full flex flex-col">
                 <div className="border-b border-white/10 p-2">
                     <h3>Node</h3>
-                </div>
+                </div>`
                 <div className="flex-1 overflow-auto">
                     {reversedNodes.map((node, index) => (
                         <div key={node.id} className="border-b border-white/10 p-2">

@@ -119,19 +119,7 @@ const EditorLayout = ({
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [
-        configUuid,
-        projectUuid,
-        routeUuid,
-        scheduleUuid,
-        blueprintUuid,
-        fetchAvailableNodes,
-        setActiveProjectId,
-        setActiveBlueprintId,
-        setActiveScheduleId,
-        setActiveRouteId,
-        setActiveConfigId
-    ]);
+    }, [configUuid, projectUuid, routeUuid, scheduleUuid, blueprintUuid, fetchAvailableNodes, setActiveProjectId, setActiveBlueprintId, setActiveScheduleId, setActiveRouteId, setActiveConfigId, setIsExecuting]);
 
     useAutoFetch();
 

@@ -64,6 +64,7 @@ export default function Logs() {
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
+    // eslint-disable-next-line
     }, [activeVersionId, lastTimestamp, paused]);
 
     useEffect(() => {
@@ -80,7 +81,6 @@ export default function Logs() {
 
     return (
         <div className="flex h-full">
-            {/* Log list */}
             <div className="flex-1 border-r border-white/10 h-full flex flex-col">
                 <div className="border-b border-white/10 p-2">
                     <h3 className="text-white font-bold text-sm">Logs</h3>
@@ -115,7 +115,6 @@ export default function Logs() {
                 </div>
             </div>
 
-            {/* Resume column */}
             <div className="w-12 flex items-center rounded justify-center border-l border-white/10 bg-zinc-900">
                 {paused && (
                     <Button

@@ -73,7 +73,7 @@ const BlueprintForm: React.FC = () => {
         deleteBlueprint(formEditRecordId as string);
         closeForm('Blueprint deleted successfully');
         setShowDeleteAlert(false);
-    }, [closeForm]);
+    }, [closeForm, deleteBlueprint, formEditRecordId]);
 
     useEffect(() => {
         if (!showDeleteAlert) return;

@@ -2,7 +2,9 @@ import {create, StateCreator} from 'zustand';
 import {Blueprint} from "@/types/types";
 import {
     fetchBlueprints as fetchBlueprintsAPI,
-    storeBlueprint as storeBlueprintAPI
+    storeBlueprint as storeBlueprintAPI,
+    updateBlueprint as updateBlueprintAPI,
+    deleteBlueprint as deleteBlueprintAPI
 } from "@/api/blueprintApi";
 import useEditorStore from "@/stores/editorStore";
 
@@ -12,6 +14,8 @@ type BlueprintsStore = {
     getBlueprint: (blueprintId: string) => Blueprint | undefined;
     fetchBlueprints: () => Promise<void>;
     storeBlueprint: (blueprint: Blueprint) => Promise<void>;
+    updateBlueprint: (blueprint: Blueprint) => Promise<Blueprint | undefined>;
+    deleteBlueprint: (blueprintId: string) => Promise<void>;
 }
 
 const useBlueprintsStore = create<BlueprintsStore>((
@@ -35,6 +39,29 @@ const useBlueprintsStore = create<BlueprintsStore>((
             set((state) => ({blueprints: [...state.blueprints, blueprint]}));
         } catch (error) {
             console.error('Failed to store blueprint:', error);
+        }
+    },
+
+    updateBlueprint: async (blueprint: Blueprint): Promise<Blueprint | undefined> => {
+        try {
+            const response = await updateBlueprintAPI(blueprint.id as string, blueprint);
+            set((state) => ({
+                blueprints: state.blueprints.map((b) => (b.id === blueprint.id ? blueprint : b)),
+            }));
+            return response;
+        } catch (error) {
+            console.error('Failed to update blueprint:', error);
+        }
+    },
+
+    deleteBlueprint: async (blueprintId: string) => {
+        try {
+            await deleteBlueprintAPI(blueprintId);
+            set((state) => ({
+                blueprints: state.blueprints.filter((b) => b.id !== blueprintId),
+            }));
+        } catch (error) {
+            console.error('Failed to delete blueprint:', error);
         }
     },
 

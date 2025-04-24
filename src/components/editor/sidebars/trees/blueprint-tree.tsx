@@ -14,6 +14,7 @@ export default function BlueprintTree(): ReactElement {
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeBlueprintId = useEditorStore((state) => state.activeBlueprintId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
+    const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
 
     return (
         <TreeList
@@ -27,6 +28,9 @@ export default function BlueprintTree(): ReactElement {
                     <Link
                         href={`/project/${activeProjectId}/blueprint/${blueprint.id}`}
                         title={`${blueprint.name} - ${blueprint.id}`}
+                        onClick={() => {
+                            setIsExecuting('Loading Blueprint')
+                        }}
                         className={`block flex-1 truncate  dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
                     >
                         {blueprint.name}
@@ -49,7 +53,9 @@ export default function BlueprintTree(): ReactElement {
                     </div>
                 </div>
             )}
-            addButtonClick={() => openForm(FormType.AddBlueprint)}
+            addButtonClick={() =>
+                openForm(FormType.AddBlueprint)
+            }
         />
     )
 }

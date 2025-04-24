@@ -771,20 +771,40 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
-    removeNodeFromGroup: (nodeId: string, nodeToAddId: string) => {
+    removeNodeFromGroup: (groupId: string, nodeToRemove: string) => {
         set((state) => ({
             nodes: state.nodes.map((node) =>
-                node.id === nodeId && node.type === NodeType.Group // Controleer of het de juiste groep is
+                node.id === groupId && node.type === NodeType.Group
                     ? {
                         ...node,
                         group: {
-                            ...node.group, // Behoud bestaande group-properties
-                            nodes: node.group?.nodes?.filter((id) => id !== nodeToAddId) || [], // Verwijder nodeId uit de nodes-array
+                            ...node.group,
+                            nodes: node.group?.nodes?.filter((id) => id !== nodeToRemove) || [],
                         },
                     }
                     : node
             ),
         }));
+        // If the group stack contains a groupId below this groupId,
+        // reassign the nodeToRemove to that groupId
+        const groupStack = get().groupStack;
+        const groupIndex = groupStack.indexOf(groupId);
+        if (groupIndex > 0) {
+            const newGroupId = groupStack[groupIndex - 1];
+            set((state) => ({
+                nodes: state.nodes.map((node) =>
+                    node.id === newGroupId && node.type === NodeType.Group
+                        ? {
+                            ...node,
+                            group: {
+                                ...node.group,
+                                nodes: [...(node.group?.nodes || []), nodeToRemove],
+                            },
+                        }
+                        : node
+                ),
+            }));
+        }
     },
 
     getOpenGroups: () => {

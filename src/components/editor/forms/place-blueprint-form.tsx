@@ -12,6 +12,7 @@ import useBlueprintsStore from "@/stores/blueprintsStore";
 import findPublishedVariables from "@/utils/findPublishedVariables";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
 import PublishedVariables from "@/components/editor/forms/variable/published-variables";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 
 const PlaceBlueprintForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -102,8 +103,13 @@ const PlaceBlueprintForm: React.FC = () => {
 
     return (
         <form method="post" className="p-10">
-            <Heading>{blueprint.name}</Heading>
-            <Divider className="my-10" soft bleed />
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>{blueprint.name}</Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed />
 
             <PublishedVariables
                 nodes={unpackedNodes}

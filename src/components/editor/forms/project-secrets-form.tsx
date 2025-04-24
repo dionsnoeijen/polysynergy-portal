@@ -5,7 +5,7 @@ import {Divider} from "@/components/divider";
 import {Input} from "@/components/input";
 import {Button} from "@/components/button";
 import {Secret, FormType} from "@/types/types";
-import {EyeIcon, EyeSlashIcon} from "@heroicons/react/24/outline";
+import {EyeIcon, EyeSlashIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {
     createProjectSecretAPI,
     updateProjectSecretAPI,
@@ -106,9 +106,14 @@ const ProjectSecretsForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} className="p-10">
-            <Heading>
-                {formType === FormType.EditProjectSecret ? "Edit Secret" : "Add Secret"}
-            </Heading>
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>{formType === FormType.EditProjectSecret ? "Edit Secret" : "Add Secret"}</Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed />
+
             <Text>The secret values are only available to you (the logged-in user). No one else can view these
                 values.</Text>
             <Divider className="my-10" soft bleed/>

@@ -6,6 +6,7 @@ import useNodesStore from "@/stores/nodesStore";
 import {Button} from "@/components/button";
 import {Heading} from "@/components/heading";
 import {Divider} from "@/components/divider";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 
 const FileEditorForm: React.FC = () => {
     const getNode = useNodesStore((state) => state.getNode);
@@ -32,9 +33,13 @@ const FileEditorForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} method={"post"} className={"p-10"}>
-            <Heading>{node && node.name}: {formEditVariable?.handle}</Heading>
-
-            <Divider className="my-10" soft bleed />
+             <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>{node && node.name}: {formEditVariable?.handle}</Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed />
 
             <EditFileVariable title={'Files'} files={files} onChange={setFiles} dock={formEditVariable?.dock} />
 

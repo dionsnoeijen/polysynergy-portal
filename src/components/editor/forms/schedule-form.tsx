@@ -8,7 +8,7 @@ import useEditorStore from "@/stores/editorStore";
 import useSchedulesStore from "@/stores/schedulesStore";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import {CalendarDateRangeIcon} from "@heroicons/react/24/outline";
+import {CalendarDateRangeIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {Switch} from "@/components/switch";
 import {Input} from "@/components/input";
 import {Button} from "@/components/button";
@@ -93,8 +93,13 @@ const ScheduleForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} className="p-10">
-            <Heading>{formType === FormType.AddSchedule ? "Add" : "Edit"} Schedule</Heading>
-            <Divider className="my-10" soft bleed />
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>{formType === FormType.AddSchedule ? "Add" : "Edit"} Schedule</Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5"/>
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed/>
 
             {errors.length > 0 && (
                 <div className="text-red-500 mb-4">

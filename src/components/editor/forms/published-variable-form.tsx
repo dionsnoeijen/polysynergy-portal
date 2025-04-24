@@ -1,15 +1,7 @@
 import {Heading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Button} from "@/components/button";
-import {
-    Blueprint,
-    Config,
-    Fundamental,
-    NodeVariable,
-    Route,
-    Schedule,
-    Service
-} from "@/types/types";
+import {Blueprint, Config, Fundamental, NodeVariable, Route, Schedule, Service} from "@/types/types";
 import React, {useEffect, useState} from "react";
 
 import useEditorStore from "@/stores/editorStore";
@@ -25,6 +17,7 @@ import PublishedVariables from "@/components/editor/forms/variable/published-var
 import {formatSegments} from "@/utils/formatters";
 import {createProjectSecretAPI} from "@/api/secretsApi";
 import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 
 const PublishedVariableForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -131,16 +124,26 @@ const PublishedVariableForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} className={'p-10'}>
-            <Heading>{
-                activeFundamental &&
-                activeFundamental.charAt(0).toUpperCase() +
-                activeFundamental.slice(1)
-            }: {activeFundamental === Fundamental.Route ?
-                '/' + formatSegments((activeItem as Route)?.segments) :
-                (activeItem as Schedule | Service | Config)?.name}
-            </Heading>
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>{
+                    activeFundamental &&
+                    activeFundamental.charAt(0).toUpperCase() +
+                    activeFundamental.slice(1)
+                }: {activeFundamental === Fundamental.Route ?
+                    '/' + formatSegments((activeItem as Route)?.segments) :
+                    (activeItem as Schedule | Service | Config)?.name}
+                </Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5"/>
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed/>
 
-            <Divider className="my-10" soft bleed />
+            {activeFundamental === Fundamental.Route && (
+                <section className="mb-4 rounded-md border border-white/10 p-4">
+                    <p>Full route: {`https://${activeProjectId}.polysynergy.com/${formatSegments((activeItem as Route)?.segments)}`}</p>
+                </section>
+            )}
 
             <PublishedVariables
                 nodes={nodes}
@@ -154,7 +157,7 @@ const PublishedVariableForm: React.FC = () => {
                 setSecretVariables={setSecretVariables}
             />
 
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             <div className="flex justify-end gap-4">
                 {error && (<div className="text-red-500">{error}</div>)}

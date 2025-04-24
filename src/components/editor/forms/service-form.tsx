@@ -21,6 +21,7 @@ import RichTextEditor from "@/components/rich-text-editor";
 import SvgSelector from "@/components/editor/forms/service/svg-selector";
 import findPublishedVariables from "@/utils/findPublishedVariables";
 import Node from "@/components/editor/nodes/node";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 
 const ServiceForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -270,9 +271,13 @@ const ServiceForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} method="post" className="p-10">
-            <Heading>{formType === FormType.AddService ? "Add " : "Edit "} Service</Heading>
-
-            <Divider className="my-10" soft bleed />
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>{formType === FormType.AddService ? "Add " : "Edit "} Service</Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5"/>
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed/>
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">

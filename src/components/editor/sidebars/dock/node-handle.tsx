@@ -11,8 +11,12 @@ type Props = {
 const NodeHandle: React.FC<Props> = ({node}) => {
     const updateNodeHandle = useNodesStore((state) => state.updateNodeHandle);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
-        const newValue = e.target.value;
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value
+            .toLowerCase()
+            .replace(/\s+/g, '_')
+            .replace(/[^a-z0-9_]/g, '');
+
         updateNodeHandle(node.id, newValue);
     };
 

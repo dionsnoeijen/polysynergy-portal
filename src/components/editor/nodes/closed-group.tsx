@@ -6,7 +6,7 @@ import useNodesStore from "@/stores/nodesStore";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 
 import {GroupProps, NodeCollapsedConnector, NodeVariable} from "@/types/types";
-import {ChevronDownIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
+import {ChevronDownIcon, ChevronUpIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
 import {Button} from "@/components/button";
 
 import Connector from "@/components/editor/nodes/connector";
@@ -31,15 +31,16 @@ const ClosedGroup: React.FC<GroupProps> = ({
     const setNodeToMoveToGroupId = useEditorStore((state) => state.setNodeToMoveToGroupId);
     const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
     const position = useNodePlacement(node);
-    const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
     const updateNodeWidth = useNodesStore((state) => state.updateNodeWidth);
+    const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);
+
 
     const [height, setHeight] = useState(0);
     const isPanning = useEditorStore((state) => state.isPanning);
     const isZooming = useEditorStore((state) => state.isZooming);
     const zoomFactor = useEditorStore((state) => state.zoomFactor);
 
-    const {openGroup, deleteGroup, dissolveGroup} = useGrouping();
+    const {openGroup, deleteGroup, dissolveGroup, removeNodeFromGroup, moveNodeToGroup} = useGrouping();
     const {variablesForGroup} = useVariablesForGroup(node.id, false);
     const {handleNodeMouseDown} = useNodeMouseDown(node);
 
@@ -48,18 +49,29 @@ const ClosedGroup: React.FC<GroupProps> = ({
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+
+        const contextMenuItems = [
+            {label: "Open Group", action: () => openGroup(node.id)},
+            {label: "Delete Group", action: () => deleteGroup(node.id)},
+        ];
+        const groupId = isNodeInGroup(node.id);
+        if (groupId && selectedNodes.length === 1) {
+            contextMenuItems.unshift({
+                label: "Remove From Group",
+                action: () => removeNodeFromGroup(groupId, node.id)
+            });
+        }
+        if (!nodeToMoveToGroupId && selectedNodes.length === 1) {
+            contextMenuItems.unshift({
+                label: "Move To group",
+                action: () => setNodeToMoveToGroupId(node.id)
+            });
+        }
+
         openContextMenu(
             e.clientX,
             e.clientY,
-            [
-                {label: "Move To Group", action: () => setNodeToMoveToGroupId(node.id)},
-                {label: "Open Group", action: () => openGroup(node.id)},
-                {label: "Delete Group", action: () => deleteGroup(node.id)},
-
-                // @todo: Dissolving from a closed group requires finding the internal
-                //    connections and showing them, because they have a status of hidden
-                // { label: "Dissolve Group", action: () => setIsDissolveDialogOpen(true) }
-            ]
+            contextMenuItems
         );
     };
 
@@ -74,7 +86,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
 
     const className = `
         ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start rounded-md pb-5 
-        ${!isMirror && node.view.disabled ? ' z-1 select-none opacity-30' : ' z-20 cursor-move'}
+        ${!isMirror && node.view.disabled ? ' z-1 select-none opacity-30' : ` z-20${!nodeToMoveToGroupId ? ' cursor-move' : ''}`}
         ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}
         ${useNodeColor(node, selectedNodes.includes(node.id), undefined, false)}
         `.replace(/\s+/g, ' ').trim();
@@ -84,10 +96,24 @@ const ClosedGroup: React.FC<GroupProps> = ({
             const rect = measureRef.current.getBoundingClientRect();
             const newHeight = rect.height / zoomFactor;
             const newWidth = rect.width / zoomFactor;
+
             setHeight(newHeight);
-            updateNodeWidth(node.id, newWidth);
+
+            if (Math.abs(newWidth - node.view.width) > 1) {
+                updateNodeWidth(node.id, newWidth);
+            }
         }
-    }, [isPanning, isZooming, zoomFactor, node.id, updateNodeWidth]);
+    }, [isPanning, isZooming, zoomFactor, node.id, node.view.width, updateNodeWidth]);
+
+    useLayoutEffect(() => {
+        if (!node.view.collapsed && measureRef.current && !isPanning && !isZooming) {
+            const rect = measureRef.current.getBoundingClientRect();
+            const newWidth = rect.width / zoomFactor;
+            if (Math.abs(newWidth - node.view.width) > 1) {
+                updateNodeWidth(node.id, newWidth);
+            }
+        }
+    }, [node.view.collapsed, zoomFactor]);
 
     return !node.view.collapsed ? (
         <div
@@ -99,8 +125,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
             onMouseDown={(e) => {
                 if (preview) return;
                 if (nodeToMoveToGroupId && nodeToMoveToGroupId !== node.id) {
-                    addNodeToGroup(node.id, nodeToMoveToGroupId);
-                    setNodeToMoveToGroupId(null);
+                    moveNodeToGroup(nodeToMoveToGroupId, node.id);
                 } else {
                     handleNodeMouseDown(e);
                 }
@@ -111,7 +136,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
             style={{
                 left: preview ? '0px' : `${position.x}px`,
                 top: preview ? '0px' : `${position.y}px`,
-                minWidth: `${node.view.width}px`,
+                minWidth: isPanning || isZooming ? `${node.view.width}px` : 'auto',
                 height: isPanning || isZooming ? `${height}px` : 'auto',
             }}
         >
@@ -129,7 +154,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
                         </h3>
                         <Button
                             onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
-                            <ChevronDownIcon style={{color: 'white'}} className={'w-4 h-4'}/>
+                            <ChevronDownIcon className={'w-4 h-4 text-white'} />
                         </Button>
                     </div>
 
@@ -186,6 +211,10 @@ const ClosedGroup: React.FC<GroupProps> = ({
             <div className="flex items-center gap-2">
                 <GlobeAltIcon className={'w-10 h-10'}/>
                 <h3 className="font-bold text-sky-600 dark:text-white">{node.name}</h3>
+                <Button
+                    onClick={handleCollapse} plain className="ml-auto p-1 px-1 py-1">
+                    <ChevronUpIcon className={'w-4 h-4 text-white'}/>
+                </Button>
             </div>
             <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
 

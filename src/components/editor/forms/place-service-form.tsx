@@ -13,6 +13,7 @@ import {globalToLocal} from "@/utils/positionUtils";
 
 import PublishedVariables from "@/components/editor/forms/variable/published-variables";
 import {adjectives, animals, colors, uniqueNamesGenerator} from "unique-names-generator";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 
 const PlaceServiceForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -42,12 +43,14 @@ const PlaceServiceForm: React.FC = () => {
         setUnpackedConnections(connections || []);
 
         const updatedNodes = packagedNodes.map((pkgNode) => {
+
             const handle = pkgNode.service?.handle;
             const variant = pkgNode.service?.variant;
 
             if (!handle || variant === undefined) return pkgNode;
 
             const existingNodes = getNodesByServiceHandleAndVariant(handle, variant);
+
             if (existingNodes.length === 0) return pkgNode;
 
             const referenceNode = existingNodes[0];
@@ -135,8 +138,15 @@ const PlaceServiceForm: React.FC = () => {
 
     return (
         <form method="post" className="p-10">
-            <Heading>{service.name}</Heading>
-            <Divider className="my-10" soft bleed/>
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>
+                    {service.name}
+                </Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed />
 
             <PublishedVariables
                 nodes={unpackedNodes}

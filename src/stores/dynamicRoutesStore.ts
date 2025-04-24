@@ -57,8 +57,8 @@ const useDynamicRoutesStore = create<DynamicRoutesStore>((
 
     updateDynamicRoute: async (route: Route) => {
         try {
-            const { activeProjectId } = useEditorStore.getState();
-            await updateDynamicRouteAPI(activeProjectId, route.id as string, route);
+            const { activeProjectId, activeVersionId } = useEditorStore.getState();
+            await updateDynamicRouteAPI(activeProjectId, route.id as string, activeVersionId as string, route);
             set((state) => ({
                 routes: state.routes.map((r) => (r.id === route.id ? route : r)),
             }));

@@ -11,7 +11,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/table";
-import {PlusIcon} from "@heroicons/react/24/outline";
+import {PlusIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {NodeVariable, NodeVariableType} from "@/types/types";
 
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
@@ -147,8 +147,13 @@ const ProjectVariablesForm: React.FC = () => {
 
     return (
         <div className="p-10">
-            <Heading>Project Variables Form</Heading>
-            <Divider className="my-10" soft bleed/>
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>Project Variables Form</Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed />
 
             <Table className="mt-4" dense bleed grid>
                 <TableHead>

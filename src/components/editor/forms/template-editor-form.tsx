@@ -6,6 +6,7 @@ import {Node} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import Editor from "@monaco-editor/react";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 
 const TemplateEditorForm: React.FC = () => {
     const {getNode, updateNodeVariable} = useNodesStore();
@@ -57,11 +58,13 @@ const TemplateEditorForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} method="post">
-            <Heading className="p-10">
-                {node && node.name}: {formEditVariable?.handle}
-            </Heading>
-
-            <Divider className="my-0" soft bleed/>
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>{node && node.name}: {formEditVariable?.handle}</Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5"/>
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed/>
 
             <section className="grid sm:grid-cols-1">
                 <div className="h-[500px] overflow-hidden">

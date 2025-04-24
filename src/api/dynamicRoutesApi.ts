@@ -47,9 +47,14 @@ export const storeDynamicRoute = async (projectId: string, route: Route) => {
     return response.json();
 };
 
-export const updateDynamicRoute = async (projectId: string, routeId: string, updatedData: Partial<Route>) => {
+export const updateDynamicRoute = async (
+    projectId: string,
+    routeId: string,
+    activeVersionId: string,
+    updatedData: Partial<Route>
+) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/dynamic-routes/${routeId}/`, {
+    const response = await fetch(`${config.API_URL}/dynamic-routes/${routeId}/${activeVersionId}/`, {
         method: 'PATCH',
         headers: {
             'Accept': 'application/json',

@@ -345,7 +345,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         return useConnectionsStore
             .getState()
             .connections
-            .filter((connection) => (connection.isInGroup === null));
+            .filter((connection) => (connection.isInGroup === null || connection.isInGroup === undefined));
     },
 
     getConnectionsInsideGroup: (group: Node): Connection[] => {

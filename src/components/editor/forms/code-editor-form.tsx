@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-import { Node } from "@/types/types";
-import { Heading } from "@/components/heading";
-import { Divider } from "@/components/divider";
+import {Node} from "@/types/types";
+import {Heading} from "@/components/heading";
+import {Divider} from "@/components/divider";
 import Editor from "@monaco-editor/react";
 import {Button} from "@/components/button";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 
 const CodeEditorForm: React.FC = () => {
     const getNode = useNodesStore((state) => state.getNode);
@@ -49,11 +50,15 @@ const CodeEditorForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} method="post">
-            <Heading className="p-10">
-                {node && node.name}: {formEditVariable?.handle}
-            </Heading>
-
-            <Divider className="my-0" soft bleed />
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>
+                    {node && node.name}: {formEditVariable?.handle}
+                </Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed />
 
             <section className="grid sm:grid-cols-1">
                 <div>

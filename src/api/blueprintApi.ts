@@ -40,6 +40,31 @@ export const fetchBlueprint = async (blueprintId: string): Promise<Blueprint> =>
     return response.json();
 };
 
+export const updateBlueprint = async (blueprintId: string, updatedData: Partial<Blueprint>) => {
+    const idToken = getIdToken();
+    const response = await fetch(`${config.API_URL}/blueprints/${blueprintId}/`, {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(updatedData),
+    });
+    return response.json();
+};
+
+export const deleteBlueprint = async (blueprintId: string) => {
+    const idToken = getIdToken();
+    return await fetch(`${config.API_URL}/blueprints/${blueprintId}/`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+};
+
 export const fetchBlueprints = async (projectId: string): Promise<Blueprint[]> => {
     try {
         const idToken = getIdToken();

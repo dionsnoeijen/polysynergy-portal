@@ -9,7 +9,7 @@ import {Textarea} from "@/components/textarea";
 import {Button} from "@/components/button";
 import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
-import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon} from "@heroicons/react/24/outline";
+import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {Select} from "@/components/select";
 import {Checkbox, CheckboxField} from "@/components/checkbox";
 import {formatSegments} from "@/utils/formatters";
@@ -164,8 +164,13 @@ const DynamicRouteForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} method={'post'} className={'p-10'}>
-            <Heading>{formType === FormType.AddRoute ? 'Add ' : 'Edit '}Route</Heading>
-            <Divider className="my-10" soft bleed />
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>{formType === FormType.AddRoute ? 'Add ' : 'Edit '}Route</Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed />
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">

@@ -10,6 +10,7 @@ import {v4 as uuidv4} from "uuid";
 const useGrouping = () => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
+    const setNodeToMoveToGroupId = useEditorStore((state) => state.setNodeToMoveToGroupId);
 
     const closeGroupStore = useNodesStore((state) => state.closeGroup);
     const openGroupStore = useNodesStore((state) => state.openGroup);
@@ -187,7 +188,6 @@ const useGrouping = () => {
             showConnections = showConnectionsOutsideGroup();
         }
         setTimeout(() => {
-            // updateNodesDirectly([groupId], 0, 0, {[groupId]: {x, y}});
             updateConnectionsDirectly(showConnections);
         }, 0);
     };
@@ -247,14 +247,20 @@ const useGrouping = () => {
         const outConnections = findOutConnectionsByNodeId(nodeId);
         const connections = [...inConnections, ...outConnections];
 
+        const group = getGroupById(groupId);
+        const remainingCount = group?.group?.nodes?.length ?? 0;
+
         removeConnections(connections);
         removeNodeFromGroupStore(groupId, nodeId);
         disableNodeView(nodeId);
 
-        const group = getGroupById(groupId);
-        if (!group || !group?.group || !group?.group?.nodes) return;
-        if (group?.group?.nodes?.length === 1) {
+        if (remainingCount === 1) {
             dissolveGroup(groupId);
+            const openedGroup = useNodesStore.getState().openedGroup;
+            if (openedGroup) {
+                openGroup(openedGroup);
+                showGroup(openedGroup);
+            }
         }
     };
 
@@ -285,13 +291,22 @@ const useGrouping = () => {
         removeGroupStore(groupId);
     };
 
+    const moveNodeToGroup = (nodeId: string, groupId: string) => {
+        const inConnections = findInConnectionsByNodeId(nodeId);
+        const outConnections = findOutConnectionsByNodeId(nodeId);
+        removeConnections([...inConnections, ...outConnections]);
+        addNodeToGroup(groupId, nodeId);
+        setNodeToMoveToGroupId(null);
+    };
+
     return {
         createGroup,
         closeGroup,
         deleteGroup,
         openGroup,
         dissolveGroup,
-        removeNodeFromGroup
+        removeNodeFromGroup,
+        moveNodeToGroup
     };
 };
 

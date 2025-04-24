@@ -7,6 +7,7 @@ import {FormType, Node} from "@/types/types";
 import {Heading} from "@/components/heading";
 import useNodesStore from "@/stores/nodesStore";
 import EditListVariable from "@/components/editor/forms/variable/edit-list-variable";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 
 const ListVariableForm: React.FC = () => {
     const getNode = useNodesStore((state) => state.getNode);
@@ -34,9 +35,13 @@ const ListVariableForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} method={"post"} className={"p-10"}>
-            <Heading>{node && node.name}: {formEditVariable?.handle}</Heading>
-
-            <Divider className="my-10" soft bleed/>
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>{node && node.name}: {formEditVariable?.handle}</Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed />
 
             <EditListVariable title={'Files'} items={items} onChange={setItems} dock={formEditVariable?.dock}/>
 

@@ -7,7 +7,13 @@ import { Heading, Subheading } from "@/components/heading";
 import { Select } from "@/components/select";
 import { formatSegments } from "@/utils/formatters";
 import { Divider } from "@/components/divider";
-import { ArrowRightCircleIcon, BarsArrowDownIcon, ArrowUturnLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+    ArrowRightCircleIcon,
+    BarsArrowDownIcon,
+    ArrowUturnLeftIcon,
+    TrashIcon,
+    XMarkIcon
+} from "@heroicons/react/24/outline";
 import { Button } from "@/components/button";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import {
@@ -204,9 +210,13 @@ const ProjectPublishForm: React.FC = (): React.ReactElement => {
 
     return (
         <section className="p-10">
-            <Heading>Project Publish</Heading>
-
-            <Divider className="my-10" soft bleed />
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>Project Publish</Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed />
 
             <Subheading className="ml-2 mb-4">Routes</Subheading>
 

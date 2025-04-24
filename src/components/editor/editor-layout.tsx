@@ -56,15 +56,19 @@ const EditorLayout = ({
     const [outputClosed, setOutputClosed] = useState(false);
 
     const showForm = useEditorStore((state) => state.showForm);
+    const isFormOpen = useEditorStore((state) => state.isFormOpen);
     const showDocs = useEditorStore((state) => state.showDocs);
     const setActiveProjectId = useEditorStore((state) => state.setActiveProjectId);
     const setActiveRouteId = useEditorStore((state) => state.setActiveRouteId);
     const setActiveScheduleId = useEditorStore((state) => state.setActiveScheduleId);
     const setActiveBlueprintId = useEditorStore((state) => state.setActiveBlueprintId);
     const setActiveConfigId = useEditorStore((state) => state.setActiveConfigId);
+    const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const closeFormMessage = useEditorStore((state) => state.closeFormMessage);
     const setEditorPosition = useEditorStore((state) => state.setEditorPosition);
+    const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
+    const setNodeToMoveToGroupId = useEditorStore((state) => state.setNodeToMoveToGroupId);
     const pathname = usePathname();
     const clearMockStore = useMockStore((state) => state.clearMockStore);
 
@@ -89,6 +93,7 @@ const EditorLayout = ({
             setActiveConfigId('');
             setActiveRouteId(routeUuid);
             fetchAndApplyNodeSetup({routeId: routeUuid});
+            setIsExecuting(null);
         }
         if (scheduleUuid) {
             setActiveRouteId('');
@@ -96,6 +101,7 @@ const EditorLayout = ({
             setActiveConfigId('');
             setActiveScheduleId(scheduleUuid);
             fetchAndApplyNodeSetup({scheduleId: scheduleUuid});
+            setIsExecuting(null);
         }
         if (blueprintUuid) {
             setActiveRouteId('');
@@ -103,13 +109,7 @@ const EditorLayout = ({
             setActiveConfigId('');
             setActiveBlueprintId(blueprintUuid);
             fetchAndApplyNodeSetup({blueprintId: blueprintUuid});
-        }
-        if (configUuid) {
-            setActiveRouteId('');
-            setActiveBlueprintId('');
-            setActiveScheduleId('');
-            setActiveConfigId(configUuid);
-            fetchAndApplyNodeSetup({configId: configUuid});
+            setIsExecuting(null);
         }
 
         const handleResize = () => {
@@ -187,6 +187,7 @@ const EditorLayout = ({
             };
             // @ts-expect-error value is ambiguous
             window.snipeConnection = function (connectionId: string) {
+                console.log('SNIPE', connectionId);
                 removeConnectionById(connectionId);
             }
         }
@@ -204,6 +205,32 @@ const EditorLayout = ({
             document.removeEventListener('mouseup', stopResizing);
         };
     }, [resizing, handleMouseMove, stopResizing, removeConnectionById]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && nodeToMoveToGroupId) {
+                setNodeToMoveToGroupId(null);
+            }
+        };
+
+        const handleClickOutside = (e: MouseEvent) => {
+            if (nodeToMoveToGroupId) {
+                const target = e.target as HTMLElement;
+                // Cancel als er niet op een geldige node geklikt is
+                if (!target.closest('[data-type="closed-group"]')) {
+                    setNodeToMoveToGroupId(null);
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [nodeToMoveToGroupId, setNodeToMoveToGroupId]);
 
     const toggleCloseItemManager = () => {
         setItemManagerClosed(prev => !prev);
@@ -269,7 +296,7 @@ const EditorLayout = ({
                     right: dockClosed ? 10 : width.dock
                 }}>
                     <div
-                        className={`absolute top-[10px] left-0 right-0 bottom-0 overflow-scroll border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
+                        className={`absolute top-[10px] left-0 right-0 bottom-0 ${isFormOpen() ? 'overflow-scroll' : 'overflow-hidden'} border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {showForm ? (
                             <Form />

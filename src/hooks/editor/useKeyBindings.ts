@@ -1,7 +1,12 @@
 import {useEffect} from "react";
 
+type KeyBinding = {
+    handler: (event: KeyboardEvent) => void;
+    condition?: () => boolean;
+};
+
 type KeyBindings = {
-    [key: string]: (event: KeyboardEvent) => void;
+    [key: string]: KeyBinding;
 };
 
 export const useKeyBindings = (bindings: KeyBindings) => {
@@ -11,14 +16,13 @@ export const useKeyBindings = (bindings: KeyBindings) => {
             if (
                 activeElement &&
                 activeElement instanceof HTMLElement &&
-                (activeElement.tagName === "INPUT" || 
-                 activeElement.tagName === "TEXTAREA" || 
-                 activeElement.isContentEditable)
+                (activeElement.tagName === "INPUT" ||
+                    activeElement.tagName === "TEXTAREA" ||
+                    activeElement.isContentEditable)
             ) {
                 return;
             }
 
-            // Combine ctrl and meta keys for cross-platform support
             const ctrlOrCmd = event.ctrlKey || event.metaKey;
             const modifiers = [
                 ctrlOrCmd ? 'ctrl' : '',
@@ -29,9 +33,12 @@ export const useKeyBindings = (bindings: KeyBindings) => {
             const mainKey = event.key.toLowerCase();
             const keyCombination = [...modifiers, mainKey].join('+');
 
-            if (bindings[keyCombination]) {
-                bindings[keyCombination](event);
-                event.preventDefault();
+            const binding = bindings[keyCombination];
+            if (binding) {
+                if (!binding.condition || binding.condition()) {
+                    binding.handler(event);
+                    event.preventDefault();
+                }
             }
         };
 

@@ -7,6 +7,7 @@ import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import {globalToLocal} from "@/utils/positionUtils";
 import useNodesStore from "@/stores/nodesStore";
+import {Node} from "@/types/types";
 import {v4 as uuidv4} from "uuid";
 
 export default function SecretTree(): ReactElement {
@@ -22,8 +23,11 @@ export default function SecretTree(): ReactElement {
     };
 
     const handleAddSecretNode = (mouseX: number, mouseY: number, key: string) => {
-        const node = getAvailableNodeByPath('nodes.nodes.secret.variable_secret.VariableSecret');
+        let node: Node | undefined = getAvailableNodeByPath('nodes.nodes.secret.variable_secret.VariableSecret');
         if (!node) return;
+
+        // Deep clone node
+        node = JSON.parse(JSON.stringify(node)) as Node;
 
         const { x, y } = globalToLocal(mouseX, mouseY);
         node.id = uuidv4();
@@ -42,7 +46,7 @@ export default function SecretTree(): ReactElement {
             secretIdVar.value = key;
         }
 
-        addNode(node);
+        addNode(node, true);
     };
 
     return (

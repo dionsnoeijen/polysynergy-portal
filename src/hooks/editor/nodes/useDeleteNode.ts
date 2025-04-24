@@ -4,13 +4,14 @@ import { NodeType } from "@/types/types";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 
 export const useDeleteNode = () => {
-    const { removeNode, getNode } = useNodesStore();
-    const {
-        removeConnections,
-        findInConnectionsByNodeId,
-        findOutConnectionsByNodeId
-    } = useConnectionsStore();
-    const { deleteGroup } = useGrouping();
+    const removeNode = useNodesStore((state) => state.removeNode);
+    const getNode = useNodesStore((state) => state.getNode);
+    const removeConnections = useConnectionsStore((state) => state.removeConnections);
+    const findInConnectionsByNodeId = useConnectionsStore((state) => state.findInConnectionsByNodeId);
+    const findOutConnectionsByNodeId = useConnectionsStore((state) => state.findOutConnectionsByNodeId);
+    const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);
+
+    const { deleteGroup, removeNodeFromGroup } = useGrouping();
 
     const handleDeleteSelectedNodes = (selectedNodes: string[]) => {
         selectedNodes.map((nodeId) => {
@@ -18,6 +19,10 @@ export const useDeleteNode = () => {
             if (!node) return;
             if (node?.type === NodeType.Group) {
                 deleteGroup(nodeId);
+            }
+            const groupId = isNodeInGroup(nodeId);
+            if (groupId) {
+                removeNodeFromGroup(groupId, nodeId);
             }
             handleDeleteNode(nodeId);
         });

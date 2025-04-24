@@ -53,15 +53,16 @@ export default function Editor() {
 
     const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
     const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
+
     const nodes = useNodesStore((state) => state.nodes);
 
     const connections = useConnectionsStore((state) => state.connections);
-
     const {handleDeleteSelectedNodes} = useDeleteNode();
     const {handleZoom} = useZoom();
     const {handlePanMouseDown, handleMouseMove, handleMouseUp} = usePan();
     const {handleEditorMouseDown} = useDeselectOnClickOutside();
     const {createGroup} = useGrouping();
+
     const {startDraggingAfterPaste} = useDraggable();
 
     // eslint-disable-next-line
@@ -101,53 +102,62 @@ export default function Editor() {
     }, []);
 
     useKeyBindings({
-        'delete': () => {
-            if (selectedNodes.length > 0) {
-                setDeleteNodesDialogOpen(true);
-            }
+        'delete': {
+            handler: () => {
+                if (selectedNodes.length > 0) setDeleteNodesDialogOpen(true);
+            },
+            condition: () => selectedNodes.length > 0
         },
-        'x': () => {
-            if (selectedNodes.length > 0) {
-                setDeleteNodesDialogOpen(true);
-            }
+        'x': {
+            handler: () => {
+                if (selectedNodes.length > 0) setDeleteNodesDialogOpen(true);
+            },
+            condition: () => selectedNodes.length > 0
         },
-        'backspace': () => {
-            if (selectedNodes.length > 0) {
-                setDeleteNodesDialogOpen(true);
-            }
+        'backspace': {
+            handler: () => {
+                if (selectedNodes.length > 0) setDeleteNodesDialogOpen(true);
+            },
+            condition: () => selectedNodes.length > 0
         },
-        'a': () => {
-            setShowAddingNode(true);
+        'a': {
+            handler: () => setShowAddingNode(true),
         },
-        'shift+a': () => {
-            setShowAddingNode(true);
+        'shift+a': {
+            handler: () => setShowAddingNode(true),
         },
-        'ctrl+shift+g': () => {
-            console.log('DEGROUP');
+        'ctrl+shift+g': {
+            handler: () => console.log('DEGROUP'),
+            condition: () => selectedNodes.length > 0
         },
-        'ctrl+g': () => {
-            createGroup();
+        'ctrl+g': {
+            handler: () => createGroup(),
+            condition: () => selectedNodes.length > 0
         },
-        'ctrl+d': () => {
-            console.log('Duplicate selected nodes');
+        'ctrl+d': {
+            handler: () => console.log('Duplicate selected nodes'),
+            condition: () => selectedNodes.length > 0
         },
-        'ctrl+x': () => {
-            console.log('Cut selected nodes');
+        'ctrl+x': {
+            handler: () => console.log('Cut selected nodes'),
+            condition: () => selectedNodes.length > 0
         },
-        'ctrl+c': () => {
-            copySelectedNodes();
+        'ctrl+c': {
+            handler: () => copySelectedNodes(),
+            condition: () => selectedNodes.length > 0
         },
-        'ctrl+v': () => {
-            const pastedNodeIds = pasteNodes();
-            startDraggingAfterPaste(
-                pastedNodeIds
-            );
+        'ctrl+v': {
+            handler: () => {
+                const pastedNodeIds = pasteNodes();
+                startDraggingAfterPaste(pastedNodeIds);
+            },
+            condition: () => true // of bijvoorbeeld `editorMode === EditorMode.Select`
         },
-        'ctrl+z': () => {
-            console.log('Undo last action');
+        'ctrl+z': {
+            handler: () => console.log('Undo last action'),
         },
-        'ctrl+shift+z': () => {
-            console.log('Redo last action');
+        'ctrl+shift+z': {
+            handler: () => console.log('Redo last action'),
         }
     });
 
@@ -222,7 +232,7 @@ export default function Editor() {
     };
 
     useEffect(() => {
-        const applyTransform = (state: { panPosition: { x: number, y: number}, zoomFactor: number}) => {
+        const applyTransform = (state: { panPosition: { x: number, y: number }, zoomFactor: number }) => {
             const {x, y} = state.panPosition;
             const zoom = state.zoomFactor;
 

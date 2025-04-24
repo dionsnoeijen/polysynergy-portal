@@ -10,6 +10,7 @@ import {Text} from "@/components/text";
 import SvgSelector from "@/components/editor/forms/service/svg-selector";
 import RichTextEditor from "@/components/rich-text-editor";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 
 const BlueprintForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -18,6 +19,8 @@ const BlueprintForm: React.FC = () => {
 
     const getBlueprint = useBlueprintsStore((state) => state.getBlueprint);
     const storeBlueprint = useBlueprintsStore((state) => state.storeBlueprint);
+    const updateBlueprint = useBlueprintsStore((state) => state.updateBlueprint);
+    const deleteBlueprint = useBlueprintsStore((state) => state.deleteBlueprint);
 
     const [name, setName] = useState("");
     const [category, setCategory] = useState("");
@@ -52,20 +55,22 @@ const BlueprintForm: React.FC = () => {
             storeBlueprint(newBlueprint);
             closeForm("Blueprint created successfully");
         } else {
-            // const updatedBlueprint: Blueprint = {
-            //     id: formEditRecordId,
-            //     name: name,
-            //     metadata: {
-            //         category: category,
-            //         description: description,
-            //         icon: icon,
-            //     },
-            // };
+            const updatedBlueprint: Blueprint = {
+                id: formEditRecordId as string,
+                name: name,
+                metadata: {
+                    category: category,
+                    description: description,
+                    icon: icon,
+                },
+            };
+            updateBlueprint(updatedBlueprint)
             closeForm("Blueprint updated successfully");
         }
     };
 
     const handleDelete = useCallback(() => {
+        deleteBlueprint(formEditRecordId as string);
         closeForm('Blueprint deleted successfully');
         setShowDeleteAlert(false);
     }, [closeForm]);
@@ -88,9 +93,15 @@ const BlueprintForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} method={'post'} className={'p-10'}>
-            <Heading>{formType === FormType.AddBlueprint ? "Add " : "Edit "} Blueprint</Heading>
-
-            <Divider className="my-10" soft bleed/>
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading>
+                    {formType === FormType.AddBlueprint ? "Add " : "Edit "} Blueprint
+                </Heading>
+                <Button type="button" onClick={() => closeForm()} plain>
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
+            <Divider className="my-4" soft bleed />
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">

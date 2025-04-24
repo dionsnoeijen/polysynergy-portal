@@ -43,57 +43,57 @@ const Debug: React.FC = (): React.ReactElement => {
 
     return (
         <div className="flex h-full">
-    <div className="w-1/3 min-w-[300px] border-r border-white/10 h-full flex flex-col">
-        <div className="border-b border-white/10 p-2">
-            <h3>Nodes</h3>
+            <div className="w-1/3 min-w-[300px] border-r border-white/10 h-full flex flex-col">
+                <div className="border-b border-white/10 p-2">
+                    <h3>Nodes</h3>
+                </div>
+                <div className="flex-1 overflow-auto">
+                    <ReactJson
+                        src={nodesSnapshot}
+                        theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
+                        collapsed={false}
+                        displayDataTypes={true}
+                        indentWidth={2}
+                    />
+                </div>
+            </div>
+            <div className="w-1/3 min-w-[300px] border-r border-white/10 h-full flex flex-col">
+                <div className="border-b border-white/10 p-2">
+                    <h3>Connections</h3>
+                </div>
+                <div className="flex-1 overflow-auto">
+                    <ReactJson
+                        src={connectionsSnapshot}
+                        theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
+                        collapsed={false}
+                        displayDataTypes={true}
+                        indentWidth={2}
+                    />
+                </div>
+            </div>
+            <div className="w-1/3 min-w-[300px] border-r border-white/10 h-full flex flex-col">
+                <div className="border-b border-white/10 p-2">
+                    <h3>Editor</h3>
+                </div>
+                <div className="flex-1 overflow-auto">
+                    <ReactJson
+                        src={groupSnapshot}
+                        theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
+                        collapsed={false}
+                        displayDataTypes={true}
+                        indentWidth={2}
+                    />
+                    <Divider bleed/>
+                    <ReactJson
+                        src={editorSnapshot}
+                        theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
+                        collapsed={false}
+                        displayDataTypes={true}
+                        indentWidth={2}
+                    />
+                </div>
+            </div>
         </div>
-        <div className="flex-1 overflow-auto">
-            <ReactJson
-                src={nodesSnapshot}
-                theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
-                collapsed={false}
-                displayDataTypes={true}
-                indentWidth={2}
-            />
-        </div>
-    </div>
-    <div className="w-1/3 min-w-[300px] border-r border-white/10 h-full flex flex-col">
-        <div className="border-b border-white/10 p-2">
-            <h3>Connections</h3>
-        </div>
-        <div className="flex-1 overflow-auto">
-            <ReactJson
-                src={connectionsSnapshot}
-                theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
-                collapsed={false}
-                displayDataTypes={true}
-                indentWidth={2}
-            />
-        </div>
-    </div>
-    <div className="w-1/3 min-w-[300px] border-r border-white/10 h-full flex flex-col">
-        <div className="border-b border-white/10 p-2">
-            <h3>Editor</h3>
-        </div>
-        <div className="flex-1 overflow-auto">
-            <ReactJson
-                src={groupSnapshot}
-                theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
-                collapsed={false}
-                displayDataTypes={true}
-                indentWidth={2}
-            />
-            <Divider bleed />
-            <ReactJson
-                src={editorSnapshot}
-                theme={theme === 'dark' ? 'monokai' : 'rjv-default'}
-                collapsed={false}
-                displayDataTypes={true}
-                indentWidth={2}
-            />
-        </div>
-    </div>
-</div>
     );
 };
 

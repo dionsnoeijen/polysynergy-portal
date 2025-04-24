@@ -34,7 +34,7 @@ export default function SidebarTenantHeader()
         <SidebarHeader className={'border-none p-0'}>
             <Dropdown>
                 <DropdownButton as={SidebarItem}>
-                    <Avatar square={true} src="/ps-logo-simple-color.svg" />
+                    {/*<Avatar square={true} src="/ps-logo-simple-color.svg" />*/}
                     <SidebarLabel>{project.name}</SidebarLabel>
                     <ChevronUpIcon />
                 </DropdownButton>

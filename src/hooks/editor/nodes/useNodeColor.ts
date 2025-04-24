@@ -10,7 +10,7 @@ const useNodeColor = (
     isNodeInService?: boolean
 ) => {
     return useMemo(() => {
-        let classList = "bg-zinc-800 bg-opacity-50";
+        let classList = "bg-opacity-50";
 
         if (mockNode) {
             classList += " ring-2 ring-green-500 dark:ring-green-500";
@@ -21,9 +21,9 @@ const useNodeColor = (
             classList += " ring-2 ring-red-500 dark:ring-red-500";
         } else {
             if (isSelected) {
-                classList += " ring-4 shadow-2xl";
+                classList += `${node.category === NodeType.Group ? ' bg-green-800' : ' bg-sky-800'} ring-8 shadow-2xl`;
             } else {
-                classList += " ring ring-2";
+                classList += " bg-zinc-800 ring ring-2";
             }
 
             if (node.service?.id || isNodeInService) {

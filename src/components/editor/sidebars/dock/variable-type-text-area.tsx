@@ -31,6 +31,7 @@ const VariableTypeTextArea: React.FC<VariableTypeProps> = ({ nodeId, variable, p
                         {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
                         <Field>
                             <Textarea
+                                disabled={variable?.dock?.enabled === false || variable.published}
                                 onChange={handleChange}
                                 placeholder={variable.handle}
                                 aria-label={variable.handle}

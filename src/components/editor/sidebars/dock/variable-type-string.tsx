@@ -43,7 +43,7 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
                         <FieldGroup>
                         {variable.dock && variable.dock.select_values ? (
                             <Select
-                                disabled={variable.dock.enabled === false}
+                                disabled={variable?.dock?.enabled === false || variable.published}
                                 onChange={handleChange}
                                 defaultValue={variable.value as string}
                             >
@@ -53,7 +53,7 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
                             </Select>
                         ) : (
                             <Input
-                                disabled={variable.dock && variable.dock.enabled === false}
+                                disabled={variable?.dock?.enabled === false || variable.published}
                                 type="text"
                                 value={variable.value as string || ""}
                                 onChange={handleChange}

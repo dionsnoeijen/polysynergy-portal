@@ -40,7 +40,11 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
                     {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable}/>)}
                     <Field>
                         {variable.dock && variable.dock.select_values ? (
-                            <Select onChange={handleChange} defaultValue={value}>
+                            <Select
+                                disabled={variable?.dock?.enabled === false || variable.published}
+                                onChange={handleChange}
+                                defaultValue={value}
+                            >
                                 {Object.entries(variable.dock.select_values).map(([key, v]) => (
                                     <option key={key} value={key}>
                                         {v}
@@ -51,6 +55,7 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
                             <Input
                                 type="number"
                                 value={value}
+                                disabled={variable?.dock?.enabled === false || variable.published}
                                 onChange={handleChange}
                                 placeholder={variable.handle}
                                 aria-label={variable.handle}

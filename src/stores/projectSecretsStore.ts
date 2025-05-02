@@ -9,6 +9,7 @@ import useEditorStore from '@/stores/editorStore';
 import {Secret} from '@/types/types';
 
 type ProjectSecretsStore = {
+    reset: () => void;
     hasInitialFetched: boolean;
     secrets: Secret[];
     getSecret: (secretId: string) => Secret | undefined;
@@ -19,6 +20,13 @@ type ProjectSecretsStore = {
 };
 
 const useProjectSecretsStore = create<ProjectSecretsStore>((set, get) => ({
+    reset: () => {
+        set({
+            secrets: [],
+            hasInitialFetched: false,
+        });
+    },
+
     hasInitialFetched: false,
 
     secrets: [],

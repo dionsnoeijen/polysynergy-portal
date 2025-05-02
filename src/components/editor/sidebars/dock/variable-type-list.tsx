@@ -27,7 +27,7 @@ const VariableTypeList: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
             {isValueConnected ? (
                 <ValueConnected variable={variable} />
             ) : (
-                <div>
+                <>
                     {publishedButton && (
                         <div className="flex justify-between items-center w-full">
                             <Fieldset className={'w-full'}>
@@ -35,7 +35,7 @@ const VariableTypeList: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
                             </Fieldset>
                         </div>
                     )}
-                    <div className="border border-white/20 rounded-md">
+                    <div className={`border border-white/20 rounded-md relative z-0 ${variable?.dock?.enabled === false || variable.published ? 'opacity-40 pointer-events-none' : ''}`}>
                         <Table dense className={"bg-white/5"}>
                             <TableHead>
                                 <TableRow>
@@ -75,7 +75,7 @@ const VariableTypeList: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
                             <PencilIcon className="w-4 h-4 inline text-slate-400" />
                         </Button>
                     </div>
-                </div>
+                </>
             )}
         </>
     );

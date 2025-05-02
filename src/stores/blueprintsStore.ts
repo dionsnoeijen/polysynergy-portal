@@ -9,6 +9,7 @@ import {
 import useEditorStore from "@/stores/editorStore";
 
 type BlueprintsStore = {
+    reset: () => void;
     hasInitialFetched: boolean;
     blueprints: Blueprint[];
     getBlueprint: (blueprintId: string) => Blueprint | undefined;
@@ -22,6 +23,13 @@ const useBlueprintsStore = create<BlueprintsStore>((
     set: Parameters<StateCreator<BlueprintsStore>>[0],
     get: () => BlueprintsStore,
 ) => ({
+    reset: () => {
+        set({
+            blueprints: [],
+            hasInitialFetched: false,
+        });
+    },
+
     hasInitialFetched: false,
 
     blueprints: [],

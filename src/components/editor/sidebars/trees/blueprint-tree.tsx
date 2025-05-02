@@ -24,7 +24,7 @@ export default function BlueprintTree(): ReactElement {
             formEditingItem={formEditRecordId}
             fundamental={Fundamental.Blueprint}
             renderItem={(blueprint: Blueprint) => (
-                <div className="flex justify-between items-center w-full">
+                <>
                     <Link
                         href={`/project/${activeProjectId}/blueprint/${blueprint.id}`}
                         title={`${blueprint.name} - ${blueprint.id}`}
@@ -51,7 +51,7 @@ export default function BlueprintTree(): ReactElement {
                             <PlusIcon className="w-4 h-4 transition-colors duration-200"/>
                         </button>
                     </div>
-                </div>
+                </>
             )}
             addButtonClick={() =>
                 openForm(FormType.AddBlueprint)

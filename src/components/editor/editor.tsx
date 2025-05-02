@@ -30,6 +30,7 @@ import PointZeroIndicator from "@/components/editor/point-zero-indicator";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
 import clsx from "clsx";
 import {EditorMode} from "@/types/types";
+import {useAutoFitNodes} from "@/hooks/editor/nodes/useAutoFitNodes";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -50,6 +51,7 @@ export default function Editor() {
     const isDraft = useEditorStore((state) => state.isDraft);
     const editorMode = useEditorStore((state) => state.editorMode);
     const isFormOpen = useEditorStore((state) => state.isFormOpen);
+    const activeVersionId = useEditorStore(state => state.activeVersionId)
 
     const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
     const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
@@ -152,12 +154,6 @@ export default function Editor() {
                 startDraggingAfterPaste(pastedNodeIds);
             },
             condition: () => true // of bijvoorbeeld `editorMode === EditorMode.Select`
-        },
-        'ctrl+z': {
-            handler: () => console.log('Undo last action'),
-        },
-        'ctrl+shift+z': {
-            handler: () => console.log('Redo last action'),
         }
     });
 
@@ -256,6 +252,8 @@ export default function Editor() {
         return () => unsubscribe();
     }, []);
 
+    useAutoFitNodes(contentRef, nodesToRender, 40, activeVersionId);
+
     return (
         <div
             data-type="editor"
@@ -333,18 +331,18 @@ export default function Editor() {
                 <PointZeroIndicator/>
 
                 {getOpenGroups().map((group) => (
-                    <OpenGroup key={group.id} node={group}/>
+                    <OpenGroup key={`group-${group.id}`} node={group}/>
                 ))}
 
                 {nodesToRender.map((node) => (
-                    <Node key={node.id} node={node}/>
+                    <Node key={`node-${node.id}`} node={node}/>
                 ))}
 
                 {connections && connections
                     .filter((connection) => (!connection.hidden && !connection.temp))
                     .map((connection) => (
                         <Connection
-                            key={connection.id}
+                            key={`connection-${connection.id}`}
                             connection={connection}
                         />
                     ))}

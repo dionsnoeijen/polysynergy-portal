@@ -3,8 +3,6 @@ import useEditorStore from "@/stores/editorStore";
 import useMockStore from "@/stores/mockStore";
 import {
     AdjustmentsHorizontalIcon,
-    ArrowTurnDownLeftIcon,
-    ArrowTurnDownRightIcon,
     ArrowUturnUpIcon,
     CursorArrowRaysIcon,
     PaintBrushIcon,
@@ -32,6 +30,18 @@ const TopLeftEditorMenu: React.FC = () => {
     const handlePlay = useHandlePlay();
 
     useKeyBindings({
+        'ctrl+z': {
+            handler: () => {
+                console.info('Not yet implemented');
+                // useHistoryStore.getState().undo();
+            }
+        },
+        'shift+ctrl+z': {
+            handler: () => {
+                console.info('Not yet implemented');
+                // useHistoryStore.getState().redo();
+            }
+        },
         'c': {
             handler: () => {
                 clearMockStore();
@@ -58,7 +68,9 @@ const TopLeftEditorMenu: React.FC = () => {
             <div
                 className="bg-zinc-800 bg-opacity-80 border border-white/25 p-2 rounded-xl flex flex-col items-center justify-center">
 
-                <Image src="/ps-logo-simple-color.svg" alt="Logo" className="w-8 h-8 mb-3" width={40} height={40}/>
+                <Image src="/ps-logo-simple-color.svg" alt="Logo" className="w-8 h-8 mb-1" width={40} height={40}/>
+
+                <Divider className={'mt-1 mb-1'}/>
 
                 <div className="flex flex-col items-start justify-center w-full h-full">
                     <button
@@ -72,24 +84,24 @@ const TopLeftEditorMenu: React.FC = () => {
 
                 <Divider className={'mt-1 mb-1'}/>
 
-                <div className="flex flex-col items-start justify-center w-full h-full">
-                    <button
-                        disabled={true}
-                        className={`w-full text-lg font-semibold text-white rounded p-2`}
-                        title={'Undo'}
-                    >
-                        <ArrowTurnDownLeftIcon className={"w-4 h-4"}/>
-                    </button>
-                    <button
-                        disabled={true}
-                        className={`w-full text-lg font-semibold text-white rounded p-2`}
-                        title={'Redo'}
-                    >
-                        <ArrowTurnDownRightIcon className={"w-4 h-4"}/>
-                    </button>
-                </div>
+                {/*<div className="flex flex-col items-start justify-center w-full h-full">*/}
+                {/*    <button*/}
+                {/*        disabled={true}*/}
+                {/*        className={`w-full text-lg font-semibold text-white rounded p-2`}*/}
+                {/*        title={'Undo'}*/}
+                {/*    >*/}
+                {/*        <ArrowTurnDownLeftIcon className={"w-4 h-4"}/>*/}
+                {/*    </button>*/}
+                {/*    <button*/}
+                {/*        disabled={true}*/}
+                {/*        className={`w-full text-lg font-semibold text-white rounded p-2`}*/}
+                {/*        title={'Redo'}*/}
+                {/*    >*/}
+                {/*        <ArrowTurnDownRightIcon className={"w-4 h-4"}/>*/}
+                {/*    </button>*/}
+                {/*</div>*/}
 
-                <Divider className={'mt-1 mb-1'}/>
+                {/*<Divider className={'mt-1 mb-1'}/>*/}
 
                 <div className="flex flex-col items-start justify-center w-full h-full">
                     <button

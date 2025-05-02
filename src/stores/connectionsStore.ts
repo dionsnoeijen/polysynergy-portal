@@ -76,17 +76,17 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         toHandle: string
     ) => {
         memoizedResults.clear();
-        const { connections } = get();
+        const {connections} = get();
         const updated = connections.map((c) => {
             if (c.targetNodeId === nodeId && c.targetHandle === fromHandle) {
-                return { ...c, targetHandle: toHandle };
+                return {...c, targetHandle: toHandle};
             }
             if (c.sourceNodeId === nodeId && c.sourceHandle === fromHandle) {
-                return { ...c, sourceHandle: toHandle };
+                return {...c, sourceHandle: toHandle};
             }
             return c;
         });
-        set({ connections: updated });
+        set({connections: updated});
     },
 
     getConnection: (connectionId: string): Connection | undefined => {
@@ -111,6 +111,8 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             ],
         }));
 
+        // useHistoryStore.getState().save();
+
         return connection;
     },
 
@@ -132,6 +134,8 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         set((state) => ({
             connections: state.connections.filter((c) => c.id !== connectionId),
         }));
+
+        // useHistoryStore.getState().save()
     },
 
     removeConnection: (connection: Connection) => {
@@ -146,6 +150,8 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         set((state) => ({
             connections: state.connections.filter((c) => c.id !== connection.id),
         }));
+
+        // useHistoryStore.getState().save()
     },
 
     removeConnections: (connectionsToRemove: Connection[]) => {
@@ -164,6 +170,8 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
         set((state) => ({
             connections: state.connections.filter((c) => !idsToRemove.has(c.id)),
         }));
+
+        // useHistoryStore.getState().save()
     },
 
     updateConnection: (connection: Connection) => {
@@ -182,6 +190,8 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
                 return c;
             }),
         }));
+
+        // useHistoryStore.getState().save()
     },
 
     findInConnectionsByNodeId: (
@@ -366,7 +376,7 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
     removeConnectionsLinkedToVariable: (nodeId: string, variableName: string) => {
         memoizedResults.clear();
 
-        const { connections } = get();
+        const {connections} = get();
 
         const isRelevantConnection = (c: Connection) =>
             (c.targetNodeId === nodeId && c.targetHandle?.startsWith(variableName)) ||

@@ -42,6 +42,7 @@ const VariableTypeBoolean: React.FC<VariableTypeProps> = ({
                     <Field>
                         <CheckboxField>
                             <Checkbox
+                                disabled={variable?.dock?.enabled === false || variable.published}
                                 name={variable.handle}
                                 checked={!!displayValue}
                                 onChange={handleChange}

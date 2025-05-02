@@ -270,7 +270,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>
-                node.id === nodeId
+                node.id === nodeId && !node.driven
                     ? {
                         ...node,
                         flowState: FlowState.FlowStop,
@@ -295,8 +295,12 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             });
         }
 
-        node.flowState = FlowState.Enabled;
-        node.driven = false;
+        if (node.flowState === undefined) {
+            node.flowState = FlowState.Enabled;
+        }
+        if (node.driven === undefined) {
+            node.driven = false;
+        }
 
         if (!node.view) {
             node.view = {
@@ -313,6 +317,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         set((state) => ({
             nodes: [...state.nodes, node]
         }));
+
+        // useHistoryStore.getState().save();
     },
 
     addGroupNode: (node: Partial<Node>) => {
@@ -326,6 +332,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         set((state) => ({
             nodes: [...state.nodes, newNode],
         }));
+
+        // useHistoryStore.getState().save();
     },
 
     removeNode: (nodeId) => {
@@ -333,6 +341,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         set((state) => ({
             nodes: state.nodes.filter((node) => node.id !== nodeId),
         }));
+
+        // useHistoryStore.getState().save();
     },
 
     updateNode: (nodeId, updatedFields) => {
@@ -560,6 +570,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             ),
             trackedNodeId: nodeId,
         }));
+
+        // useHistoryStore.getState().save();
     },
 
     toggleNodeVariablePublished: (nodeId: string, variableHandle: string) => {
@@ -951,7 +963,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             const node = get().getNode(nodeId);
             if (!node) return undefined;
 
-            if (node.path === "nodes.nodes.play.config.PlayConfig") return node;
+            if (node.path === "nodes.nodes.play.config.PlayConfig" ||
+                node.path === "nodes.nodes.play.play.Play") return node;
 
             const inConnections = useConnectionsStore
                 .getState()

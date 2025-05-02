@@ -17,7 +17,10 @@ const VariableTypeTemplate: React.FC<VariableTypeProps> = ({nodeId, variable, pu
     const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
 
     return (
-        <>
+        <div className={'relative'}>
+            {variable?.dock?.enabled === false || variable.published && (
+                <div className="absolute inset-0 bg-black/40 rounded-md z-10 pointer-events-none"/>
+            )}
              {isValueConnected ? (
                  <ValueConnected variable={variable} />
              ) : (
@@ -25,6 +28,7 @@ const VariableTypeTemplate: React.FC<VariableTypeProps> = ({nodeId, variable, pu
                     {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
                     <Field>
                         <button
+                            disabled={variable?.dock?.enabled === false || variable.published}
                             className="text-slate-500 hover:text-slate-600 w-full pb-1 ring-1 ring-white/20 rounded-md"
                             onClick={() => onEdit(nodeId)}
                         >
@@ -33,7 +37,7 @@ const VariableTypeTemplate: React.FC<VariableTypeProps> = ({nodeId, variable, pu
                     </Field>
                 </Fieldset>
              )}
-        </>
+        </div>
     );
 };
 

@@ -113,7 +113,15 @@ const ClosedGroup: React.FC<GroupProps> = ({
                 updateNodeWidth(node.id, newWidth);
             }
         }
-    }, [isPanning, isZooming, node.id, node.view.collapsed, node.view.width, updateNodeWidth, zoomFactor]);
+    }, [
+        isPanning,
+        isZooming,
+        node.id,
+        node.view.collapsed,
+        node.view.width,
+        updateNodeWidth,
+        zoomFactor
+    ]);
 
     return !node.view.collapsed ? (
         <div

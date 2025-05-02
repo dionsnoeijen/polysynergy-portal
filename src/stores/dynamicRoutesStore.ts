@@ -9,6 +9,7 @@ import useEditorStore from "@/stores/editorStore";
 import { Route } from "@/types/types";
 
 type DynamicRoutesStore = {
+    reset: () => void;
     hasInitialFetched: boolean;
     routes: Route[];
     getDynamicRoute: (routeId: string) => Route | undefined;
@@ -21,6 +22,13 @@ type DynamicRoutesStore = {
 const useDynamicRoutesStore = create<DynamicRoutesStore>((
     set:Parameters<StateCreator<DynamicRoutesStore>>[0]
 ) => ({
+    reset: () => {
+        set({
+            routes: [],
+            hasInitialFetched: false,
+        });
+    },
+
     hasInitialFetched: false,
 
     routes: [],

@@ -9,6 +9,7 @@ import useEditorStore from "@/stores/editorStore";
 import { Schedule } from '@/types/types';
 
 type SchedulesStore = {
+    reset: () => void;
     hasInitialFetched: boolean;
     schedules: Schedule[];
     getSchedule: (scheduleId: string) => Schedule | undefined;
@@ -21,6 +22,13 @@ type SchedulesStore = {
 const useSchedulesStore = create<SchedulesStore>((
     set: Parameters<StateCreator<SchedulesStore>>[0]
 ) => ({
+    reset: () => {
+        set({
+            schedules: [],
+            hasInitialFetched: false,
+        });
+    },
+
     hasInitialFetched: false,
 
     schedules: [],

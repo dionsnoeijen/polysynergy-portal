@@ -11,7 +11,11 @@ import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 import useConnectionsStore from "@/stores/connectionsStore";
 import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 
-const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publishedButton = true }): React.ReactElement => {
+const VariableTypeDict: React.FC<VariableTypeProps> = ({
+                                                           variable,
+                                                           nodeId,
+                                                           publishedButton = true
+                                                       }): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
 
     const openForm = useEditorStore((state) => state.openForm);
@@ -25,24 +29,28 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
     return (
         <>
             {isValueConnected ? (
-                 <ValueConnected variable={variable} />
+                <ValueConnected variable={variable}/>
             ) : (
                 <div>
                     {publishedButton && (
                         <div className="flex justify-between items-center w-full">
                             <Fieldset className={'w-full'}>
-                                <LabelPublish nodeId={nodeId} variable={variable} />
+                                <LabelPublish nodeId={nodeId} variable={variable}/>
                             </Fieldset>
                         </div>
                     )}
-                    <div className="border border-white/20 rounded-md">
+
+                    <div className={`border border-white/20 rounded-md relative z-0 ${variable?.dock?.enabled === false || variable.published ? 'opacity-40 pointer-events-none' : ''}`}>
                         <Table dense className={"bg-white/5"}>
                             <TableHead>
                                 <TableRow>
-                                    {!(variable.dock && variable.dock.in_switch === false) && <TableHeader className="!py-1 !pl-2 !pr-2">in</TableHeader>}
+                                    {!(variable.dock && variable.dock.in_switch === false) &&
+                                        <TableHeader className="!py-1 !pl-2 !pr-2">in</TableHeader>}
                                     <TableHeader className="!py-1">{variable.dock?.key_label || "key"}</TableHeader>
-                                    {!(variable.dock && variable.dock.value_field === false) && <TableHeader className="!py-1">{variable.dock?.value_label || "value"}</TableHeader>}
-                                    {!(variable.dock && variable.dock.out_switch === false) && <TableHeader className="!py-1 !pl-2 !pr-2">out</TableHeader>}
+                                    {!(variable.dock && variable.dock.value_field === false) && <TableHeader
+                                        className="!py-1">{variable.dock?.value_label || "value"}</TableHeader>}
+                                    {!(variable.dock && variable.dock.out_switch === false) &&
+                                        <TableHeader className="!py-1 !pl-2 !pr-2">out</TableHeader>}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -67,9 +75,12 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
                                         ) {
                                             return (
                                                 <TableRow key={item.handle + '-' + index}>
-                                                    {!(variable.dock && variable.dock.in_switch === false) && <TableCell className="!p-1 !pl-2">
-                                                        {item.has_in ? (<CheckCircleIcon className={"w-4 h-4"} />) : (<XCircleIcon className={'w-4 h-4'} />)}
-                                                    </TableCell>}
+                                                    {!(variable.dock && variable.dock.in_switch === false) &&
+                                                        <TableCell className="!p-1 !pl-2">
+                                                            {item.has_in ? (
+                                                                <CheckCircleIcon className={"w-4 h-4"}/>) : (
+                                                                <XCircleIcon className={'w-4 h-4'}/>)}
+                                                        </TableCell>}
                                                     <TableCell
                                                         className="!p-1 max-w-[100px] truncate overflow-hidden whitespace-nowrap"
                                                         title={item.handle}
@@ -83,9 +94,11 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
                                                         {item.value?.toString()}
                                                     </TableCell>
                                                     {!(variable.dock && variable.dock.out_switch === false) &&
-                                                    <TableCell className="!p-1 !pr-2">
-                                                        {item.has_out ? (<CheckCircleIcon className={"w-4 h-4"}/>) : (<XCircleIcon className={'w-4 h-4'} />)}
-                                                    </TableCell>}
+                                                        <TableCell className="!p-1 !pr-2">
+                                                            {item.has_out ? (
+                                                                <CheckCircleIcon className={"w-4 h-4"}/>) : (
+                                                                <XCircleIcon className={'w-4 h-4'}/>)}
+                                                        </TableCell>}
                                                 </TableRow>
                                             );
                                         }

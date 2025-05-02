@@ -13,15 +13,18 @@ const useNodeColor = (
         let classList = "bg-opacity-50";
 
         if (mockNode) {
-            classList += " ring-2 ring-green-500 dark:ring-green-500";
+            classList += " ring-2 bg-green-950/50 ring-green-500 dark:ring-green-500";
             if (mockNode.killed) {
                 classList += " ring-red-500 dark:ring-red-500";
             }
         } else if (hasMockData) {
-            classList += " ring-2 ring-red-500 dark:ring-red-500";
+            classList += " ring-2 bg-red-950/50 ring-red-500 dark:ring-red-500";
         } else {
             if (isSelected) {
-                classList += `${node.category === NodeType.Group ? ' bg-green-800' : ' bg-sky-800'} ring-8 shadow-2xl`;
+                classList += `${node.category === NodeType.Group ? 
+                    ' bg-green-800' : 
+                    ' bg-sky-800'
+                } ring-8 shadow-2xl`;
             } else {
                 classList += " bg-zinc-800 ring ring-2";
             }

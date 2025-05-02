@@ -342,18 +342,6 @@ const ServiceForm: React.FC = () => {
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">
-                    <Subheading>Icon</Subheading>
-                    <Text>Select an icon</Text>
-                </div>
-                <div>
-                    <SvgSelector onSelect={(url: string) => handleIconChange(url)} />
-                </div>
-            </section>
-
-            <Divider className="my-10" soft bleed />
-
-            <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
-                <div className="space-y-1">
                     <Subheading>Published Variables</Subheading>
                     <Text>
                         Give a good description on what is expected in the published variable. Creating the service, will empty the value, so dont worry about accidentally sharing your keys.
@@ -385,6 +373,18 @@ const ServiceForm: React.FC = () => {
                             </div>
                         ))
                     ))}
+                </div>
+            </section>
+
+            <Divider className="my-10" soft bleed />
+
+            <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                <div className="space-y-1">
+                    <Subheading>Icon</Subheading>
+                    <Text>Select an icon</Text>
+                </div>
+                <div>
+                    <SvgSelector onSelect={(url: string) => handleIconChange(url)} />
                 </div>
             </section>
 

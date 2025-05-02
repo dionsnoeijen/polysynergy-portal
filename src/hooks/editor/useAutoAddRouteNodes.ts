@@ -16,6 +16,7 @@ import {
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 
 export function useAutoAddRouteNodes() {
+    const availableNodes = useAvailableNodeStore((state) => state.availableNodes);
     const getAvailableNodeByPath = useAvailableNodeStore((state) => state.getAvailableNodeByPath);
     const addNode = useNodesStore((state) => state.addNode);
     const addConnection = useConnectionsStore((state) => state.addConnection);
@@ -88,5 +89,14 @@ export function useAutoAddRouteNodes() {
         updateNodeVariable(routeNode.id, 'method', dynamicRoute.method as string);
         updateNodeVariable(mockRouteNode.id, 'method', dynamicRoute.method as string);
 
-    }, [nodes, activeRouteId, getAvailableNodeByPath, getDynamicRoute, addNode, addConnection, updateNodeVariable]);
+    }, [
+        nodes,
+        availableNodes,
+        activeRouteId,
+        getAvailableNodeByPath,
+        getDynamicRoute,
+        addNode,
+        addConnection,
+        updateNodeVariable
+    ]);
 }

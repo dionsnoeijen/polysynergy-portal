@@ -14,21 +14,20 @@ type ConfirmAlertProps = {
 };
 
 export function ConfirmAlert({
-                                 open,
-                                 onClose,
-                                 onConfirm,
-                                 title,
-                                 description,
-                                 confirmText = "Confirm",
-                                 cancelText = "Cancel",
-                                 confirmColor = "red",
-                             }: ConfirmAlertProps) {
+    open,
+    onClose,
+    onConfirm,
+    title,
+    description,
+    confirmText = "Confirm",
+    cancelText = "Cancel",
+    confirmColor = "red",
+}: ConfirmAlertProps) {
     useKeyboardConfirm({
         enabled: open,
         onConfirm,
         onCancel: onClose,
     });
-
     return (
         <Alert size="md" className="text-center" open={open} onClose={onClose}>
             <AlertTitle>{title}</AlertTitle>

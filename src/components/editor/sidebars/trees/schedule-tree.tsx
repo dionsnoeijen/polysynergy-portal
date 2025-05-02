@@ -15,7 +15,6 @@ export default function ScheduleTree(): ReactElement {
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
 
-
     return (
         <TreeList
             items={schedules}
@@ -28,7 +27,8 @@ export default function ScheduleTree(): ReactElement {
                     <Link href={`/project/${activeProjectId}/schedule/${schedule.id}`}
                         title={`${schedule.name} - ${schedule.id}`}
                         onClick={() => {
-                            setIsExecuting('Loading Schedule')
+                            setIsExecuting('Loading Schedule');
+                            setTimeout(() => setIsExecuting(null), 500);
                         }}
                         className={`block flex-1 truncate dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeScheduleId === schedule.id || formEditRecordId === schedule.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
                     >

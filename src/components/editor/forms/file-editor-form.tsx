@@ -39,9 +39,16 @@ const FileEditorForm: React.FC = () => {
                     <XMarkIcon className="w-5 h-5" />
                 </Button>
             </div>
+
             <Divider className="my-4" soft bleed />
 
-            <EditFileVariable title={'Files'} files={files} onChange={setFiles} dock={formEditVariable?.dock} />
+            <EditFileVariable
+                title={'Files'}
+                files={files}
+                node={node}
+                onChange={setFiles}
+                dock={formEditVariable?.dock}
+            />
 
             <Divider className="my-10" soft bleed />
 

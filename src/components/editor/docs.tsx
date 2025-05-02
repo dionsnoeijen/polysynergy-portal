@@ -11,7 +11,7 @@ const Docs: React.FC = () => {
     const closeDocs = useEditorStore((state) => state.closeDocs);
 
     return (
-        <div className="relative prose prose-invert bg-white dark:bg-zinc-800 max-w-none dark:prose-dark p-10 leading-relaxed">
+        <div className="relative prose prose-invert !overflow-scroll bg-white dark:bg-zinc-800 max-w-none dark:prose-dark p-10 leading-relaxed">
             <div className="absolute right-10 top-10">
                 <Button onClick={() => closeDocs()}>
                     <XMarkIcon />

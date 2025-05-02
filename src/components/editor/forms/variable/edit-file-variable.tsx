@@ -1,5 +1,5 @@
 import React from "react";
-import {Dock} from "@/types/types";
+import {Dock, Node} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {Fieldset} from "@/components/fieldset";
 import {Subheading} from "@/components/heading";
@@ -7,10 +7,13 @@ import {Button} from "@/components/button";
 import {PlusIcon, TrashIcon} from "@heroicons/react/24/outline";
 import { uploadFileMultipart, uploadFileBase64 } from "@/api/fileUploadApi";
 import useEditorStore from "@/stores/editorStore";
+import useNodesStore from "@/stores/nodesStore";
+import {shortenFileName} from "@/utils/shortenFileName";
 
 type Props = {
     title: string;
     files: string[];
+    node?: Node;
     onChange: (updatedVariables: string[], handle?: string) => void;
     handle?: string;
     dock?: Dock;
@@ -19,19 +22,25 @@ type Props = {
 const EditFileVariable: React.FC<Props> = ({
     title,
     files,
+    node,
     onChange,
     handle,
     dock
 }) => {
 
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
+    const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        if (!event.target.files || event.target.files.length === 0) return;
+        if (!event.target.files || event.target.files.length === 0 || !node) return;
+
+        const directory = getNodeVariable(node.id, 'directory');
+        const isPublic = getNodeVariable(node.id, 'is_public');
 
         const file = event.target.files[0];
         const projectId = activeProjectId;
-        const visibility: "public" | "private" = "private";
+
+        const visibility: "public" | "private" = !isPublic?.value ? "private" : "public";
 
         try {
             let response;
@@ -39,7 +48,7 @@ const EditFileVariable: React.FC<Props> = ({
             const useBase64 = true;
 
             if (useBase64) {
-                response = await uploadFileBase64(file, projectId, visibility);
+                response = await uploadFileBase64(file, directory?.value as string ?? '', projectId, visibility);
             } else {
                 response = await uploadFileMultipart(file, projectId, visibility);
             }
@@ -47,10 +56,11 @@ const EditFileVariable: React.FC<Props> = ({
             if ("error" in response) {
                 console.error("Upload failed:", response.error);
             } else {
-                const updatedFiles = files.map((f, i) =>
-                    i === index ? response.file : f
-                );
-                onChange(updatedFiles, handle);
+                const uploadedFile = response.files?.[0]?.file;
+                if (uploadedFile) {
+                    const updatedFiles = files.map((f, i) => (i === index ? uploadedFile : f));
+                    onChange(updatedFiles, handle);
+                }
             }
         } catch (error) {
             console.error("Upload error:", error);
@@ -99,7 +109,7 @@ const EditFileVariable: React.FC<Props> = ({
                                 </Fieldset>
                             </TableCell>
                             <TableCell>
-                                {file as string}
+                                {shortenFileName(file as string)}
                             </TableCell>
                             <TableCell>
                                 <Button plain onClick={() => removeFile(index)}>

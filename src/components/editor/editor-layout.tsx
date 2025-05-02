@@ -18,6 +18,7 @@ import useMockStore from "@/stores/mockStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
 import {useAutoFetch} from "@/hooks/editor/useAutoFetch";
+import useNodesStore from "@/stores/nodesStore";
 
 // const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false })
 const Editor = dynamic(() => import('@/components/editor/editor'), {
@@ -25,12 +26,12 @@ const Editor = dynamic(() => import('@/components/editor/editor'), {
 });
 
 const EditorLayout = ({
-    projectUuid,
-    routeUuid,
-    scheduleUuid,
-    blueprintUuid,
-    configUuid,
-}: {
+                          projectUuid,
+                          routeUuid,
+                          scheduleUuid,
+                          blueprintUuid,
+                          configUuid,
+                      }: {
     projectUuid?: string,
     routeUuid?: string,
     scheduleUuid?: string,
@@ -72,6 +73,7 @@ const EditorLayout = ({
     const pathname = usePathname();
     const clearMockStore = useMockStore((state) => state.clearMockStore);
 
+    const removeNode = useNodesStore((state) => state.removeNode);
     const removeConnectionById = useConnectionsStore((state) => state.removeConnectionById);
 
     const isExecuting = useEditorStore((state) => state.isExecuting);
@@ -86,40 +88,63 @@ const EditorLayout = ({
 
         fetchAvailableNodes();
 
-        setActiveProjectId(projectUuid || '');
-        if (routeUuid) {
-            setActiveBlueprintId('');
-            setActiveScheduleId('');
-            setActiveConfigId('');
-            setActiveRouteId(routeUuid);
-            fetchAndApplyNodeSetup({routeId: routeUuid});
-            setIsExecuting(null);
-        }
-        if (scheduleUuid) {
-            setActiveRouteId('');
-            setActiveBlueprintId('');
-            setActiveConfigId('');
-            setActiveScheduleId(scheduleUuid);
-            fetchAndApplyNodeSetup({scheduleId: scheduleUuid});
-            setIsExecuting(null);
-        }
-        if (blueprintUuid) {
-            setActiveRouteId('');
-            setActiveScheduleId('');
-            setActiveConfigId('');
-            setActiveBlueprintId(blueprintUuid);
-            fetchAndApplyNodeSetup({blueprintId: blueprintUuid});
-            setIsExecuting(null);
-        }
-
-        const handleResize = () => {
-            setWindowHeight(window.innerHeight);
-        };
+        const handleResize = () => setWindowHeight(window.innerHeight);
         window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, [configUuid, projectUuid, routeUuid, scheduleUuid, blueprintUuid, fetchAvailableNodes, setActiveProjectId, setActiveBlueprintId, setActiveScheduleId, setActiveRouteId, setActiveConfigId, setIsExecuting]);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [fetchAvailableNodes]);
+
+    useEffect(() => {
+        setActiveProjectId(projectUuid || '');
+    }, [projectUuid, setActiveProjectId]);
+
+    useEffect(() => {
+        if (!routeUuid) return;
+
+        setActiveBlueprintId('');
+        setActiveScheduleId('');
+        setActiveConfigId('');
+        setActiveRouteId(routeUuid);
+
+        fetchAndApplyNodeSetup({routeId: routeUuid});
+        setIsExecuting(null);
+    }, [routeUuid, setActiveBlueprintId, setActiveScheduleId, setActiveConfigId, setActiveRouteId, setIsExecuting]);
+
+
+    useEffect(() => {
+        if (!scheduleUuid) return;
+
+        setActiveRouteId('');
+        setActiveBlueprintId('');
+        setActiveConfigId('');
+        setActiveScheduleId(scheduleUuid);
+
+        fetchAndApplyNodeSetup({scheduleId: scheduleUuid});
+        setIsExecuting(null);
+    }, [scheduleUuid, setActiveRouteId, setActiveBlueprintId, setActiveConfigId, setActiveScheduleId, setIsExecuting]);
+
+    useEffect(() => {
+        if (!blueprintUuid) return;
+
+        setActiveRouteId('');
+        setActiveScheduleId('');
+        setActiveConfigId('');
+        setActiveBlueprintId(blueprintUuid);
+
+        fetchAndApplyNodeSetup({blueprintId: blueprintUuid});
+        setIsExecuting(null);
+    }, [blueprintUuid, setActiveRouteId, setActiveScheduleId, setActiveConfigId, setActiveBlueprintId, setIsExecuting]);
+
+    useEffect(() => {
+        if (!configUuid) return;
+
+        setActiveRouteId('');
+        setActiveScheduleId('');
+        setActiveBlueprintId('');
+        setActiveConfigId(configUuid);
+
+        fetchAndApplyNodeSetup({configId: configUuid});
+        setIsExecuting(null);
+    }, [configUuid, setActiveRouteId, setActiveScheduleId, setActiveBlueprintId, setActiveConfigId, setIsExecuting]);
 
     useAutoFetch();
 
@@ -178,6 +203,12 @@ const EditorLayout = ({
                 console.log('SNIPE', connectionId);
                 removeConnectionById(connectionId);
             }
+
+            // @ts-expect-error value is ambiguous
+            window.snipeNode = function (nodeId: string) {
+                console.log('SNIPE', nodeId);
+                removeNode(nodeId);
+            }
         }
 
         if (resizing) {
@@ -192,7 +223,7 @@ const EditorLayout = ({
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', stopResizing);
         };
-    }, [resizing, handleMouseMove, stopResizing, removeConnectionById]);
+    }, [resizing, handleMouseMove, stopResizing, removeConnectionById, removeNode]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -235,16 +266,13 @@ const EditorLayout = ({
         setOutputClosed(prev => !prev);
     };
 
-    // useEffect(() => {
-    //   console.count('EditorLayout render count');
-    // }, []);
-
     return (
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
             {isExecuting && (
                 <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
                     <div className="bg-white dark:bg-zinc-800 p-4 rounded-lg shadow-lg flex items-center gap-2">
-                        <div className="animate-spin h-5 w-5 border-2 border-sky-500 border-t-transparent rounded-full"></div>
+                        <div
+                            className="animate-spin h-5 w-5 border-2 border-sky-500 border-t-transparent rounded-full"></div>
                         <span className="text-white">{isExecuting}</span>
                     </div>
                 </div>
@@ -284,25 +312,25 @@ const EditorLayout = ({
                     right: dockClosed ? 10 : width.dock
                 }}>
                     <div
-                        className={`absolute top-[10px] left-0 right-0 bottom-0 ${isFormOpen() ? 'overflow-scroll' : 'overflow-hidden'} border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
+                        className={`absolute top-[10px] left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {showForm ? (
-                            <Form />
+                            <Form/>
                         ) : showDocs ? (
-                            <Docs />
+                            <Docs/>
                         ) : (
                             projectUuid && (routeUuid || scheduleUuid || blueprintUuid || configUuid) ? (
                                 activeVersionId ? (
                                     <>
                                         {/*<DrawingLayer panPosition={panPosition} zoomFactor={zoomFactor} />*/}
-                                        <Editor key={'editor-' + activeVersionId} />
-                                        <BottomDrawToolbar />
-                                        <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId} />
-                                        <VersionPublishedMenu routeUuid={routeUuid} scheduleUuid={scheduleUuid} />
+                                        <Editor key={'editor-' + activeVersionId}/>
+                                        <BottomDrawToolbar/>
+                                        <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
+                                        <VersionPublishedMenu routeUuid={routeUuid} scheduleUuid={scheduleUuid}/>
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">
-                                        <p className="text-white">Loading node setup...</p>
+                                        <p className="text-white">Loading node setup... AVID: {activeVersionId}</p>
                                     </div>
                                 )
                             ) : (
@@ -318,20 +346,20 @@ const EditorLayout = ({
 
                 {!dockClosed && (
                     <>
-                    <div style={{width: width.dock}} className="absolute top-0 right-0 bottom-0 overflow-scroll">
-                        <div className="absolute inset-[10px]">
-                            <Dock toggleClose={toggleCloseDock}/>
+                        <div style={{width: width.dock}} className="absolute top-0 right-0 bottom-0 overflow-scroll">
+                            <div className="absolute inset-[10px]">
+                                <Dock toggleClose={toggleCloseDock}/>
+                            </div>
+                            <button
+                                onMouseDown={() => startResizing(ResizeWhat.Dock)}
+                                type="button"
+                                className="absolute top-0 left-0 bottom-0 w-[8px] cursor-col-resize"
+                            />
                         </div>
-                        <button
-                            onMouseDown={() => startResizing(ResizeWhat.Dock)}
-                            type="button"
-                            className="absolute top-0 left-0 bottom-0 w-[8px] cursor-col-resize"
+                        <div
+                            style={{width: width.dock}}
+                            className="absolute right-0 bottom-0 h-4 bg-gradient-to-t from-[#18181BFF] to-transparent"
                         />
-                    </div>
-                    <div
-                      style={{ width: width.dock }}
-                      className="absolute right-0 bottom-0 h-4 bg-gradient-to-t from-[#18181BFF] to-transparent"
-                    />
                     </>
                 )}
 
@@ -363,7 +391,7 @@ const EditorLayout = ({
                     />
                     <div
                         className="absolute top-[10px] left-[10px] right-[10px] bottom-[10px]">
-                        <BottomBar />
+                        <BottomBar/>
                     </div>
                 </div>
             )}
@@ -374,13 +402,13 @@ const EditorLayout = ({
                     onClick={toggleCloseOutput}
                     className="absolute z-10 bottom-[10px] right-[10px] p-3 radius-bl-0"
                 >
-                    <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white" />
+                    <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/>
                 </button>
             )}
 
-            <ContextMenu />
+            <ContextMenu/>
         </div>
     );
 }
 
-export { EditorLayout };
+export {EditorLayout};

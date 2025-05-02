@@ -18,7 +18,10 @@ const VariableTypeBytes: React.FC<VariableTypeProps> = ({nodeId, variable, publi
     const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
 
     return (
-        <>
+        <div className={'relative'}>
+            {variable?.dock?.enabled === false || variable.published && (
+                <div className="absolute inset-0 bg-black/40 rounded-md z-10 pointer-events-none"/>
+            )}
             {isValueConnected ? (
                 <ValueConnected variable={variable} />
             ) : (
@@ -34,7 +37,7 @@ const VariableTypeBytes: React.FC<VariableTypeProps> = ({nodeId, variable, publi
                     </Field>
                 </Fieldset>
             )}
-        </>
+        </div>
     );
 };
 

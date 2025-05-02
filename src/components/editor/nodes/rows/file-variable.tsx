@@ -5,6 +5,7 @@ import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 import useConnectionsStore from "@/stores/connectionsStore";
+import {shortenFileName} from "@/utils/shortenFileName";
 
 type Props = {
     variable: NodeVariable;
@@ -95,7 +96,7 @@ const FileVariable: React.FC<Props> = ({
                                 </div>
                             )}
                         </span>
-                        <span>filename: {item as string}</span>
+                        <span>filename: {shortenFileName(item as string)}</span>
                     </div>
                 </div>
             }))}

@@ -48,6 +48,7 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
                             actions={
                                 <Button
                                     plain
+                                    disabled={variable?.dock?.enabled === false || variable.published}
                                     onClick={togglePasswordVisibility}
                                     className="!p-1"
                                     title={isPasswordVisible ? "Hide password" : "Show password"}
@@ -62,6 +63,7 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
                         >
                             <Input
                                 type={isPasswordVisible ? "text" : "password"}
+                                disabled={variable?.dock?.enabled === false || variable.published}
                                 value={displayValue}
                                 onChange={handleChange}
                                 placeholder={'******'}

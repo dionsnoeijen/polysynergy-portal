@@ -11,6 +11,7 @@ import {
 import {format} from "date-fns";
 
 export function useAutoAddScheduleNodes() {
+    const availableNodes = useAvailableNodeStore((state) => state.availableNodes);
     const getAvailableNodeByPath = useAvailableNodeStore((state) => state.getAvailableNodeByPath);
     const addNode = useNodesStore((state) => state.addNode);
     const addConnection = useConnectionsStore((state) => state.addConnection);
@@ -22,11 +23,14 @@ export function useAutoAddScheduleNodes() {
     useEffect(() => {
         if (nodes.length > 0 || !activeScheduleId) return;
 
-        const scheduleNode: Node | undefined = getAvailableNodeByPath(`nodes.nodes.schedule.schedule.Schedule`);
-        const mockScheduleNode: Node | undefined = getAvailableNodeByPath(`nodes.nodes.mock.mock_schedule.MockSchedule`);
+        const template1: Node | undefined = getAvailableNodeByPath(`nodes.nodes.schedule.schedule.Schedule`);
+        const template2: Node | undefined = getAvailableNodeByPath(`nodes.nodes.mock.mock_schedule.MockSchedule`);
         const schedule: Schedule | undefined = getSchedule(activeScheduleId);
 
-        if (!scheduleNode || !mockScheduleNode || !schedule) return;
+        if (!template1 || !template2 || !schedule) return;
+
+        const scheduleNode: Node = structuredClone(template1);
+        const mockScheduleNode: Node = structuredClone(template2);
 
         scheduleNode.id = uuidv4();
         scheduleNode.view = {
@@ -68,6 +72,14 @@ export function useAutoAddScheduleNodes() {
         updateNodeVariable(scheduleNode.id, 'start_time', format(schedule.start_time, "yyyy-MM-dd HH:mm:ss"));
         updateNodeVariable(scheduleNode.id, 'end_time', schedule.end_time ? format(schedule.end_time, "yyyy-MM-dd HH:mm:ss") : null);
         updateNodeVariable(scheduleNode.id, 'is_active', schedule.is_active);
-
-    }, [nodes, activeScheduleId, getAvailableNodeByPath, getSchedule, addNode, addConnection, updateNodeVariable]);
+    }, [
+        nodes,
+        availableNodes,
+        activeScheduleId,
+        getAvailableNodeByPath,
+        getSchedule,
+        addNode,
+        addConnection,
+        updateNodeVariable
+    ]);
 }

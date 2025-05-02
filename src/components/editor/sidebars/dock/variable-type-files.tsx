@@ -9,6 +9,7 @@ import {PencilIcon} from "@heroicons/react/24/outline";
 import {Button} from "@/components/button";
 import useConnectionsStore from "@/stores/connectionsStore";
 import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
+import {shortenFileName} from "@/utils/shortenFileName";
 
 const VariableTypeFiles: React.FC<VariableTypeProps> = ({ variable, nodeId, publishedButton = true }): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
@@ -22,7 +23,10 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({ variable, nodeId, publ
     const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
 
     return (
-        <>
+        <div className={'relative'}>
+            {variable?.dock?.enabled === false || variable.published && (
+                <div className="absolute inset-0 bg-black/40 rounded-md z-10 pointer-events-none"/>
+            )}
             {isValueConnected ? (
                  <ValueConnected variable={variable} />
             ) : (
@@ -59,7 +63,7 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({ variable, nodeId, publ
                                                 className="!p-1 max-w-[100px] truncate overflow-hidden whitespace-nowrap"
                                                 title={item}
                                             >
-                                                {item as string}
+                                                {shortenFileName(item as string)}
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -76,7 +80,7 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({ variable, nodeId, publ
                 </div>
             </div>
             )}
-        </>
+        </div>
     );
 };
 

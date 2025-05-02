@@ -25,6 +25,7 @@ const VariableTypeRichTextArea: React.FC<VariableTypeProps> = ({nodeId, variable
                     {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable}/>)}
                     <Field>
                         <RichTextEditor
+                            disabled={variable?.dock?.enabled === false || variable.published}
                             onChange={(value: string) => handleChange(value)}
                             value={variable.value as string || ""}
                         />

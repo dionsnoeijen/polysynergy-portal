@@ -21,6 +21,8 @@ const ScheduleForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
     const formType = useEditorStore((state) => state.formType);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+    const setActiveScheduleId = useEditorStore((state) => state.setActiveScheduleId);
+    const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
 
     const getSchedule = useSchedulesStore((state) => state.getSchedule);
     const storeSchedule = useSchedulesStore((state) => state.storeSchedule);
@@ -31,7 +33,7 @@ const ScheduleForm: React.FC = () => {
     const router = useRouter();
 
     const [name, setName] = useState("");
-    const [cronExpression, setCronExpression] = useState("0 0 * * ? *");
+    const [cronExpression, setCronExpression] = useState("0 0 * * *");
     const [start_time, setStartTime] = useState<Date | null>(new Date());
     const [end_time, setEndTime] = useState<Date | null>(null);
     const [is_active, setIsActive] = useState(true);
@@ -80,14 +82,18 @@ const ScheduleForm: React.FC = () => {
 
         if (result) {
             closeForm(`${formType === FormType.AddSchedule ? "Created" : "Updated"} successfully`);
+            setActiveScheduleId(result.id as string);
+            setIsExecuting("Loading Schedule");
             router.push(`/project/${params.projectUuid}/schedule/${result.id || formEditRecordId}`);
         }
     };
 
     const handleDelete = async () => {
         await deleteSchedule(formEditRecordId as string);
+        setActiveScheduleId('');
         closeForm("Schedule deleted");
         setShowDeleteAlert(false);
+        setIsExecuting("Deleting Schedule");
         router.push(`/project/${params.projectUuid}`);
     };
 
@@ -130,7 +136,7 @@ const ScheduleForm: React.FC = () => {
                     <Input
                         value={cronExpression}
                         onChange={(e) => setCronExpression(e.target.value)}
-                        placeholder="0 0 * * ? *"
+                        placeholder="0 0 * * *"
                     />
                     <p className="mt-2 text-sm text-gray-500">
                         {cronExpression ? cronstrue.toString(cronExpression, { throwExceptionOnParseError: false }) : ""}

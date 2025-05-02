@@ -20,6 +20,7 @@ async function fetchAndApplyNodeSetup({
     configId?: string | null;
     versionId?: string | null;
 }) {
+
     if (!routeId && !scheduleId && !blueprintId && !configId) return;
 
     let version = null;
@@ -55,7 +56,7 @@ async function fetchAndApplyNodeSetup({
 
         useEditorStore.getState().setIsDraft(version?.draft ?? false);
         useEditorStore.getState().setIsPublished(version?.published ?? false);
-        useEditorStore.getState().setActiveVersionId(version?.id ?? '');
+        useEditorStore.getState().setActiveVersionId(version?.id ?? 'nothing');
         useNodesStore.getState().initNodes(version?.content.nodes ?? []);
         if (version?.content.groups) {
             useNodesStore.getState().initGroups(

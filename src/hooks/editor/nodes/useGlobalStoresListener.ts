@@ -1,13 +1,11 @@
-import { useEffect } from 'react';
-import useNodesStore from "@/stores/nodesStore";
-import useConnectionsStore from "@/stores/connectionsStore";
-import useEditorStore from "@/stores/editorStore";
-import { updateNodeSetupVersionAPI } from "@/api/nodeSetupsApi";
-import { Fundamental } from "@/types/types";
+import {useCallback, useEffect, useRef} from 'react';
+import useNodesStore from '@/stores/nodesStore';
+import useConnectionsStore from '@/stores/connectionsStore';
+import useEditorStore from '@/stores/editorStore';
+import {updateNodeSetupVersionAPI} from '@/api/nodeSetupsApi';
+import {Fundamental} from '@/types/types';
 
-let lastSaveTime = 0;
 let debounceTimeout: NodeJS.Timeout | null = null;
-let pendingSave = false;
 let savingInProgress = false;
 
 export default function useGlobalStoreListenersWithImmediateSave() {
@@ -22,98 +20,84 @@ export default function useGlobalStoreListenersWithImmediateSave() {
     } = useEditorStore();
 
     const debounceInterval = 3000;
+    const lastSaveTimeRef = useRef<number>(Date.now());
 
-    const cancelPendingSave = () => {
+    const cancelPendingSave = useCallback(() => {
         if (debounceTimeout) {
             clearTimeout(debounceTimeout);
             debounceTimeout = null;
-            pendingSave = false;
+        }
+        setIsSaving(false);
+    }, [setIsSaving]);
+
+    const doSave = useCallback(async () => {
+        if (!activeVersionId || savingInProgress) return;
+        savingInProgress = true;
+        setIsSaving(true);
+        try {
+            const {nodes, groupStack, openedGroup} = useNodesStore.getState();
+            const {connections} = useConnectionsStore.getState();
+            const payload = {nodes, connections, groups: {groupStack, openedGroup}};
+
+            const args = [activeVersionId, activeProjectId, payload] as const;
+
+            if (activeRouteId) {
+                await updateNodeSetupVersionAPI(activeRouteId, ...args, Fundamental.Route);
+            } else if (activeScheduleId) {
+                await updateNodeSetupVersionAPI(activeScheduleId, ...args, Fundamental.Schedule);
+            } else if (activeBlueprintId) {
+                await updateNodeSetupVersionAPI(activeBlueprintId, ...args, Fundamental.Blueprint);
+            } else if (activeConfigId) {
+                await updateNodeSetupVersionAPI(activeConfigId, ...args, Fundamental.Config);
+            }
+
+            lastSaveTimeRef.current = Date.now();
+        } catch (err) {
+            console.error('Failed to save node setup:', err);
+        } finally {
             setIsSaving(false);
+            savingInProgress = false;
+            debounceTimeout = null;
         }
-    };
+    }, [activeBlueprintId, activeConfigId, activeProjectId, activeRouteId, activeScheduleId, activeVersionId, setIsSaving]);
 
-    const saveNodeSetup = async () => {
+    const saveNodeSetup = useCallback(() => {
         const now = Date.now();
-        const timeSinceLastSave = now - lastSaveTime;
+        const elapsed = now - lastSaveTimeRef.current;
 
-        if (!activeVersionId || savingInProgress) return; // <== voorkom stacking
-
-        const doSave = async () => {
-            savingInProgress = true;
-            try {
-                setIsSaving(true);
-
-                const {
-                    nodes,
-                    groupStack,
-                    openedGroup
-                } = useNodesStore.getState();
-
-                const { connections } = useConnectionsStore.getState();
-
-                const currentState = {
-                    nodes,
-                    connections,
-                    groups: {
-                        groupStack,
-                        openedGroup
-                    }
-                };
-
-                if (activeRouteId) {
-                    await updateNodeSetupVersionAPI(activeRouteId, activeVersionId, activeProjectId, currentState, Fundamental.Route);
-                } else if (activeScheduleId) {
-                    await updateNodeSetupVersionAPI(activeScheduleId, activeVersionId, activeProjectId, currentState, Fundamental.Schedule);
-                } else if (activeBlueprintId) {
-                    await updateNodeSetupVersionAPI(activeBlueprintId, activeVersionId, activeProjectId, currentState, Fundamental.Blueprint);
-                } else if (activeConfigId) {
-                    await updateNodeSetupVersionAPI(activeConfigId, activeVersionId, activeProjectId, currentState, Fundamental.Config);
-                }
-
-                lastSaveTime = Date.now();
-            } catch (error) {
-                console.error("Failed to save node setup:", error);
-            } finally {
-                setIsSaving(false);
-                pendingSave = false;
-                debounceTimeout = null;
-                savingInProgress = false; // <== weer vrijgeven
-            }
-        };
-
-        if (timeSinceLastSave >= debounceInterval) {
-            await doSave();
+        if (elapsed >= debounceInterval) {
+            doSave();
         } else {
-            if (!pendingSave) {
-                const delay = debounceInterval - timeSinceLastSave;
+            if (!debounceTimeout) {
                 setIsSaving(true);
-                pendingSave = true;
-                debounceTimeout = setTimeout(() => {
-                    doSave();
-                }, delay);
+                debounceTimeout = setTimeout(doSave, debounceInterval - elapsed);
             }
         }
-    };
+    }, [doSave, setIsSaving]);
 
     useEffect(() => {
-        const unsubscribeNodes = useNodesStore.subscribe(() => {
-            saveNodeSetup();
-        });
+        lastSaveTimeRef.current = Date.now();
+        cancelPendingSave();
+    }, [activeVersionId, cancelPendingSave]);
 
-        const unsubscribeConnections = useConnectionsStore.subscribe(() => {
-            saveNodeSetup();
+    useEffect(() => {
+        let ready = false;
+        const tick = setTimeout(() => {
+            ready = true;
+        }, 0);
+
+        const unsubNodes = useNodesStore.subscribe(() => {
+            if (ready) saveNodeSetup();
+        });
+        const unsubConns = useConnectionsStore.subscribe(() => {
+            if (ready) saveNodeSetup();
         });
 
         return () => {
-            unsubscribeNodes();
-            unsubscribeConnections();
+            clearTimeout(tick);
+            unsubNodes();
+            unsubConns();
             cancelPendingSave();
         };
-        // eslint-disable-next-line
-    }, [activeRouteId, activeVersionId, activeScheduleId, activeBlueprintId, activeConfigId]);
-
-    useEffect(() => {
-        cancelPendingSave();
-        // eslint-disable-next-line
-    }, [activeVersionId, activeRouteId, activeScheduleId, activeBlueprintId, activeConfigId]);
+    }, [activeRouteId, activeScheduleId, activeBlueprintId, activeConfigId, saveNodeSetup, cancelPendingSave]);
 }

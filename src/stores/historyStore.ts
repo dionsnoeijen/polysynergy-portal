@@ -1,53 +1,79 @@
-import { create } from 'zustand';
-import {Connection, Group} from "@/types/types";
-import { Node } from "@/types/types";
+import {create} from 'zustand'
+import useNodesStore from './nodesStore'
+import useConnectionsStore from './connectionsStore'
+import {Connection, Node} from "@/types/types";
 
 type HistoryEntry = {
-    nodes: Node[];
-    connections: Connection[];
-    groups: Group[];
-};
+    nodes: Node[]
+    connections: Connection[]
+    groupStack: string[]
+    openedGroup: string | null
+}
 
 type HistoryStore = {
-    history: HistoryEntry[];
-    future: HistoryEntry[];
-    saveState: (state: HistoryEntry) => void;
-    undo: () => void;
-    redo: () => void;
-    reset: () => void;
-};
+    history: HistoryEntry[]
+    future: HistoryEntry[]
+    save: () => void
+    undo: () => void
+    redo: () => void
+    reset: () => void
+}
 
-export const useHistoryStore = create<HistoryStore>((set) => ({
+export const useHistoryStore = create<HistoryStore>((set, get) => ({
     history: [],
     future: [],
 
-    saveState: (state) => set((store) => ({
-        history: [...store.history, state],
-        future: [], // Clear redo history on new action
-    })),
+    save: () => {
 
-    undo: () => set((store) => {
-        if (store.history.length === 0) return store; // No history to undo
+        console.log('Saving history', get().history.length, get().future.length)
 
-        const previousState = store.history[store.history.length - 1];
-        return {
+        const {nodes, groupStack, openedGroup} = useNodesStore.getState()
+        const {connections} = useConnectionsStore.getState()
+        const snapshot: HistoryEntry = {
+            nodes: [...nodes],
+            connections: [...connections],
+            groupStack: [...groupStack],
+            openedGroup
+        }
+        set(store => ({
+            history: [...store.history, snapshot],
+            future: []
+        }))
+    },
+
+    undo: () => {
+        const store = get()
+
+        console.log("Undoing action", store.history.length, store.future.length)
+
+        if (store.history.length === 0) return
+
+        const previous = store.history[store.history.length - 1]
+
+        useNodesStore.getState().initNodes(previous.nodes)
+        useNodesStore.getState().initGroups(previous.groupStack, previous.openedGroup)
+        useConnectionsStore.getState().initConnections(previous.connections)
+
+        set({
             history: store.history.slice(0, -1),
-            future: [previousState, ...store.future],
-        };
-    }),
+            future: [previous, ...store.future]
+        })
+    },
 
-    redo: () => set((store) => {
-        if (store.future.length === 0) return store; // No future to redo
+    redo: () => {
+        const store = get()
+        if (store.future.length === 0) return
 
-        const nextState = store.future[0];
-        return {
-            history: [...store.history, nextState],
-            future: store.future.slice(1),
-        };
-    }),
+        const next = store.future[0]
+        useNodesStore.getState().initNodes(next.nodes)
+        useNodesStore.getState().initGroups(next.groupStack, next.openedGroup)
+        useConnectionsStore.getState().initConnections(next.connections)
 
-    reset: () => set(() => ({
-        history: [],
-        future: [],
-    })),
-}));
+        set({
+            history: [...store.history, next],
+            future: store.future.slice(1)
+        })
+    },
+
+    reset: () => set({history: [], future: []})
+}))

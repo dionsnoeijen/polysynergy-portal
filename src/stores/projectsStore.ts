@@ -1,9 +1,9 @@
-import { create } from 'zustand';
+import {create} from 'zustand';
 import {
     fetchProjects as fetchProjectsAPI,
     fetchProject as fetchProjectAPI,
 } from "@/api/projectsApi";
-import { Project } from "@/types/types";
+import {Project} from "@/types/types";
 
 type ProjectsStore = {
     projects: Project[];
@@ -18,19 +18,19 @@ type ProjectsStore = {
 const useProjectsStore = create<ProjectsStore>((set) => ({
     projects: [],
 
-    addProject: (project) => set((state) => ({ projects: [...state.projects, project] })),
+    addProject: (project) => set((state) => ({projects: [...state.projects, project]})),
 
     removeProject: (projectId) =>
         set((state) => ({
-            projects: state.projects.filter((project) => project.id !== projectId),
-        })
-    ),
+                projects: state.projects.filter((project) => project.id !== projectId),
+            })
+        ),
 
-    getProject: (projectId):Project|undefined => {
-        return useProjectsStore.getState().projects.find((project:Project) => project.id === projectId);
+    getProject: (projectId): Project | undefined => {
+        return useProjectsStore.getState().projects.find((project: Project) => project.id === projectId);
     },
 
-    getProjects: ():Project[] => {
+    getProjects: (): Project[] => {
         return useProjectsStore.getState().projects;
     },
 
@@ -38,7 +38,13 @@ const useProjectsStore = create<ProjectsStore>((set) => ({
         if (!projectId) return;
         try {
             const data: Project = await fetchProjectAPI(projectId);
-            useProjectsStore.getState().addProject(data);
+
+            set((state) => ({
+                projects: state.projects.some((p) => p.id === projectId)
+                    ? state.projects.map((p) => p.id === projectId ? data : p)
+                    : [...state.projects, data],
+            }));
+
             return data;
         } catch (error) {
             console.error('Failed to fetch project:', error);
@@ -47,8 +53,8 @@ const useProjectsStore = create<ProjectsStore>((set) => ({
 
     fetchProjects: async (trashed = false) => {
         try {
-            const data: Project[] = await fetchProjectsAPI({ trashed });
-            set({ projects: data });
+            const data: Project[] = await fetchProjectsAPI({trashed});
+            set({projects: data});
         } catch (error) {
             console.error('Failed to fetch projects:', error);
         }

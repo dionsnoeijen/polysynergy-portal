@@ -1,11 +1,17 @@
 import config from "@/config";
 import { getIdToken } from "@/api/auth/authToken";
 
+type FileUploadResponse = {
+  file: string;
+  url: string;
+  public: boolean;
+}
+
 export const uploadFileMultipart = async (
     file: File,
     projectId: string,
     visibility: "public" | "private"
-): Promise<{ file: string } | { error: string }> => {
+): Promise<{ files: FileUploadResponse[] } | { error: string }> => {
     try {
         const idToken = getIdToken();
         const formData = new FormData();
@@ -35,9 +41,10 @@ export const uploadFileMultipart = async (
 
 export const uploadFileBase64 = async (
     file: File,
+    directory: string,
     projectId: string,
     visibility: "public" | "private"
-): Promise<{ file: string } | { error: string }> => {
+): Promise<{ files: FileUploadResponse[] } | { error: string }> => {
     try {
         const idToken = getIdToken();
 
@@ -55,6 +62,7 @@ export const uploadFileBase64 = async (
         const payload = {
             files: [{
                 filename: file.name,
+                directory: directory,
                 content: base64Content,
             }]
         };

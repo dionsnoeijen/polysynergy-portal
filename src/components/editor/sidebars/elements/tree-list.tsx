@@ -86,7 +86,7 @@ export default function TreeList<T extends ListItemWithId>({
                         }`}
                     >
                         {items.map((item, index) => (
-                            <li className={getItemClassName(item)} key={index}>
+                            <li className={getItemClassName(item)} key={`tree-${index}-${item.id}`}>
                                 {renderItem(item)}
                             </li>
                         ))}

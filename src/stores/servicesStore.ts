@@ -7,6 +7,7 @@ import {storeService as storeServiceAPI} from "@/api/servicesApi";
 import useEditorStore from "@/stores/editorStore";
 
 type ServicesStore = {
+    reset: () => void;
     hasInitialFetched: boolean;
     services: Service[];
     getService: (serviceId: string) => Service | undefined;
@@ -19,6 +20,13 @@ const useServicesStore = create<ServicesStore>((
     set: Parameters<StateCreator<ServicesStore>>[0],
     get: () => ServicesStore
 ) => ({
+    reset: () => {
+        set({
+            services: [],
+            hasInitialFetched: false,
+        });
+    },
+
     hasInitialFetched: false,
 
     services: [],

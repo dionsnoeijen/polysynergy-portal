@@ -15,7 +15,7 @@ import useBlueprintsStore from "@/stores/blueprintsStore";
 
 import PublishedVariables from "@/components/editor/forms/variable/published-variables";
 import {formatSegments} from "@/utils/formatters";
-import {createProjectSecretAPI} from "@/api/secretsApi";
+// import {createProjectSecretAPI} from "@/api/secretsApi";
 import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
 import {XMarkIcon} from "@heroicons/react/24/outline";
 
@@ -24,7 +24,7 @@ const PublishedVariableForm: React.FC = () => {
     const nodes = useNodesStore((state) => state.nodes);
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
-    const activeProjectId = useEditorStore((state) => state.activeProjectId);
+    // const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
     const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
     const activeServiceId = useEditorStore((state) => state.activeServiceId);
@@ -114,7 +114,7 @@ const PublishedVariableForm: React.FC = () => {
             secretVariables.map(secret => {
                 const {key, value} = secret;
                 if (key && value) {
-                    return createProjectSecretAPI(activeProjectId, key, value);
+                    // return createProjectSecretAPI(activeProjectId, key, value);
                 }
             })
         );
@@ -139,12 +139,6 @@ const PublishedVariableForm: React.FC = () => {
             </div>
             <Divider className="my-4" soft bleed/>
 
-            {activeFundamental === Fundamental.Route && (
-                <section className="mb-4 rounded-md border border-white/10 p-4">
-                    <p>Full route: {`https://${activeProjectId}.polysynergy.com/${formatSegments((activeItem as Route)?.segments)}`}</p>
-                </section>
-            )}
-
             <PublishedVariables
                 nodes={nodes}
                 variables={variables}
@@ -157,7 +151,7 @@ const PublishedVariableForm: React.FC = () => {
                 setSecretVariables={setSecretVariables}
             />
 
-            <Divider className="my-10" soft bleed/>
+            <Divider className="my-10" soft bleed />
 
             <div className="flex justify-end gap-4">
                 {error && (<div className="text-red-500">{error}</div>)}

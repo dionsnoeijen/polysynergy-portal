@@ -1,25 +1,21 @@
 'use client';
 
 import React, {useEffect, useState} from 'react';
-import {Select} from '@/components/select';
 import {Button} from '@/components/button';
 import useDynamicRoutesStore from '@/stores/dynamicRoutesStore';
 import useSchedulesStore from '@/stores/schedulesStore';
 import useEditorStore from '@/stores/editorStore';
-import fetchAndApplyNodeSetup from '@/utils/fetchNodeSetup';
 import SavingIndicator from '@/components/saving-indicator';
 import useNodesStore from '@/stores/nodesStore';
 import useConnectionsStore from '@/stores/connectionsStore';
 import {FormType, Fundamental, Route, Schedule, State, StoreName} from '@/types/types';
 import {
-    createNodeSetupVersionDraftAPI,
-    publishNodeSetupRouteVersionAPI,
-    publishNodeSetupScheduleVersionAPI
+    createNodeSetupVersionDraftAPI
 } from '@/api/nodeSetupsApi';
 import {fetchSchedule as fetchScheduleAPI} from '@/api/schedulesApi';
 import {fetchDynamicRoute as fetchDynamicRouteAPI} from '@/api/dynamicRoutesApi';
 import {ConfirmAlert} from '@/components/confirm-alert';
-import {ArrowRightCircleIcon, Bars3Icon, BarsArrowDownIcon} from '@heroicons/react/24/outline';
+import {Bars3Icon} from '@heroicons/react/24/outline';
 
 type VersionPublishedMenuProps = { routeUuid?: string; scheduleUuid?: string };
 
@@ -42,7 +38,7 @@ export default function VersionPublishedMenu({routeUuid, scheduleUuid}: VersionP
     const setIsPublished = useEditorStore((state) => state.setIsPublished);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
     const isSaving = useEditorStore((state) => state.isSaving);
-    const isPublished = useEditorStore((state) => state.isPublished);
+    // const isPublished = useEditorStore((state) => state.isPublished);
     const openForm = useEditorStore((state) => state.openForm);
 
     // API stores
@@ -96,14 +92,14 @@ export default function VersionPublishedMenu({routeUuid, scheduleUuid}: VersionP
     }, [scheduleData, setActiveVersionId]);
 
     // Handlers
-    const handleVersionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newVid = e.target.value;
-        if (scheduleUuid) {
-            await fetchAndApplyNodeSetup({scheduleId: scheduleUuid, versionId: newVid});
-        } else if (routeUuid) {
-            await fetchAndApplyNodeSetup({routeId: routeUuid, versionId: newVid});
-        }
-    };
+    // const handleVersionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    //     const newVid = e.target.value;
+    //     if (scheduleUuid) {
+    //         await fetchAndApplyNodeSetup({scheduleId: scheduleUuid, versionId: newVid});
+    //     } else if (routeUuid) {
+    //         await fetchAndApplyNodeSetup({routeId: routeUuid, versionId: newVid});
+    //     }
+    // };
 
     const handleDraft = async () => {
         setShowDraftAlert(false);
@@ -142,12 +138,12 @@ export default function VersionPublishedMenu({routeUuid, scheduleUuid}: VersionP
         setShowPublishAlert(false);
         setIsExecuting('Publishing to production...');
         if (scheduleUuid) {
-            await publishNodeSetupScheduleVersionAPI(activeVersionId as string);
+            // await publishNodeSetupScheduleVersionAPI(activeVersionId as string);
             await fetchSchedules();
             const updated = await fetchScheduleAPI(scheduleUuid);
             setScheduleData(updated);
         } else if (routeUuid) {
-            await publishNodeSetupRouteVersionAPI(activeVersionId as string);
+            // await publishNodeSetupRouteVersionAPI(activeVersionId as string);
             await fetchDynamicRoutes();
             const updated = await fetchDynamicRouteAPI(routeUuid as string);
             setRouteData(updated);
@@ -162,31 +158,31 @@ export default function VersionPublishedMenu({routeUuid, scheduleUuid}: VersionP
         return null;
     }
 
-    const versions =
-        routeData?.node_setup?.versions || scheduleData?.node_setup?.versions || [];
+    // const versions =
+    //     routeData?.node_setup?.versions || scheduleData?.node_setup?.versions || [];
 
     return (
         <div
             className="absolute bottom-5 right-5 flex items-center gap-2 p-2 bg-zinc-800 bg-opacity-80 border border-white/25 rounded-xl z-50">
-            <Select value={activeVersionId} onChange={handleVersionChange}>
-                {versions.map((v) => {
-                    const label = [`v${v.version_number}`];
-                    if (v.published) label.push('(published)');
-                    if (!v.published && !v.draft) label.push('(history)');
-                    if (v.draft) label.push('(draft)');
-                    return (
-                        <option key={v.id} value={v.id}>
-                            {label.join(' ')}
-                        </option>
-                    );
-                })}
-            </Select>
-            <Button plain title="Publish to production" disabled={isPublished} onClick={handlePublish}>
-                <ArrowRightCircleIcon className="h-6 w-6"/>
-            </Button>
-            <Button plain title="Create a new draft" onClick={() => setShowDraftAlert(true)}>
-                <BarsArrowDownIcon className="h-6 w-6"/>
-            </Button>
+            {/*<Select value={activeVersionId} onChange={handleVersionChange}>*/}
+            {/*    {versions.map((v) => {*/}
+            {/*        const label = [`v${v.version_number}`];*/}
+            {/*        if (v.published) label.push('(published)');*/}
+            {/*        if (!v.published && !v.draft) label.push('(history)');*/}
+            {/*        if (v.draft) label.push('(draft)');*/}
+            {/*        return (*/}
+            {/*            <option key={v.id} value={v.id}>*/}
+            {/*                {label.join(' ')}*/}
+            {/*            </option>*/}
+            {/*        );*/}
+            {/*    })}*/}
+            {/*</Select>*/}
+            {/*<Button plain title="Publish to production" disabled={isPublished} onClick={handlePublish}>*/}
+            {/*    <ArrowRightCircleIcon className="h-6 w-6"/>*/}
+            {/*</Button>*/}
+            {/*<Button plain title="Create a new draft" onClick={() => setShowDraftAlert(true)}>*/}
+            {/*    <BarsArrowDownIcon className="h-6 w-6"/>*/}
+            {/*</Button>*/}
             <Button plain title="Show the publish overview" onClick={() => openForm(FormType.ProjectPublish)}>
                 <Bars3Icon className="h-6 w-6"/>
             </Button>

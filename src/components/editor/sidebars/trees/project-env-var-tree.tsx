@@ -1,8 +1,8 @@
 import React, {ReactElement} from "react";
 import useEditorStore from "@/stores/editorStore";
-import useProjectSecretsStore from "@/stores/projectSecretsStore";
+import useEnvVarsStore from "@/stores/envVarsStore"; // nieuwe store voor env vars
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
-import {FormType, Fundamental, Secret} from "@/types/types";
+import {FormType, Fundamental, EnvVar} from "@/types/types";
 import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import {globalToLocal} from "@/utils/positionUtils";
@@ -10,8 +10,8 @@ import useNodesStore from "@/stores/nodesStore";
 import {Node} from "@/types/types";
 import {v4 as uuidv4} from "uuid";
 
-export default function SecretTree(): ReactElement {
-    const secrets = useProjectSecretsStore((state) => state.secrets);
+export default function ProjectEnvVarTree(): ReactElement {
+    const envVars = useEnvVarsStore((state) => state.envVars);
     const openForm = useEditorStore((state) => state.openForm);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeProjectVariableId = useEditorStore((state) => state.activeProjectVariableId);
@@ -19,11 +19,11 @@ export default function SecretTree(): ReactElement {
     const addNode = useNodesStore((state) => state.addNode);
 
     const handleEditVariable = (key: string) => {
-        openForm(FormType.EditProjectSecret, key);
+        openForm(FormType.EditProjectEnvVar, key);
     };
 
-    const handleAddSecretNode = (mouseX: number, mouseY: number, key: string) => {
-        let node: Node | undefined = getAvailableNodeByPath('nodes.nodes.secret.variable_secret.VariableSecret');
+    const handleAddEnvVarNode = (mouseX: number, mouseY: number, key: string) => {
+        let node: Node | undefined = getAvailableNodeByPath('nodes.nodes.env.variable_env.VariableEnv');
         if (!node) return;
 
         node = JSON.parse(JSON.stringify(node)) as Node;
@@ -40,9 +40,9 @@ export default function SecretTree(): ReactElement {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const secretIdVar = node.variables.find((v: any) => v.handle === "true_path");
-        if (secretIdVar) {
-            secretIdVar.value = key;
+        const keyVar = node.variables.find((v: any) => v.handle === "key");
+        if (keyVar) {
+            keyVar.value = key;
         }
 
         addNode(node, true);
@@ -50,20 +50,20 @@ export default function SecretTree(): ReactElement {
 
     return (
         <TreeList
-            items={secrets}
-            title="Secrets"
+            items={envVars}
+            title="Environment Variables"
             activeItem={activeProjectVariableId}
             formEditingItem={formEditRecordId}
-            fundamental={Fundamental.Secret}
-            renderItem={(secret: Secret) => (
+            fundamental={Fundamental.EnvVar}
+            renderItem={(envVar: EnvVar) => (
                 <div className="flex justify-between items-center w-full">
-                    <span className="select-none dark:text-gray-200/80">{secret.key}</span>
+                    <span className="select-none dark:text-gray-200/80">{envVar.key}</span>
                     <div className="flex gap-2 mr-2">
                         <button
-                            onClick={() => handleEditVariable(secret.key)}
+                            onClick={() => handleEditVariable(envVar.key)}
                             type="button"
                             className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 ${
-                                activeProjectVariableId === secret.key || formEditRecordId === secret.key
+                                activeProjectVariableId === envVar.key || formEditRecordId === envVar.key
                                     ? "text-white"
                                     : "text-zinc-500"
                             }`}
@@ -71,16 +71,16 @@ export default function SecretTree(): ReactElement {
                             <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
                         </button>
                         <button
-                            onClick={(e: React.MouseEvent) => handleAddSecretNode(e.clientX, e.clientY, secret.key)}
+                            onClick={(e: React.MouseEvent) => handleAddEnvVarNode(e.clientX, e.clientY, envVar.key)}
                             type="button"
-                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group`}
+                            className="pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group"
                         >
                             <PlusIcon className="w-4 h-4 transition-colors duration-200"/>
                         </button>
                     </div>
                 </div>
             )}
-            addButtonClick={() => openForm(FormType.AddProjectSecret)}
+            addButtonClick={() => openForm(FormType.AddProjectEnvVar)}
             addDisabled={false}
         />
     );

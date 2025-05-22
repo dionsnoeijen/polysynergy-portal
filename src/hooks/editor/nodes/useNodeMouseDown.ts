@@ -1,18 +1,23 @@
-import React, { useCallback } from "react";
+import React, {useCallback} from "react";
 import useEditorStore from "@/stores/editorStore";
-import { Node as NodeType } from "@/types/types";
+import {EditorMode, Node as NodeType} from "@/types/types";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
 
 const useNodeMouseDown = (
     node: NodeType,
     isInService?: boolean
 ) => {
-    const { selectedNodes, setSelectedNodes } = useEditorStore();
+
+    const selectedNodes = useEditorStore((state) => state.selectedNodes);
+    const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
+
     const { onDragMouseDown } = useDraggable();
 
     const handleNodeMouseDown = useCallback(
         (e: React.MouseEvent) => {
             if (node.view.disabled) return;
+            const editorMode = useEditorStore.getState().editorMode;
+            if (editorMode !== EditorMode.Select) return;
 
             const isToggleClick = (e.target as HTMLElement)
                 .closest("button[data-toggle='true']");

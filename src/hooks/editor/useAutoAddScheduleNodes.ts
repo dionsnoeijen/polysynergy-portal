@@ -3,7 +3,7 @@ import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
 import useSchedulesStore from "@/stores/schedulesStore";
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 import {v4 as uuidv4} from "uuid";
 import {
     Connection as ConnectionType, Schedule, Node
@@ -11,6 +11,8 @@ import {
 import {format} from "date-fns";
 
 export function useAutoAddScheduleNodes() {
+    const hasAddedMap = useRef<Record<string, boolean>>({});
+
     const availableNodes = useAvailableNodeStore((state) => state.availableNodes);
     const getAvailableNodeByPath = useAvailableNodeStore((state) => state.getAvailableNodeByPath);
     const addNode = useNodesStore((state) => state.addNode);
@@ -21,13 +23,17 @@ export function useAutoAddScheduleNodes() {
     const getSchedule = useSchedulesStore((state) => state.getSchedule);
 
     useEffect(() => {
-        if (nodes.length > 0 || !activeScheduleId) return;
+        if (!activeScheduleId) return;
+        if (hasAddedMap.current[activeScheduleId]) return;
+        if (nodes.length > 0) return;
 
         const template1: Node | undefined = getAvailableNodeByPath(`nodes.nodes.schedule.schedule.Schedule`);
         const template2: Node | undefined = getAvailableNodeByPath(`nodes.nodes.mock.mock_schedule.MockSchedule`);
         const schedule: Schedule | undefined = getSchedule(activeScheduleId);
 
         if (!template1 || !template2 || !schedule) return;
+
+        hasAddedMap.current[activeScheduleId] = true;
 
         const scheduleNode: Node = structuredClone(template1);
         const mockScheduleNode: Node = structuredClone(template2);

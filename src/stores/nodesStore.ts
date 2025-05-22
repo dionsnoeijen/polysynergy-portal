@@ -5,7 +5,7 @@ import {adjectives, animals, colors, uniqueNamesGenerator} from 'unique-names-ge
 import useConnectionsStore from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
 
-type NodesStore = {
+export type NodesStore = {
     nodes: Node[];
     addTempNodes: (nodes: Node[]) => void;
     clearTempNodes: () => void;
@@ -65,6 +65,9 @@ type NodesStore = {
     getAllNodeIdsOfNodesThatAreInAClosedGroup: () => string[];
     updateGroup: (nodeId: string, group: Partial<Group>) => void;
     dissolveGroup: (groupId: string) => void;
+    setGroupNameOverride: (nodeId: string, variableHandle: string, name: string) => void;
+    setGroupConnectorColorOverride: (nodeId: string, variableHandle: string, color: string) => void;
+    findNearestVisibleGroupWithCount: (nodeId: string) => { groupId: string, count: number } | null;
 
     groupStack: string[];
     openedGroup: string | null;
@@ -296,6 +299,10 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }
 
         if (node.flowState === undefined) {
+            node.flowState = node.default_flow_state as FlowState;
+        }
+        if (node.flowState === undefined ||
+            node.default_flow_state === null) {
             node.flowState = FlowState.Enabled;
         }
         if (node.driven === undefined) {
@@ -313,6 +320,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                 collapsed: false,
             };
         }
+
+        console.log('ADDING NODE', node);
 
         set((state) => ({
             nodes: [...state.nodes, node]
@@ -552,6 +561,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         newValue: null | string | number | boolean | string[] | NodeVariable[]
     ) => {
         nodesByIdsCache.clear();
+
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
@@ -570,8 +580,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             ),
             trackedNodeId: nodeId,
         }));
-
-        // useHistoryStore.getState().save();
     },
 
     toggleNodeVariablePublished: (nodeId: string, variableHandle: string) => {
@@ -672,6 +680,81 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             groupStack: newStack,
             openedGroup: newStack.length > 0 ? newStack[newStack.length - 1] : null,
         });
+    },
+
+    setGroupNameOverride: (nodeId, variableHandle, name) => {
+        nodesByIdsCache.clear();
+
+        set((state) => ({
+            nodes: state.nodes.map((node) => {
+                if (node.id !== nodeId) return node;
+
+                // Subvariabele (bijv. dict.subHandle)
+                if (variableHandle.includes('.')) {
+                    const [parentHandle, subHandle] = variableHandle.split('.');
+
+                    return {
+                        ...node,
+                        variables: node.variables.map((variable) => {
+                            if (variable.handle !== parentHandle) return variable;
+
+                            if (Array.isArray(variable.value)) {
+                                const updatedValue = (variable.value as NodeVariable[]).map((subvar) =>
+                                    subvar.handle === subHandle
+                                        ? {
+                                            ...subvar,
+                                            group_name_override: name,
+                                        }
+                                        : subvar
+                                );
+
+                                return {
+                                    ...variable,
+                                    value: updatedValue,
+                                };
+                            }
+
+                            return variable;
+                        }),
+                    };
+                }
+
+                // Normale variabele
+                return {
+                    ...node,
+                    variables: node.variables.map((variable) =>
+                        variable.handle === variableHandle
+                            ? {
+                                ...variable,
+                                group_name_override: name,
+                            }
+                            : variable
+                    ),
+                };
+            }),
+        }));
+    },
+
+    setGroupConnectorColorOverride: (nodeId, handle, color: string) => {
+        nodesByIdsCache.clear();
+
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        variables: node.variables.map((variable) =>
+                            variable.handle === handle
+                                ? {
+                                    ...variable,
+                                    group_connector_color_override: color,
+                                }
+                                : variable
+                        ),
+                    }
+                    : node
+            ),
+        }));
     },
 
     isNodeInGroup: (nodeId: string): string | null => {
@@ -877,6 +960,25 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         }));
     },
 
+    findNearestVisibleGroupWithCount: (nodeId: string): { groupId: string, count: number } | null => {
+        const {getState} = useNodesStore;
+        let currentNodeId: string | null = nodeId;
+
+        while (currentNodeId) {
+            const parentGroupId = getState().isNodeInGroup(currentNodeId);
+            if (!parentGroupId) return null;
+            const parentGroup = getState().getGroupById(parentGroupId);
+            if (parentGroup?.group?.isHidden === true) {
+                const count = parentGroup.group?.nodes?.length || 0;
+                return {groupId: parentGroupId, count};
+            }
+
+            currentNodeId = parentGroupId;
+        }
+
+        return null;
+    },
+
     initNodes: (nodes: Node[]) => {
         set({nodes});
     },
@@ -964,14 +1066,22 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             if (!node) return undefined;
 
             if (node.path === "nodes.nodes.play.config.PlayConfig" ||
-                node.path === "nodes.nodes.play.play.Play") return node;
+                node.path === "nodes.nodes.play.play.Play") {
+                return node;
+            }
 
-            const inConnections = useConnectionsStore
-                .getState()
-                .findInConnectionsByNodeId(nodeId);
+            const {findInConnectionsByNodeId, findOutConnectionsByNodeId} = useConnectionsStore.getState();
 
-            for (const conn of inConnections) {
-                const result = dfs(conn.sourceNodeId);
+            const inputConns = findInConnectionsByNodeId(nodeId);
+            const outputConns = findOutConnectionsByNodeId(nodeId);
+
+            const neighborIds = [
+                ...inputConns.map(conn => conn.sourceNodeId),
+                ...outputConns.map(conn => conn.targetNodeId)
+            ];
+
+            for (const neighborId of neighborIds) {
+                const result = dfs(neighborId as string);
                 if (result) return result;
             }
 

@@ -1,4 +1,4 @@
-import {useEffect, useRef, useLayoutEffect} from 'react'
+import React, {useLayoutEffect} from 'react'
 import useEditorStore from '@/stores/editorStore'
 import type {Node} from '@/types/types'
 
@@ -17,15 +17,15 @@ export function useAutoFitNodes(
     padding = 40,
     resetKey?: string | number
 ) {
-    const hasFitted = useRef(false);
-
-    useEffect(() => {
-        hasFitted.current = false;
-    }, [resetKey]);
-
     useLayoutEffect(() => {
-        if (hasFitted.current) return;
+        const store = useEditorStore.getState();
+        const versionId = store.activeVersionId;
+        if (!versionId) return;
         if (nodes.length === 0) return;
+
+        const alreadyHasZoom = versionId in store.zoomFactorByVersion;
+        const alreadyHasPan = versionId in store.panPositionsByVersion;
+        if (alreadyHasZoom && alreadyHasPan) return;
 
         const container = containerRef.current;
         if (!container) return;
@@ -43,23 +43,21 @@ export function useAutoFitNodes(
                 maxX = Math.max(maxX, x + width);
                 maxY = Math.max(maxY, y + height);
             }
+
             const boundsW = maxX - minX;
             const boundsH = maxY - minY;
-
             const {width: cw, height: ch} = container.getBoundingClientRect();
             const targetW = boundsW + padding * 2;
             const targetH = boundsH + padding * 2;
 
             const zoom = Math.min(cw / targetW, ch / targetH, 1);
-            useEditorStore.getState().setZoomFactor(zoom);
+            store.setZoomFactorForVersion(zoom);
 
             const panX = (cw - boundsW * zoom) / 2 - minX * zoom;
             const panY = (ch - boundsH * zoom) / 2 - minY * zoom;
-            useEditorStore.getState().setPanPosition({x: panX, y: panY});
-
-            hasFitted.current = true;
+            store.setPanPositionForVersion({x: panX, y: panY});
         }, 60);
 
         return () => clearTimeout(id);
-    }, [containerRef, nodes, padding])
+    }, [containerRef, nodes, padding, resetKey]);
 }

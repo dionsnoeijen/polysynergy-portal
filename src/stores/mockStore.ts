@@ -17,9 +17,12 @@ type NodeVariables = {
 
 export type MockNode = {
     id: string;
+    handle: string;
     order: number;
     type: string;
     killed: boolean;
+    runId: string;
+    started: boolean;
     variables: NodeVariables;
 }
 
@@ -27,43 +30,67 @@ type MockState = {
     mockConnections: MockConnection[];
     setMockConnections(mockConnections: MockConnection[]): void;
     mockNodes: MockNode[];
-    setMockNodes(mockNodes: MockNode[]): void;
+    addOrUpdateMockNode: (node: MockNode) => void;
     getMockNode: (nodeId: string) => MockNode | undefined;
     getMockConnection: (connectionId: string) => MockConnection | undefined;
     clearMockStore: () => void;
-    hasMockData: () => boolean;
+    setHasMockData: (hasMockData: boolean) => void;
+    hasMockData: boolean;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockResultsByNodeId: Record<string, any>;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setMockResultForNode: (nodeId: string, result: any) => void;
+    clearMockResults: () => void;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getMockResultForNode: (nodeId: string) => any | undefined;
 };
 
 const useMockStore = create<MockState>((set, get) => ({
     mockConnections: [],
     setMockConnections: (mockConnections) => set({ mockConnections }),
     mockNodes: [],
-    setMockNodes: (incomingMockNodes) => set(() => {
-      if (!Array.isArray(incomingMockNodes)) {
-        return { mockNodes: [] };
-      }
-      return {
-        mockNodes: incomingMockNodes.map((node, index) => ({
-          ...node,
-          order: index
-        }))
-      };
-    }),
-    getMockNode: (nodeId: string) => {
+    addOrUpdateMockNode: (newNode) => {
+        const existing = get().mockNodes.find((n) => n.id === newNode.id);
+        if (existing) {
+            set({
+                mockNodes: get().mockNodes.map((n) =>
+                    n.id === newNode.id ? { ...existing, ...newNode } : n
+                ),
+            });
+        } else {
+            set({
+                mockNodes: [...get().mockNodes, { ...newNode, order: get().mockNodes.length }],
+            });
+        }
+    },
+    getMockNode: (nodeId) => {
         return get().mockNodes.find((node) => node.id === nodeId);
     },
-    getMockConnection: (connectionId: string) => {
+    getMockConnection: (connectionId) => {
         return get().mockConnections.find((connection) => connection.uuid === connectionId);
     },
     clearMockStore: () => {
         set({
             mockConnections: [],
-            mockNodes: []
+            mockNodes: [],
+            hasMockData: false
         });
     },
-    hasMockData: () => {
-        return get().mockConnections.length > 0 || get().mockNodes.length > 0
-    }
+    setHasMockData: (hasMockData) => set({ hasMockData }),
+    hasMockData: false,
+
+    mockResultsByNodeId: {},
+    setMockResultForNode: (nodeId, result) => set((state) => ({
+        mockResultsByNodeId: {
+            ...state.mockResultsByNodeId,
+            [nodeId]: result,
+        }
+    })),
+    clearMockResults: () => set({ mockResultsByNodeId: {} }),
+    getMockResultForNode: (nodeId) => get().mockResultsByNodeId[nodeId] || undefined,
 }));
 
 export default useMockStore;

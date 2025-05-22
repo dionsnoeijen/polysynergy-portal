@@ -1,12 +1,13 @@
-import React from "react";
-import { Subheading } from "@/components/heading";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table";
-import { Switch } from "@/components/switch";
-import { Input } from "@/components/input";
-import { Select } from "@/components/select";
-import { Button } from "@/components/button";
+import React, {useMemo} from "react";
+import {Subheading} from "@/components/heading";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
+import {Switch} from "@/components/switch";
+import {Input} from "@/components/input";
+import {Select} from "@/components/select";
+import {Button} from "@/components/button";
 import {ArrowRightCircleIcon, PlusIcon, TrashIcon} from "@heroicons/react/24/outline";
-import {Dock, NodeVariable, NodeVariableType} from "@/types/types";
+import {Dock, FormType, NodeVariable, NodeVariableType} from "@/types/types";
+import useEditorStore from "@/stores/editorStore";
 
 type Props = {
     title: string;
@@ -19,14 +20,23 @@ type Props = {
 };
 
 const EditDictVariable: React.FC<Props> = ({
-    title,
-    variables,
-    onChange,
-    onlyValues = false,
-    handle,
-    dock,
-    published = false,
-}) => {
+                                               title,
+                                               variables,
+                                               onChange,
+                                               onlyValues = false,
+                                               handle,
+                                               dock,
+                                               published = false,
+                                           }) => {
+
+    const formType = useEditorStore((state) => state.formType);
+
+    const editableKeys = useMemo(() => {
+        if (formType !== FormType.PublishedVariableForm) return new Set<string>();
+        if (published) return new Set(variables.map((v) => v.handle));
+        return new Set(variables.filter((v) => v.published).map((v) => v.handle));
+    }, [variables, published, formType]);
+
     const updateVariable = (
         index: number,
         key: keyof NodeVariable,
@@ -77,9 +87,12 @@ const EditDictVariable: React.FC<Props> = ({
                     <TableHead>
                         <TableRow>
                             {!(dock && dock.in_switch === false) && <TableHeader>In</TableHeader>}
-                            {!(dock && dock.key_field === false) && <TableHeader>{dock?.key_label || "Key"}</TableHeader>}
-                            {!(dock && dock.type_field === false) && <TableHeader>{dock?.type_label || "Type"}</TableHeader>}
-                            {!(dock && dock.value_field === false) && <TableHeader>{dock?.value_label || "Value"}</TableHeader>}
+                            {!(dock && dock.key_field === false) &&
+                                <TableHeader>{dock?.key_label || "Key"}</TableHeader>}
+                            {!(dock && dock.type_field === false) &&
+                                <TableHeader>{dock?.type_label || "Type"}</TableHeader>}
+                            {!(dock && dock.value_field === false) &&
+                                <TableHeader>{dock?.value_label || "Value"}</TableHeader>}
                             {!(dock && dock.out_switch === false) && <TableHeader>Out</TableHeader>}
                             <TableHeader>Actions</TableHeader>
                         </TableRow>
@@ -107,10 +120,11 @@ const EditDictVariable: React.FC<Props> = ({
                                         onChange={(e) =>
                                             updateVariable(index, "type", e.target.value as NodeVariableType)
                                         }
-                                        disabled={onlyValues}
+                                        disabled={onlyValues || (formType === FormType.PublishedVariableForm && !editableKeys.has(variable.handle))}
                                     >
                                         <option value={NodeVariableType.String}>String</option>
-                                        <option value={NodeVariableType.Number}>Number</option>
+                                        <option value={NodeVariableType.Int}>Int</option>
+                                        <option value={NodeVariableType.Float}>Float</option>
                                         <option value={NodeVariableType.Boolean}>Boolean</option>
                                         <option value={NodeVariableType.List}>List</option>
                                         <option value={NodeVariableType.Dict}>Dict</option>
@@ -120,6 +134,7 @@ const EditDictVariable: React.FC<Props> = ({
                                     <Input
                                         value={String(variable.value)}
                                         onChange={(e) => updateVariable(index, "value", e.target.value)}
+                                        disabled={(formType === FormType.PublishedVariableForm && !editableKeys.has(variable.handle))}
                                     />
                                 </TableCell>}
                                 {!(dock && dock.out_switch === false) && <TableCell>
@@ -130,13 +145,18 @@ const EditDictVariable: React.FC<Props> = ({
                                     />
                                 </TableCell>}
                                 <TableCell>
-                                    <Button plain onClick={() => removeVariable(index)}>
-                                        <TrashIcon className="w-4 h-4" />
-                                    </Button>
-                                    {published && (
-                                    <Button plain className={`${variable.published && 'bg-sky-500 hover:bg-sky-600'}`} onClick={() => togglePublished(index)}>
-                                        <ArrowRightCircleIcon className={`w-4 h-4 text-gray-500 hover:text-gray-700 ${variable.published && '!text-white'}`} />
-                                    </Button>
+                                    {formType !== FormType.PublishedVariableForm && (
+                                        <>
+                                            <Button plain onClick={() => removeVariable(index)}>
+                                                <TrashIcon className="w-4 h-4"/>
+                                            </Button>
+                                            <Button plain
+                                                    className={`${variable.published && 'bg-sky-500 hover:bg-sky-600'}`}
+                                                    onClick={() => togglePublished(index)}>
+                                                <ArrowRightCircleIcon
+                                                    className={`w-4 h-4 text-gray-500 hover:text-gray-700 ${variable.published && '!text-white'}`}/>
+                                            </Button>
+                                        </>
                                     )}
                                 </TableCell>
                             </TableRow>
@@ -145,7 +165,7 @@ const EditDictVariable: React.FC<Props> = ({
                             <TableRow key="new-variable">
                                 <TableCell colSpan={6} className="text-center">
                                     <Button plain onClick={addVariable}>
-                                        <PlusIcon className="w-4 h-4" /> Add Row
+                                        <PlusIcon className="w-4 h-4"/> Add Row
                                     </Button>
                                 </TableCell>
                             </TableRow>

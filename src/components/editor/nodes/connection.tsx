@@ -1,12 +1,10 @@
-import React, {useRef, useLayoutEffect, useState, useEffect} from "react";
-import {Connection as ConnectionProps} from "@/types/types";
+import React, { useRef, useLayoutEffect, useState, useEffect } from "react";
+import { Connection as ConnectionProps } from "@/types/types";
 import { useTheme } from "next-themes";
+import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 import useMockStore from "@/stores/mockStore";
-import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 
-type Props = {
-    connection: ConnectionProps;
-};
+type Props = { connection: ConnectionProps; };
 
 const Connection: React.FC<Props> = ({ connection }) => {
     const pathRef = useRef<SVGPathElement>(null);
@@ -28,9 +26,9 @@ const Connection: React.FC<Props> = ({ connection }) => {
     let color = connection.collapsed ? "#cccccc" : "#ffffff";
 
     if (theme === "light") {
-        color = connection.collapsed ?
-            "rgb(7, 89, 133)" :
-            "rgb(14, 165, 233)";
+        color = connection.collapsed
+            ? "rgb(7, 89, 133)"
+            : "rgb(14, 165, 233)";
     }
 
     if (mockConnection) {
@@ -48,15 +46,24 @@ const Connection: React.FC<Props> = ({ connection }) => {
     const dashArray = connection.collapsed ? "4 4" : "0";
 
     useLayoutEffect(() => {
-        const length = pathRef.current?.getTotalLength();
-        if (length) {
-            const midpoint = length / 2;
-            const midpointLocation = pathRef.current?.getPointAtLength(midpoint);
-            if (midpointLocation) {
-                setMiddle({ x: midpointLocation.x, y: midpointLocation.y });
+        const frame = requestAnimationFrame(() => {
+            if (pathRef.current) {
+                const length = pathRef.current.getTotalLength();
+                if (length) {
+                    const midpoint = length / 2;
+                    const midpointLocation = pathRef.current.getPointAtLength(midpoint);
+                    if (midpointLocation) {
+                        setMiddle({
+                            x: midpointLocation.x,
+                            y: midpointLocation.y
+                        });
+                    }
+                }
             }
-        }
-        setIsReady(true);
+            setIsReady(true);
+        });
+
+        return () => cancelAnimationFrame(frame);
     }, [connection]);
 
     return (
@@ -86,13 +93,13 @@ const Connection: React.FC<Props> = ({ connection }) => {
                         fill={color}
                         dominantBaseline="middle"
                         textAnchor="middle"
-                        className={'relative z-[100]'}
-                        style={{pointerEvents: "none"}}
+                        className="relative z-[100]"
+                        style={{ pointerEvents: "none" }}
                     >
                         {connection.id}
                     </text>
                 )}
-        </svg>
+            </svg>
             <div
                 title={connection.id}
                 ref={startDotRef}

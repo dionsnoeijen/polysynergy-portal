@@ -15,7 +15,7 @@ const OpenGroup: React.FC<GroupProps> = ({node}): null | React.ReactElement => {
     const openContextMenu = useEditorStore((state) => state.openContextMenu);
     const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
     const isDragging = useEditorStore((state) => state.isDragging);
-    const zoomFactor = useEditorStore((state) => state.zoomFactor);
+    const zoomFactor = useEditorStore((state) => state.getZoomFactorForVersion());
 
     const {closeGroup, dissolveGroup} = useGrouping();
     const connections = useConnectionsStore((state) => state.connections);

@@ -78,8 +78,6 @@ const DictVariableForm: React.FC = () => {
 
         const {removed, renamed} = getDictVariableDiff(oldVars as NodeVariable[], newVars);
 
-        console.log('rem', removed, 'ren', renamed, formEditRecordId);
-
         removed.forEach((handle) => {
             removeConnectionsLinkedToVariable(
                 formEditRecordId,
@@ -140,9 +138,7 @@ const DictVariableForm: React.FC = () => {
             <Divider className="my-10" soft bleed/>
 
             <div className="flex justify-end gap-4">
-                <Button type="button" onClick={() => closeForm()} plain>
-                    Cancel
-                </Button>
+                <Button type="button" onClick={() => closeForm()} plain>Cancel</Button>
                 <Button type="submit">
                     {formType === FormType.EditDict && "Save dictionary"}
                 </Button>

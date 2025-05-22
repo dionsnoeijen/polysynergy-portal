@@ -58,7 +58,9 @@ export enum FormType {
     AddConfig = 'addConfig',
     PlaceConfig = 'placeConfig',
     PublishedVariableForm = 'publishedVariableForm',
-    EditTemplate = 'editTemplate'
+    EditTemplate = 'editTemplate',
+    AddProjectEnvVar = 'addProjectEnvVar',
+    EditProjectEnvVar = 'editProjectEnvVar',
 }
 
 export enum InOut {
@@ -83,6 +85,7 @@ export enum Fundamental {
     Config = 'config',
     Secret = 'secret',
     Variable = 'variable',
+    EnvVar = 'envVar',
 }
 
 export enum NodeVariableType {
@@ -177,6 +180,8 @@ export type NodeVariable = {
     published: boolean;
     published_title?: string;
     published_description?: string;
+    group_name_override?: string;
+    group_connector_color_override?: string;
     type: string | NodeVariableType;
     has_dock?: boolean;
     has_in?: boolean;
@@ -241,6 +246,7 @@ export type Node = {
     view: NodeView;
     variables: NodeVariable[];
     flowState: FlowState;
+    default_flow_state: string; // Potentially used as the default value for flowState
     driven?: boolean;
     group?: Group;
     has_play_button?: boolean;
@@ -250,6 +256,7 @@ export type Node = {
     code: string;
     // Temporary added for service editing
     temp?: boolean;
+    version?: number;
 };
 
 export interface NodeProps {
@@ -430,6 +437,7 @@ export type Secret = {
     projectId: string;
     description?: string;
     createdDate?: string;
+    stages?: string[];
 };
 
 export enum EditorMode {
@@ -438,3 +446,38 @@ export enum EditorMode {
     Draw = 'draw',
     Pan = 'pan'
 }
+
+export type Stage = {
+    id: string;
+    name: string;
+    is_production: boolean;
+};
+
+export interface PublishMatrixVersion {
+    id: string;
+    number: number;
+    status: "draft" | "published" | "history";
+    publishedStages: string[];
+}
+
+export interface PublishMatrixRoute {
+    id: string;
+    name: string;
+    segments: RouteSegment[];
+    published_stages: string[];
+    stages_can_update: string[];
+    versions: PublishMatrixVersion[];
+}
+
+export interface PublishMatrixResponse {
+    stages: Stage[];
+    routes: PublishMatrixRoute[];
+}
+
+export type EnvVar = {
+    id: string;
+    key: string;
+    value?: string;
+    stage: string;
+    projectId: string;
+};

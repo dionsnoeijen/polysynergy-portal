@@ -14,7 +14,7 @@ type ProjectSecretsStore = {
     secrets: Secret[];
     getSecret: (secretId: string) => Secret | undefined;
     fetchSecrets: () => Promise<Secret[]>;
-    createSecret: (key: string, secret_value: string) => Promise<Secret | undefined>;
+    createSecret: (key: string, secret_value: string, stage: string) => Promise<Secret | undefined>;
     updateSecret: (secret: Secret) => Promise<Secret | undefined>;
     deleteSecret: (secretId: string) => Promise<void>;
 };
@@ -46,10 +46,10 @@ const useProjectSecretsStore = create<ProjectSecretsStore>((set, get) => ({
         }
     },
 
-    createSecret: async (key: string, secret_value: string): Promise<Secret | undefined> => {
+    createSecret: async (key: string, secret_value: string, stage: string): Promise<Secret | undefined> => {
         const {activeProjectId} = useEditorStore.getState();
         try {
-            const response = await createProjectSecretAPI(activeProjectId, key, secret_value);
+            const response = await createProjectSecretAPI(activeProjectId, key, secret_value, stage);
             const secret: Secret = {
                 id: response?.id || Date.now().toString(),
                 key,

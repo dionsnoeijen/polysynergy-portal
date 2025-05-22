@@ -1,7 +1,10 @@
 'use client';
+
 import React, {useCallback, useEffect, useState} from 'react';
 import {ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon} from "@heroicons/react/24/outline";
 import {usePathname} from "next/navigation";
+import {useAutoFetch} from "@/hooks/editor/useAutoFetch";
+
 import ItemManager from "@/components/editor/sidebars/item-manager";
 import Dock from "@/components/editor/sidebars/dock";
 import Form from "@/components/editor/form";
@@ -12,12 +15,12 @@ import dynamic from 'next/dynamic';
 import VersionPublishedMenu from "@/components/editor/editormenus/version-published-menu";
 import fetchAndApplyNodeSetup from "@/utils/fetchNodeSetup";
 import TopLeftEditorMenu from "@/components/editor/editormenus/top-left-editor-menu";
+import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
+
 import useEditorStore from "@/stores/editorStore";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useMockStore from "@/stores/mockStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
-import {useAutoFetch} from "@/hooks/editor/useAutoFetch";
 import useNodesStore from "@/stores/nodesStore";
 
 // const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false })
@@ -26,12 +29,12 @@ const Editor = dynamic(() => import('@/components/editor/editor'), {
 });
 
 const EditorLayout = ({
-                          projectUuid,
-                          routeUuid,
-                          scheduleUuid,
-                          blueprintUuid,
-                          configUuid,
-                      }: {
+    projectUuid,
+    routeUuid,
+    scheduleUuid,
+    blueprintUuid,
+    configUuid,
+}: {
     projectUuid?: string,
     routeUuid?: string,
     scheduleUuid?: string,
@@ -108,7 +111,6 @@ const EditorLayout = ({
         fetchAndApplyNodeSetup({routeId: routeUuid});
         setIsExecuting(null);
     }, [routeUuid, setActiveBlueprintId, setActiveScheduleId, setActiveConfigId, setActiveRouteId, setIsExecuting]);
-
 
     useEffect(() => {
         if (!scheduleUuid) return;
@@ -269,12 +271,8 @@ const EditorLayout = ({
     return (
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
             {isExecuting && (
-                <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-                    <div className="bg-white dark:bg-zinc-800 p-4 rounded-lg shadow-lg flex items-center gap-2">
-                        <div
-                            className="animate-spin h-5 w-5 border-2 border-sky-500 border-t-transparent rounded-full"></div>
-                        <span className="text-white">{isExecuting}</span>
-                    </div>
+                // This is to make sure interactions are blocked during execution
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
                 </div>
             )}
             {closeFormMessage && (

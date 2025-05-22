@@ -43,11 +43,12 @@ export const updateNodeSetupVersionAPI = async (
 };
 
 export const publishNodeSetupRouteVersionAPI = (
-    versionId: string,
+    routeId: string,
+    stage: string
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/node-setup/route/${versionId}/publish/`,
+        `${config.API_URL}/node-setup/route/${routeId}/publish/`,
         {
             method: "POST",
             headers: {
@@ -55,16 +56,37 @@ export const publishNodeSetupRouteVersionAPI = (
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${idToken}`,
             },
+            body: JSON.stringify({ stage }),
+        }
+    );
+};
+
+export const unpublishNodeSetupRouteVersionAPI = (
+    routeId: string,
+    stage: string
+): Promise<Response> => {
+    const idToken = getIdToken();
+    return fetch(
+        `${config.API_URL}/node-setup/route/${routeId}/unpublish/`,
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ stage }),
         }
     );
 }
 
-export const unpublishNodeSetupRouteVersionAPI = (
-    versionId: string,
+export const updateNodeSetupRouteVersionAPI = (
+    routeId: string,
+    stage: string
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/node-setup/route/${versionId}/unpublish/`,
+        `${config.API_URL}/node-setup/route/${routeId}/update-stage/`,
         {
             method: "POST",
             headers: {
@@ -72,9 +94,10 @@ export const unpublishNodeSetupRouteVersionAPI = (
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${idToken}`,
             },
+            body: JSON.stringify({ stage }),
         }
     );
-}
+};
 
 export const publishNodeSetupScheduleVersionAPI = (
     versionId: string,

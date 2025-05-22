@@ -7,12 +7,13 @@ import ScheduleTree from "@/components/editor/sidebars/trees/schedule-tree";
 import ServiceTree from "@/components/editor/sidebars/trees/service-tree";
 import BlueprintTree from "@/components/editor/sidebars/trees/blueprint-tree";
 import SecretTree from "@/components/editor/sidebars/trees/secret-tree";
+import ProjectEnvVarTree from "@/components/editor/sidebars/trees/project-env-var-tree";
 
 export default function ItemManager({
-                                        className,
-                                        toggleClose,
-                                        ...props
-                                    }: React.ComponentPropsWithoutRef<'div'> & {
+    className,
+    toggleClose,
+    ...props
+}: React.ComponentPropsWithoutRef<'div'> & {
     toggleClose: () => void
 }): ReactElement {
     return (
@@ -22,9 +23,10 @@ export default function ItemManager({
                 <RouteTree />
                 <ScheduleTree />
                 <BlueprintTree />
-                {/* Disabled for now: <ConfigTree />*/}
+                 {/*Disabled for now: <ConfigTree />*/}
                 <ServiceTree />
                 <SecretTree />
+                <ProjectEnvVarTree />
                 {/* Disabled for now: <ProjectVariableTree />*/}
             </div>
             <div className={'-mb-2'}>

@@ -19,6 +19,7 @@ import FileEditorForm from "@/components/editor/forms/file-editor-form";
 import ListVariableForm from "@/components/editor/forms/list-variable-form";
 import PublishedVariableForm from "@/components/editor/forms/published-variable-form";
 import TemplateEditorForm from "@/components/editor/forms/template-editor-form";
+import ProjectEnvVarsForm from "@/components/editor/forms/project-env-vars-form";
 
 const Form: React.FC = () => {
     const formType = useEditorStore((state) => state.formType);
@@ -93,6 +94,12 @@ const Form: React.FC = () => {
                 formType === FormType.EditProjectSecret
             ) && (
                 <ProjectSecretsForm />
+            )}
+            {(
+                formType === FormType.AddProjectEnvVar ||
+                formType === FormType.EditProjectEnvVar
+            ) && (
+                <ProjectEnvVarsForm />
             )}
             {(
                 formType === FormType.ProjectPublish

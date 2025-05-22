@@ -1,4 +1,4 @@
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 import {v4 as uuidv4} from "uuid";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useNodesStore from "@/stores/nodesStore";
@@ -16,6 +16,8 @@ import {
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 
 export function useAutoAddRouteNodes() {
+    const hasAddedMap = useRef<Record<string, boolean>>({});
+
     const availableNodes = useAvailableNodeStore((state) => state.availableNodes);
     const getAvailableNodeByPath = useAvailableNodeStore((state) => state.getAvailableNodeByPath);
     const addNode = useNodesStore((state) => state.addNode);
@@ -26,7 +28,9 @@ export function useAutoAddRouteNodes() {
     const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
 
     useEffect(() => {
-        if (nodes.length > 0 || !activeRouteId) return;
+        if (!activeRouteId) return;
+        if (hasAddedMap.current[activeRouteId]) return;
+        if (nodes.length > 0) return;
 
         const routeNode: NodeType | undefined = getAvailableNodeByPath(`nodes.nodes.route.route.Route`);
         const mockRouteNode: NodeType | undefined = getAvailableNodeByPath(`nodes.nodes.mock.mock_route_request.MockRouteRequest`);
@@ -34,10 +38,11 @@ export function useAutoAddRouteNodes() {
 
         if (!routeNode || !mockRouteNode || !dynamicRoute) return;
 
+        hasAddedMap.current[activeRouteId] = true; // ✅ markeer als toegevoegd
+
         routeNode.id = uuidv4();
         routeNode.driven = true;
         routeNode.flowState = FlowState.FlowIn;
-
         routeNode.view = {
             x: 400,
             y: 100,

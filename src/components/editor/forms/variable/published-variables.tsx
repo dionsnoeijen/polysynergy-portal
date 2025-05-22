@@ -11,6 +11,8 @@ import {CheckCircleIcon, LinkIcon, PlayIcon} from "@heroicons/react/24/outline";
 import useProjectSecretsStore from "@/stores/projectSecretsStore";
 import {Input} from "@/components/input";
 import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
+import useMockStore from "@/stores/mockStore";
+import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
 
 type VariableIdentifier = {
     variable: NodeVariable;
@@ -64,6 +66,7 @@ const PublishedVariables: React.FC<Props> = ({
     const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
     const getSecretNodes = useNodesStore((state) => state.getSecretNodes);
     const secrets = useProjectSecretsStore((state) => state.secrets);
+    const getMockResultForNode = useMockStore((state) => state.getMockResultForNode);
     const handlePlay = useHandlePlay();
 
     const [tabs, setTabs] = useState<TabItem[]>([]);
@@ -155,23 +158,46 @@ const PublishedVariables: React.FC<Props> = ({
 
         nodes.forEach((node) => {
             const dictVariables = node.variables.filter(
-                (variable) => variable.published && variable.type === NodeVariableType.Dict
+                (variable) => variable.type === NodeVariableType.Dict
             );
-            const otherVariables = node.variables.filter(
-                (variable) => variable.published && variable.type !== NodeVariableType.Dict
-            );
-            if (dictVariables.length > 0) {
-                initialVariables[node.id] = {};
-                dictVariables.forEach((variable) => {
-                    initialVariables[node.id][variable.handle] = (variable.value as NodeVariable[]) || [];
+
+            dictVariables.forEach((dictVar) => {
+                const children = dictVar.value as NodeVariable[] || [];
+
+                const publishedChildren = children.filter(child => child.published);
+                const isRootPublished = dictVar.published;
+
+                if (publishedChildren.length > 0 || isRootPublished) {
+                    if (!initialVariables[node.id]) initialVariables[node.id] = {};
+                    initialVariables[node.id][dictVar.handle] = children;
+                }
+
+                if (isRootPublished || publishedChildren.length > 0) {
                     pubVariables.push({
-                        variable,
+                        variable: dictVar,
+                        nodeId: node.id,
+                        nodeServiceHandle: node.service?.handle,
+                        nodeServiceVariant: node.service?.variant,
+                    });
+                }
+
+                publishedChildren.forEach((child) => {
+                    pubVariables.push({
+                        variable: {
+                            ...child,
+                            parentHandle: dictVar.handle,
+                        },
                         nodeId: node.id,
                         nodeServiceHandle: node.service?.handle,
                         nodeServiceVariant: node.service?.variant,
                     });
                 });
-            }
+            });
+
+            const otherVariables = node.variables.filter(
+                (variable) => variable.published && variable.type !== NodeVariableType.Dict
+            );
+
             if (otherVariables.length > 0) {
                 initialSimpleVariables[node.id] = {};
                 otherVariables.forEach((variable) => {
@@ -320,6 +346,7 @@ const PublishedVariables: React.FC<Props> = ({
                 </div>
             ) : (
                 activeTab?.group.variables.map(({variable, nodeId, nodeServiceHandle, nodeServiceVariant}) => {
+                    if (variable.parentHandle) return null;
                     const {baseType} = interpretNodeVariableType(variable);
                     const syncKey = `${nodeServiceHandle}::${nodeServiceVariant ?? 1}::${variable.handle}`;
                     let isSynced = false;
@@ -423,16 +450,34 @@ const PublishedVariables: React.FC<Props> = ({
             )}
 
             {activeTab?.group.playConfigNode && (
-                <div className="pt-4 border-t border-white/10 flex justify-end">
-                    <button
-                        type="button"
-                        className="flex items-center gap-2 rounded bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition"
-                        onClick={(e) => handlePlay(e, activeTab.group.playConfigNode!.id)}
-                    >
-                        <PlayIcon className="h-5 w-5"/>
-                        Voer configuratie uit
-                    </button>
-                </div>
+                <>
+                    {(() => {
+                        const result = getMockResultForNode?.(activeTab.group.playConfigNode!.id);
+
+                        if (!result?.variables) return null;
+
+                        return (
+                            <div className="mb-4 rounded-md border border-white/10 p-4 bg-white/5">
+                                <div className="mb-2 text-white font-semibold text-sm">
+                                    Result
+                                </div>
+                                <FormattedNodeOutput variables={result.variables}/>
+                            </div>
+                        );
+                    })()}
+                    <div className="flex justify-end">
+
+
+                        <button
+                            type="button"
+                            className="flex items-center gap-2 rounded bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition"
+                            onClick={(e) => handlePlay(e, activeTab.group.playConfigNode!.id)}
+                        >
+                            <PlayIcon className="h-5 w-5"/>
+                            Run
+                        </button>
+                    </div>
+                </>
             )}
         </div>
     );

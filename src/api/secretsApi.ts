@@ -20,7 +20,8 @@ export const fetchProjectSecretsAPI = async (projectId: string) => {
 export const createProjectSecretAPI = async (
     projectId: string,
     key: string,
-    secret_value: string
+    secret_value: string,
+    stage: string
 ): Promise<Secret> => {
     const idToken = getIdToken();
 
@@ -33,7 +34,7 @@ export const createProjectSecretAPI = async (
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${idToken}`,
             },
-            body: JSON.stringify({ key, secret_value }),
+            body: JSON.stringify({ key, secret_value, stage }),
         }
     );
     return response.json();

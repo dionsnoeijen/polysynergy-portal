@@ -5,7 +5,9 @@ import useNodesStore from "@/stores/nodesStore";
 export const calculateConnectorPosition = (
     target: HTMLElement,
 ) => {
-    const {editorPosition, panPosition, zoomFactor} = useEditorStore.getState();
+    const {editorPosition, getPanPositionForVersion, getZoomFactorForVersion} = useEditorStore.getState();
+    const panPosition = getPanPositionForVersion();
+    const zoomFactor = getZoomFactorForVersion();
     const rect = target.getBoundingClientRect();
     const x = (rect.left + rect.width / 2 - editorPosition.x - panPosition.x) / zoomFactor;
     const y = (rect.top + rect.height / 2 - editorPosition.y - panPosition.y) / zoomFactor;
@@ -13,7 +15,9 @@ export const calculateConnectorPosition = (
 };
 
 export const localToGlobal = (logicalX: number, logicalY: number) => {
-    const {editorPosition, panPosition, zoomFactor} = useEditorStore.getState();
+    const {editorPosition, getPanPositionForVersion, getZoomFactorForVersion} = useEditorStore.getState();
+    const panPosition = getPanPositionForVersion();
+    const zoomFactor = getZoomFactorForVersion();
     return {
         x: (logicalX + editorPosition.x + panPosition.x) * zoomFactor,
         y: (logicalY + editorPosition.y + panPosition.y) * zoomFactor,
@@ -21,7 +25,9 @@ export const localToGlobal = (logicalX: number, logicalY: number) => {
 };
 
 export const globalToLocal = (globalX: number, globalY: number) => {
-    const {editorPosition, panPosition, zoomFactor} = useEditorStore.getState();
+    const {editorPosition, getPanPositionForVersion, getZoomFactorForVersion} = useEditorStore.getState();
+    const panPosition = getPanPositionForVersion();
+    const zoomFactor = getZoomFactorForVersion();
     return {
         x: (globalX - editorPosition.x - panPosition.x) / zoomFactor,
         y: (globalY - editorPosition.y - panPosition.y) / zoomFactor,
@@ -98,7 +104,9 @@ export const getNodeBoundsFromState = (nodeIds: string[]) => {
 };
 
 export const getNodeBoundsFromDOM = (nodeIds: string[]) => {
-    const {editorPosition, panPosition, zoomFactor} = useEditorStore.getState();
+    const {editorPosition, getPanPositionForVersion, getZoomFactorForVersion} = useEditorStore.getState();
+    const panPosition = getPanPositionForVersion();
+    const zoomFactor = getZoomFactorForVersion();
 
     let minX = Infinity,
         minY = Infinity,

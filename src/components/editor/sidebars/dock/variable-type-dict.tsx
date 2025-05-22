@@ -68,10 +68,11 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
                                         if (
                                             item.type === 'string' || // Legacy string type (in case of dict it could be configured as string, not str)
                                             item.type === NodeVariableType.String ||
-                                            item.type === NodeVariableType.Number ||
                                             item.type === NodeVariableType.Boolean ||
                                             item.type === NodeVariableType.List ||
-                                            item.type === NodeVariableType.Dict
+                                            item.type === NodeVariableType.Dict ||
+                                            item.type === NodeVariableType.Int ||
+                                            item.type === NodeVariableType.Float
                                         ) {
                                             return (
                                                 <TableRow key={item.handle + '-' + index}>

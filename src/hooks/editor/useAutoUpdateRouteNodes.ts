@@ -18,6 +18,7 @@ export function useAutoUpdateRouteNodes() {
 
         const routeNodes = getNodesByPath(`nodes.nodes.route.route.Route`);
         const mockRouteNodes = getNodesByPath(`nodes.nodes.mock.mock_route_request.MockRouteRequest`);
+
         if (!routeNodes || !mockRouteNodes) return;
 
         const routeVariables: NodeVariable[] = [];

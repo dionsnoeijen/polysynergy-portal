@@ -25,7 +25,7 @@ const TopLeftEditorMenu: React.FC = () => {
     const setEditorMode = useEditorStore((state) => state.setEditorMode);
 
     const clearMockStore = useMockStore((state) => state.clearMockStore);
-    const hasMockData = useMockStore((state) => state.hasMockData());
+    const hasMockData = useMockStore((state) => state.hasMockData);
     const mainPlayNode = useNodesStore((state) => state.findMainPlayNode());
     const handlePlay = useHandlePlay();
 

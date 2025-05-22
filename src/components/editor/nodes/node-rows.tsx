@@ -38,7 +38,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const selectedNodes: string[] = useEditorStore((state) => state.selectedNodes, useShallow);
     const isPanning = useEditorStore((state) => state.isPanning);
     const isZooming = useEditorStore((state) => state.isZooming);
-    const zoomFactor = useEditorStore((state) => state.zoomFactor);
+    const zoomFactor = useEditorStore((state) => state.getZoomFactorForVersion());
 
     const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
     const isNodeInService = useNodesStore((state) => state.isNodeInService([node.id]));
@@ -46,7 +46,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const {handleContextMenu} = useNodeContextMenu(node);
     const position = useNodePlacement(node);
     const mockNode = useMockStore((state) => state.getMockNode(node.id));
-    const hasMockData = useMockStore((state) => state.hasMockData());
+    const hasMockData = useMockStore((state) => state.hasMockData);
 
     const [height, setHeight] = useState(0);
 
@@ -59,7 +59,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     };
 
     const className = `
-        ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start rounded-md pb-5 
+        ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start rounded-md pb-5 z-0
         ${node.view.disabled ? " z-1 select-none opacity-30 " : " z-20 cursor-move "}
         ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)] ' : ' '}
         ${useNodeColor(node, selectedNodes.includes(node.id), mockNode, hasMockData, isNodeInService)}

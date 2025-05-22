@@ -72,6 +72,63 @@ html {
   margin-bottom: 0.2rem;
 }
 
+@keyframes node-executing-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(0, 191, 255, 0);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 191, 255, 0.8);
+  }
+}
+
+.executing::after,
+.executed-success::after,
+.executed-killed::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.executing::after {
+  animation: node-executing-pulse 1.2s infinite ease-in-out;
+}
+
+.executed-success,
+.executed-killed {
+  transition: box-shadow 0.3s ease-in;
+}
+
+.executed-success {
+  box-shadow: 0 0 0 2px oklch(72.3% 0.219 149.579);
+}
+
+.executed-killed {
+  box-shadow: 0 0 0 2px oklch(63.7% 0.237 25.331);
+}
+
+.executed-success::after {
+  animation: none;
+  transition: box-shadow 0.4s ease-in-out, background 0.4s ease-in-out;
+  box-shadow: 0 0 15px oklch(72.3% 0.219 149.579);
+}
+
+.executed-killed::after {
+  animation: none;
+  transition: box-shadow 0.4s ease-in-out, background 0.4s ease-in-out;
+  box-shadow: 0 0 15px oklch(63.7% 0.237 25.331);
+}
+
+/* In je globale css (optioneel) */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
 
 /*:root {*/
 /*    --background: #ffffff;*/

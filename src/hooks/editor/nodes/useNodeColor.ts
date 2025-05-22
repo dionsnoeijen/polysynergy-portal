@@ -5,14 +5,16 @@ import { MockNode } from "@/stores/mockStore";
 const useNodeColor = (
     node: Node,
     isSelected: boolean,
-    mockNode?: MockNode,
+    mockNode?: Partial<MockNode>,
     hasMockData?: boolean,
     isNodeInService?: boolean
 ) => {
     return useMemo(() => {
         let classList = "bg-opacity-50";
 
-        if (mockNode) {
+        // Mock node means it is running, but if it's just "started", we don't
+        // know if the node actually succeeded, to determine the final color
+        if (mockNode?.started === false) {
             classList += " ring-2 bg-green-950/50 ring-green-500 dark:ring-green-500";
             if (mockNode.killed) {
                 classList += " ring-red-500 dark:ring-red-500";

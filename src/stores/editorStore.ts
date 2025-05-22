@@ -17,12 +17,20 @@ export type ContextMenu = {
     items: Array<{ label: string; action: () => void }>;
 };
 
-type EditorState = {
-    // Nominee for a "per node setup" basis
+export type EditorState = {
     zoomFactor: number;
     setZoomFactor: (factor: number) => void;
     panPosition: { x: number; y: number };
     setPanPosition: (position: { x: number; y: number }) => void;
+
+    zoomFactorByVersion: Record<string, number>;
+    panPositionsByVersion: Record<string, { x: number; y: number }>;
+
+    setZoomFactorForVersion: (zoom: number) => void;
+    getZoomFactorForVersion: () => number;
+    setPanPositionForVersion: (position: { x: number; y: number }) => void;
+    getPanPositionForVersion: () => { x: number; y: number };
+
     isPanning: boolean;
     isZooming: boolean;
     setIsPanning: (isPanning: boolean) => void;
@@ -126,6 +134,11 @@ type EditorState = {
 
     isExecuting: string | null;
     setIsExecuting: (isExecuting: string | null) => void;
+
+    hasAutoFitted: Record<string, boolean>;
+
+    setHasAutoFitted(setupId: string, value: boolean): void;
+    getHasAutoFitted(setupId: string): boolean;
 };
 
 const useEditorStore = create<EditorState>((set, get) => ({
@@ -138,6 +151,42 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setZoomFactor: (factor) => set({zoomFactor: factor}),
     panPosition: {x: 100, y: 100},
     setPanPosition: (position) => set({panPosition: position}),
+
+    zoomFactorByVersion: {},
+    panPositionsByVersion: {},
+
+    setZoomFactorForVersion: (zoom: number) => {
+        const versionId = get().activeVersionId;
+        if (!versionId) return;
+        set((state) => ({
+            zoomFactorByVersion: {
+                ...state.zoomFactorByVersion,
+                [versionId]: zoom,
+            },
+        }));
+    },
+
+    getZoomFactorForVersion: () => {
+        const {zoomFactorByVersion, zoomFactor, activeVersionId} = get();
+        return activeVersionId ? zoomFactorByVersion[activeVersionId] ?? zoomFactor : zoomFactor;
+    },
+
+    setPanPositionForVersion: (position: { x: number; y: number }) => {
+        const versionId = get().activeVersionId;
+        if (!versionId) return;
+        set((state) => ({
+            panPositionsByVersion: {
+                ...state.panPositionsByVersion,
+                [versionId]: position,
+            },
+        }));
+    },
+
+    getPanPositionForVersion: () => {
+        const {panPositionsByVersion, panPosition, activeVersionId} = get();
+        return activeVersionId ? panPositionsByVersion[activeVersionId] ?? panPosition : panPosition;
+    },
+
     isDragging: false,
     setIsDragging: (dragging) => set({isDragging: dragging}),
     isZooming: false,
@@ -333,7 +382,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
     editorMode: EditorMode.Select,
     previousEditorMode: EditorMode.Select,
-    setEditorMode: (mode: EditorMode) => set({ editorMode: mode }),
+    setEditorMode: (mode: EditorMode) => set({editorMode: mode}),
     setEditorModeWithMemory: (mode: EditorMode) => set((state) => {
         if (state.editorMode === EditorMode.Pan) {
             return {}; // blijf in pan, niet opnieuw switchen
@@ -384,6 +433,15 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
         return pastedNodeIds;
     },
+
+    hasAutoFitted: {},
+    setHasAutoFitted: (setupId: string, value: boolean) => set((state) => ({
+        hasAutoFitted: {
+            ...state.hasAutoFitted,
+            [setupId]: value,
+        },
+    })),
+    getHasAutoFitted: (setupId: string) => get().hasAutoFitted[setupId] || false,
 }));
 
 export default useEditorStore;

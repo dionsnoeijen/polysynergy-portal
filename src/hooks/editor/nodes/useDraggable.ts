@@ -1,17 +1,17 @@
-import React, { useEffect, useCallback, useRef } from "react";
+import React, {useCallback, useEffect, useRef} from "react";
 import useEditorStore from "@/stores/editorStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
-import { Connection } from "@/types/types";
-import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
-import { updateNodesDirectly } from "@/utils/updateNodesDirectly";
-import { snapToGrid } from "@/utils/snapToGrid";
+import {Connection, EditorMode} from "@/types/types";
+import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
+import {updateNodesDirectly} from "@/utils/updateNodesDirectly";
+import {snapToGrid} from "@/utils/snapToGrid";
 
 const useDraggable = () => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
-    const zoomFactor = useEditorStore((state) => state.zoomFactor);
+    const zoomFactor = useEditorStore((state) => state.getZoomFactorForVersion());
     const setIsDragging = useEditorStore((state) => state.setIsDragging);
-    const panPosition = useEditorStore((state) => state.panPosition);
+    const panPosition = useEditorStore((state) => state.getPanPositionForVersion());
     const editorPosition = useEditorStore((state) => state.editorPosition);
     const isPasting = useEditorStore((state) => state.isPasting);
     const setIsPasting = useEditorStore((state) => state.setIsPasting);
@@ -102,6 +102,8 @@ const useDraggable = () => {
 
     const onDragMouseDown = useCallback((e: React.MouseEvent) => {
         if (e.currentTarget.getAttribute('data-adding') === 'true') return;
+        const editorMode = useEditorStore.getState().editorMode;
+        if (editorMode !== EditorMode.Select) return;
 
         const currentTime = Date.now();
         const timeSinceLastClick = currentTime - lastMouseDownTimeRef.current;

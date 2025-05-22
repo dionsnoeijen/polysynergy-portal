@@ -282,7 +282,7 @@ const DynamicRouteForm: React.FC = () => {
                                             <Select
                                                 aria-label="Variable type"
                                                 name="variable_type"
-                                                defaultValue="string"
+                                                defaultValue="any"
                                                 disabled={segment.type === RouteSegmentType.Static}
                                                 onChange={(e) => {
                                                     const updatedSegment = {
@@ -294,8 +294,10 @@ const DynamicRouteForm: React.FC = () => {
                                                     setSegments(updatedSegments);
                                                 }}
                                             >
+                                                <option value="any">Any</option>
                                                 <option value="string">String</option>
                                                 <option value="number">Number</option>
+                                                <option value="uuid">Uuid</option>
                                             </Select>
                                         </TableCell>
                                         <TableCell className="text-right">

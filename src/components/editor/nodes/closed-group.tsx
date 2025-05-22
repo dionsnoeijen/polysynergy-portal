@@ -17,6 +17,7 @@ import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
 import NodeVariables from "@/components/editor/nodes/rows/node-variables";
 import useAutoResize from "@/hooks/editor/nodes/useAutoResize";
 import {ConfirmAlert} from "@/components/confirm-alert";
+import useMockStore from "@/stores/mockStore";
 
 const ClosedGroup: React.FC<GroupProps> = ({
                                                node,
@@ -33,13 +34,12 @@ const ClosedGroup: React.FC<GroupProps> = ({
     const position = useNodePlacement(node);
     const updateNodeWidth = useNodesStore((state) => state.updateNodeWidth);
     const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);
-
+    const hasMockData = useMockStore((state) => state.hasMockData);
 
     const [height, setHeight] = useState(0);
     const isPanning = useEditorStore((state) => state.isPanning);
     const isZooming = useEditorStore((state) => state.isZooming);
-    const zoomFactor = useEditorStore((state) => state.zoomFactor);
-
+    const zoomFactor = useEditorStore((state) => state.getZoomFactorForVersion());
     const {openGroup, deleteGroup, dissolveGroup, removeNodeFromGroup, moveNodeToGroup} = useGrouping();
     const {variablesForGroup} = useVariablesForGroup(node.id, false);
     const {handleNodeMouseDown} = useNodeMouseDown(node);
@@ -88,7 +88,12 @@ const ClosedGroup: React.FC<GroupProps> = ({
         ${preview ? 'relative' : 'absolute'} overflow-visible select-none items-start justify-start rounded-md pb-5 
         ${!isMirror && node.view.disabled ? ' z-1 select-none opacity-30' : ` z-20${!nodeToMoveToGroupId ? ' cursor-move' : ''}`}
         ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}
-        ${useNodeColor(node, selectedNodes.includes(node.id), undefined, false)}
+        ${useNodeColor(
+            node,
+            selectedNodes.includes(node.id),
+            hasMockData ? {started: false, killed: false} : undefined,
+            hasMockData
+        )}
         `.replace(/\s+/g, ' ').trim();
 
     useLayoutEffect(() => {
@@ -145,7 +150,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
                 left: preview ? '0px' : `${position.x}px`,
                 top: preview ? '0px' : `${position.y}px`,
                 minWidth: isPanning || isZooming ? `${node.view.width}px` : 'auto',
-                height: isPanning || isZooming ? `${height}px` : 'auto',
+                height: isPanning || isZooming ? `${height}px` : '100px',
             }}
         >
             {!(isPanning || isZooming) && (
@@ -210,6 +215,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
                 width: `${node.view.width}px`,
                 left: preview ? '0px' : `${position.x}px`,
                 top: preview ? '0px' : `${position.y}px`,
+                minWidth: '200px'
             }}
             title={node.category + ' > ' + node.id + ' > ' + node.name}
             data-type="closed-group"

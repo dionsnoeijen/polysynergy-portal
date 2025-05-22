@@ -1,6 +1,28 @@
-import { useMemo } from "react";
-import useNodesStore from "@/stores/nodesStore";
+import {useMemo} from "react";
+import useNodesStore, {NodesStore} from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
+import {NodeVariable} from "@/types/types";
+
+const getGroupOverridesKey = (state: NodesStore, groupId: string) => {
+    const group = state.getGroupById(groupId);
+    if (!group?.group?.nodes) return '';
+
+    return group.group.nodes
+        .map((nodeId: string) => {
+            const node = state.nodes.find((n) => n.id === nodeId);
+            if (!node) return '';
+
+            return node.variables.map((v: NodeVariable) => {
+                const parent = v.group_name_override ?? '';
+                const children = v.type === 'dict' && Array.isArray(v.value)
+                    ? (v.value as NodeVariable[]).map((sub) => sub.group_name_override ?? '').join('|')
+                    : '';
+
+                return `${parent}|${children}`;
+            }).join('|');
+        })
+        .join('|');
+};
 
 const useVariablesForGroup = (groupId: string | null, checkDock = true) => {
     const getTrackedNode = useNodesStore((state) => state.getTrackedNode);
@@ -9,12 +31,16 @@ const useVariablesForGroup = (groupId: string | null, checkDock = true) => {
     const getGroupById = useNodesStore((state) => state.getGroupById);
     const findInConnectionsByNodeId = useConnectionsStore((state) => state.findInConnectionsByNodeId);
     const findOutConnectionsByNodeId = useConnectionsStore((state) => state.findOutConnectionsByNodeId);
-    const connections= useConnectionsStore((state) => state.connections);
+    const connections = useConnectionsStore((state) => state.connections);
 
     groupId = groupId?.startsWith("mirror-") ? groupId.replace("mirror-", "") : groupId;
-    
+
     const group = groupId ? getGroupById(groupId) : null;
     const node = getTrackedNode();
+
+    const groupOverridesKey = useNodesStore((state) =>
+        groupId ? getGroupOverridesKey(state, groupId) : ''
+    );
 
     const variablesForGroup = useMemo(() => {
         if (!group) return null;
@@ -65,11 +91,11 @@ const useVariablesForGroup = (groupId: string | null, checkDock = true) => {
                 return checkDock ? item.variable.has_dock : true;
             });
 
-        return { inVariables, outVariables };
-    // eslint-disable-next-line
-    }, [node, group, connections]);
+        return {inVariables, outVariables};
+        // eslint-disable-next-line
+    }, [node, group, connections, groupOverridesKey]);
 
-    return { group, variablesForGroup };
+    return {group, variablesForGroup};
 };
 
 

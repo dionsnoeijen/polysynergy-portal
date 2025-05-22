@@ -14,6 +14,7 @@ const Debug: React.FC = (): React.ReactElement => {
     const nodes = useNodesStore((state) => state.nodes);
     const groupStack = useNodesStore((state) => state.groupStack);
     const openedGroup = useNodesStore((state) => state.openedGroup);
+
     const connections = useConnectionsStore((state) => state.connections);
     const editor = useEditorStore();
 

@@ -7,8 +7,8 @@ import useEditorStore from "@/stores/editorStore";
 
 const Grid: React.FC = () => {
 
-    const zoomFactor = useEditorStore((state) => state.zoomFactor);
-    const panPosition = useEditorStore((state) => state.panPosition);
+    const zoomFactor = useEditorStore((state) => state.getZoomFactorForVersion());
+    const panPosition = useEditorStore((state) => state.getPanPositionForVersion());
 
     const { theme } = useTheme();
 

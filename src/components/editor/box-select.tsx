@@ -6,12 +6,11 @@ import {EditorMode} from "@/types/types";
 const BoxSelect: React.FC = (): React.ReactElement => {
     const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
     const editorPosition = useEditorStore((state) => state.editorPosition);
-    const panPosition = useEditorStore((state) => state.panPosition);
-    const zoomFactor = useEditorStore((state) => state.zoomFactor);
+    const panPosition = useEditorStore((state) => state.getPanPositionForVersion());
+    const zoomFactor = useEditorStore((state) => state.getZoomFactorForVersion());
 
     const editorMode = useEditorStore((state) => state.editorMode);
     const setEditorMode = useEditorStore((state) => state.setEditorMode);
-
 
     const { getNodesToRender } = useNodesStore();
     const [isSelecting, setIsSelecting] = useState(false);

@@ -150,7 +150,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
                 left: preview ? '0px' : `${position.x}px`,
                 top: preview ? '0px' : `${position.y}px`,
                 minWidth: isPanning || isZooming ? `${node.view.width}px` : 'auto',
-                height: isPanning || isZooming ? `${height}px` : '100px',
+                height: isPanning || isZooming ? `${height}px` : undefined,
             }}
         >
             {!(isPanning || isZooming) && (

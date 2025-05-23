@@ -85,8 +85,11 @@ export default function Editor() {
     const nodesToRender = useMemo(() => getNodesToRender(), [getNodesToRender, nodes]);
 
     useEffect(() => {
-        updateConnectionsDirectly(connections);
-        // eslint-disable-next-line
+        const frame = requestAnimationFrame(() => {
+            updateConnectionsDirectly(connections);
+        });
+        return () => cancelAnimationFrame(frame);
+    // eslint-disable-next-line
     }, [nodesToRender]);
 
     const updateEditorPosition = useCallback(() => {
@@ -333,7 +336,8 @@ export default function Editor() {
                 <div className="absolute top-0 left-0 w-full z-40 pointer-events-none">
                     <div className="mx-auto max-w-2xl mt-4 bg-zinc-800/80 border border-white/25 dark:bg-zinc-800/80 backdrop-blur-sm
                                     rounded-md py-2 px-4 flex items-center justify-center gap-3 text-white shadow-md">
-                        <div className="animate-spin h-4 w-4 border-2 border-sky-500 border-t-transparent rounded-full" />
+                        <div
+                            className="animate-spin h-4 w-4 border-2 border-sky-500 border-t-transparent rounded-full"/>
                         <span className="text-sm font-medium">
                             {typeof isExecuting === 'string' ? isExecuting : 'Executing...'}
                         </span>

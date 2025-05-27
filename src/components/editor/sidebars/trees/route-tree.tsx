@@ -22,6 +22,7 @@ export default function RouteTree(): ReactElement {
             activeItem={activeRouteId}
             formEditingItem={formEditRecordId}
             fundamental={Fundamental.Route}
+            dataTourId="add-route-button"
             renderItem={(route) => (
                 <>
                     <Link
@@ -39,6 +40,7 @@ export default function RouteTree(): ReactElement {
                         onClick={() => openForm(FormType.EditRoute, route.id)}
                         type="button"
                         className={`p-2 rounded focus:outline-none active:text-zinc-200 group ${activeRouteId === route.id || formEditRecordId === route.id ? 'text-sky-950' : 'text-zinc-500 '}`}
+                        data-tour-id="add-route-button"
                     >
                         <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
                     </button>

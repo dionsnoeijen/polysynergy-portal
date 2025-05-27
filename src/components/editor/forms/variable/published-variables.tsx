@@ -1,18 +1,29 @@
 import {Node, NodeVariable, NodeVariableType} from "@/types/types";
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useState, useRef} from "react";
+
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
+import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
+import EditDictVariable from "@/components/editor/forms/variable/edit-dict-variable";
+
 import {Subheading} from "@/components/heading";
 import {Text} from "@/components/text";
+import {Button} from "@/components/button";
 import {Divider} from "@/components/divider";
-import {VariableTypeComponents} from "@/components/editor/sidebars/dock";
-import EditDictVariable from "@/components/editor/forms/variable/edit-dict-variable";
-import useNodesStore from "@/stores/nodesStore";
-import {CheckCircleIcon, LinkIcon, PlayIcon} from "@heroicons/react/24/outline";
-import useProjectSecretsStore from "@/stores/projectSecretsStore";
+import {LinkIcon, PlayIcon} from "@heroicons/react/24/outline";
 import {Input} from "@/components/input";
 import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
+
+import {VariableTypeComponents} from "@/components/editor/sidebars/dock";
+
+import useNodesStore from "@/stores/nodesStore";
+import useStagesStore from "@/stores/stagesStore";
+import useProjectSecretsStore from "@/stores/projectSecretsStore";
 import useMockStore from "@/stores/mockStore";
-import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
+import useEditorStore from "@/stores/editorStore";
+
+import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
+import {createProjectSecretAPI, updateProjectSecretAPI} from "@/api/secretsApi";
+import {Select} from "@/components/select";
 
 type VariableIdentifier = {
     variable: NodeVariable;
@@ -50,24 +61,35 @@ const SECRET_EXISTS = 0;
 const SECRET_MUST_BE_CREATED = 1;
 
 const PublishedVariables: React.FC<Props> = ({
-                                                 nodes,
-                                                 variables,
-                                                 setVariables,
-                                                 simpleVariables,
-                                                 setSimpleVariables,
-                                                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                                 publishedVariables,
-                                                 setPublishedVariables,
-                                                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                                 secretVariables,
-                                                 setSecretVariables
-                                             }) => {
+    nodes,
+    variables,
+    setVariables,
+    simpleVariables,
+    setSimpleVariables,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    publishedVariables,
+    setPublishedVariables,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    secretVariables,
+    setSecretVariables
+}) => {
     const leadsToPlayConfig = useNodesStore((state) => state.leadsToPlayConfig);
     const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
     const getSecretNodes = useNodesStore((state) => state.getSecretNodes);
     const secrets = useProjectSecretsStore((state) => state.secrets);
     const getMockResultForNode = useMockStore((state) => state.getMockResultForNode);
     const handlePlay = useHandlePlay();
+    const stagesFromStore = useStagesStore((state) => state.stages);
+    const stages = [{name: "mock"}, ...stagesFromStore];
+    const fetchSecrets = useProjectSecretsStore((state) => state.fetchSecrets);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
+    const [selectedStage, setSelectedStage] = useState("mock");
+
+    const hasInitializedTabs = useRef(false);
+
+    useEffect(() => {
+        fetchSecretsWithRetry(fetchSecrets);
+    }, [fetchSecrets]);
 
     const [tabs, setTabs] = useState<TabItem[]>([]);
     const [activeTabKey, setActiveTabKey] = useState<string>("default");
@@ -90,7 +112,6 @@ const PublishedVariables: React.FC<Props> = ({
             (pv) => pv.nodeId === nodeId && pv.variable.handle === handle
         );
 
-        // No service? Only update the specific node
         if (!syncKey?.nodeServiceHandle) {
             setVariables((prev) => {
                 const updated = {...prev};
@@ -101,7 +122,6 @@ const PublishedVariables: React.FC<Props> = ({
             return;
         }
 
-        // With service? Sync the value between service instances
         const key = `${syncKey.nodeServiceHandle}::${syncKey.nodeServiceVariant ?? 1}::${handle}`;
         const synced = syncMap.get(key) || [{nodeId, handle}];
 
@@ -134,22 +154,20 @@ const PublishedVariables: React.FC<Props> = ({
         });
     };
 
-    const handleSecretCreation = async (secretKey: string, value: string) => {
-        const exists = secrets.find((s) => s.key === secretKey);
-        if (exists) {
-            console.log('Secret already exists:', exists);
-            return;
-        }
-        setSecretVariables(prev => {
-            if (prev.some(secret => secret.key === secretKey)) {
-                return prev.map(secret =>
-                    secret.key === secretKey ? {...secret, value} : secret
-                );
+    const handleSecretCreation = async (key: string, value: string) => {
+        const [stage, secretKey] = key.split("@");
+        const existing = secrets.find((s) => s.key === secretKey && s.stages?.includes(stage));
+        try {
+            if (existing) {
+                await updateProjectSecretAPI(activeProjectId!, secretKey, value, stage);
             } else {
-                return [...prev, {key: secretKey, value}];
+                await createProjectSecretAPI(activeProjectId!, secretKey, value, stage);
             }
-        });
-    }
+            await fetchSecretsWithRetry(fetchSecrets);
+        } catch (err) {
+            console.error("Failed to store secret:", err);
+        }
+    };
 
     useEffect(() => {
         const initialVariables: { [nodeId: string]: { [handle: string]: NodeVariable[] } } = {};
@@ -240,44 +258,36 @@ const PublishedVariables: React.FC<Props> = ({
             }
         };
 
-        // Find all play button nodes
-        const playButtonNodes = nodes.filter(node => {
-            if (!node.has_play_button) return false;
-            const title = getNodeVariable(node.id, "title")?.value;
-            return typeof title === "string" && title.trim() !== "";
-        });
+        const playButtonNodes = nodes.filter((node) => node.has_play_button);
 
-        const playButtonTabs: TabItem[] = playButtonNodes.map(node => {
+        const playButtonTabs: TabItem[] = playButtonNodes.map((node) => {
             const title = getNodeVariable(node.id, "title")?.value as string;
             const info = getNodeVariable(node.id, "info")?.value as string;
+            const fallbackTitle = `Play ${node.handle}`;
 
             return {
                 key: node.id,
-                title: title,
+                title: title?.trim() || fallbackTitle,
                 info: info || "",
                 group: {
                     playConfigNode: node,
-                    variables: []
-                }
+                    variables: [],
+                },
             };
         });
 
-        // Distribute published variables
         for (const pv of pubVariables) {
             const playConfigNode = leadsToPlayConfig(pv.nodeId);
             if (playConfigNode) {
-                // Add to the corresponding play button tab
                 const playButtonTab = playButtonTabs.find(tab => tab.key === playConfigNode.id);
                 if (playButtonTab) {
                     playButtonTab.group.variables.push(pv);
                 }
             } else {
-                // Add to the config tab
                 configTab.group.variables.push(pv);
             }
         }
 
-        // Handle secret nodes
         const secretNodes = getSecretNodes();
         secretNodes.forEach((node) => {
             node.variables.forEach((variable: NodeVariable) => {
@@ -289,29 +299,38 @@ const PublishedVariables: React.FC<Props> = ({
                     nodeServiceVariant: exists ? SECRET_EXISTS : SECRET_MUST_BE_CREATED,
                 };
 
-                // Check if this secret leads to a play button
                 const playConfigNode = leadsToPlayConfig(node.id);
                 if (playConfigNode) {
-                    // Add to the corresponding play button tab
                     const playButtonTab = playButtonTabs.find(tab => tab.key === playConfigNode.id);
                     if (playButtonTab) {
                         playButtonTab.group.variables.push(secretVar);
                     }
                 } else {
-                    // Add to the secrets tab
                     secretsTab.group.variables.push(secretVar);
                 }
             });
         });
 
-        // Add tabs in the correct order
         tabItems.push(configTab);
         tabItems.push(secretsTab);
         tabItems.push(...playButtonTabs);
 
         setTabs(tabItems);
-        setActiveTabKey(tabItems[0]?.key ?? "default");
-    }, [getNodeVariable, getSecretNodes, leadsToPlayConfig, nodes, secrets, setPublishedVariables, setSimpleVariables, setVariables]);
+
+        if (!hasInitializedTabs.current) {
+            setActiveTabKey(tabItems[0]?.key ?? "default");
+            hasInitializedTabs.current = true;
+        }
+    }, [
+        getNodeVariable,
+        getSecretNodes,
+        leadsToPlayConfig,
+        nodes,
+        secrets,
+        setPublishedVariables,
+        setSimpleVariables,
+        setVariables
+    ]);
 
     const activeTab = tabs.find((tab) => tab.key === activeTabKey);
 
@@ -356,36 +375,70 @@ const PublishedVariables: React.FC<Props> = ({
                     }
 
                     if (nodeServiceHandle === SECRET_IDENTIFIER) {
-                        if (nodeServiceVariant === SECRET_EXISTS) {
-                            return (
-                                <div key={nodeId + "-" + variable.handle}>
+                        return (
+                            <React.Fragment key={nodeId + "-" + variable.handle}>
+                                <div className={'border rounded-md border-white/10 p-5'}>
                                     <Subheading>
-                                        <span className="inline-flex items-center gap-2">
-                                            Secret: {variable.value as string} Exists:
-                                            <CheckCircleIcon className={'w-4 h-5 text-green-500'}/>
-                                        </span>
-                                    </Subheading>
-                                    <Divider className="my-10" soft bleed/>
-                                </div>
-                            );
-                        } else {
-                            return (
-                                <div key={nodeId + "-" + variable.handle}>
-                                    <Subheading>
-                                        <span className="inline-flex items-center gap-2">
+                                        <span className="inline-flex items-center gap-2 mb-2">
                                             Secret: {variable.value as string}
                                         </span>
                                     </Subheading>
-                                    <Input
-                                        type={"password"}
-                                        onChange={(e) => handleSecretCreation(variable.value as string, e.currentTarget.value as string)}
-                                        placeholder={'******'}
-                                        aria-label={variable.handle}
-                                    />
-                                    <Divider className="my-10" soft bleed/>
+                                    <div className="space-y-3">
+                                        {stages.map((stage) => {
+                                            const localSecret = secretVariables.find(
+                                                (s) => s.key === `${stage.name}@${variable.value}`
+                                            );
+                                            const hasSecret = secrets.some(
+                                                (s) => {
+                                                    return (s.key === variable.value && s.stages?.includes(stage.name));
+                                                }
+                                            );
+                                            return (
+                                                <div key={stage.name}>
+                                                    <label className="text-sm text-white/70">
+                                                        {stage.name}{" "}
+                                                        {hasSecret && (
+                                                            <span className="text-xs text-white/50">(has value)</span>
+                                                        )}
+                                                    </label>
+                                                    <div className="flex gap-2">
+                                                        <Input
+                                                            type="password"
+                                                            placeholder={
+                                                                hasSecret
+                                                                    ? "********"
+                                                                    : "Enter secret value"
+                                                            }
+                                                            value={localSecret?.value || ""}
+                                                            onChange={(e) =>
+                                                                setSecretVariables((prev) => {
+                                                                    const updated = [...prev];
+                                                                    const index = updated.findIndex((s) => s.key === `${stage.name}@${variable.value}`);
+                                                                    if (index !== -1) {
+                                                                        updated[index].value = e.target.value;
+                                                                    } else {
+                                                                        updated.push({
+                                                                            key: `${stage.name}@${variable.value}`,
+                                                                            value: e.target.value
+                                                                        });
+                                                                    }
+                                                                    return updated;
+                                                                })
+                                                            }
+                                                        />
+                                                        <Button
+                                                            onClick={() => handleSecretCreation(`${stage.name}@${variable.value}`, localSecret?.value || "")}>
+                                                            Save
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            );
-                        }
+                                <Divider className="my-10" soft bleed/>
+                            </React.Fragment>
+                        );
                     } else if (baseType === NodeVariableType.Dict) {
                         return (
                             <div key={nodeId + "-" + variable.handle}>
@@ -451,6 +504,27 @@ const PublishedVariables: React.FC<Props> = ({
 
             {activeTab?.group.playConfigNode && (
                 <>
+                    <div className="flex items-center gap-4 justify-end">
+                        <Select
+                            value={selectedStage}
+                            onChange={(e) => setSelectedStage(e.target.value)}
+                        >
+                            {stages.map((stage) => (
+                            <option key={stage.name} value={stage.name}>
+                                {stage.name}
+                            </option>
+                            ))}
+                        </Select>
+
+                        <button
+                            type="button"
+                            className="flex items-center gap-2 rounded bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition"
+                            onClick={(e) => handlePlay(e, activeTab.group.playConfigNode!.id, selectedStage)}
+                        >
+                            <PlayIcon className="h-5 w-5"/>
+                            Run
+                        </button>
+                    </div>
                     {(() => {
                         const result = getMockResultForNode?.(activeTab.group.playConfigNode!.id);
 
@@ -465,18 +539,6 @@ const PublishedVariables: React.FC<Props> = ({
                             </div>
                         );
                     })()}
-                    <div className="flex justify-end">
-
-
-                        <button
-                            type="button"
-                            className="flex items-center gap-2 rounded bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition"
-                            onClick={(e) => handlePlay(e, activeTab.group.playConfigNode!.id)}
-                        >
-                            <PlayIcon className="h-5 w-5"/>
-                            Run
-                        </button>
-                    </div>
                 </>
             )}
         </div>

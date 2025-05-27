@@ -41,6 +41,7 @@ import useSchedulesStore from '@/stores/schedulesStore';
 import useProjectSecretsStore from '@/stores/projectSecretsStore';
 import useServicesStore from '@/stores/servicesStore';
 import {useHistoryStore} from '@/stores/historyStore';
+import HomeIntroTour from "@/components/guidedtour/home-intro-tour";
 
 export default function Home() {
     const {projects, fetchProjects} = useProjectsStore();
@@ -116,6 +117,7 @@ export default function Home() {
 
     return (
         <ApplicationLayout>
+            <HomeIntroTour />
             <Heading>Projects</Heading>
 
             <div className="mt-8 flex items-end justify-between">
@@ -137,6 +139,7 @@ export default function Home() {
                             showTrashed ? 'bg-zinc-600 text-white' : 'bg-zinc-800 text-zinc-400'
                         } border-t border-b border-r border-zinc-500 rounded-r-md hover:bg-zinc-800`}
                         title="Show trashed projects"
+                        data-tour-id="trash-toggle"
                     >
                         <TrashIcon
                             className={`w-4 h-4 ${showTrashed ? 'text-white' : 'text-zinc-500'}`}
@@ -232,6 +235,7 @@ export default function Home() {
                                 onChange={e => setNewProjectName(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleCreateProject()}
                                 className={error ? 'border-red-500' : ''}
+                                data-tour-id="create-project"
                             />
                             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
                         </TableCell>

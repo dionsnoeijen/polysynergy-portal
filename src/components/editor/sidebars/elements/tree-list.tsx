@@ -13,21 +13,23 @@ type ListProps<T extends ListItemWithId> = {
     addDisabled?: boolean;
     title?: string;
     fundamental: Fundamental;
+    dataTourId: null | string;
     toggleOpen?: (isOpen: boolean) => void;
 };
 
 export default function TreeList<T extends ListItemWithId>({
-                                                               items,
-                                                               activeItem = null,
-                                                               formEditingItem = null,
-                                                               renderItem,
-                                                               addButtonClick,
-                                                               addDisabled = false,
-                                                               title = "List",
-                                                               fundamental,
-                                                               toggleOpen = () => {
-                                                               },
-                                                           }: ListProps<T>): React.JSX.Element {
+    items,
+    activeItem = null,
+    formEditingItem = null,
+    renderItem,
+    addButtonClick,
+    addDisabled = false,
+    title = "List",
+    fundamental,
+    dataTourId = null,
+    toggleOpen = () => {
+    },
+}: ListProps<T>): React.JSX.Element {
     const openTree = useEditorStore((state) => state.openTree);
     const closeTree = useEditorStore((state) => state.closeTree);
     const isOpen = useEditorStore((state) => state.isTreeOpen(fundamental));
@@ -68,6 +70,7 @@ export default function TreeList<T extends ListItemWithId>({
                     className={`flex items-center shadow-sm justify-between border border-sky-500 p-1 pl-2 pr-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
                         isOpen ? " rounded-bl-none rounded-br-none" : ""
                     }`}
+                    data-tour-id={dataTourId ?? null}
                 >
                     <h4>{title}</h4>
                     <button type="button" onClick={() => handleTreeToggle(isOpen)}>
@@ -117,7 +120,7 @@ export default function TreeList<T extends ListItemWithId>({
     ) : (
         <div className="relative">
             {isFormOpen && (
-                <div className="absolute inset-0 z-10 bg-black/10 cursor-not-allowed"/>
+                <div className="absolute inset-0 z-10 bg-black/40 cursor-not-allowed"/>
             )}
             <div className="mt-[10px]">
                 {addButtonClick && (
@@ -126,6 +129,7 @@ export default function TreeList<T extends ListItemWithId>({
                             disabled={addDisabled}
                             onClick={addButtonClick}
                             plain
+                            data-tour-id={dataTourId ?? null}
                             className="w-full hover:cursor-pointer p-0 border border-dotted border-white/50"
                         >
                             {title} <PlusIcon/>

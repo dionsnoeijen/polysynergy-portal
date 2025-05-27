@@ -74,11 +74,11 @@ export function ApplicationLayout({
                         <SidebarSpacer />
 
                         <SidebarSection>
-                            <SidebarItem href="#">
+                            <SidebarItem href="/support">
                                 <QuestionMarkCircleIcon />
                                 <SidebarLabel>Support</SidebarLabel>
                             </SidebarItem>
-                            <SidebarItem href="#">
+                            <SidebarItem href="/changelog">
                                 <SparklesIcon />
                                 <SidebarLabel>Changelog</SidebarLabel>
                             </SidebarItem>

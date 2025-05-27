@@ -42,12 +42,13 @@ export const createProjectSecretAPI = async (
 
 export const updateProjectSecretAPI = async (
     projectId: string,
-    secretId: string,
-    secret_value: string
+    key: string,
+    secret_value: string,
+    stage: string
 ): Promise<Secret> => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/secrets/${secretId}/`,
+        `${config.API_URL}/projects/${projectId}/secrets/`,
         {
             method: "PUT",
             headers: {
@@ -55,7 +56,7 @@ export const updateProjectSecretAPI = async (
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${idToken}`,
             },
-            body: JSON.stringify({ secret_value }),
+            body: JSON.stringify({ key, secret_value, stage }),
         }
     );
     return response.json();
@@ -63,18 +64,20 @@ export const updateProjectSecretAPI = async (
 
 export const deleteProjectSecretAPI = async (
     projectId: string,
-    secretId: string
+    key: string
 ): Promise<{ message: string }> => {
     const idToken = getIdToken();
 
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/secrets/${secretId}/`,
+        `${config.API_URL}/projects/${projectId}/secrets/`,
         {
             method: "DELETE",
             headers: {
                 Accept: "application/json",
+                "Content-Type": "application/json",
                 Authorization: `Bearer ${idToken}`,
             },
+            body: JSON.stringify({ key }),
         }
     );
     if (response.status === 204) {

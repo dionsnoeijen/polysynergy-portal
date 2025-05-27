@@ -101,6 +101,7 @@ export const updateNodeSetupRouteVersionAPI = (
 
 export const publishNodeSetupScheduleVersionAPI = (
     versionId: string,
+    stage: string
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
@@ -112,12 +113,14 @@ export const publishNodeSetupScheduleVersionAPI = (
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${idToken}`,
             },
+            body: JSON.stringify({ stage }),
         }
     );
 }
 
 export const unpublishNodeSetupScheduleVersionAPI = (
     versionId: string,
+    stage: string
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
@@ -129,9 +132,29 @@ export const unpublishNodeSetupScheduleVersionAPI = (
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${idToken}`,
             },
+            body: JSON.stringify({ stage }),
         }
     );
 }
+
+export const updateNodeSetupScheduleVersionAPI = (
+    scheduleId: string,
+    stage: string
+): Promise<Response> => {
+    const idToken = getIdToken();
+    return fetch(
+        `${config.API_URL}/node-setup/schedule/${scheduleId}/update-stage/`,
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ stage }),
+        }
+    );
+};
 
 export const createNodeSetupVersionDraftAPI = async (
     setupId: string,

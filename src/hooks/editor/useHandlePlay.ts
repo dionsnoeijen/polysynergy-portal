@@ -3,6 +3,7 @@ import useEditorStore from "@/stores/editorStore";
 import useMockStore from "@/stores/mockStore";
 import React from "react";
 import {getNodeExecutionDetails} from "@/api/executionApi";
+import useListenerStore from "@/stores/listenerStore";
 
 export const useHandlePlay = () => {
     const setMockResultForNode = useMockStore((state) => state.setMockResultForNode);
@@ -11,7 +12,7 @@ export const useHandlePlay = () => {
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
 
-    return async (e: React.MouseEvent, nodeId: string) => {
+    return async (e: React.MouseEvent, nodeId: string, subStage: string) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -21,7 +22,16 @@ export const useHandlePlay = () => {
             clearMockStore();
             setIsExecuting('Running...');
 
-            const response = await runMockApi(activeProjectId, activeVersionId, nodeId);
+            const response = await runMockApi(
+                activeProjectId,
+                activeVersionId,
+                nodeId,
+                'mock',
+                subStage
+            );
+            const setListenerActive =
+                useListenerStore.getState().setListenerState;
+            setListenerActive(activeVersionId, true);
             const data = await response.json();
             const result = data.result.body ? JSON.parse(data.result.body) : data.result;
 
@@ -31,7 +41,9 @@ export const useHandlePlay = () => {
                 activeVersionId as string,
                 result.run_id,
                 lastNode.id,
-                lastNode.order
+                lastNode.order,
+                'mock',
+                subStage
             );
 
             setMockResultForNode(nodeId, executeResult);

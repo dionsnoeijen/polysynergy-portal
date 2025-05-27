@@ -27,6 +27,7 @@ export default function ProjectVariableTree(): ReactElement {
             activeItem={activeProjectVariableId}
             formEditingItem={formEditRecordId}
             fundamental={Fundamental.Variable}
+            dataTourId={"add-environment-variable-button"}
             renderItem={(variable: NodeVariableWithId) => (
                 <div className="flex justify-between items-center w-full">
                     <span className="select-none dark:text-gray-200/80">

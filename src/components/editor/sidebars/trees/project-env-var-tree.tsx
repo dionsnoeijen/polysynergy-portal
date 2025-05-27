@@ -23,7 +23,7 @@ export default function ProjectEnvVarTree(): ReactElement {
     };
 
     const handleAddEnvVarNode = (mouseX: number, mouseY: number, key: string) => {
-        let node: Node | undefined = getAvailableNodeByPath('nodes.nodes.env.variable_env.VariableEnv');
+        let node: Node | undefined = getAvailableNodeByPath('nodes.nodes.environment.variable_environment.VariableEnvironment');
         if (!node) return;
 
         node = JSON.parse(JSON.stringify(node)) as Node;
@@ -40,7 +40,7 @@ export default function ProjectEnvVarTree(): ReactElement {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const keyVar = node.variables.find((v: any) => v.handle === "key");
+        const keyVar = node.variables.find((v: any) => v.handle === "true_path");
         if (keyVar) {
             keyVar.value = key;
         }
@@ -55,6 +55,7 @@ export default function ProjectEnvVarTree(): ReactElement {
             activeItem={activeProjectVariableId}
             formEditingItem={formEditRecordId}
             fundamental={Fundamental.EnvVar}
+            dataTourId={"add-environment-variable-button"}
             renderItem={(envVar: EnvVar) => (
                 <div className="flex justify-between items-center w-full">
                     <span className="select-none dark:text-gray-200/80">{envVar.key}</span>

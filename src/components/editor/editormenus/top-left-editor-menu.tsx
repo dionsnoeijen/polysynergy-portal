@@ -77,6 +77,7 @@ const TopLeftEditorMenu: React.FC = () => {
                         className={`group w-full text-lg font-semibold text-white rounded p-2 bg-zinc-300 hover:bg-zinc-600`}
                         onMouseDown={() => setShowAddingNode(true)}
                         title={'Add node'}
+                        data-tour-id="add-node-button"
                     >
                         <PlusIcon className={"w-4 h-4 text-zinc-800 group-hover:text-zinc-100"}/>
                     </button>
@@ -110,6 +111,7 @@ const TopLeftEditorMenu: React.FC = () => {
                         className={`w-full text-lg font-semibold ${!hasMockData ? 'text-zinc-600' : 'text-white'} rounded p-2 ${!hasMockData ? 'bg-transparent' : 'bg-sky-500'}`}
                         onMouseDown={clearMockStore}
                         title={'Clear mock data'}
+                        data-tour-id="clear-mock-data-button"
                     >
                         <ArrowUturnUpIcon className="w-4 h-4"/>
                     </button>
@@ -119,6 +121,7 @@ const TopLeftEditorMenu: React.FC = () => {
                         className={`w-full text-lg font-semibold text-white rounded p-2 hover:bg-zinc-600`}
                         onMouseDown={(e) => handlePlay(e, mainPlayNode?.id as string)}
                         title={'Play'}
+                        data-tour-id="main-play-button"
                     >
                         <PlayIcon className="w-4 h-4"/>
                     </button>
@@ -132,6 +135,7 @@ const TopLeftEditorMenu: React.FC = () => {
                         className={`w-full text-lg font-semibold text-white rounded p-2`}
                         onMouseDown={() => openForm(FormType.PublishedVariableForm)}
                         title={'Published variables'}
+                        data-tour-id="published-variable-button"
                     >
                         <AdjustmentsHorizontalIcon className="w-4 h-4"/>
                     </button>
@@ -139,20 +143,20 @@ const TopLeftEditorMenu: React.FC = () => {
 
                 <Divider className={'mt-1 mb-1'}/>
 
-                <div className="flex flex-col items-start justify-center w-full h-full rounded hover:bg-zinc-600">
-                    <button
-                        type="button"
-                        className={`w-full text-lg font-semibold text-white rounded p-2 ${editorMode === EditorMode.Draw ? 'bg-sky-500' : 'bg-transparent'}`}
-                        onMouseDown={() => {
-                            setEditorMode(EditorMode.Draw)
-                        }}
-                        title={'Draw'}
-                    >
-                        <PaintBrushIcon className="w-4 h-4"/>
-                    </button>
-                </div>
+                {/*<div className="flex flex-col items-start justify-center w-full h-full rounded hover:bg-zinc-600">*/}
+                {/*    <button*/}
+                {/*        type="button"*/}
+                {/*        className={`w-full text-lg font-semibold text-white rounded p-2 ${editorMode === EditorMode.Draw ? 'bg-sky-500' : 'bg-transparent'}`}*/}
+                {/*        onMouseDown={() => {*/}
+                {/*            setEditorMode(EditorMode.Draw)*/}
+                {/*        }}*/}
+                {/*        title={'Draw'}*/}
+                {/*    >*/}
+                {/*        <PaintBrushIcon className="w-4 h-4"/>*/}
+                {/*    </button>*/}
+                {/*</div>*/}
 
-                <Divider className={'mt-1 mb-1'}/>
+                {/*<Divider className={'mt-1 mb-1'}/>*/}
 
                 <div className="flex flex-col items-start justify-center w-full h-full">
                     <button
@@ -162,6 +166,7 @@ const TopLeftEditorMenu: React.FC = () => {
                             setEditorMode(EditorMode.BoxSelect)
                         }}
                         title={'Box select'}
+                        data-tour-id="box-select-button"
                     >
                         <StopIcon className="w-4 h-4"/>
                     </button>
@@ -172,6 +177,7 @@ const TopLeftEditorMenu: React.FC = () => {
                             setEditorMode(EditorMode.Select)
                         }}
                         title={'Select'}
+                        data-tour-id="pointer-select-button"
                     >
                         <CursorArrowRaysIcon className="w-4 h-4"/>
                     </button>

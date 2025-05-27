@@ -111,15 +111,22 @@ export default function AccountsPage() {
                             <TableCell>{format(new Date(account.created_at), "dd-MM-yyyy HH:mm:ss")}</TableCell>
                             <TableCell>
                                 {account.active ?
-                                    <CheckIcon className={'h-4 w-4'} />
-                                    : <XMarkIcon className={'h-4 w-4'} />
+                                    <CheckIcon className={'h-4 w-4'}/>
+                                    : <XMarkIcon className={'h-4 w-4'}/>
                                 }
                             </TableCell>
                             <TableCell className={'text-right'}>
-                                {!account.active && (
-                                    <Button className={'mr-1'} onClick={() => handleResendInvitation(account.id)}><ArrowPathIcon className="h-4 w-4"/></Button>
+                                {loggedInAccount.id !== account.id && (
+                                    <>
+                                        {!account.active && (
+                                            <Button className={'mr-1'}
+                                                    onClick={() => handleResendInvitation(account.id)}><ArrowPathIcon
+                                                className="h-4 w-4"/></Button>
+                                        )}
+                                        <Button onClick={() => handleDeleteAccount(account.id)}><TrashIcon
+                                            className="h-4 w-4"/></Button>
+                                    </>
                                 )}
-                                <Button onClick={() => handleDeleteAccount(account.id)}><TrashIcon className="h-4 w-4"/></Button>
                             </TableCell>
                         </TableRow>
                     ))}

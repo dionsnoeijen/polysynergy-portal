@@ -39,7 +39,8 @@ const Output: React.FC = (): React.ReactElement => {
             activeVersionId as string,
             node.runId,
             node.id,
-            node.order
+            node.order,
+            'mock'
         );
 
         setExpandedNodes((prev) => ({

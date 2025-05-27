@@ -55,6 +55,7 @@ export default function SecretTree(): ReactElement {
             activeItem={activeProjectVariableId}
             formEditingItem={formEditRecordId}
             fundamental={Fundamental.Secret}
+            dataTourId="add-secret-button"
             renderItem={(secret: Secret) => (
                 <div className="flex justify-between items-center w-full">
                     <span className="select-none dark:text-gray-200/80">{secret.key}</span>

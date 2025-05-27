@@ -22,6 +22,7 @@ export default function ScheduleTree(): ReactElement {
             activeItem={activeScheduleId}
             formEditingItem={formEditRecordId}
             fundamental={Fundamental.Schedule}
+            dataTourId={'add-schedule-button'}
             renderItem={(schedule: Schedule) => (
                 <>
                     <Link href={`/project/${activeProjectId}/schedule/${schedule.id}`}

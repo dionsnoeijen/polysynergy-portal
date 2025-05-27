@@ -15,6 +15,7 @@ import dynamic from 'next/dynamic';
 import VersionPublishedMenu from "@/components/editor/editormenus/version-published-menu";
 import fetchAndApplyNodeSetup from "@/utils/fetchNodeSetup";
 import TopLeftEditorMenu from "@/components/editor/editormenus/top-left-editor-menu";
+import TopRightEditorListener from "@/components/editor/editormenus/top-right-editor-listener";
 import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
 
 import useEditorStore from "@/stores/editorStore";
@@ -22,6 +23,8 @@ import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useMockStore from "@/stores/mockStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
+import EditorIntroTour from "@/components/guidedtour/editor-intro-tour";
+import ItemManagerIntroTour from "@/components/guidedtour/item-manager-intro-tour";
 
 // const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false })
 const Editor = dynamic(() => import('@/components/editor/editor'), {
@@ -270,6 +273,7 @@ const EditorLayout = ({
 
     return (
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
+            <ItemManagerIntroTour />
             {isExecuting && (
                 // This is to make sure interactions are blocked during execution
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -287,7 +291,7 @@ const EditorLayout = ({
             <div className="absolute top-0 right-0 left-0"
                  style={{height: outputClosed ? windowHeight - 10 : height.horizontalEditorLayout}}>
                 {!itemManagerClosed && (
-                    <div style={{width: width.itemManager}} className="absolute top-0 left-0 bottom-0 max-lg:hidden">
+                    <div style={{width: width.itemManager}} className="absolute top-0 left-0 bottom-0">
                         <div className="absolute inset-[10px]">
                             <ItemManager toggleClose={toggleCloseItemManager}/>
                         </div>
@@ -323,6 +327,7 @@ const EditorLayout = ({
                                         {/*<DrawingLayer panPosition={panPosition} zoomFactor={zoomFactor} />*/}
                                         <Editor key={'editor-' + activeVersionId}/>
                                         <BottomDrawToolbar/>
+                                        <TopRightEditorListener />
                                         <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
                                         <VersionPublishedMenu routeUuid={routeUuid} scheduleUuid={scheduleUuid}/>
                                     </>

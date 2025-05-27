@@ -150,6 +150,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                             <PlayButton
                                 disabled={node.view.disabled}
                                 nodeId={node.id}
+                                staged={node.path === 'nodes.nodes.play.play.Play'}
                             />
                         )}
                     </div>

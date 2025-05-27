@@ -11,8 +11,14 @@ interface FormattedNodeOutputProps {
 const RenderValue = ({label, value}: { label: string; value: any }) => {
     const {theme} = useTheme();
 
+    const isProbablyHtml = (value: string) => {
+        const htmlTagRegex = /<\/?[a-z][^>]*>/i;
+        const customPlaceholderRegex = /^<[^>]+>$/;
+        return htmlTagRegex.test(value) && !customPlaceholderRegex.test(value);
+    };
+
     if (typeof value === "string") {
-        const isHtml = /<\/?[a-z][\s\S]*>/i.test(value);
+        const isHtml = isProbablyHtml(value);
         return (
             <div className="mb-2">
                 <div className="text-xs font-bold text-white/70">{label}</div>
@@ -33,15 +39,15 @@ const RenderValue = ({label, value}: { label: string; value: any }) => {
     if (typeof value === "object" && value !== null) {
         try {
             const stringified = JSON.stringify(value);
-            JSON.parse(stringified); // Confirm it's valid JSON
+            JSON.parse(stringified);
             return (
                 <div className="mb-2">
                     <div className="text-xs font-bold text-white/70 mb-1">{label}</div>
-                        <div className="bg-white/5 rounded p-3">
-                            <div className="relative overflow-y-auto">
+                    <div className="bg-white/5 rounded p-3">
+                        <div className="relative overflow-y-auto">
                             <ReactJson
                                 src={value}
-                                name={false} // Removes the root key label
+                                name={false}
                                 theme={theme === "dark" ? "monokai" : "rjv-default"}
                                 collapsed={false}
                                 displayDataTypes={false}

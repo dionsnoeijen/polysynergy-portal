@@ -469,8 +469,18 @@ export interface PublishMatrixRoute {
     versions: PublishMatrixVersion[];
 }
 
+export interface PublishMatrixSchedule {
+    id: string;
+    name: string;
+    cron_expression: string;
+    published_stages: string[];
+    stages_can_update: string[];
+    versions: PublishMatrixVersion[];
+}
+
 export interface PublishMatrixResponse {
     stages: Stage[];
+    schedules: PublishMatrixSchedule[];
     routes: PublishMatrixRoute[];
 }
 

@@ -23,6 +23,7 @@ export default function BlueprintTree(): ReactElement {
             activeItem={activeBlueprintId}
             formEditingItem={formEditRecordId}
             fundamental={Fundamental.Blueprint}
+            dataTourId={"add-blueprint-button"}
             renderItem={(blueprint: Blueprint) => (
                 <>
                     <Link

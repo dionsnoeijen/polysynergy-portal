@@ -20,6 +20,7 @@ export default function ConfigTree(): ReactElement {
             activeItem={activeConfigId}
             formEditingItem={formEditRecordId}
             fundamental={Fundamental.Config}
+            dataTourId={"add-config-button"}
             renderItem={(config: Config) => (
                 <div className={`flex justify-between items-center w-full`}>
                     <Link

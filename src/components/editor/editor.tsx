@@ -33,6 +33,7 @@ import {EditorMode} from "@/types/types";
 import {useAutoFitNodes} from "@/hooks/editor/nodes/useAutoFitNodes";
 import {useExecutionGlowListener} from "@/hooks/editor/nodes/useExecutionGlowListener";
 import {useExecutionStateListener} from "@/hooks/editor/nodes/useExecutionStateListener";
+import EditorIntroTour from "@/components/guidedtour/editor-intro-tour";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -315,6 +316,7 @@ export default function Editor() {
             }}
             ref={contentRef}
         >
+            <EditorIntroTour />
             {!isDraft && (
                 <div
                     className={`absolute top-0 left-0 w-full h-full z-20 pointer-events-auto 

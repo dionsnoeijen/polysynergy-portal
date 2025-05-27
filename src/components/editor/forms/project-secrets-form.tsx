@@ -8,16 +8,17 @@ import {Secret, FormType} from "@/types/types";
 import {XMarkIcon} from "@heroicons/react/24/outline";
 import {
     createProjectSecretAPI,
-    // updateProjectSecretAPI,
+    updateProjectSecretAPI,
     fetchProjectSecretDetailAPI,
     deleteProjectSecretAPI
 } from "@/api/secretsApi";
 import {Text} from "@/components/text";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
-import {useParams, useRouter} from "next/navigation";
+
 import useProjectSecretsStore from "@/stores/projectSecretsStore";
-import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
 import useStagesStore from "@/stores/stagesStore";
+
+import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
 
 const ProjectSecretsForm: React.FC = () => {
     const stagesFromStore = useStagesStore((state) => state.stages);
@@ -28,9 +29,6 @@ const ProjectSecretsForm: React.FC = () => {
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const fetchSecrets = useProjectSecretsStore((state) => state.fetchSecrets);
-
-    const params = useParams();
-    const router = useRouter();
 
     const [key, setKey] = useState("");
     const [values, setValues] = useState<Record<string, string>>({});
@@ -60,11 +58,11 @@ const ProjectSecretsForm: React.FC = () => {
         }
         try {
             if (formType === FormType.EditProjectSecret && activeProjectId) {
-                // await updateProjectSecretAPI(activeProjectId, key, values[stage], stage);
+                await updateProjectSecretAPI(activeProjectId, key, values[stage], stage);
             } else if (activeProjectId) {
                 await createProjectSecretAPI(activeProjectId, key, values[stage], stage);
             }
-            await fetchSecrets();
+            await fetchSecretsWithRetry(fetchSecrets);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message || "An error occurred.");
@@ -81,14 +79,7 @@ const ProjectSecretsForm: React.FC = () => {
         closeForm("Secret deleted successfully");
         setShowDeleteAlert(false);
         await fetchSecretsWithRetry(fetchSecrets);
-
-        let specific = "";
-        if (params.routeUuid) specific = "/route/" + params.routeUuid;
-        else if (params.scheduleUuid) specific = "/schedule/" + params.scheduleUuid;
-        else if (params.blueprintUuid) specific = "/blueprint/" + params.blueprintUuid;
-
-        router.push(`/project/${params.projectUuid}${specific}`);
-    }, [activeProjectId, closeForm, fetchSecrets, formEditRecordId, params, router]);
+    }, [activeProjectId, closeForm, fetchSecrets, formEditRecordId]);
 
     return (
         <form onSubmit={handleCancel} className="p-10">
@@ -163,8 +154,12 @@ const ProjectSecretsForm: React.FC = () => {
             )}
 
             {showDeleteAlert && (
-                <Alert size="md" className="text-center" open={showDeleteAlert}
-                       onClose={() => setShowDeleteAlert(false)}>
+                <Alert
+                    size="md"
+                    className="text-center"
+                    open={showDeleteAlert}
+                    onClose={() => setShowDeleteAlert(false)}
+                >
                     <AlertTitle>Are you sure you want to delete this secret?</AlertTitle>
                     <AlertDescription>This action cannot be undone.</AlertDescription>
                     <AlertActions>

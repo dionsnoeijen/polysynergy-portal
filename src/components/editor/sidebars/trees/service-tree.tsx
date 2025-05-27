@@ -57,6 +57,7 @@ export default function ServiceTree(): ReactElement {
             formEditingItem={formEditRecordId}
             fundamental={Fundamental.Service}
             toggleOpen={() => {setAddDisabled(!(selectedNodes.length === 1))}}
+            dataTourId={"add-service-button"}
             renderItem={(service: Service) => (
                 <div className="flex justify-between items-center w-full">
                     <span className={`select-none`}>{service.name}</span>

@@ -11,7 +11,12 @@ import {Button} from "@/components/button";
 import useConnectionsStore from "@/stores/connectionsStore";
 import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 
-const VariableTypeList: React.FC<VariableTypeProps> = ({ variable, nodeId, publishedButton = true  }: VariableTypeProps): React.ReactElement => {
+const VariableTypeList: React.FC<VariableTypeProps> = ({
+    variable,
+    nodeId,
+    publishedButton = true,
+    inDock = true
+}: VariableTypeProps): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
 
     const openForm = useEditorStore((state) => state.openForm);
@@ -35,7 +40,7 @@ const VariableTypeList: React.FC<VariableTypeProps> = ({ variable, nodeId, publi
                             </Fieldset>
                         </div>
                     )}
-                    <div className={`border border-white/20 rounded-md relative z-0 ${variable?.dock?.enabled === false || variable.published ? 'opacity-40 pointer-events-none' : ''}`}>
+                    <div className={`border border-white/20 rounded-md relative z-0 ${variable?.dock?.enabled === false || (variable.published && inDock) ? 'opacity-40 pointer-events-none' : ''}`}>
                         <Table dense className={"bg-white/5"}>
                             <TableHead>
                                 <TableRow>

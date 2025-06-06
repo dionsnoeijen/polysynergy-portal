@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { Node } from "@/types/types";
 import { fetchAvailableNodesAPI } from "@/api/availableNodesApi";
 import { addIdsToAvailableNodes } from "@/stores/helpers/addIdsToAvailableNodes";
+import useEditorStore from "@/stores/editorStore";
 
 type AvailableNodeStore = {
     selectedNodeIndex: number;
@@ -50,11 +51,13 @@ const useAvailableNodeStore = create<AvailableNodeStore>((set, get) => ({
         set({ filteredAvailableNodes: filtered });
     },
     fetchAvailableNodes: async () => {
+        const activeProjectId = useEditorStore.getState().activeProjectId;
+        if (!activeProjectId) return;
         try {
-            let data: Node[] = await fetchAvailableNodesAPI();
+            let data: Node[] = await fetchAvailableNodesAPI(activeProjectId);
             data = addIdsToAvailableNodes(data);
             set({ availableNodes: data });
-            get().filterAvailableNodes(); // Filter na fetch
+            get().filterAvailableNodes();
         } catch (error) {
             console.error("Failed to fetch available nodes:", error);
         }

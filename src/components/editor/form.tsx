@@ -11,7 +11,6 @@ import NodeEditorForm from "@/components/editor/forms/node-editor-form";
 import JsonEditorForm from "@/components/editor/forms/json-editor-form";
 import PlaceServiceForm from "@/components/editor/forms/place-service-form";
 import PlaceBlueprintForm from "@/components/editor/forms/place-blueprint-form";
-import ProjectVariablesForm from "@/components/editor/forms/project-variables-form";
 import ProjectSecretsForm from "@/components/editor/forms/project-secrets-form";
 import ProjectPublishForm from "@/components/editor/forms/project-publish-form";
 import ConfigForm from "@/components/editor/forms/config-form";
@@ -20,6 +19,7 @@ import ListVariableForm from "@/components/editor/forms/list-variable-form";
 import PublishedVariableForm from "@/components/editor/forms/published-variable-form";
 import TemplateEditorForm from "@/components/editor/forms/template-editor-form";
 import ProjectEnvVarsForm from "@/components/editor/forms/project-env-vars-form";
+import PublishedVariableSettingsForm from "@/components/editor/forms/published-variable-settings-form";
 
 const Form: React.FC = () => {
     const formType = useEditorStore((state) => state.formType);
@@ -84,12 +84,6 @@ const Form: React.FC = () => {
                 <PlaceBlueprintForm />
             )}
             {(
-                formType === FormType.AddProjectVariable ||
-                formType === FormType.EditProjectVariable
-            ) && (
-                <ProjectVariablesForm />
-            )}
-            {(
                 formType === FormType.AddProjectSecret ||
                 formType === FormType.EditProjectSecret
             ) && (
@@ -115,6 +109,11 @@ const Form: React.FC = () => {
                 formType === FormType.EditTemplate
             ) && (
                 <TemplateEditorForm />
+            )}
+            {(
+                formType === FormType.PublishedVariableSettings
+            ) && (
+                <PublishedVariableSettingsForm />
             )}
         </div>
     );

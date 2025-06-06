@@ -28,6 +28,8 @@ type Props = {
     isMirror?: boolean,
     onlyIn?: boolean,
     onlyOut?: boolean,
+    categoryMainTextColor?: string,
+    categorySubTextColor?: string
 };
 
 const NodeVariables: React.FC<Props> = ({
@@ -36,11 +38,14 @@ const NodeVariables: React.FC<Props> = ({
     isMirror = false,
     onlyIn = false,
     onlyOut = false,
+    categoryMainTextColor = 'text-slate-300',
+    categorySubTextColor = 'text-slate-400'
 }): React.ReactElement => {
 
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
     const getNodeVariableOpenState = useNodesStore((state) => state.getNodeVariableOpenState);
     const toggleNodeVariableOpenState = useNodesStore((state) => state.toggleNodeVariableOpenState);
+    const isNodeInService = useNodesStore((state) => state.isNodeInService([node.id]));
 
     const handleToggle = (handle: string): (() => void) => {
         return () => {
@@ -63,7 +68,19 @@ const NodeVariables: React.FC<Props> = ({
                     nodeId = 'temp-id';
                 }
                 const isOpen = getNodeVariableOpenState(nodeId, variable.handle);
-                return getVariableComponent(variable, isOpen, handleToggle, nodeId, node, isMirror, onlyIn, onlyOut);
+                return getVariableComponent(
+                    variable,
+                    isOpen,
+                    handleToggle,
+                    nodeId,
+                    node,
+                    isMirror,
+                    onlyIn,
+                    onlyOut,
+                    categoryMainTextColor,
+                    categorySubTextColor,
+                    isNodeInService
+                );
             })}
         </>
     );
@@ -77,7 +94,10 @@ const getVariableComponent = (
     node: Node,
     isMirror: boolean,
     onlyIn: boolean,
-    onlyOut: boolean
+    onlyOut: boolean,
+    categoryMainTextColor: string,
+    categorySubTextColor?: string,
+    isNodeInService: boolean = false
 ) => {
     const type = interpretNodeVariableType(variable);
 
@@ -97,6 +117,9 @@ const getVariableComponent = (
         onlyOut,
         groupId: (onlyIn || onlyOut) ? node.id : undefined,
         isMirror,
+        categoryMainTextColor,
+        categorySubTextColor,
+        isInService: isNodeInService
     };
 
     switch (type.baseType) {

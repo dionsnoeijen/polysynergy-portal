@@ -1,4 +1,4 @@
-import {ReactElement} from "react";
+import React, {ReactElement} from "react";
 import useSchedulesStore from "@/stores/schedulesStore";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import Link from "next/link";
@@ -31,16 +31,16 @@ export default function ScheduleTree(): ReactElement {
                             setIsExecuting('Loading Schedule');
                             setTimeout(() => setIsExecuting(null), 500);
                         }}
-                        className={`block flex-1 truncate dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeScheduleId === schedule.id || formEditRecordId === schedule.id) ? 'dark:text-white' : 'dark:text-zinc-500'}`}
+                        className={`block flex-1 truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeScheduleId === schedule.id || formEditRecordId === schedule.id) ? 'text-white' : 'dark:text-zinc-500'}`}
                     >
                         {schedule.name}
                     </Link>
                     <button
                         onClick={() => openForm(FormType.EditSchedule, schedule.id)}
                         type="button"
-                        className={`p-2 rounded focus:outline-none active:text-zinc-200 group ${activeScheduleId === schedule.id || formEditRecordId === schedule.id ? 'text-white' : 'text-zinc-500 '}`}
+                        className={`p-2 rounded focus:outline-none active:text-zinc-200 group`}
                     >
-                        <PencilIcon className={'w-4 h-4 transition-colors duration-200'} />
+                        <PencilIcon className={`w-4 h-4 transition-colors duration-200 ${activeScheduleId === schedule.id || formEditRecordId === schedule.id ? 'text-white' : 'text-sky-500 dark:text-white/70 '}`}/>
                     </button>
                 </>
             )}

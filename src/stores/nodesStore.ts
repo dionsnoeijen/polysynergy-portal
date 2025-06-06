@@ -34,6 +34,7 @@ export type NodesStore = {
     getNodeVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
     getNodeSubVariable: (nodeId: string, variableHandle: string) => NodeVariable | undefined;
     getSecretNodes: () => Node[];
+    getEnvironmentVariableNodes: () => Node[];
     updateNodeVariablePublishedTitle: (nodeId: string, variableHandle: string, title: string) => void;
     updateNodeVariablePublishedDescription: (nodeId: string, variableHandle: string, description: string) => void;
     getNodesToRender: () => Node[];
@@ -321,8 +322,6 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             };
         }
 
-        console.log('ADDING NODE', node);
-
         set((state) => ({
             nodes: [...state.nodes, node]
         }));
@@ -456,11 +455,17 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         const nodeIdsOfNodesInClosedGroups = get()
             .getAllNodeIdsOfNodesThatAreInAClosedGroup();
 
-        return get().nodes.filter(
+        const visibleNodes = get().nodes.filter(
             (node) =>
                 !nodeIdsOfNodesInClosedGroups.includes(node.id) &&
                 !node.temp
         );
+
+        requestAnimationFrame(() => {
+            useEditorStore.getState().setVisibleNodeCount(visibleNodes.length);
+        });
+
+        return visibleNodes;
     },
 
     getNodesByIds: (nodeIds) => {
@@ -496,6 +501,12 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     getSecretNodes: (): Node[] => {
         return get().nodes.filter(
             (node) => node.path === 'nodes.nodes.secret.variable_secret.VariableSecret'
+        );
+    },
+
+    getEnvironmentVariableNodes: (): Node[] => {
+        return get().nodes.filter(
+            (node) => node.path === 'nodes.nodes.environment.variable_environment.VariableEnvironment'
         );
     },
 
@@ -585,19 +596,35 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     toggleNodeVariablePublished: (nodeId: string, variableHandle: string) => {
         nodesByIdsCache.clear();
 
+        const [mainHandle, subHandle] = variableHandle.split(".");
+
         set((state) => {
             const updatedNodes = state.nodes.map((node) =>
                 node.id === nodeId
                     ? {
                         ...node,
-                        variables: node.variables.map((variable) =>
-                            variable.handle === variableHandle
-                                ? {
+                        variables: node.variables.map((variable) => {
+                            if (variable.handle !== mainHandle) return variable;
+
+                            if (subHandle && Array.isArray(variable.value)) {
+                                return {
                                     ...variable,
-                                    published: !variable.published,
-                                }
-                                : variable
-                        ),
+                                    value: variable.value.map((subVar: NodeVariable) =>
+                                        subVar.handle === subHandle
+                                            ? {
+                                                ...subVar,
+                                                published: !subVar.published,
+                                            }
+                                            : subVar
+                                    ),
+                                };
+                            }
+
+                            return {
+                                ...variable,
+                                published: !variable.published,
+                            };
+                        }),
                     }
                     : node
             );

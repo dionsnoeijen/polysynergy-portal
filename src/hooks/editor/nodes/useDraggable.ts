@@ -16,8 +16,12 @@ const useDraggable = () => {
     const isPasting = useEditorStore((state) => state.isPasting);
     const setIsPasting = useEditorStore((state) => state.setIsPasting);
 
-    const { getNode, updateNodePosition, openedGroup } = useNodesStore();
-    const { findInConnectionsByNodeId, findOutConnectionsByNodeId } = useConnectionsStore();
+    const getNode = useNodesStore((state) => state.getNode);
+    const updateNodePosition = useNodesStore((state) => state.updateNodePosition);
+    const openedGroup = useNodesStore((state) => state.openedGroup);
+
+    const findInConnectionsByNodeId = useConnectionsStore((state) => state.findInConnectionsByNodeId);
+    const findOutConnectionsByNodeId = useConnectionsStore((state) => state.findOutConnectionsByNodeId);
 
     const selectedNodesRef = useRef<string[]>(selectedNodes);
     const initialPositionsRef = useRef<{ [key: string]: { x: number; y: number } }>({});

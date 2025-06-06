@@ -42,7 +42,7 @@ const ScheduleForm: React.FC = () => {
 
     useEffect(() => {
         if (formType === FormType.EditSchedule && formEditRecordId) {
-            const schedule = getSchedule(formEditRecordId);
+            const schedule = getSchedule(formEditRecordId as string);
             if (schedule) {
                 setName(schedule.name);
                 setCronExpression(schedule.cron_expression || "");
@@ -69,7 +69,7 @@ const ScheduleForm: React.FC = () => {
         if (!validateForm()) return;
 
         const payload: Schedule = {
-            id: formEditRecordId ?? undefined,
+            id: formEditRecordId as string ?? undefined,
             name,
             cron_expression: cronExpression,
             start_time,
@@ -101,7 +101,7 @@ const ScheduleForm: React.FC = () => {
         <form onSubmit={handleSubmit} className="p-10">
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>{formType === FormType.AddSchedule ? "Add" : "Edit"} Schedule</Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5"/>
                 </Button>
             </div>
@@ -158,7 +158,7 @@ const ScheduleForm: React.FC = () => {
                         onChange={(date) => setStartTime(date)}
                         showTimeSelect
                         dateFormat="Pp"
-                        className="w-full"
+                        className="w-full border border-zinc-300 p-2 rounded-md"
                     />
                 </div>
             </section>
@@ -177,7 +177,7 @@ const ScheduleForm: React.FC = () => {
                         onChange={(date) => setEndTime(date)}
                         showTimeSelect
                         dateFormat="Pp"
-                        className="w-full"
+                        className="w-full border border-zinc-300 p-2 rounded-md"
                     />
                 </div>
             </section>

@@ -4,8 +4,7 @@ import useEditorStore from "@/stores/editorStore";
 import {FormType, NodeVariable, NodeVariableType, VariableTypeProps} from "@/types/types";
 import {Text} from "@/components/text";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
-import {CheckCircleIcon, PencilIcon, XCircleIcon} from "@heroicons/react/24/outline";
-import {Button} from "@/components/button";
+import {BoltIcon, CheckCircleIcon, PencilIcon, XCircleIcon} from "@heroicons/react/24/outline";
 import {Fieldset} from "@/components/fieldset";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 import useConnectionsStore from "@/stores/connectionsStore";
@@ -14,7 +13,13 @@ import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 const VariableTypeDict: React.FC<VariableTypeProps> = ({
                                                            variable,
                                                            nodeId,
-                                                           publishedButton = true
+                                                           publishedButton = true,
+                                                           inDock = true,
+                                                           categoryBorder = 'border border-sky-200 dark:border-zinc-700',
+                                                           categoryMainTextColor = 'text-sky-500 dark:text-white/70',
+                                                           categorySubTextColor = 'text-sky-800 dark:text-white/70',
+                                                           categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
+                                                           categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900'
                                                        }): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
 
@@ -25,6 +30,19 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
     }
 
     const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isSubValueConnected = useConnectionsStore((state) => state.isValueConnected);
+
+    function isVariableDisabled(variable: NodeVariable, inDock: boolean): boolean {
+        const dockDisabled = variable?.dock?.enabled === false;
+        const mainPublished = variable.published === true;
+        const isArray = Array.isArray(variable.value);
+        const allSubPublished =
+            isArray &&
+            variable.value.length > 0 &&
+            variable.value.every((v) => v.published);
+
+        return dockDisabled || mainPublished || (inDock && allSubPublished);
+    }
 
     return (
         <>
@@ -39,26 +57,27 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
                             </Fieldset>
                         </div>
                     )}
-
-                    <div className={`border border-white/20 rounded-md relative z-0 ${variable?.dock?.enabled === false || variable.published ? 'opacity-40 pointer-events-none' : ''}`}>
-                        <Table dense className={"bg-white/5"}>
+                    <div
+                        className={`border ${categoryBorder} rounded-md relative z-0 ${isVariableDisabled(variable, inDock) ? 'opacity-40 pointer-events-none' : ''}`}>
+                        <Table dense className={`${categoryBackgroundColor} rounded-t-md`}>
                             <TableHead>
                                 <TableRow>
                                     {!(variable.dock && variable.dock.in_switch === false) &&
-                                        <TableHeader className="!py-1 !pl-2 !pr-2">in</TableHeader>}
-                                    <TableHeader className="!py-1">{variable.dock?.key_label || "key"}</TableHeader>
+                                        <TableHeader className="!py-1 !pl-2 !pr-2 text-left">in</TableHeader>}
+                                    <TableHeader
+                                        className="!py-1 text-left">{variable.dock?.key_label || "key"}</TableHeader>
                                     {!(variable.dock && variable.dock.value_field === false) && <TableHeader
-                                        className="!py-1">{variable.dock?.value_label || "value"}</TableHeader>}
+                                        className="!py-1 text-left">{variable.dock?.value_label || "value"}</TableHeader>}
                                     {!(variable.dock && variable.dock.out_switch === false) &&
-                                        <TableHeader className="!py-1 !pl-2 !pr-2">out</TableHeader>}
+                                        <TableHeader className="!py-1 !pl-2 !pr-2 text-left">out</TableHeader>}
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {variable.value === null &&
+                                {variable.value === null || (variable.value as []).length === 0 &&
                                     (
                                         <TableRow className="!py-1">
                                             <TableCell colSpan={4} className="!py-1 !pl-2 !pr-2">
-                                                <Text>No data</Text>
+                                                <Text className={`${categoryMainTextColor}`}>No data</Text>
                                             </TableCell>
                                         </TableRow>
                                     )
@@ -92,13 +111,20 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
                                                         className="!p-1 max-w-[200px] truncate overflow-hidden whitespace-nowrap"
                                                         title={item.value?.toString()}
                                                     >
-                                                        {item.value?.toString()}
+                                                        {isSubValueConnected(nodeId, `${variable.handle}.${item.handle}`)
+                                                            ? <BoltIcon
+                                                                className="w-4 h-4 text-orange-800 dark:text-yellow-300"
+                                                                title="Connected"/>
+                                                            : item.value?.toString()
+                                                        }
                                                     </TableCell>
                                                     {!(variable.dock && variable.dock.out_switch === false) &&
                                                         <TableCell className="!p-1 !pr-2">
                                                             {item.has_out ? (
-                                                                <CheckCircleIcon className={"w-4 h-4"}/>) : (
-                                                                <XCircleIcon className={'w-4 h-4'}/>)}
+                                                                <CheckCircleIcon
+                                                                    className={`w-4 h-4 ${categoryMainTextColor}`}/>) : (
+                                                                <XCircleIcon
+                                                                    className={`w-4 h-4 ${categoryMainTextColor}`}/>)}
                                                         </TableCell>}
                                                 </TableRow>
                                             );
@@ -107,13 +133,13 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
                                     })}
                             </TableBody>
                         </Table>
-                        <Button
-                            plain
-                            className="w-full bg-white/5 hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0 !px-0 !py-0"
+                        <button
+                            className={`group w-full ${categoryBackgroundColor} rounded-br-md rounded-bl-md hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-1 pt-0`}
                             onClick={() => onEdit(nodeId)}
                         >
-                            <PencilIcon className="w-4 h-4 inline text-slate-400"/>
-                        </Button>
+                            <PencilIcon
+                                className="w-4 h-4 inline text-sky-700/50 group-hover:text-sky-700 dark:text-white/50 dark:group-hover:text-white"/>
+                        </button>
                     </div>
                 </div>
             )}

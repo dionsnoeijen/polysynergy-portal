@@ -18,7 +18,7 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
 
     return (
         <div
-            className={`absolute select-none flex items-center justify-center ring-blue-300 bg-zinc-800 bg-opacity-50 backdrop-blur-lg backdrop-opacity-60 rounded-[50%] ${
+            className={`absolute select-none flex items-center justify-center bg-sky-600 dark:bg-zinc-800 bg-opacity-50 backdrop-blur-lg backdrop-opacity-60 rounded-[50%] ${
                 selectedNodes.includes(node.id) ? "shadow-2xl ring-4" : "shadow-sm ring-2"
             } ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'} ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}`}
             style={{

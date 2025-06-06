@@ -5,9 +5,10 @@ import useEditorStore from "@/stores/editorStore";
 import {getNodeExecutionDetails} from "@/api/executionApi";
 import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
 import {Button} from "@/components/button";
-import {Route} from "@/types/types";
+import {Route, Stage} from "@/types/types";
 import {formatSegments} from "@/utils/formatters";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
+import useStagesStore from "@/stores/stagesStore";
 
 const Output: React.FC = (): React.ReactElement => {
     const mockNodes = useMockStore((state) => state.mockNodes);
@@ -15,6 +16,7 @@ const Output: React.FC = (): React.ReactElement => {
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
     const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
+    const stages = useStagesStore((state) => state.stages);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [expandedNodes, setExpandedNodes] = useState<Record<string, any>>({});
@@ -40,6 +42,7 @@ const Output: React.FC = (): React.ReactElement => {
             node.runId,
             node.id,
             node.order,
+            'mock',
             'mock'
         );
 
@@ -72,28 +75,29 @@ const Output: React.FC = (): React.ReactElement => {
     return (
         <div className="flex h-full">
             <div className="w-1/2 min-w-[300px] border-r border-white/10 h-full flex flex-col">
-                <div className="border-b border-white/10 p-2">
-                    <h3>Node</h3>
+                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
+                    <h3 className="text-sky-500 dark:text-white/80">Node</h3>
                 </div>
                 <div className="flex-1 overflow-auto">
                     {reversedNodes.map((node, index) => {
                         const nodeKey = `${node.id}-${node.order}`;
                         const isOpen = !!expandedNodes[nodeKey];
                         return (
-                            <div key={nodeKey} className="border-b border-white/10 p-2">
+                            <div key={nodeKey} className="border-b border-sky-500/50 dark:border-white/10 p-2">
                                 <div
                                     className="flex justify-between items-center cursor-pointer hover:bg-white/5"
                                     onClick={() => toggleNode(node)}
                                 >
                                     <span className="inline-flex items-center gap-2">
-                                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-sky-500 text-white">
+                                        <span
+                                            className="flex items-center justify-center w-8 h-8 rounded-full bg-sky-500 text-white">
                                             {reversedNodes.length - index}
                                         </span>
                                         <span className="text-sm font-bold">{node.type}</span>:
                                         <span className="text-[0.7rem] font-light">{node.handle}</span>
                                     </span>
                                     <ChevronLeftIcon
-                                        className={`w-4 h-4 transition-transform ${isOpen ? "-rotate-90" : ""}`}
+                                        className={`w-4 h-4 transition-transform ${isOpen ? "-rotate-90" : ""} text-sky-500 dark:text-white/80`}
                                     />
                                 </div>
 
@@ -106,37 +110,54 @@ const Output: React.FC = (): React.ReactElement => {
                 </div>
             </div>
 
-            <div className="w-1/2 min-w-[300px] border-r border-white/10 h-full flex flex-col">
-                <div className="border-b border-white/10 p-2">
-                    <h3>Summary</h3>
+            <div className="w-1/2 min-w-[300px] border-l border-sky-500/50 dark:border-white/10 h-full flex flex-col">
+                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
+                    <h3 className="text-sky-500 dark:text-white/80">Summary</h3>
                 </div>
                 <div className="flex-1 overflow-auto p-4 text-sm text-white/80">
                     <div className="flex flex-wrap gap-2 mb-4">
-                        <Button plain>Share</Button>
-                        <Button plain>Duplicate</Button>
-                        <Button plain>Export JSON</Button>
+                        <Button color="sky">Share</Button>
+                        <Button color="sky">Duplicate</Button>
+                        <Button color="sky">Export JSON</Button>
                     </div>
 
                     {activeItem && (
                         <section className="mb-4 rounded-md border border-white/10 p-4">
                             <span className={'font-bold'}>Route</span><br/>
-                            <p>{activeItem.method}: {`https://${activeProjectId}.polysynergy.com/${formatSegments((activeItem as Route)?.segments)}`}</p>
+                            {stages.map((stage) => {
+                                const basePath = `https://${activeProjectId}{{stage}}`;
+                                const isProd = stage.is_production;
+                                const stagePrefix = isProd ? '' : `-${stage.name}`;
+                                const fullUrl = `${basePath.replace('{{stage}}', stagePrefix)}/${formatSegments((activeItem as Route)?.segments)}`;
+                                return (
+                                    <div key={stage.name} className="flex items-start gap-2">
+                                        <span className="w-24 shrink-0 font-semibold text-sky-600 dark:text-white">
+                                            {stage.name}
+                                        </span>
+                                        <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                                            <span className="uppercase font-medium">{activeItem.method}</span>: {fullUrl}
+                                        </span>
+                                    </div>
+                                );
+                            })}
                         </section>
                     )}
 
-                    <ul className="text-sm text-white/70 space-y-1 mb-6">
-                        <li><span className="text-white">Project id:</span> {activeProjectId}</li>
-                        <li><span className="text-white">Node setup version id:</span> {activeVersionId}</li>
+                    <ul className="text-sm text-sky-500 dark:text-white/70 space-y-1 mb-6">
+                        <li><span className="text-sky-500 dark:text-white">Project id:</span> {activeProjectId}</li>
+                        <li><span
+                            className="text-sky-500 dark:text-white">Node setup version id:</span> {activeVersionId}
+                        </li>
                     </ul>
 
-                    <ul className="text-sm text-white/70 space-y-1">
-                        <li><span className="text-white">Nodes:</span> {mockNodes.length}</li>
-                        <li><span className="text-white">Start time:</span> 14:42:08</li>
-                        <li><span className="text-white">Duration:</span> 1.7s</li>
-                        <li><span className="text-white">Result:</span> success</li>
+                    <ul className="text-sm dark:text-white/70 space-y-1">
+                        <li><span className="text-sky-500 dark:text-white">Nodes:</span> {mockNodes.length}</li>
+                        <li><span className="text-sky-500 dark:text-white">Start time:</span> 14:42:08</li>
+                        <li><span className="text-sky-500 dark:text-white">Duration:</span> 1.7s</li>
+                        <li><span className="text-sky-500 dark:text-white">Result:</span> success</li>
                     </ul>
 
-                    <div className="mt-6 text-blue-400">View full logs →</div>
+                    <div className="mt-6 text-sky-500">View full logs →</div>
                 </div>
             </div>
         </div>

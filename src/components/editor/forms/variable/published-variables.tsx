@@ -24,6 +24,8 @@ import useEditorStore from "@/stores/editorStore";
 import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
 import {createProjectSecretAPI, updateProjectSecretAPI} from "@/api/secretsApi";
 import {Select} from "@/components/select";
+import useEnvVarsStore from "@/stores/envVarsStore";
+import IsExecuting from "@/components/editor/is-executing";
 
 type VariableIdentifier = {
     variable: NodeVariable;
@@ -32,17 +34,7 @@ type VariableIdentifier = {
     nodeServiceVariant?: number;
 }
 
-type Props = {
-    nodes: Node[];
-    variables: { [nodeId: string]: { [handle: string]: NodeVariable[] } };
-    setVariables: React.Dispatch<React.SetStateAction<{ [nodeId: string]: { [handle: string]: NodeVariable[] } }>>;
-    simpleVariables: { [nodeId: string]: { [handle: string]: string } };
-    setSimpleVariables: React.Dispatch<React.SetStateAction<{ [nodeId: string]: { [handle: string]: string } }>>;
-    publishedVariables: VariableIdentifier[];
-    setPublishedVariables: React.Dispatch<React.SetStateAction<VariableIdentifier[]>>;
-    secretVariables: { key: string, value: string }[];
-    setSecretVariables: React.Dispatch<React.SetStateAction<{ key: string, value: string }[]>>;
-};
+type Props = { nodes: Node[]; };
 
 type GroupedPublishedVariable = {
     playConfigNode?: Node;
@@ -57,39 +49,46 @@ type TabItem = {
 };
 
 const SECRET_IDENTIFIER = 'secret::internal';
+const ENV_IDENTIFIER = 'env::internal';
 const SECRET_EXISTS = 0;
 const SECRET_MUST_BE_CREATED = 1;
 
 const PublishedVariables: React.FC<Props> = ({
     nodes,
-    variables,
-    setVariables,
-    simpleVariables,
-    setSimpleVariables,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    publishedVariables,
-    setPublishedVariables,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    secretVariables,
-    setSecretVariables
 }) => {
     const leadsToPlayConfig = useNodesStore((state) => state.leadsToPlayConfig);
+    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
+
     const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
     const getSecretNodes = useNodesStore((state) => state.getSecretNodes);
+    const getEnvironmentVariableNodes = useNodesStore((state) => state.getEnvironmentVariableNodes);
     const secrets = useProjectSecretsStore((state) => state.secrets);
     const getMockResultForNode = useMockStore((state) => state.getMockResultForNode);
     const handlePlay = useHandlePlay();
+
     const stagesFromStore = useStagesStore((state) => state.stages);
     const stages = [{name: "mock"}, ...stagesFromStore];
+
     const fetchSecrets = useProjectSecretsStore((state) => state.fetchSecrets);
+    const envVars = useEnvVarsStore((state) => state.envVars);
+    const fetchEnvVars = useEnvVarsStore((state) => state.fetchEnvVars);
+
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
+    const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
+
     const [selectedStage, setSelectedStage] = useState("mock");
+    const [publishedVariables, setPublishedVariables] = useState<VariableIdentifier[]>([]);
+    const [dictVariables, setDictVariables] = useState<{ [nodeId: string]: { [handle: string]: NodeVariable[] } }>({});
+    const [simpleVariables, setSimpleVariables] = useState<{ [nodeId: string]: { [handle: string]: string } }>({});
+    const [secretVariables, setSecretVariables] = useState<{ key: string, value: string }[]>([]);
+    const [envVariables, setEnvVariables] = useState<{ key: string; value: string }[]>([]);
 
     const hasInitializedTabs = useRef(false);
 
     useEffect(() => {
         fetchSecretsWithRetry(fetchSecrets);
-    }, [fetchSecrets]);
+        fetchEnvVars();
+    }, [fetchSecrets, fetchEnvVars]);
 
     const [tabs, setTabs] = useState<TabItem[]>([]);
     const [activeTabKey, setActiveTabKey] = useState<string>("default");
@@ -105,27 +104,28 @@ const PublishedVariables: React.FC<Props> = ({
         return map;
     }, [publishedVariables]);
 
-    const handleVariableChange = (nodeId: string, updatedVariables: NodeVariable[], handle?: string) => {
+    const handleDictVariableChange = (
+        nodeId: string,
+        updatedVariables: NodeVariable[],
+        handle?: string
+    ) => {
         if (!handle) return;
 
         const syncKey = publishedVariables.find(
             (pv) => pv.nodeId === nodeId && pv.variable.handle === handle
         );
 
-        if (!syncKey?.nodeServiceHandle) {
-            setVariables((prev) => {
-                const updated = {...prev};
-                if (!updated[nodeId]) updated[nodeId] = {};
-                updated[nodeId][handle] = updatedVariables;
-                return updated;
-            });
-            return;
+        const key = syncKey?.nodeServiceHandle
+            ? `${syncKey.nodeServiceHandle}::${syncKey.nodeServiceVariant ?? 1}::${handle}`
+            : null;
+
+        const synced = key ? syncMap.get(key) || [{nodeId, handle}] : [{nodeId, handle}];
+
+        for (const {nodeId, handle} of synced) {
+            updateNodeVariable(nodeId, handle, updatedVariables); // realtime update
         }
 
-        const key = `${syncKey.nodeServiceHandle}::${syncKey.nodeServiceVariant ?? 1}::${handle}`;
-        const synced = syncMap.get(key) || [{nodeId, handle}];
-
-        setVariables((prev) => {
+        setDictVariables((prev) => {
             const updated = {...prev};
             for (const {nodeId, handle} of synced) {
                 if (!updated[nodeId]) updated[nodeId] = {};
@@ -139,10 +139,15 @@ const PublishedVariables: React.FC<Props> = ({
         const syncKey = publishedVariables.find(
             (pv) => pv.nodeId === nodeId && pv.variable.handle === handle
         );
+
         if (!syncKey?.nodeServiceHandle) return;
 
         const key = `${syncKey.nodeServiceHandle}::${syncKey.nodeServiceVariant ?? 1}::${handle}`;
         const synced = syncMap.get(key) || [{nodeId, handle}];
+
+        for (const {nodeId, handle} of synced) {
+            updateNodeVariable(nodeId, handle, value);
+        }
 
         setSimpleVariables((prev) => {
             const updated = {...prev};
@@ -155,6 +160,7 @@ const PublishedVariables: React.FC<Props> = ({
     };
 
     const handleSecretCreation = async (key: string, value: string) => {
+        setIsExecuting('Creating secret...');
         const [stage, secretKey] = key.split("@");
         const existing = secrets.find((s) => s.key === secretKey && s.stages?.includes(stage));
         try {
@@ -164,13 +170,37 @@ const PublishedVariables: React.FC<Props> = ({
                 await createProjectSecretAPI(activeProjectId!, secretKey, value, stage);
             }
             await fetchSecretsWithRetry(fetchSecrets);
+            setIsExecuting(null);
         } catch (err) {
             console.error("Failed to store secret:", err);
+            setIsExecuting(null);
+        }
+    };
+
+    const handleEnvVarChange = (key: string, value: string) => {
+        setEnvVariables((prev) => {
+            const updated = [...prev];
+            const index = updated.findIndex((v) => v.key === key);
+            if (index !== -1) {
+                updated[index].value = value;
+            } else {
+                updated.push({key, value});
+            }
+            return updated;
+        });
+    };
+
+    const handleEnvVarSave = async (stage: string, key: string, value: string) => {
+        try {
+            await useEnvVarsStore.getState().createEnvVar(key, value, stage);
+            await fetchEnvVars();
+        } catch (err) {
+            console.error("Failed to store env var:", err);
         }
     };
 
     useEffect(() => {
-        const initialVariables: { [nodeId: string]: { [handle: string]: NodeVariable[] } } = {};
+        const initialDictVariables: { [nodeId: string]: { [handle: string]: NodeVariable[] } } = {};
         const initialSimpleVariables: { [nodeId: string]: { [handle: string]: string } } = {};
         const pubVariables: VariableIdentifier[] = [];
 
@@ -186,8 +216,8 @@ const PublishedVariables: React.FC<Props> = ({
                 const isRootPublished = dictVar.published;
 
                 if (publishedChildren.length > 0 || isRootPublished) {
-                    if (!initialVariables[node.id]) initialVariables[node.id] = {};
-                    initialVariables[node.id][dictVar.handle] = children;
+                    if (!initialDictVariables[node.id]) initialDictVariables[node.id] = {};
+                    initialDictVariables[node.id][dictVar.handle] = children;
                 }
 
                 if (isRootPublished || publishedChildren.length > 0) {
@@ -213,7 +243,8 @@ const PublishedVariables: React.FC<Props> = ({
             });
 
             const otherVariables = node.variables.filter(
-                (variable) => variable.published && variable.type !== NodeVariableType.Dict
+                (variable) => variable.published &&
+                    variable.type !== NodeVariableType.Dict
             );
 
             if (otherVariables.length > 0) {
@@ -230,13 +261,12 @@ const PublishedVariables: React.FC<Props> = ({
             }
         });
 
-        setVariables(initialVariables);
+        setDictVariables(initialDictVariables);
         setSimpleVariables(initialSimpleVariables);
         setPublishedVariables(pubVariables);
 
         const tabItems: TabItem[] = [];
 
-        // Always create the Configuration tab first
         const configTab: TabItem = {
             key: "config",
             title: "Configuration",
@@ -247,7 +277,6 @@ const PublishedVariables: React.FC<Props> = ({
             }
         };
 
-        // Always create the Secrets tab second
         const secretsTab: TabItem = {
             key: "secrets",
             title: "Secrets",
@@ -311,6 +340,32 @@ const PublishedVariables: React.FC<Props> = ({
             });
         });
 
+        const environmentVariableNodes = getEnvironmentVariableNodes();
+        environmentVariableNodes.forEach((node) => {
+            node.variables.forEach((variable: NodeVariable) => {
+                const matching = envVars.find((v) => v.key === variable.value);
+
+                if (!matching) return;
+
+                const envVarItem: VariableIdentifier = {
+                    variable,
+                    nodeId: node.id,
+                    nodeServiceHandle: ENV_IDENTIFIER,
+                    nodeServiceVariant: 0,
+                };
+
+                const playConfigNode = leadsToPlayConfig(node.id);
+                if (playConfigNode) {
+                    const playButtonTab = playButtonTabs.find((tab) => tab.key === playConfigNode.id);
+                    if (playButtonTab) {
+                        playButtonTab.group.variables.push(envVarItem);
+                    }
+                } else {
+                    configTab.group.variables.push(envVarItem);
+                }
+            });
+        });
+
         tabItems.push(configTab);
         tabItems.push(secretsTab);
         tabItems.push(...playButtonTabs);
@@ -329,22 +384,24 @@ const PublishedVariables: React.FC<Props> = ({
         secrets,
         setPublishedVariables,
         setSimpleVariables,
-        setVariables
+        setDictVariables
     ]);
 
     const activeTab = tabs.find((tab) => tab.key === activeTabKey);
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="mb-4 flex gap-2 border-b border-white/10">
+        <div className="flex flex-col gap-4 relative">
+            <IsExecuting />
+
+            <div className="mb-4 flex gap-2 border-b border-sky-500/50 dark:border-white/10">
                 {tabs.map((tab) => (
                     <button
                         key={tab.key}
                         type="button"
                         className={`px-4 py-2 text-sm font-medium transition ${
                             activeTabKey === tab.key
-                                ? "border-b-2 border-white text-white"
-                                : "text-white/60 hover:text-white"
+                                ? "border-b-2 border-sky-500 dark:border-white text-sky-600 dark:text-white"
+                                : "border-b border-sky-500/50 dark:text-white/60 dark:hover:text-white text-sky-500"
                         }`}
                         onClick={() => setActiveTabKey(tab.key)}
                     >
@@ -354,13 +411,13 @@ const PublishedVariables: React.FC<Props> = ({
             </div>
 
             {activeTab?.info && (
-                <div className="mb-4 rounded-md border border-white/10 p-4">
+                <div className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4">
                     <Text dangerouslySetInnerHTML={{__html: activeTab.info}}/>
                 </div>
             )}
 
             {!activeTab || activeTab?.group.variables.length === 0 ? (
-                <div className="rounded-md border border-white/10 p-4 text-white/60 text-sm italic">
+                <div className="rounded-md border border-sky-500/50 dark:border-white/10 p-4 text-sky-500 dark:text-white/60 text-sm italic">
                     No published variables
                 </div>
             ) : (
@@ -377,7 +434,7 @@ const PublishedVariables: React.FC<Props> = ({
                     if (nodeServiceHandle === SECRET_IDENTIFIER) {
                         return (
                             <React.Fragment key={nodeId + "-" + variable.handle}>
-                                <div className={'border rounded-md border-white/10 p-5'}>
+                                <div className={'border rounded-md border-sky-500/50 dark:border-white/10 p-5'}>
                                     <Subheading>
                                         <span className="inline-flex items-center gap-2 mb-2">
                                             Secret: {variable.value as string}
@@ -395,10 +452,10 @@ const PublishedVariables: React.FC<Props> = ({
                                             );
                                             return (
                                                 <div key={stage.name}>
-                                                    <label className="text-sm text-white/70">
+                                                    <label className="text-sm text-sky-500/70 dark:text-white/70">
                                                         {stage.name}{" "}
                                                         {hasSecret && (
-                                                            <span className="text-xs text-white/50">(has value)</span>
+                                                            <span className="text-xs text-sky-500/50 dark:text-white/50">(has value)</span>
                                                         )}
                                                     </label>
                                                     <div className="flex gap-2">
@@ -427,7 +484,58 @@ const PublishedVariables: React.FC<Props> = ({
                                                             }
                                                         />
                                                         <Button
+                                                            color={'sky'}
                                                             onClick={() => handleSecretCreation(`${stage.name}@${variable.value}`, localSecret?.value || "")}>
+                                                            Save
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                                <Divider className="my-10" soft bleed/>
+                            </React.Fragment>
+                        );
+                    } else if (nodeServiceHandle === ENV_IDENTIFIER) {
+                        return (
+                            <React.Fragment key={`env-${nodeId}-${variable.handle}`}>
+                                <div className="border rounded-md border-sky-500/50 dark:border-white/10 p-5">
+                                    <Subheading>
+                                        <span className="inline-flex items-center gap-2 mb-2">
+                                            Environment: {variable.value as string}
+                                        </span>
+                                    </Subheading>
+                                    <div className="space-y-3">
+                                        {stages.map((stage) => {
+                                            const existing = envVars.find(
+                                                (v) => v.key === variable.value && v.stage === stage.name
+                                            );
+                                            const localKey = `${stage.name}@${variable.value}`;
+                                            const local = envVariables.find((v) => v.key === localKey);
+
+                                            const value = local?.value ?? existing?.value ?? "";
+
+                                            return (
+                                                <div key={`${nodeId}-${stage.name}`}>
+                                                    <label className="text-sm text-sky-500/70 dark:text-white/70">
+                                                        {stage.name}{" "}
+                                                        {existing && (
+                                                            <span className="text-xs text-sky-500/50 dark:text-white/50">(has value)</span>
+                                                        )}
+                                                    </label>
+                                                    <div className="flex gap-2">
+                                                        <Input
+                                                            value={value}
+                                                            onChange={(e) =>
+                                                                handleEnvVarChange(localKey, e.target.value)
+                                                            }
+                                                        />
+                                                        <Button
+                                                            onClick={() =>
+                                                                handleEnvVarSave(stage.name, variable.value as string, value)
+                                                            }
+                                                        >
                                                             Save
                                                         </Button>
                                                     </div>
@@ -452,20 +560,20 @@ const PublishedVariables: React.FC<Props> = ({
                                     </span>
                                 </Subheading>
                                 {variable.published_description && (
-                                    <div className="mb-4 rounded-md border border-white/10 p-4">
+                                    <div className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4">
                                         <Text dangerouslySetInnerHTML={{__html: variable.published_description}}/>
                                     </div>
                                 )}
                                 <EditDictVariable
                                     title={variable.handle}
                                     onlyValues={true}
-                                    variables={variables[nodeId]?.[variable.handle] || []}
+                                    variables={dictVariables[nodeId]?.[variable.handle] || []}
                                     handle={variable.handle}
                                     onChange={(updatedVariables, handle) =>
-                                        handleVariableChange(nodeId, updatedVariables, handle)
+                                        handleDictVariableChange(nodeId, updatedVariables, handle)
                                     }
                                 />
-                                <Divider className="my-10" soft bleed/>
+                                <Divider className="my-10" soft bleed />
                             </div>
                         );
                     } else {
@@ -477,13 +585,13 @@ const PublishedVariables: React.FC<Props> = ({
                                     <span className="inline-flex items-center gap-2">
                                     {variable.published_title}
                                         {isSynced && <LinkIcon
-                                            className="w-4 h-4 text-white/60"
+                                            className="w-4 h-4 text-sky-500/60 dark:text-white/60"
                                             title={`Synced with ${nodeServiceHandle} ${nodeServiceVariant ?? 1}`}
                                         />}
                                     </span>
                                 </Subheading>
                                 {variable.published_description && (
-                                    <div className="mb-4 rounded-md border border-white/10 p-4">
+                                    <div className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4">
                                         <Text dangerouslySetInnerHTML={{__html: variable.published_description}}/>
                                     </div>
                                 )}
@@ -494,6 +602,7 @@ const PublishedVariables: React.FC<Props> = ({
                                     // @ts-expect-error value is ambiguous
                                     onChange={(value) => handleSimpleVariableChange(nodeId, variable.handle, value)}
                                     currentValue={simpleVariables[nodeId]?.[variable.handle]}
+                                    inDock={false}
                                 />
                                 <Divider className="my-10" soft bleed/>
                             </div>
@@ -510,15 +619,15 @@ const PublishedVariables: React.FC<Props> = ({
                             onChange={(e) => setSelectedStage(e.target.value)}
                         >
                             {stages.map((stage) => (
-                            <option key={stage.name} value={stage.name}>
-                                {stage.name}
-                            </option>
+                                <option key={stage.name} value={stage.name}>
+                                    {stage.name}
+                                </option>
                             ))}
                         </Select>
 
                         <button
                             type="button"
-                            className="flex items-center gap-2 rounded bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition"
+                            className="flex items-center gap-2 rounded bg-sky-300 hover:bg-sky-400 dark:bg-white/10 px-4 py-2 text-sm font-medium text-sky-700 dark:text-white dark:hover:bg-white/20 transition"
                             onClick={(e) => handlePlay(e, activeTab.group.playConfigNode!.id, selectedStage)}
                         >
                             <PlayIcon className="h-5 w-5"/>
@@ -531,8 +640,8 @@ const PublishedVariables: React.FC<Props> = ({
                         if (!result?.variables) return null;
 
                         return (
-                            <div className="mb-4 rounded-md border border-white/10 p-4 bg-white/5">
-                                <div className="mb-2 text-white font-semibold text-sm">
+                            <div className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4 bg-sky-50 dark:bg-white/5">
+                                <div className="mb-2 text-sky-500 dark:text-white font-semibold text-sm">
                                     Result
                                 </div>
                                 <FormattedNodeOutput variables={result.variables}/>

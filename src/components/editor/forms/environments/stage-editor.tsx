@@ -70,7 +70,11 @@ const StageEditor: React.FC = () => {
         reorderStages(fromIndex, toIndex);
     };
 
-    const allStages: Stage[] = [{id: "mock", name: "mock", is_production: false}, ...stages];
+    const sortableStages = stages.filter((s) => s.name !== "mock");
+    const sortedStages = [
+        ...stages.filter((s) => s.name === "mock"),
+        ...sortableStages,
+    ];
 
     return (
         <section className="grid gap-x-8 gap-y-6 sm:grid-cols-1">
@@ -85,9 +89,9 @@ const StageEditor: React.FC = () => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {allStages.map((stage, index) => {
+                    {sortedStages.map((stage, index) => {
                         const isEditing = stage.id === editingStageId;
-                        const isReorderable = stage.id !== "mock";
+                        const isReorderable = stage.name !== "mock";
                         const adjustedIndex = index - 1;
 
                         return (
@@ -96,12 +100,14 @@ const StageEditor: React.FC = () => {
                                     {isReorderable && (
                                         <div className="flex flex-col gap-1 items-center">
                                             {adjustedIndex > 0 && (
-                                                <button onClick={() => handleReorder(adjustedIndex, adjustedIndex - 1)}>
+                                                <button
+                                                    onClick={() => handleReorder(adjustedIndex, adjustedIndex - 1)}>
                                                     <ArrowUpIcon className="w-4 h-4"/>
                                                 </button>
                                             )}
-                                            {adjustedIndex < stages.length - 1 && (
-                                                <button onClick={() => handleReorder(adjustedIndex, adjustedIndex + 1)}>
+                                            {adjustedIndex < sortableStages.length - 1 && (
+                                                <button
+                                                    onClick={() => handleReorder(adjustedIndex, adjustedIndex + 1)}>
                                                     <ArrowDownIcon className="w-4 h-4"/>
                                                 </button>
                                             )}
@@ -109,7 +115,7 @@ const StageEditor: React.FC = () => {
                                     )}
                                 </TableCell>
                                 <TableCell>{index + 1}</TableCell>
-                                <TableCell className="text-white font-mono">
+                                <TableCell className="text-sky-500 dark:text-white font-mono">
                                     {isEditing ? (
                                         <Input
                                             autoFocus
@@ -138,15 +144,15 @@ const StageEditor: React.FC = () => {
                                     {stage.id !== "mock" && (
                                         <div className="flex justify-end gap-2">
                                             {isEditing ? (
-                                                <Button plain onClick={handleSaveEdit}>
+                                                <Button color={'sky'} onClick={handleSaveEdit}>
                                                     Save
                                                 </Button>
                                             ) : (
-                                                <Button plain onClick={() => handleStartEdit(stage)}>
+                                                <Button color={'sky'} onClick={() => handleStartEdit(stage)}>
                                                     <PencilIcon className="w-4 h-4"/>
                                                 </Button>
                                             )}
-                                            <Button plain onClick={() => confirmDeleteStage(stage)}>
+                                            <Button color={'sky'} onClick={() => confirmDeleteStage(stage)}>
                                                 <TrashIcon className="w-4 h-4"/>
                                             </Button>
                                         </div>
@@ -175,10 +181,12 @@ const StageEditor: React.FC = () => {
                             onChange={() => setIsProduction(!isProduction)}
                             name="production"
                         />
-                        <span className="text-sm text-white">Production stage</span>
+                        <span className="text-sm text-sky-500 dark:text-white">Production stage</span>
                     </CheckboxField>
                 </div>
-                <Button type="button" onClick={handleAddStage}><PlusIcon className={'w-4 h-4'} /> Add</Button>
+                <Button color="sky" type="button" onClick={handleAddStage}>
+                    <PlusIcon className={'w-4 h-4'}/> Add
+                </Button>
             </div>
 
             <ConfirmAlert

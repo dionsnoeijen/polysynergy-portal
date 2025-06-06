@@ -1,7 +1,7 @@
 import {Heading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Button} from "@/components/button";
-import {Blueprint, Config, Fundamental, NodeVariable, Route, Schedule, Service} from "@/types/types";
+import {Blueprint, Config, Fundamental, Route, Schedule, Service} from "@/types/types";
 import React, {useEffect, useState} from "react";
 
 import useEditorStore from "@/stores/editorStore";
@@ -10,13 +10,10 @@ import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import useSchedulesStore from "@/stores/schedulesStore";
 import useServicesStore from "@/stores/servicesStore";
 import useConfigsStore from "@/stores/configsStore";
-import useProjectSecretsStore from "@/stores/projectSecretsStore";
 import useBlueprintsStore from "@/stores/blueprintsStore";
 
 import PublishedVariables from "@/components/editor/forms/variable/published-variables";
 import {formatSegments} from "@/utils/formatters";
-// import {createProjectSecretAPI} from "@/api/secretsApi";
-import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
 import {XMarkIcon} from "@heroicons/react/24/outline";
 
 const PublishedVariableForm: React.FC = () => {
@@ -36,15 +33,10 @@ const PublishedVariableForm: React.FC = () => {
     const getService = useServicesStore((state) => state.getService);
     const getConfig = useConfigsStore((state) => state.getConfig);
     const getBlueprint = useBlueprintsStore((state) => state.getBlueprint);
-    const fetchSecrets = useProjectSecretsStore((state) => state.fetchSecrets);
 
     const [error, setError] = useState<string | null>(null);
     const [activeItem, setActiveItem] = useState<Route | Schedule | Service | Config | Blueprint | null | undefined>();
     const [activeFundamental, setActiveFundamental] = useState<Fundamental | null>(null);
-    const [publishedVariables, setPublishedVariables] = useState<{ variable: NodeVariable; nodeId: string }[]>([]);
-    const [variables, setVariables] = useState<{ [nodeId: string]: { [handle: string]: NodeVariable[] } }>({});
-    const [simpleVariables, setSimpleVariables] = useState<{ [nodeId: string]: { [handle: string]: string } }>({});
-    const [secretVariables, setSecretVariables] = useState<{ key: string, value: string }[]>([]);
 
     useEffect(() => {
         if (!activeRouteId &&
@@ -53,7 +45,7 @@ const PublishedVariableForm: React.FC = () => {
             !activeConfigId &&
             !activeBlueprintId
         ) {
-            setError('No active route');
+            setError('No active item');
         }
         let activeItem = null;
         if (activeRouteId) {
@@ -93,37 +85,8 @@ const PublishedVariableForm: React.FC = () => {
         closeForm();
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        Object.entries(variables).forEach(([nodeId, handles]) => {
-            Object.entries(handles).forEach(([handle, value]) => {
-                updateNodeVariable(nodeId, handle, value);
-            });
-        });
-
-        Object.entries(simpleVariables).forEach(([nodeId, handles]) => {
-            Object.entries(handles).forEach(([handle, value]) => {
-                updateNodeVariable(nodeId, handle, value);
-            });
-        });
-
-        closeForm();
-
-        await Promise.all(
-            secretVariables.map(secret => {
-                const {key, value} = secret;
-                if (key && value) {
-                    // return createProjectSecretAPI(activeProjectId, key, value);
-                }
-            })
-        );
-
-        await fetchSecretsWithRetry(fetchSecrets);
-    };
-
     return (
-        <form onSubmit={handleSubmit} className={'p-10'}>
+        <div className={'p-10'}>
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>{
                     activeFundamental &&
@@ -133,36 +96,23 @@ const PublishedVariableForm: React.FC = () => {
                     '/' + formatSegments((activeItem as Route)?.segments) :
                     (activeItem as Schedule | Service | Config)?.name}
                 </Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5"/>
                 </Button>
             </div>
-            <Divider className="my-4" soft bleed/>
+            <Divider className="my-4" soft bleed />
 
-            <PublishedVariables
-                nodes={nodes}
-                variables={variables}
-                setVariables={setVariables}
-                simpleVariables={simpleVariables}
-                setSimpleVariables={setSimpleVariables}
-                publishedVariables={publishedVariables}
-                setPublishedVariables={setPublishedVariables}
-                secretVariables={secretVariables}
-                setSecretVariables={setSecretVariables}
-            />
+            <PublishedVariables nodes={nodes} />
 
             <Divider className="my-10" soft bleed />
 
             <div className="flex justify-end gap-4">
                 {error && (<div className="text-red-500">{error}</div>)}
-                <Button type="button" onClick={handleCancel} plain>
-                    Cancel
-                </Button>
-                <Button type="submit">
-                    Save
+                <Button type="button" onClick={handleCancel} color="sky">
+                    Close
                 </Button>
             </div>
-        </form>
+        </div>
     )
 };
 

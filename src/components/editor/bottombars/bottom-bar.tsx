@@ -11,7 +11,7 @@ const BottomBar: React.FC = (): React.ReactElement => {
     return (
         <>
             <BottomBarMenu />
-            <div className="ml-10 h-full border-t border-b border-r border-sky-500 dark:border-white/20 rounded-tr-md rounded-br-md bg-white dark:bg-zinc-800 shadow-sm">
+            <div className="ml-10 h-full border-t border-b border-r border-sky-500/50 dark:border-white/20 rounded-tr-md rounded-br-md bg-white dark:bg-zinc-800 shadow-sm">
                 {bottomBarView === BottomBarView.Debug && <Debug />}
                 {bottomBarView === BottomBarView.Output && <Output />}
                 {bottomBarView === BottomBarView.Logs && <Logs />}

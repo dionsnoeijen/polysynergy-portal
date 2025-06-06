@@ -3,6 +3,7 @@ import {ChevronDownIcon, ChevronLeftIcon, PlusIcon} from "@heroicons/react/24/ou
 import {Fundamental, ListItemWithId} from "@/types/types";
 import {Button} from "@/components/button";
 import useEditorStore from "@/stores/editorStore";
+import clsx from "clsx";
 
 type ListProps<T extends ListItemWithId> = {
     items: T[];
@@ -27,8 +28,7 @@ export default function TreeList<T extends ListItemWithId>({
     title = "List",
     fundamental,
     dataTourId = null,
-    toggleOpen = () => {
-    },
+    toggleOpen = () => {},
 }: ListProps<T>): React.JSX.Element {
     const openTree = useEditorStore((state) => state.openTree);
     const closeTree = useEditorStore((state) => state.closeTree);
@@ -46,7 +46,7 @@ export default function TreeList<T extends ListItemWithId>({
 
     const getItemClassName = (item: T) => {
         const baseClasses =
-            "flex items-center border-l border-r border-sky-500 dark:border-white/20 justify-between pl-2 transition-colors duration-200 group dark:hover:bg-sky-500 dark:hover:text-white";
+            "flex items-center border-l border-r border-sky-500/50 dark:border-white/20 justify-between pl-2 transition-colors duration-200 group dark:hover:bg-sky-500 dark:hover:text-white";
 
         const isActive = activeItem === item.id;
         const isEditing = formEditingItem === item.id;
@@ -55,7 +55,7 @@ export default function TreeList<T extends ListItemWithId>({
             ? "bg-sky-200 dark:bg-sky-200"
             : isActive
                 ? "bg-sky-500 dark:bg-sky-500"
-                : "odd:bg-zinc-200/80 even:bg-transparent dark:odd:bg-zinc-800 dark:even:bg-zinc-800/50";
+                : "odd:bg-sky-300/10 even:bg-white/90 dark:odd:bg-zinc-800 dark:even:bg-zinc-800/50";
 
         return `${baseClasses} ${bgClass}`;
     };
@@ -63,21 +63,21 @@ export default function TreeList<T extends ListItemWithId>({
     return items.length > 0 ? (
         <div className="relative">
             {isFormOpen && (
-                <div className="absolute inset-0 z-10 bg-black/50 cursor-not-allowed"/>
+                <div className="absolute inset-0 z-10 bg-white/80 dark:bg-black/40 cursor-not-allowed"/>
             )}
             <div className="mt-[10px]">
                 <div
-                    className={`flex items-center shadow-sm justify-between border border-sky-500 p-1 pl-2 pr-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
+                    className={`flex items-center shadow-sm justify-between border border-sky-500/50 bg-white/90 p-1 pl-2 pr-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
                         isOpen ? " rounded-bl-none rounded-br-none" : ""
                     }`}
                     data-tour-id={dataTourId ?? null}
                 >
-                    <h4>{title}</h4>
+                    <h4 className={`text-sky-500 dark:text-white/70`}>{title}</h4>
                     <button type="button" onClick={() => handleTreeToggle(isOpen)}>
                         {isOpen ? (
-                            <ChevronDownIcon className="w-5 h-5"/>
+                            <ChevronDownIcon className="w-5 h-5 text-sky-500 dark:text-white/70"/>
                         ) : (
-                            <ChevronLeftIcon className="w-5 h-5"/>
+                            <ChevronLeftIcon className="w-5 h-5 text-sky-500 dark:text-white/70"/>
                         )}
                     </button>
                 </div>
@@ -98,20 +98,24 @@ export default function TreeList<T extends ListItemWithId>({
 
                 {addButtonClick && (
                     <div
-                        className={`transition-all duration-300 overflow-hidden ${
+                        className={clsx(
+                            "transition-all duration-300 overflow-hidden",
                             isOpen ? "max-h-12 opacity-100" : "max-h-0 opacity-0"
-                        }`}
+                        )}
                     >
                         <div
-                            className="flex items-center justify-between border-l border-b border-t border-r border-sky-500 dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
-                            <Button
+                            className="border border-sky-500/50 bg-white dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
+                            <button
                                 disabled={addDisabled}
                                 onClick={addButtonClick}
-                                plain
-                                className="w-full hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0 !px-0 !py-0"
+                                className={clsx(
+                                    "w-full flex items-center justify-center p-1",
+                                    "rounded-tr-none rounded-tl-none text-sky-500 dark:text-white/70",
+                                    "hover:bg-sky-100/50 dark:hover:bg-white/10"
+                                )}
                             >
-                                <PlusIcon/>
-                            </Button>
+                                <PlusIcon className="w-5 h-5"/>
+                            </button>
                         </div>
                     </div>
                 )}
@@ -120,21 +124,24 @@ export default function TreeList<T extends ListItemWithId>({
     ) : (
         <div className="relative">
             {isFormOpen && (
-                <div className="absolute inset-0 z-10 bg-black/40 cursor-not-allowed"/>
+                <div className="absolute inset-0 z-10  bg-white/80 dark:bg-black/40 cursor-not-allowed"/>
             )}
             <div className="mt-[10px]">
                 {addButtonClick && (
-                    <div>
-                        <Button
-                            disabled={addDisabled}
-                            onClick={addButtonClick}
-                            plain
-                            data-tour-id={dataTourId ?? null}
-                            className="w-full hover:cursor-pointer p-0 border border-dotted border-white/50"
-                        >
-                            {title} <PlusIcon/>
-                        </Button>
-                    </div>
+                    <button
+                        disabled={addDisabled}
+                        onClick={addButtonClick}
+                        data-tour-id={dataTourId ?? null}
+                        className={clsx(
+                            "w-full flex items-center justify-between gap-2 px-3 py-2",
+                            "rounded-md border border-dotted text-sky-500 border-sky-500 dark:border-white/50",
+                            "bg-white/60 hover:bg-sky-100 dark:hover:bg-white/10",
+                            "transition-colors duration-200"
+                        )}
+                    >
+                        <span className="text-sky-500 dark:text-white">{title}</span>
+                        <PlusIcon className="w-4 h-4 text-sky-500 dark:text-white/70"/>
+                    </button>
                 )}
             </div>
         </div>

@@ -23,7 +23,6 @@ import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useMockStore from "@/stores/mockStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
-import EditorIntroTour from "@/components/guidedtour/editor-intro-tour";
 import ItemManagerIntroTour from "@/components/guidedtour/item-manager-intro-tour";
 
 // const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false })
@@ -273,6 +272,7 @@ const EditorLayout = ({
 
     return (
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
+            {/*<PerformanceHUD />*/}
             <ItemManagerIntroTour />
             {isExecuting && (
                 // This is to make sure interactions are blocked during execution
@@ -314,7 +314,7 @@ const EditorLayout = ({
                     right: dockClosed ? 10 : width.dock
                 }}>
                     <div
-                        className={`absolute top-[10px] left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border border-sky-500 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
+                        className={`absolute top-[10px] left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border border-sky-500/50 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {showForm ? (
                             <Form/>
@@ -329,7 +329,7 @@ const EditorLayout = ({
                                         <BottomDrawToolbar/>
                                         <TopRightEditorListener />
                                         <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
-                                        <VersionPublishedMenu routeUuid={routeUuid} scheduleUuid={scheduleUuid}/>
+                                        <VersionPublishedMenu />
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">
@@ -338,7 +338,7 @@ const EditorLayout = ({
                                 )
                             ) : (
                                 <div className="flex justify-center items-center h-full">
-                                    <p className="text-white">
+                                    <p className="text-sky-500 dark:text-white">
                                         Select a route, schedule or blueprint to start editing nodes
                                     </p>
                                 </div>
@@ -359,10 +359,10 @@ const EditorLayout = ({
                                 className="absolute top-0 left-0 bottom-0 w-[8px] cursor-col-resize"
                             />
                         </div>
-                        <div
-                            style={{width: width.dock}}
-                            className="absolute right-0 bottom-0 h-4 bg-gradient-to-t from-[#18181BFF] to-transparent"
-                        />
+                        {/*<div*/}
+                        {/*    style={{width: width.dock}}*/}
+                        {/*    className="absolute right-0 bottom-0 h-4 bg-gradient-to-t from-[#18181BFF] to-transparent"*/}
+                        {/*/>*/}
                     </>
                 )}
 

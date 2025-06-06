@@ -26,6 +26,8 @@ import {
 import {Stage, PublishMatrixRoute, PublishMatrixSchedule} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import {formatSegments} from "@/utils/formatters";
+import {Divider} from "@/components/divider";
+import Info from "@/components/info";
 
 const PublishMatrix: React.FC = () => {
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
@@ -40,7 +42,10 @@ const PublishMatrix: React.FC = () => {
             const {routes, schedules, stages} = await fetchPublishMatrixAPI(activeProjectId);
             setRoutes(routes);
             setSchedules(schedules);
-            setStages(stages);
+            setStages([
+                ...stages.filter(s => s.name === 'mock'),
+                ...stages.filter(s => s.name !== 'mock'),
+            ]);
         } catch (error) {
             console.error("Failed to fetch publish matrix:", error);
         } finally {
@@ -90,12 +95,18 @@ const PublishMatrix: React.FC = () => {
 
     return (
         <section>
+            <Info title={'Route publishing'}>
+                Changes to a route are always immediately reflected in the mock stage.<br/>
+                To expose a route externally (via a URL), you need to <b>publish it to a stage.</b><br/>
+                You can <b>unpublish</b> a route or <b>update</b> a published stage to reflect the latest version from
+                mock.
+            </Info>
             <Table className="mt-6" dense bleed grid>
                 <TableHead>
                     <TableRow>
                         <TableHeader>Routes</TableHeader>
                         {stages.map((stage) => (
-                            <TableHeader key={stage.id} className="text-center w-1">
+                            <TableHeader key={stage.id} className="text-center w-2">
                                 {stage.name}
                             </TableHeader>
                         ))}
@@ -104,7 +115,7 @@ const PublishMatrix: React.FC = () => {
                 <TableBody>
                     {routes.map((route) => (
                         <TableRow key={`route-${route.id}`}>
-                            <TableCell className="font-semibold text-white">
+                            <TableCell className="font-semibold text-sky-500 dark:text-white">
                                 {formatSegments(route.segments)}
                             </TableCell>
                             {stages.map((stage) => {
@@ -121,7 +132,7 @@ const PublishMatrix: React.FC = () => {
                                                 >
                                                     <ArrowUturnLeftIcon className="w-3.5 h-3.5"/>
                                                 </Button>
-                                                {needsUpdate && (
+                                                {needsUpdate && stage.name !== 'mock' && (
                                                     <Button
                                                         color="blue"
                                                         onClick={() => handleRouteUpdate(route.id, stage.name)}
@@ -133,6 +144,7 @@ const PublishMatrix: React.FC = () => {
                                             </>
                                         ) : (
                                             <Button
+                                                color={'green'}
                                                 onClick={() => handleRoutePublish(route.id, stage.name)}
                                                 title="Publish this route"
                                             >
@@ -146,13 +158,22 @@ const PublishMatrix: React.FC = () => {
                     ))}
                 </TableBody>
             </Table>
+
+            <Divider bleed className={'mt-10'}/>
+
+            <Info title={'Schedules'}>
+                Schedules are used to run flows automatically based on a cron expression.<br/>
+                They can be <b>published to stages</b> to enable automatic execution at specified times.<br/>
+                You can <b>unpublish</b> a schedule or <b>update</b> it to reflect the latest version from mock.
+            </Info>
+
             <Table className="mt-6" dense bleed grid>
                 <TableHead>
                     <TableRow>
                         <TableHeader>Schedules</TableHeader>
                         <TableHeader className={'w-1'}>Is active</TableHeader>
                         {stages.map((stage) => (
-                            <TableHeader key={stage.id} className="text-center w-1">
+                            <TableHeader key={stage.id} className="text-center w-2">
                                 {stage.name}
                             </TableHeader>
                         ))}
@@ -161,10 +182,10 @@ const PublishMatrix: React.FC = () => {
                 <TableBody>
                     {schedules.map((schedule) => (
                         <TableRow key={`schedule-${schedule.id}`}>
-                            <TableCell className="font-semibold text-white">
-                                Schedule: {schedule.name} ({schedule.cron_expression})
+                            <TableCell className="font-semibold text-sky-500 dark:text-white">
+                                {schedule.name} ({schedule.cron_expression})
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="text-sky-500 dark:text-white">
                                 Is active
                             </TableCell>
                             {stages.map((stage) => {
@@ -178,6 +199,7 @@ const PublishMatrix: React.FC = () => {
                                                     color="yellow"
                                                     onClick={() => handleScheduleUnpublish(schedule.id, stage.name)}
                                                     title="Unpublish this schedule"
+                                                    disabled={stage.name === 'mock'}
                                                 >
                                                     <ArrowUturnLeftIcon className="w-3.5 h-3.5"/>
                                                 </Button>
@@ -186,6 +208,7 @@ const PublishMatrix: React.FC = () => {
                                                         color="blue"
                                                         onClick={() => handleScheduleUpdate(schedule.id, stage.name)}
                                                         title="Update code in this stage"
+                                                        disabled={stage.name === 'mock'}
                                                     >
                                                         <ArrowPathIcon className="w-3.5 h-3.5"/>
                                                     </Button>
@@ -193,8 +216,10 @@ const PublishMatrix: React.FC = () => {
                                             </>
                                         ) : (
                                             <Button
+                                                color={'green'}
                                                 onClick={() => handleSchedulePublish(schedule.id, stage.name)}
                                                 title="Publish this schedule"
+                                                disabled={stage.name === 'mock'}
                                             >
                                                 <ArrowRightCircleIcon className="w-3.5 h-3.5"/>
                                             </Button>
@@ -206,6 +231,8 @@ const PublishMatrix: React.FC = () => {
                     ))}
                 </TableBody>
             </Table>
+
+            <Divider bleed className={'mt-10'}/>
         </section>
     );
 };

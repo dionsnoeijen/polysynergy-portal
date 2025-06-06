@@ -29,6 +29,12 @@ import {InformationCircleIcon} from "@heroicons/react/24/outline";
 import VariableTypeTemplate from "@/components/editor/sidebars/dock/variable-type-template";
 import {Input} from "@/components/input";
 import {Field, Fieldset, Label} from "@/components/fieldset";
+import {
+    getCategoryGradientBackgroundColor,
+    getCategoryBorderColor, getCategoryPlaneBackgroundColor,
+    getCategoryTextColor,
+    NodeSubType
+} from "@/hooks/editor/nodes/useNodeColor";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -58,15 +64,26 @@ export const VariableTypeComponents = {
     [NodeVariableType.Node]: null,
 };
 
-const Dock: React.FC<Props> = ({className, toggleClose, ...props}) => {
+const Dock: React.FC<Props> = ({toggleClose, ...props}) => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const openedGroup = useNodesStore((state) => state.openedGroup);
     const nodes = useNodesStore((state) => state.nodes);
     const openDocs = useEditorStore((state) => state.openDocs);
     const setGroupNameOverride = useNodesStore((state) => state.setGroupNameOverride);
 
+
     const node: Node | null | undefined = selectedNodes.length === 1 ?
         nodes.find((n) => n.id === selectedNodes[0]) : null;
+
+    const category = node?.category ?? '';
+    const isNodeInService = useNodesStore((state) => state.isNodeInService([node?.id ?? ""]));
+    const isService = !!node?.service?.id || isNodeInService;
+
+    const categoryBorder = getCategoryBorderColor(category, isService ? NodeSubType.Service : undefined);
+    const categoryBackground = getCategoryPlaneBackgroundColor(category, false, isService ? NodeSubType.Service : undefined);
+    const categoryGradientBackground = getCategoryGradientBackgroundColor(category, isService ? NodeSubType.Service : undefined);
+    const categoryMainTextColor = getCategoryTextColor('main', category, isService ? NodeSubType.Service : undefined);
+    const categorySubTextColor = getCategoryTextColor('sub', category, isService ? NodeSubType.Service : undefined);
 
     const {group, variablesForGroup} = useVariablesForGroup(
         openedGroup || (node?.id ?? null),
@@ -100,35 +117,101 @@ const Dock: React.FC<Props> = ({className, toggleClose, ...props}) => {
     return (
         <div
             {...props}
-            className={clsx(className, "absolute left-0 top-0 right-0 bottom-0 flex flex-col gap-2")}
+            className={`absolute left-0 top-0 right-0 bottom-0 flex flex-col gap-2`}
         >
             <Heading arrowToLeft={true} toggleClose={toggleClose}>
                 Dock: {node ? `${node.name}` : "select node"}
             </Heading>
 
             {!node && !group && (
-                <div className="flex flex-1 items-center justify-center text-gray-500 dark:text-gray-400 text-lg">
+                <div className="flex flex-1 items-center justify-center text-sky-500 dark:text-gray-400 text-lg">
                     Select node for node fields
                 </div>
             )}
 
-            {node && <VariableGroup title={'Handle'}>
-                <NodeHandle node={node}/>
+            {node && <VariableGroup
+                title={'Handle'}
+                categoryBorderColor={categoryBorder}
+                categoryMainTextColor={categoryMainTextColor}
+                categorySubTextColor={categorySubTextColor}
+                categoryBackgroundColor={categoryBackground}
+                categoryGradientBackgroundColor={categoryGradientBackground}
+            >
+                <NodeHandle node={node} categoryBorder={categoryBorder} />
             </VariableGroup>}
 
             {node && node.documentation && (
-                <Button plain onClick={() => openDocs(node?.documentation as string)}>
+                <Button color={'skyLight'} onClick={() => openDocs(node?.documentation as string)}>
                     Documentation <InformationCircleIcon/>
                 </Button>
             )}
 
+            {isService && (
+              <div className={`relative z-20 p-2`}>
+                <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
+                    This is a service, only the published variables are editable from the published variables form.
+                </span>
+            </div>
+            )}
+
+            {node && node.variables.length > 0 ? (
+                node.variables.some((variable: NodeVariable) => variable.has_dock) ? (
+                    <VariableGroup
+                        title={node.name}
+                        version={node.version || 0.0}
+                        categoryBorderColor={categoryBorder}
+                        categoryMainTextColor={categoryMainTextColor}
+                        categorySubTextColor={categorySubTextColor}
+                        categoryBackgroundColor={categoryBackground}
+                        categoryGradientBackgroundColor={categoryGradientBackground}
+                        isService={isService}
+                    >
+                        {node.variables.map((variable: NodeVariable) => {
+                            if (!variable.has_dock) return null;
+                            const {baseType} = interpretNodeVariableType(variable);
+                            const VariableComponent = VariableTypeComponents[baseType];
+
+                            return VariableComponent ? (
+                                <div key={node.id + '-' + variable.handle}>
+                                    <VariableComponent
+                                        nodeId={node.id}
+                                        variable={variable}
+                                        publishedButton={true}
+                                        inDock={true}
+                                        categoryBorder={categoryBorder}
+                                    />
+                                </div>
+                            ) : null;
+                        })}
+                    </VariableGroup>
+                ) : (
+                    <p className="text-zinc-400 text-sm italic p-4">
+                        Node does not have variables that can be edited from the dock.
+                    </p>
+                )
+            ) : null}
             {group && (
                 <>
-                    <VariableGroup title={group.name}>
+                    <VariableGroup
+                        title={group.name}
+                        categoryBorderColor={categoryBorder}
+                        categoryMainTextColor={categoryMainTextColor}
+                        categorySubTextColor={categorySubTextColor}
+                        categoryBackgroundColor={categoryBackground}
+                        categoryGradientBackgroundColor={categoryGradientBackground}
+                        isService={isService}
+                    >
                         <GroupName group={group}/>
 
                         {variablesForGroup?.inVariables && variablesForGroup?.inVariables.length > 0 && (
-                            <VariableGroup title="In Variables">
+                            <VariableGroup
+                                title="In Variables"
+                                categoryBorderColor={categoryBorder}
+                                categoryMainTextColor={categoryMainTextColor}
+                                categorySubTextColor={categorySubTextColor}
+                                categoryBackgroundColor={categoryBackground}
+                                categoryGradientBackgroundColor={categoryGradientBackground}
+                            >
                                 {variablesForGroup.inVariables
                                     .filter((item): item is { variable: NodeVariable; nodeId: string } => !!item)
                                     .map(({variable, nodeId}) => {
@@ -163,6 +246,8 @@ const Dock: React.FC<Props> = ({className, toggleClose, ...props}) => {
                                                         nodeId={nodeId}
                                                         variable={variable}
                                                         publishedButton={true}
+                                                        inDock={true}
+                                                        categoryBorder={categoryBorder}
                                                     />
                                                 )}
                                             </div>
@@ -172,7 +257,14 @@ const Dock: React.FC<Props> = ({className, toggleClose, ...props}) => {
                         )}
 
                         {variablesForGroup?.outVariables && variablesForGroup?.outVariables.length > 0 && (
-                            <VariableGroup title="Out Variables">
+                            <VariableGroup
+                                title="Out Variables"
+                                categoryBorderColor={categoryBorder}
+                                categoryMainTextColor={categoryMainTextColor}
+                                categorySubTextColor={categorySubTextColor}
+                                categoryBackgroundColor={categoryBackground}
+                                categoryGradientBackgroundColor={categoryGradientBackground}
+                            >
                                 {variablesForGroup.outVariables
                                     .filter((item): item is { variable: NodeVariable; nodeId: string } => !!item)
                                     .map(({variable, nodeId}) => {
@@ -207,6 +299,7 @@ const Dock: React.FC<Props> = ({className, toggleClose, ...props}) => {
                                                         nodeId={nodeId}
                                                         variable={variable}
                                                         publishedButton={true}
+                                                        inDock={true}
                                                     />
                                                 )}
                                             </div>
@@ -217,32 +310,6 @@ const Dock: React.FC<Props> = ({className, toggleClose, ...props}) => {
                     </VariableGroup>
                 </>
             )}
-
-            {node && node.variables.length > 0 ? (
-                node.variables.some((variable: NodeVariable) => variable.has_dock) ? (
-                    <VariableGroup title={node.name} version={node.version || 0.0}>
-                        {node.variables.map((variable: NodeVariable) => {
-                            if (!variable.has_dock) return null;
-                            const {baseType} = interpretNodeVariableType(variable);
-                            const VariableComponent = VariableTypeComponents[baseType];
-
-                            return VariableComponent ? (
-                                <div key={node.id + '-' + variable.handle}>
-                                    <VariableComponent
-                                        nodeId={node.id}
-                                        variable={variable}
-                                        publishedButton={true}
-                                    />
-                                </div>
-                            ) : null;
-                        })}
-                    </VariableGroup>
-                ) : (
-                    <p className="text-zinc-400 text-sm italic p-4">
-                        Node does not have variables that can be edited from the dock.
-                    </p>
-                )
-            ) : null}
         </div>
     );
 };

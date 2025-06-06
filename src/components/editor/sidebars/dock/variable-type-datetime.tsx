@@ -10,7 +10,16 @@ import useConnectionsStore from "@/stores/connectionsStore";
 import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 
 
-const VariableTypeDatetime: React.FC<VariableTypeProps> = ({ nodeId, variable, publishedButton = true }): React.ReactElement => {
+const VariableTypeDatetime: React.FC<VariableTypeProps> = ({
+    nodeId,
+    variable,
+    publishedButton = true,
+    categoryBorder = 'border border-sky-200 dark:border-zinc-700',
+    categoryMainTextColor = 'text-sky-500 dark:text-white/70',
+    categorySubTextColor = 'text-sky-800 dark:text-white/70',
+    categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
+    categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900'
+}): React.ReactElement => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
     const initialValue = variable.value ? new Date(variable.value as string) : null;
 

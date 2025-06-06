@@ -7,7 +7,12 @@ import useConnectionsStore from "@/stores/connectionsStore";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 
-const VariableTypeTemplate: React.FC<VariableTypeProps> = ({nodeId, variable, publishedButton = true}) => {
+const VariableTypeTemplate: React.FC<VariableTypeProps> = ({
+    nodeId,
+    variable,
+    publishedButton = true,
+    inDock = true
+}) => {
     const { openForm } = useEditorStore();
 
     const onEdit = (nodeId: string) => {
@@ -18,7 +23,7 @@ const VariableTypeTemplate: React.FC<VariableTypeProps> = ({nodeId, variable, pu
 
     return (
         <div className={'relative'}>
-            {variable?.dock?.enabled === false || variable.published && (
+            {variable?.dock?.enabled === false || (variable.published && inDock) && (
                 <div className="absolute inset-0 bg-black/40 rounded-md z-10 pointer-events-none"/>
             )}
              {isValueConnected ? (
@@ -28,7 +33,7 @@ const VariableTypeTemplate: React.FC<VariableTypeProps> = ({nodeId, variable, pu
                     {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
                     <Field>
                         <button
-                            disabled={variable?.dock?.enabled === false || variable.published}
+                            disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
                             className="text-slate-500 hover:text-slate-600 w-full pb-1 ring-1 ring-white/20 rounded-md"
                             onClick={() => onEdit(nodeId)}
                         >

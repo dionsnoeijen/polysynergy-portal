@@ -27,7 +27,7 @@ const ConfigForm: React.FC = () => {
 
     useEffect(() => {
         if (formType === FormType.EditConfig && formEditRecordId) {
-            const config = getConfig(formEditRecordId);
+            const config = getConfig(formEditRecordId as string);
             if (config) {
                 setName(config.name);
                 setDescription(config.metadata.description ?? "");
@@ -82,7 +82,7 @@ const ConfigForm: React.FC = () => {
                 <Heading>
                     {formType === FormType.AddConfig ? "Add " : "Edit "} Config
                 </Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5" />
                 </Button>
             </div>

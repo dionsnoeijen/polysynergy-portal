@@ -45,7 +45,7 @@ const CodeEditorForm: React.FC = () => {
 
     useEffect(() => {
         if (!formEditRecordId) return;
-        setNode(getNode(formEditRecordId));
+        setNode(getNode(formEditRecordId as string));
     }, [formEditRecordId, getNode]);
 
     return (
@@ -54,7 +54,7 @@ const CodeEditorForm: React.FC = () => {
                 <Heading>
                     {node && node.name}: {formEditVariable?.handle}
                 </Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5" />
                 </Button>
             </div>

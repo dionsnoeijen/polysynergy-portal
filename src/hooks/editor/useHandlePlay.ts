@@ -12,7 +12,7 @@ export const useHandlePlay = () => {
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
 
-    return async (e: React.MouseEvent, nodeId: string, subStage: string) => {
+    return async (e: React.MouseEvent, nodeId: string, subStage: string = 'mock') => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -36,7 +36,6 @@ export const useHandlePlay = () => {
             const result = data.result.body ? JSON.parse(data.result.body) : data.result;
 
             const lastNode = result.nodes_order[result.nodes_order.length - 1];
-
             const executeResult = await getNodeExecutionDetails(
                 activeVersionId as string,
                 result.run_id,

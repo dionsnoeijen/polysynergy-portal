@@ -2,7 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import useEditorStore from "@/stores/editorStore";
 
 const ContextMenu: React.FC = () => {
-    const { contextMenu, closeContextMenu } = useEditorStore();
+    const contextMenu = useEditorStore((state) => state.contextMenu);
+    const closeContextMenu = useEditorStore((state) => state.closeContextMenu);
+
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {

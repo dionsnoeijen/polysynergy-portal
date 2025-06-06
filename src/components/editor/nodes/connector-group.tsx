@@ -4,6 +4,7 @@ import { InOut } from "@/types/types";
 import useConnectionsStore from "@/stores/connectionsStore";
 import { useConnectorHandlers } from "@/hooks/editor/nodes/useConnectorHandlers";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
+import useNodesStore from "@/stores/nodesStore";
 
 type ConnectorGroupProps = {
     groupId: string;
@@ -18,7 +19,10 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
     out: isOut = false,
 }) => {
 
-    const { findInConnectionsByNodeId, findOutConnectionsByNodeId } = useConnectionsStore();
+    const findInConnectionsByNodeId = useConnectionsStore((state) => state.findInConnectionsByNodeId);
+    const findOutConnectionsByNodeId = useConnectionsStore((state) => state.findOutConnectionsByNodeId);
+    const group = useNodesStore((state) => state.getGroupById(groupId));
+
     const { handleMouseDown } = useConnectorHandlers(isIn, isOut, groupId, true);
 
     const connections = isOut ?
@@ -61,7 +65,7 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
                             data-type={isIn ? InOut.Out : InOut.In}
                             data-group-id={groupId}
                             data-handle={slot.id}
-                            data-enabled={true}
+                            data-enabled={!group?.service?.id}
                             className={`w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 ring-sky-500 dark:ring-white bg-white dark:bg-slate-800 cursor-pointer 
                             ${
                                 isOut ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"

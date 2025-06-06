@@ -24,20 +24,20 @@ const ListVariableForm: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!formEditRecordId || !formEditVariable) return;
-        updateNodeVariable(formEditRecordId, formEditVariable?.handle, items);
+        updateNodeVariable(formEditRecordId as string, formEditVariable?.handle, items);
         closeForm();
     };
 
     useEffect(() => {
         if (!formEditRecordId) return;
-        setNode(getNode(formEditRecordId));
+        setNode(getNode(formEditRecordId as string));
     }, [getNode, formEditRecordId, formType, formEditVariable]);
 
     return (
         <form onSubmit={handleSubmit} method={"post"} className={"p-10"}>
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>{node && node.name}: {formEditVariable?.handle}</Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5" />
                 </Button>
             </div>

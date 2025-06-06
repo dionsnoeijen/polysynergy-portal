@@ -21,14 +21,14 @@ const RenderValue = ({label, value}: { label: string; value: any }) => {
         const isHtml = isProbablyHtml(value);
         return (
             <div className="mb-2">
-                <div className="text-xs font-bold text-white/70">{label}</div>
+                <div className="text-xs font-bold text-black/70 dark:text-white/70">{label}</div>
                 {isHtml ? (
                     <div
-                        className="bg-white/10 p-3 rounded text-sm text-white leading-relaxed space-y-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:ml-2"
+                        className="bg-sky-200 dark:bg-white/10 p-3 rounded text-sm text-black/70 dark:text-white leading-relaxed space-y-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:ml-2"
                         dangerouslySetInnerHTML={{__html: value}}
                     />
                 ) : (
-                    <p className="text-sm text-white bg-white/10 rounded p-3 whitespace-pre-wrap break-words">
+                    <p className="text-sm text-black/70 dark:text-white bg-sky-200 dark:bg-white/10 rounded p-3 whitespace-pre-wrap break-words">
                         {value}
                     </p>
                 )}
@@ -42,7 +42,7 @@ const RenderValue = ({label, value}: { label: string; value: any }) => {
             JSON.parse(stringified);
             return (
                 <div className="mb-2">
-                    <div className="text-xs font-bold text-white/70 mb-1">{label}</div>
+                    <div className="text-xs font-bold text-black/70 dark:text-white/70 mb-1">{label}</div>
                     <div className="bg-white/5 rounded p-3">
                         <div className="relative overflow-y-auto">
                             <ReactJson
@@ -75,8 +75,8 @@ const FormattedNodeOutput: React.FC<FormattedNodeOutputProps> = ({variables}) =>
     return (
         <div className="p-4 space-y-4">
             {variables.true_path && (
-                <div className="border-l-4 border-green-500 pl-4 py-2 bg-green-900/30 rounded">
-                    <div className="text-sm font-bold text-green-300 mb-1">Result (true_path)</div>
+                <div className="border-l-4 border-green-500 pl-4 py-2 bg-green-200 dark:bg-green-900/30 rounded">
+                    <div className="text-sm font-bold text-green-500 dark:text-green-300 mb-1">Result (true_path)</div>
                     <div className="pr-4">
                         <RenderValue label="" value={variables.true_path}/>
                     </div>
@@ -84,7 +84,7 @@ const FormattedNodeOutput: React.FC<FormattedNodeOutputProps> = ({variables}) =>
             )}
 
             {variables.false_path && (
-                <div className="border-l-4 border-red-500 pl-4 py-2 bg-red-900/30 rounded">
+                <div className="border-l-4 border-red-500 pl-4 py-2 bg-red-200 dark:bg-red-900/30 rounded">
                     <div className="text-sm font-bold text-red-300 mb-1">Error (false_path)</div>
                     <div className="pr-4">
                         <RenderValue label="" value={variables.false_path}/>
@@ -97,9 +97,9 @@ const FormattedNodeOutput: React.FC<FormattedNodeOutputProps> = ({variables}) =>
             ))}
 
             <details className="mt-6">
-                <summary className="cursor-pointer text-sm text-blue-400">Show raw result</summary>
+                <summary className="cursor-pointer text-sm text-sky-500">Show raw result</summary>
                 <div className="mt-2">
-                    <div className="relative h-[400px] overflow-y-auto rounded border border-white/10 bg-white/5 p-3">
+                    <div className="relative h-[400px] overflow-y-auto rounded border border-sky-500/50 dark:border-white/10 bg-white/5 p-3">
                         <ReactJson
                             src={variables}
                             name={false}

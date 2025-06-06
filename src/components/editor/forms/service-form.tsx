@@ -22,6 +22,7 @@ import SvgSelector from "@/components/editor/forms/service/svg-selector";
 import findPublishedVariables from "@/utils/findPublishedVariables";
 import Node from "@/components/editor/nodes/node";
 import {XMarkIcon} from "@heroicons/react/24/outline";
+import Info from "@/components/info";
 
 const ServiceForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -53,8 +54,10 @@ const ServiceForm: React.FC = () => {
     const [nameError, setNameError] = useState<boolean>(false);
     const [categoryError, setCategoryError] = useState<boolean>(false);
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-    const [publishedVariables, setPublishedVariables] = useState<{ [handle: string]: { variables: NodeVariable[]; nodeIds: string[] } }>({});
-    const [nodeNames, setNodeNames] = useState<{[nodeId: string]: string}>({});
+    const [publishedVariables, setPublishedVariables] = useState<{
+        [handle: string]: { variables: NodeVariable[]; nodeIds: string[] }
+    }>({});
+    const [nodeNames, setNodeNames] = useState<{ [nodeId: string]: string }>({});
 
     let node = undefined;
 
@@ -90,22 +93,22 @@ const ServiceForm: React.FC = () => {
         setCategory(node.service?.category || "");
         setIcon(node.icon || "");
         setDescription(node.service?.description || "");
-        setNodeNames({ [node.id]: node.name });
+        setNodeNames({[node.id]: node.name});
         if (node.type === NodeType.Group) {
             const nodesInGroup = getNodesInGroup(node.id);
             const nodesByIds = getNodesByIds(nodesInGroup);
             nodesByIds.map((n) => {
                 setNodeNames(
-                    (prev) => ({ ...prev, [n.id]: n.name })
+                    (prev) => ({...prev, [n.id]: n.name})
                 );
             });
-            const { variablesByHandle } = findPublishedVariables(nodesByIds);
+            const {variablesByHandle} = findPublishedVariables(nodesByIds);
             setPublishedVariables(variablesByHandle);
         } else {
-            const { variablesByHandle } = findPublishedVariables([node]);
+            const {variablesByHandle} = findPublishedVariables([node]);
             setPublishedVariables(variablesByHandle);
         }
-    }, [ getNodesByIds, getNodesInGroup, node ]);
+    }, [getNodesByIds, getNodesInGroup, node]);
 
     if (formType === FormType.AddService) {
         if (selectedNodes.length > 1) {
@@ -198,7 +201,7 @@ const ServiceForm: React.FC = () => {
             );
 
             await updateService(
-                formEditRecordId,
+                formEditRecordId as string,
                 name,
                 category,
                 description,
@@ -273,7 +276,7 @@ const ServiceForm: React.FC = () => {
         <form onSubmit={handleSubmit} method="post" className="p-10">
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>{formType === FormType.AddService ? "Add " : "Edit "} Service</Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5"/>
                 </Button>
             </div>
@@ -300,7 +303,7 @@ const ServiceForm: React.FC = () => {
                 </div>
             </section>
 
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">
@@ -315,7 +318,7 @@ const ServiceForm: React.FC = () => {
                 </div>
             </section>
 
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">
@@ -338,22 +341,24 @@ const ServiceForm: React.FC = () => {
                 </div>
             </section>
 
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">
                     <Subheading>Published Variables</Subheading>
                     <Text>
-                        Give a good description on what is expected in the published variable. Creating the service, will empty the value, so dont worry about accidentally sharing your keys.
+                        Give a good description on what is expected in the published variable. Creating the service,
+                        will empty the value, so dont worry about accidentally sharing your keys.
                     </Text>
                 </div>
                 <div>
                     {Object.entries(publishedVariables).map(([nodeId, data], index) => (
                         data.variables.map((variable) => (
                             <div key={`node-pv-${nodeId}-${index}-${variable.handle}`}>
-                                {index > 0 && <Divider className={'mt-5 mb-5'} />}
+                                {index > 0 && <Divider className={'mt-5 mb-5'}/>}
                                 <div>
-                                    <Subheading className={'mb-1'}>{`${nodeNames[data.nodeIds[0]]} - ${variable.name}`}</Subheading>
+                                    <Subheading
+                                        className={'mb-1'}>{`${nodeNames[data.nodeIds[0]]} - ${variable.name}`}</Subheading>
                                     <Input
                                         className={'mb-2'}
                                         placeholder={'Variable title'}
@@ -376,7 +381,7 @@ const ServiceForm: React.FC = () => {
                 </div>
             </section>
 
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">
@@ -384,11 +389,11 @@ const ServiceForm: React.FC = () => {
                     <Text>Select an icon</Text>
                 </div>
                 <div>
-                    <SvgSelector onSelect={(url: string) => handleIconChange(url)} />
+                    <SvgSelector onSelect={(url: string) => handleIconChange(url)}/>
                 </div>
             </section>
 
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">
@@ -396,11 +401,11 @@ const ServiceForm: React.FC = () => {
                     <Text>Service preview</Text>
                 </div>
                 <div className="flex justify-end">
-                    <Node node={node} preview={true} />
+                    <Node node={node} preview={true}/>
                 </div>
             </section>
 
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             {formType === FormType.EditService && (
                 <>
@@ -419,6 +424,18 @@ const ServiceForm: React.FC = () => {
                 </>
             )}
 
+            {formType === FormType.EditService && (
+                <>
+                    <Info title="About updating a service">
+                        When you update a service, existing nodes that already use this service <b>will not be
+                        affected</b>.<br/>
+                        They continue to use the original version to maintain flow stability.<br/>
+                        Only services added <b>after</b> the update will use the new version.
+                    </Info>
+                    <Divider className="my-10" soft bleed/>
+                </>
+            )}
+
             <div className="flex justify-end gap-4">
                 {error && (
                     <div className="text-red-500">
@@ -428,13 +445,14 @@ const ServiceForm: React.FC = () => {
                 <Button type="button" onClick={handleCancel} plain>
                     Cancel
                 </Button>
-                <Button type="submit">
+                <Button type="submit" color={'sky'}>
                     {formType === FormType.AddService ? "Create service" : "Update service"}
                 </Button>
             </div>
 
             {showDeleteAlert && (
-                <Alert size="md" className="text-center" open={showDeleteAlert} onClose={() => setShowDeleteAlert(false)}>
+                <Alert size="md" className="text-center" open={showDeleteAlert}
+                       onClose={() => setShowDeleteAlert(false)}>
                     <AlertTitle>Are you sure you want to delete this service?</AlertTitle>
                     <AlertDescription>This action cannot be undone.</AlertDescription>
                     <AlertActions>

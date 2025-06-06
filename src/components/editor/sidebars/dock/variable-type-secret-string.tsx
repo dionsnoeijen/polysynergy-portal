@@ -15,6 +15,7 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
     publishedButton = true,
     onChange,
     currentValue,
+    inDock = true
 }) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -48,7 +49,7 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
                             actions={
                                 <Button
                                     plain
-                                    disabled={variable?.dock?.enabled === false || variable.published}
+                                    disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
                                     onClick={togglePasswordVisibility}
                                     className="!p-1"
                                     title={isPasswordVisible ? "Hide password" : "Show password"}
@@ -63,7 +64,7 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
                         >
                             <Input
                                 type={isPasswordVisible ? "text" : "password"}
-                                disabled={variable?.dock?.enabled === false || variable.published}
+                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
                                 value={displayValue}
                                 onChange={handleChange}
                                 placeholder={'******'}

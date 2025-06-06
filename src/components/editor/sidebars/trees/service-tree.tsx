@@ -54,25 +54,25 @@ export default function ServiceTree(): ReactElement {
             items={services}
             title={`Services`}
             activeItem={activeServiceId}
-            formEditingItem={formEditRecordId}
+            formEditingItem={formEditRecordId as string}
             fundamental={Fundamental.Service}
             toggleOpen={() => {setAddDisabled(!(selectedNodes.length === 1))}}
             dataTourId={"add-service-button"}
             renderItem={(service: Service) => (
                 <div className="flex justify-between items-center w-full">
-                    <span className={`select-none`}>{service.name}</span>
+                    <span className={`select-none truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white`}>{service.name}</span>
                     <div className="flex gap-2 mr-2">
                         <button
                             onClick={() => handleEditService(service)}
                             type="button"
-                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-gray-800' : 'text-white'}`}
+                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : 'text-sky-500 dark:text-white/70'}`}
                         >
                             <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
                         </button>
                         <button
                             onClick={() => openForm(FormType.PlaceService, service.id)}
                             type="button"
-                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-gray-800' : 'text-white'}`}
+                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : 'text-sky-500 dark:text-white/70'}`}
                         >
                             <PlusIcon className="w-4 h-4 transition-colors duration-200"/>
                         </button>

@@ -16,7 +16,7 @@ const DictVariableForm: React.FC = () => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
     const closeForm = useEditorStore((state) => state.closeForm);
     const formEditVariable = useEditorStore((state) => state.formEditVariable);
-    const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+    const formEditRecordId = useEditorStore<string>((state) => state.formEditRecordId as string);
     const formType = useEditorStore((state) => state.formType);
 
     const removeConnectionsLinkedToVariable = useConnectionsStore((state) => state.removeConnectionsLinkedToVariable);
@@ -121,7 +121,7 @@ const DictVariableForm: React.FC = () => {
         <form onSubmit={handleSubmit} method={"post"} className={"p-10"}>
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>{node && node.name}: {formEditVariable?.handle}</Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5" />
                 </Button>
             </div>
@@ -131,15 +131,17 @@ const DictVariableForm: React.FC = () => {
                 title="Array values"
                 dock={formEditVariable?.dock}
                 variables={variables}
+                handle={formEditVariable?.handle}
                 onChange={setVariables}
                 published={formEditVariable?.published}
+                node={node}
             />
 
             <Divider className="my-10" soft bleed/>
 
             <div className="flex justify-end gap-4">
                 <Button type="button" onClick={() => closeForm()} plain>Cancel</Button>
-                <Button type="submit">
+                <Button type="submit" color={"sky"}>
                     {formType === FormType.EditDict && "Save dictionary"}
                 </Button>
             </div>

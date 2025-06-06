@@ -24,6 +24,7 @@ export type MockNode = {
     runId: string;
     started: boolean;
     variables: NodeVariables;
+    status?: 'executing' | 'success' | 'error' | 'killed';
 }
 
 type MockState = {

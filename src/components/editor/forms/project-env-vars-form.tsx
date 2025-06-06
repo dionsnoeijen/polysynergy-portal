@@ -69,9 +69,9 @@ const ProjectEnvVarsForm: React.FC = () => {
                     await useEnvVarsStore.getState().fetchEnvVars();
                 }
 
-                const envVarsForKey = getEnvVarsByKey(formEditRecordId);
+                const envVarsForKey = getEnvVarsByKey(formEditRecordId as string);
 
-                setKey(formEditRecordId);
+                setKey(formEditRecordId as string);
 
                 const valuesObj: Record<string, string> = {};
                 for (const env of envVarsForKey) {
@@ -88,7 +88,7 @@ const ProjectEnvVarsForm: React.FC = () => {
         <form onSubmit={(e) => e.preventDefault()} className="p-10">
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>Add Environment Variable</Heading>
-                <Button type="button" onClick={handleCancel} plain>
+                <Button type="button" onClick={handleCancel} color="sky">
                     <XMarkIcon className="w-5 h-5"/>
                 </Button>
             </div>
@@ -121,7 +121,7 @@ const ProjectEnvVarsForm: React.FC = () => {
                             }
                             placeholder="Enter value for this environment"
                         />
-                        <Button onClick={() => handleSave(stage.name)}>Save</Button>
+                        <Button color={"sky"} onClick={() => handleSave(stage.name)}>Save</Button>
                     </div>
                 </div>
             ))}

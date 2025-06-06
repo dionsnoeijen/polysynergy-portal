@@ -5,9 +5,10 @@ import {Switch} from "@/components/switch";
 import {Input} from "@/components/input";
 import {Select} from "@/components/select";
 import {Button} from "@/components/button";
-import {ArrowRightCircleIcon, PlusIcon, TrashIcon} from "@heroicons/react/24/outline";
-import {Dock, FormType, NodeVariable, NodeVariableType} from "@/types/types";
+import {PlusIcon, TrashIcon, BoltIcon} from "@heroicons/react/24/outline";
+import {Node, Dock, FormType, NodeVariable, NodeVariableType} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 
 type Props = {
     title: string;
@@ -17,6 +18,7 @@ type Props = {
     handle?: string;
     dock?: Dock;
     published?: boolean;
+    node?: Node;
 };
 
 const EditDictVariable: React.FC<Props> = ({
@@ -27,9 +29,11 @@ const EditDictVariable: React.FC<Props> = ({
                                                handle,
                                                dock,
                                                published = false,
+                                               node,
                                            }) => {
 
     const formType = useEditorStore((state) => state.formType);
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnected);
 
     const editableKeys = useMemo(() => {
         if (formType !== FormType.PublishedVariableForm) return new Set<string>();
@@ -50,12 +54,6 @@ const EditDictVariable: React.FC<Props> = ({
         } else {
             updatedVariables[index] = {...updatedVariables[index], [key]: value};
         }
-        onChange(updatedVariables, handle);
-    };
-
-    const togglePublished = (index: number) => {
-        const updatedVariables = [...variables];
-        updatedVariables[index] = {...updatedVariables[index], published: !updatedVariables[index].published};
         onChange(updatedVariables, handle);
     };
 
@@ -98,69 +96,83 @@ const EditDictVariable: React.FC<Props> = ({
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {variables.map((variable, index) => (
-                            <TableRow key={`row-${index}`}>
-                                {!(dock && dock.in_switch === false) && <TableCell>
-                                    <Switch
-                                        checked={variable.has_in}
-                                        onChange={(checked) => updateVariable(index, "has_in", checked)}
-                                        disabled={onlyValues || dock?.in_switch_enabled === false}
-                                    />
-                                </TableCell>}
-                                {!(dock && dock.key_field === false) && <TableCell>
-                                    <Input
-                                        value={variable.handle}
-                                        onChange={(e) => updateVariable(index, "handle", e.target.value)}
-                                        disabled={onlyValues}
-                                    />
-                                </TableCell>}
-                                {!(dock && dock.type_field === false) && <TableCell>
-                                    <Select
-                                        value={variable.type}
-                                        onChange={(e) =>
-                                            updateVariable(index, "type", e.target.value as NodeVariableType)
-                                        }
-                                        disabled={onlyValues || (formType === FormType.PublishedVariableForm && !editableKeys.has(variable.handle))}
-                                    >
-                                        <option value={NodeVariableType.String}>String</option>
-                                        <option value={NodeVariableType.Int}>Int</option>
-                                        <option value={NodeVariableType.Float}>Float</option>
-                                        <option value={NodeVariableType.Boolean}>Boolean</option>
-                                        <option value={NodeVariableType.List}>List</option>
-                                        <option value={NodeVariableType.Dict}>Dict</option>
-                                    </Select>
-                                </TableCell>}
-                                {!(dock && dock.value_field === false) && <TableCell>
-                                    <Input
-                                        value={String(variable.value)}
-                                        onChange={(e) => updateVariable(index, "value", e.target.value)}
-                                        disabled={(formType === FormType.PublishedVariableForm && !editableKeys.has(variable.handle))}
-                                    />
-                                </TableCell>}
-                                {!(dock && dock.out_switch === false) && <TableCell>
-                                    <Switch
-                                        checked={variable.has_out}
-                                        onChange={(checked) => updateVariable(index, "has_out", checked)}
-                                        disabled={onlyValues || dock?.out_switch_enabled === false}
-                                    />
-                                </TableCell>}
-                                <TableCell>
-                                    {formType !== FormType.PublishedVariableForm && (
-                                        <>
-                                            <Button plain onClick={() => removeVariable(index)}>
-                                                <TrashIcon className="w-4 h-4"/>
-                                            </Button>
-                                            <Button plain
-                                                    className={`${variable.published && 'bg-sky-500 hover:bg-sky-600'}`}
-                                                    onClick={() => togglePublished(index)}>
-                                                <ArrowRightCircleIcon
-                                                    className={`w-4 h-4 text-gray-500 hover:text-gray-700 ${variable.published && '!text-white'}`}/>
-                                            </Button>
-                                        </>
-                                    )}
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {variables.map((variable, index) => {
+                            const isConnected = isValueConnected(node?.id || '', `${handle}.${variable.handle}`);
+
+                            const rowDisabled = onlyValues || (!onlyValues && variable.published);
+                            const valueDisabled = onlyValues
+                                ? !variable.published || isConnected
+                                : rowDisabled || isConnected;
+
+                            return (
+                                <TableRow key={`row-${index}`}>
+                                    {!(dock && dock.in_switch === false) && <TableCell>
+                                        <Switch
+                                            checked={variable.has_in}
+                                            onChange={(checked) => updateVariable(index, "has_in", checked)}
+                                            disabled={rowDisabled || dock?.in_switch_enabled === false}
+                                        />
+                                    </TableCell>}
+                                    {!(dock && dock.key_field === false) && <TableCell>
+                                        <Input
+                                            value={variable.handle}
+                                            onChange={(e) => updateVariable(index, "handle", e.target.value)}
+                                            disabled={rowDisabled}
+                                        />
+                                    </TableCell>}
+                                    {!(dock && dock.type_field === false) && <TableCell>
+                                        <Select
+                                            value={variable.type}
+                                            onChange={(e) =>
+                                                updateVariable(index, "type", e.target.value as NodeVariableType)
+                                            }
+                                            disabled={rowDisabled || (formType === FormType.PublishedVariableForm && !editableKeys.has(variable.handle))}
+                                        >
+                                            <option value={NodeVariableType.String}>String</option>
+                                            <option value={NodeVariableType.Int}>Int</option>
+                                            <option value={NodeVariableType.Float}>Float</option>
+                                            <option value={NodeVariableType.Boolean}>Boolean</option>
+                                            <option value={NodeVariableType.List}>List</option>
+                                            <option value={NodeVariableType.Dict}>Dict</option>
+                                        </Select>
+                                    </TableCell>}
+                                    {!(dock && dock.value_field === false) && <TableCell>
+                                        {isConnected ? (
+                                            <div
+                                                className="border border-orange-800 dark:border-yellow-300 rounded-md px-3 py-2 text-sm text-orange-800 dark:text-yellow-300 flex items-center gap-2 bg-black/10"
+                                                title="Connected to another node"
+                                            >
+                                                <BoltIcon className="w-4 h-4"/>
+                                                connected
+                                            </div>
+                                        ) : (
+                                            <Input
+                                                value={String(variable.value)}
+                                                onChange={(e) => updateVariable(index, "value", e.target.value)}
+                                                disabled={valueDisabled}
+                                            />
+                                        )}
+                                    </TableCell>}
+                                    {!(dock && dock.out_switch === false) && <TableCell>
+                                        <Switch
+                                            checked={variable.has_out}
+                                            onChange={(checked) => updateVariable(index, "has_out", checked)}
+                                            disabled={rowDisabled || dock?.out_switch_enabled === false}
+                                        />
+                                    </TableCell>}
+                                    <TableCell>
+                                        {formType !== FormType.PublishedVariableForm && (
+                                            <>
+                                                <Button plain onClick={() => removeVariable(index)}
+                                                        disabled={rowDisabled}>
+                                                    <TrashIcon className="w-4 h-4"/>
+                                                </Button>
+                                            </>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
                         {!onlyValues && (
                             <TableRow key="new-variable">
                                 <TableCell colSpan={6} className="text-center">

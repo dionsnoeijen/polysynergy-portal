@@ -9,17 +9,15 @@ let debounceTimeout: NodeJS.Timeout | null = null;
 let savingInProgress = false;
 
 export default function useGlobalStoreListenersWithImmediateSave() {
-    const {
-        activeRouteId,
-        activeScheduleId,
-        activeBlueprintId,
-        activeConfigId,
-        activeVersionId,
-        activeProjectId,
-        setIsSaving,
-    } = useEditorStore();
+    const activeRouteId = useEditorStore((state) => state.activeRouteId);
+    const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
+    const activeBlueprintId = useEditorStore((state) => state.activeBlueprintId);
+    const activeConfigId = useEditorStore((state) => state.activeConfigId);
+    const activeVersionId = useEditorStore((state) => state.activeVersionId);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
+    const setIsSaving = useEditorStore((state) => state.setIsSaving);
 
-    const debounceInterval = 3000;
+    const debounceInterval = 1000;
     const lastSaveTimeRef = useRef<number>(Date.now());
 
     const cancelPendingSave = useCallback(() => {
@@ -81,20 +79,14 @@ export default function useGlobalStoreListenersWithImmediateSave() {
     }, [activeVersionId, cancelPendingSave]);
 
     useEffect(() => {
-        let ready = false;
-        const tick = setTimeout(() => {
-            ready = true;
-        }, 0);
-
         const unsubNodes = useNodesStore.subscribe(() => {
-            if (ready) saveNodeSetup();
+            saveNodeSetup();
         });
         const unsubConns = useConnectionsStore.subscribe(() => {
-            if (ready) saveNodeSetup();
+            saveNodeSetup();
         });
 
         return () => {
-            clearTimeout(tick);
             unsubNodes();
             unsubConns();
             cancelPendingSave();

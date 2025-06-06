@@ -10,6 +10,8 @@ type Props = {
     collapsed?: boolean;
     centered?: boolean;
     staged?: boolean;
+    categoryMainTextColor?: string;
+    categorySubTextColor?: string;
 };
 
 const PlayButton: React.FC<Props> = ({
@@ -18,10 +20,11 @@ const PlayButton: React.FC<Props> = ({
     collapsed = false,
     centered = true,
     staged = false,
+    categoryMainTextColor = 'text-sky-600 dark:text-white',
+    categorySubTextColor = 'text-sky-400 dark:text-slate-400'
 }) => {
     const handlePlay = useHandlePlay();
-    const stagesFromStore = useStagesStore((state) => state.stages);
-    const stages = [{name: "mock"}, ...stagesFromStore];
+    const stages = useStagesStore((state) => state.stages);
     const [selectedStage, setSelectedStage] = useState("mock");
 
     const run = (e: React.MouseEvent) => {
@@ -47,7 +50,7 @@ const PlayButton: React.FC<Props> = ({
                         className="w-full h-9"
                     >
                         {stages.map((stage) => (
-                            <option key={stage.name} value={stage.name}>
+                            <option key={`${nodeId}-${stage.name}`} value={stage.name}>
                                 {stage.name}
                             </option>
                         ))}
@@ -57,11 +60,11 @@ const PlayButton: React.FC<Props> = ({
 
             <button
                 type="button"
-                className="h-9 w-9 min-w-[2.25rem] flex justify-center items-center rounded-md border border-white/50 focus:outline-none"
+                className={`h-9 ${staged ? 'w-9' : 'w-full'} min-w-[2.25rem] flex justify-center items-center rounded-md border border-white/90 focus:outline-none`}
                 onClick={run}
                 onDoubleClick={(e) => e.stopPropagation()}
             >
-                <PlayCircleIcon className="h-5 w-5 text-white !opacity-100" />
+                <PlayCircleIcon className={`h-5 w-5 ${categoryMainTextColor} !opacity-100`} />
             </button>
         </div>
     );

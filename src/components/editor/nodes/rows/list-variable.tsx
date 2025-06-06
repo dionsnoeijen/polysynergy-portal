@@ -16,6 +16,9 @@ type Props = {
     disabled?: boolean;
     groupId?: string;
     isMirror?: boolean;
+    categoryMainTextColor?: string;
+    categorySubTextColor?: string;
+    isInService?: boolean;
 };
 
 const ListVariable: React.FC<Props> = ({
@@ -28,6 +31,9 @@ const ListVariable: React.FC<Props> = ({
     disabled = false,
     groupId,
     isMirror = false,
+    categoryMainTextColor = 'text-sky-600 dark:text-white',
+    categorySubTextColor = 'text-sky-400 dark:text-slate-400',
+    isInService = false
 }) => {
 
     const type = interpretNodeVariableType(variable);
@@ -35,7 +41,7 @@ const ListVariable: React.FC<Props> = ({
 
     return <>
         <div
-            className={`flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative ${disabled && 'select-none opacity-0'}`}>
+            className={`flex items-center justify-between rounded-md w-full pl-4 pr-4 pt-1 relative ${disabled && 'select-none opacity-0'}`}>
             {variable.has_in && isMirror && !onlyOut && (
                 <FakeConnector in/>
             )}
@@ -43,16 +49,16 @@ const ListVariable: React.FC<Props> = ({
                 in
                 nodeId={nodeId}
                 handle={variable.handle}
-                disabled={disabled}
+                disabled={disabled || isInService}
                 groupId={groupId}
                 nodeVariableType={type.validationType}
             />}
             <div className="flex items-center truncate">
-                <h3 className={`font-semibold truncate ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-600 dark:text-white'}`}>
+                <h3 className={`font-semibold truncate ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`}>
                     {(groupId && variable.group_name_override) ? variable.group_name_override : variable.name}:
                 </h3>
-                <Bars3Icon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-400 dark:text-slate-400'}`} />
-                {isValueConnected ? <span className="ml-1"><BoltIcon className={'w-4 h-4 text-yellow-300'} /></span> : <span className="ml-1">{variable.value as string}</span>}
+                <Bars3Icon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`} />
+                {isValueConnected ? <span className="ml-1"><BoltIcon className={'w-4 h-4 text-orange-800 dark:text-yellow-300'} /></span> : <span className="ml-1">{variable.value as string}</span>}
             </div>
             {!isValueConnected && (
                 <button
@@ -64,9 +70,9 @@ const ListVariable: React.FC<Props> = ({
                     data-toggle="true"
                 >
                     {isOpen ? (
-                        <ChevronDownIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
+                        <ChevronDownIcon className={`w-5 h-5 ${categoryMainTextColor}`} />
                     ) : (
-                        <ChevronLeftIcon className="w-5 h-5 text-sky-400 dark:text-slate-400"/>
+                        <ChevronLeftIcon className={`w-5 h-5 ${categoryMainTextColor}`} />
                     )}
                 </button>
             )}
@@ -74,7 +80,7 @@ const ListVariable: React.FC<Props> = ({
                 out
                 nodeId={nodeId}
                 handle={variable.handle}
-                disabled={disabled}
+                disabled={disabled || isInService}
                 groupId={groupId}
                 nodeVariableType={type.validationType}
             />}

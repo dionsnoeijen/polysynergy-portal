@@ -1,7 +1,7 @@
 import React from "react";
-import { ChevronRightIcon } from "@heroicons/react/16/solid";
+import {ChevronRightIcon} from "@heroicons/react/16/solid";
 import {InOut, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
-import { useConnectorHandlers } from "@/hooks/editor/nodes/useConnectorHandlers";
+import {useConnectorHandlers} from "@/hooks/editor/nodes/useConnectorHandlers";
 import clsx from "clsx";
 
 type ConnectorProps = {
@@ -19,34 +19,34 @@ type ConnectorProps = {
     );
 
 const Connector: React.FC<ConnectorProps> = ({
-    nodeId,
-    handle,
-    parentHandle,
-    in: isIn,
-    out: isOut,
-    className,
-    iconClassName,
-    disabled = false,
-    groupId,
-    nodeVariableType
-}): React.ReactElement => {
-    const { handleMouseDown } = useConnectorHandlers(isIn, isOut, nodeId, false, disabled);
+                                                 nodeId,
+                                                 handle,
+                                                 parentHandle,
+                                                 in: isIn,
+                                                 out: isOut,
+                                                 className,
+                                                 iconClassName,
+                                                 disabled = false,
+                                                 groupId,
+                                                 nodeVariableType
+                                             }): React.ReactElement => {
+    const {handleMouseDown} = useConnectorHandlers(isIn, isOut, nodeId, false, disabled);
 
     let backgroundClasses;
     let iconColorClasses;
 
     const types = typeof nodeVariableType === "string"
-      ? nodeVariableType.split(",").map((s) => s.trim())
-      : [];
+        ? nodeVariableType.split(",").map((s) => s.trim())
+        : [];
 
     if (types.includes(NodeVariableType.TruePath)) {
-        backgroundClasses = "ring-white dark:ring-white bg-green-400 dark:bg-green-400";
+        backgroundClasses = "ring-sky-500 dark:ring-white bg-green-400 dark:bg-green-400";
         iconColorClasses = "text-zinc-800 dark:text-zinc-800";
     } else if (types.includes(NodeVariableType.FalsePath)) {
-        backgroundClasses = "ring-white dark:ring-white bg-red-400 dark:bg-red-400";
+        backgroundClasses = "ring-sky-500 dark:ring-white bg-red-400 dark:bg-red-400";
         iconColorClasses = "text-zinc-800 dark:text-zinc-800";
     } else if (types.includes(NodeVariableType.Dependency)) {
-        backgroundClasses = "ring-white dark:ring-white bg-fuchsia-400 dark:bg-fuchsia-400";
+        backgroundClasses = "ring-sky-500 dark:ring-white bg-fuchsia-400 dark:bg-fuchsia-400";
         iconColorClasses = "text-zinc-800 dark:text-zinc-800";
     } else {
         backgroundClasses = "ring-sky-500 dark:ring-white bg-white dark:bg-zinc-800";
@@ -68,21 +68,28 @@ const Connector: React.FC<ConnectorProps> = ({
             data-handle={parentHandle ? parentHandle + '.' + handle : handle}
             data-enabled={!disabled}
             className={clsx(
-                "w-4 h-4 absolute rounded-full top-1/2 -translate-y-1/2 ring-1 cursor-pointer",
-                positionClasses,
-                backgroundClasses,
-                className,
+                "w-4 h-4 absolute top-1/2 -translate-y-1/2 rounded-full", // laat positie met rust
+                positionClasses, // left-0 / right-0 + x-vertaling
+                className
             )}
         >
-            {isInteractive && (
-                <ChevronRightIcon
-                    className={clsx(
-                        "w-5 h-5 absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2",
-                        iconColorClasses,
-                        iconClassName
-                    )}
-                />
-            )}
+            <div
+                className={clsx(
+                    "w-full h-full rounded-full ring-1 origin-center",
+                    backgroundClasses,
+                    "connector-animatable" // om te targeten
+                )}
+            >
+                {isInteractive && (
+                    <ChevronRightIcon
+                        className={clsx(
+                            "w-5 h-5 absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2",
+                            iconColorClasses,
+                            iconClassName
+                        )}
+                    />
+                )}
+            </div>
         </div>
     );
 };

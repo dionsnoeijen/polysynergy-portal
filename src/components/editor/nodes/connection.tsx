@@ -42,7 +42,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
     }
 
     const width = 2;
-    const dotRadius = 6.5;
+    const dotRadius = 5.5;
     const dashArray = connection.collapsed ? "4 4" : "0";
 
     useLayoutEffect(() => {
@@ -113,7 +113,8 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     zIndex: 100,
                     pointerEvents: "none",
                     opacity: isReady ? 1 : 0,
-                    transition: "opacity 0.2s ease-out 0.2s"
+                    transition: "opacity 0.2s ease-out 0.2s",
+                    transformOrigin: "center center"
                 }}
             />
             <div
@@ -130,7 +131,8 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     pointerEvents: "none",
                     cursor: "pointer",
                     opacity: isReady ? 1 : 0,
-                    transition: "opacity 0.2s ease-out 0.2s"
+                    transition: "opacity 0.2s ease-out 0.2s",
+                    transformOrigin: "center center"
                 }}
             />
         </>

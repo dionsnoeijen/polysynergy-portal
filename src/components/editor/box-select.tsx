@@ -12,7 +12,8 @@ const BoxSelect: React.FC = (): React.ReactElement => {
     const editorMode = useEditorStore((state) => state.editorMode);
     const setEditorMode = useEditorStore((state) => state.setEditorMode);
 
-    const { getNodesToRender } = useNodesStore();
+    const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
+
     const [isSelecting, setIsSelecting] = useState(false);
     const [boxStart, setBoxStart] = useState<{ x: number; y: number } | null>(null);
     const [boxEnd, setBoxEnd] = useState<{ x: number; y: number } | null>(null);

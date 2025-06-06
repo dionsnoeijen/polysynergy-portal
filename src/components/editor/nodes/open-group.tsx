@@ -138,8 +138,8 @@ const OpenGroup: React.FC<GroupProps> = ({node}): null | React.ReactElement => {
                 onDoubleClick={() => !node.group?.isHidden && closeGroup(node.id)}
                 className={`
                     ${(node.service && node.service.id) ? 
-                        'border-purple-500 dark:border-purple-500 bg-purple-500 dark:bg-purple-500/20' : 
-                        'border-sky-500 dark:border-white bg-sky-500 dark:bg-slate-500/20'}
+                        'border-purple-500 dark:border-purple-500 bg-purple-500/20 dark:bg-purple-500/20' : 
+                        'border-green-500/90 dark:border-white bg-green-200 dark:bg-slate-500/20'}
                     absolute border rounded-md bg-opacity-25
                     ${node.group.isHidden ? 'z-1 select-none opacity-30' : 'z-10'}
                 `}

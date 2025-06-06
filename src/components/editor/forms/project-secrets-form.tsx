@@ -38,7 +38,7 @@ const ProjectSecretsForm: React.FC = () => {
 
     useEffect(() => {
         if (formType === FormType.EditProjectSecret && formEditRecordId && activeProjectId) {
-            fetchProjectSecretDetailAPI(activeProjectId, formEditRecordId)
+            fetchProjectSecretDetailAPI(activeProjectId, formEditRecordId as string)
                 .then((data: Secret) => {
                     if (data?.key) {
                         setKey(data.key);
@@ -85,7 +85,7 @@ const ProjectSecretsForm: React.FC = () => {
         <form onSubmit={handleCancel} className="p-10">
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>{formType === FormType.EditProjectSecret ? "Edit Secret" : "Add Secret"}</Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color={"sky"}>
                     <XMarkIcon className="w-5 h-5"/>
                 </Button>
             </div>
@@ -131,7 +131,7 @@ const ProjectSecretsForm: React.FC = () => {
                             }
                             placeholder={stagesWithValue.includes(stage.name) ? "********" : "Enter secret value"}
                         />
-                        <Button onClick={() => handleSave(stage.name)}>Save</Button>
+                        <Button color={"sky"} onClick={() => handleSave(stage.name)}>Save</Button>
                     </div>
                 </div>
             ))}

@@ -142,7 +142,7 @@ const AddNode: React.FC = () => {
                 <div
                     ref={modalRef}
                     onWheel={(e) => e.stopPropagation()}
-                    className="fixed p-4 bg-black/90 rounded-lg shadow-lg w-[700px] h-[395px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-2/3 z-30"
+                    className="fixed p-4 bg-sky-100 dark:bg-black/90 dark:border-white/10 border-sky-500/50 rounded-lg shadow-lg w-[700px] h-[395px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-2/3 z-30"
                 >
                     <InputGroup>
                         <MagnifyingGlassIcon data-slot="icon" className="h-5 w-5 text-zinc-500" />
@@ -161,18 +161,18 @@ const AddNode: React.FC = () => {
                                 onClick={(e) => handleAddNodeAtPosition(n.id, e.clientX, e.clientY)}
                                 className={`cursor-pointer p-2 rounded-md ${
                                     index === selectedNodeIndex
-                                        ? "bg-zinc-800 text-white"
-                                        : "hover:bg-zinc-800 text-gray-300"
+                                        ? "bg-sky-300 text-sky-800 dark:bg-zinc-800 dark:text-white"
+                                        : "hover:bg-sky-400 text-sky-800 dark:hover:bg-zinc-800 dark:text-gray-300"
                                 }`}
                             >
-                                <span className="text-sm text-gray-400">{n.category}</span>
-                                <ChevronRightIcon className="h-5 inline text-gray-400" />
+                                <span className="text-sm text-sky-800 dark:text-gray-400">{n.category}</span>
+                                <ChevronRightIcon className="h-5 inline text-sky-800 dark:text-gray-400" />
                                 {n.name}
                             </div>
                         ))}
                     </div>
                     <div className="absolute bottom-4 right-4 left-4 h-auto overflow-y-auto">
-                        <Button onClick={handleAddNewNode} className={'w-full'}>
+                        <Button color={'sky'} onClick={handleAddNewNode} className={'w-full'}>
                             New Node <PlusIcon />
                         </Button>
                     </div>

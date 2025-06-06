@@ -31,18 +31,18 @@ export default function RouteTree(): ReactElement {
                             setIsExecuting('Loading Route')
                         }}
                         title={`${route.method}: /${formatSegments(route.segments)} - ${route.id}`}
-                        className={`block flex-1 truncate dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'dark:text-sky-950' : 'dark:text-zinc-500'}`}
+                        className={`block flex-1 truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'text-white' : 'dark:text-zinc-500'}`}
                     >
-                        <b className={`${(activeRouteId === route.id || formEditRecordId === route.id) ? 'dark:text-sky-800' : 'dark:text-gray-200/80'}`}>{route.method}</b>:
+                        <b className={`${(activeRouteId === route.id || formEditRecordId === route.id) ? 'text-white' : 'dark:text-gray-200/80'}`}>{route.method}</b>:
                         /{formatSegments(route.segments)}
                     </Link>
                     <button
                         onClick={() => openForm(FormType.EditRoute, route.id)}
                         type="button"
-                        className={`p-2 rounded focus:outline-none active:text-zinc-200 group ${activeRouteId === route.id || formEditRecordId === route.id ? 'text-sky-950' : 'text-zinc-500 '}`}
+                        className={`p-2 rounded focus:outline-none active:text-zinc-200 group`}
                         data-tour-id="add-route-button"
                     >
-                        <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
+                        <PencilIcon className={`w-4 h-4 transition-colors duration-200 ${activeRouteId === route.id || formEditRecordId === route.id ? 'text-white' : 'text-sky-500 dark:text-white/70 '}`}/>
                     </button>
                 </>
             )}

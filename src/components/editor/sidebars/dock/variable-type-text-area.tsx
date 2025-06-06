@@ -5,10 +5,19 @@ import { Field, Fieldset } from "@/components/fieldset";
 import { Textarea } from "@/components/textarea";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 import useConnectionsStore from "@/stores/connectionsStore";
-import {Text} from "@/components/text";
-import {BoltIcon} from "@heroicons/react/24/outline";
+import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 
-const VariableTypeTextArea: React.FC<VariableTypeProps> = ({ nodeId, variable, publishedButton = true }) => {
+const VariableTypeTextArea: React.FC<VariableTypeProps> = ({
+    nodeId,
+    variable,
+    publishedButton = true,
+    inDock = true,
+    categoryBorder = 'border border-sky-200 dark:border-zinc-700',
+    categoryMainTextColor = 'text-sky-500 dark:text-white/70',
+    categorySubTextColor = 'text-sky-800 dark:text-white/70',
+    categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
+    categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
+}) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -22,20 +31,18 @@ const VariableTypeTextArea: React.FC<VariableTypeProps> = ({ nodeId, variable, p
         <>
             {isValueConnected ?
                 (
-                    <div className={'border border-white/20 flex items-center justify-between rounded-md w-full relative mt-3 pl-3 pr-1 pb-1 pt-1 bg-white/5'}>
-                        <Text className={'!text-yellow-300'}>{variable.name} <span className="text-zinc-500 dark:text-zinc-400 text-xs">{'{'}{variable.handle}{'}'}</span></Text>
-                        <BoltIcon className={'w-5 h-5 text-yellow-300'} />
-                    </div>
+                    <ValueConnected variable={variable} />
                 ) : (
                     <Fieldset>
                         {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
                         <Field>
                             <Textarea
-                                disabled={variable?.dock?.enabled === false || variable.published}
+                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
                                 onChange={handleChange}
                                 placeholder={variable.handle}
                                 aria-label={variable.handle}
                                 defaultValue={variable.value as string || ""}
+                                className={`${categoryBorder} ${categoryBackgroundColor} rounded-[.5rem]`}
                             />
                         </Field>
                     </Fieldset>

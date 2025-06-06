@@ -14,7 +14,7 @@ export function Divider({
               className,
               'border-t',
               bleed ? '-mr-10 -ml-10' : 'w-full',
-              soft ? 'border-zinc-950/5 dark:border-white/5' : 'border-zinc-950/10 dark:border-white/10'
+              soft ? 'border-sky-500/20 dark:border-white/5' : 'border-sky-500/50 dark:border-white/10'
           )}
       />
   );

@@ -11,7 +11,8 @@ import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 const VariableTypeNumber: React.FC<VariableTypeProps> = ({
     nodeId,
     variable,
-    publishedButton = true
+    publishedButton = true,
+    inDock = true
 }): React.ReactElement => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
@@ -41,7 +42,7 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
                     <Field>
                         {variable.dock && variable.dock.select_values ? (
                             <Select
-                                disabled={variable?.dock?.enabled === false || variable.published}
+                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
                                 onChange={handleChange}
                                 defaultValue={value}
                             >
@@ -55,7 +56,7 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
                             <Input
                                 type="number"
                                 value={value}
-                                disabled={variable?.dock?.enabled === false || variable.published}
+                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
                                 onChange={handleChange}
                                 placeholder={variable.handle}
                                 aria-label={variable.handle}

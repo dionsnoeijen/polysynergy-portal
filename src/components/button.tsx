@@ -50,11 +50,11 @@ const styles = {
   ],
   plain: [
     // Base
-    'border-transparent text-zinc-950 data-[active]:bg-zinc-950/5 data-[hover]:bg-zinc-950/5',
+    'border-transparent text-zinc-950 data-[active]:bg-zinc-950/10 data-[hover]:bg-zinc-950/10',
     // Dark mode
     'dark:text-white dark:data-[active]:bg-white/10 dark:data-[hover]:bg-white/10',
     // Icon
-    '[--btn-icon:theme(colors.zinc.200)] data-[active]:[--btn-icon:theme(colors.zinc.300)] data-[hover]:[--btn-icon:theme(colors.zinc.300)] dark:[--btn-icon:theme(colors.zinc.200)] dark:data-[active]:[--btn-icon:theme(colors.zinc.200)] dark:data-[hover]:[--btn-icon:theme(colors.zinc.200)]',
+    '[--btn-icon:theme(colors.zinc.600)] data-[active]:[--btn-icon:theme(colors.zinc.700)] data-[hover]:[--btn-icon:theme(colors.zinc.700)] dark:[--btn-icon:theme(colors.zinc.600)] dark:data-[active]:[--btn-icon:theme(colors.zinc.600)] dark:data-[hover]:[--btn-icon:theme(colors.zinc.600)]',
   ],
   colors: {
     'dark/zinc': [
@@ -92,7 +92,7 @@ const styles = {
       '[--btn-icon:theme(colors.indigo.300)] data-[active]:[--btn-icon:theme(colors.indigo.200)] data-[hover]:[--btn-icon:theme(colors.indigo.200)]',
     ],
     cyan: [
-      'text-cyan-950 [--btn-bg:theme(colors.cyan.300)] [--btn-border:theme(colors.cyan.400/80%)] [--btn-hover-overlay:theme(colors.white/25%)]',
+      'text-cyan-950 [--btn-bg:theme(colors.cyan.300)] [--btn-border:theme(colors.cyan.400/95%)] [--btn-hover-overlay:theme(colors.white/25%)]',
       '[--btn-icon:theme(colors.cyan.500)]',
     ],
     red: [
@@ -104,36 +104,40 @@ const styles = {
       '[--btn-icon:theme(colors.orange.300)] data-[active]:[--btn-icon:theme(colors.orange.200)] data-[hover]:[--btn-icon:theme(colors.orange.200)]',
     ],
     amber: [
-      'text-amber-950 [--btn-hover-overlay:theme(colors.white/25%)] [--btn-bg:theme(colors.amber.400)] [--btn-border:theme(colors.amber.500/80%)]',
+      'text-amber-950 [--btn-hover-overlay:theme(colors.white/25%)] [--btn-bg:theme(colors.amber.400)] [--btn-border:theme(colors.amber.500/95%)]',
       '[--btn-icon:theme(colors.amber.600)]',
     ],
     yellow: [
-      'text-yellow-950 [--btn-hover-overlay:theme(colors.white/25%)] [--btn-bg:theme(colors.yellow.300)] [--btn-border:theme(colors.yellow.400/80%)]',
+      'text-yellow-950 [--btn-hover-overlay:theme(colors.white/25%)] [--btn-bg:theme(colors.yellow.300)] [--btn-border:theme(colors.yellow.400/95%)]',
       '[--btn-icon:theme(colors.yellow.800)] data-[active]:[--btn-icon:theme(colors.yellow.900)] data-[hover]:[--btn-icon:theme(colors.yellow.900)]',
     ],
     lime: [
-      'text-lime-950 [--btn-hover-overlay:theme(colors.white/25%)] [--btn-bg:theme(colors.lime.300)] [--btn-border:theme(colors.lime.400/80%)]',
+      'text-lime-950 [--btn-hover-overlay:theme(colors.white/25%)] [--btn-bg:theme(colors.lime.300)] [--btn-border:theme(colors.lime.400/95%)]',
       '[--btn-icon:theme(colors.lime.600)] data-[active]:[--btn-icon:theme(colors.lime.700)] data-[hover]:[--btn-icon:theme(colors.lime.700)]',
     ],
     green: [
       'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.green.600)] [--btn-border:theme(colors.green.700/90%)]',
-      '[--btn-icon:theme(colors.white/70%)] data-[active]:[--btn-icon:theme(colors.white/90%)] data-[hover]:[--btn-icon:theme(colors.white/90%)]',
+      '[--btn-icon:theme(colors.white/80%)] data-[active]:[--btn-icon:theme(colors.white/90%)] data-[hover]:[--btn-icon:theme(colors.white/90%)]',
     ],
     emerald: [
       'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.emerald.600)] [--btn-border:theme(colors.emerald.700/90%)]',
-      '[--btn-icon:theme(colors.white/60%)] data-[active]:[--btn-icon:theme(colors.white/80%)] data-[hover]:[--btn-icon:theme(colors.white/80%)]',
+      '[--btn-icon:theme(colors.white/80%)] data-[active]:[--btn-icon:theme(colors.white/95%)] data-[hover]:[--btn-icon:theme(colors.white/95%)]',
     ],
     teal: [
       'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.teal.600)] [--btn-border:theme(colors.teal.700/90%)]',
-      '[--btn-icon:theme(colors.white/60%)] data-[active]:[--btn-icon:theme(colors.white/80%)] data-[hover]:[--btn-icon:theme(colors.white/80%)]',
+      '[--btn-icon:theme(colors.white/80%)] data-[active]:[--btn-icon:theme(colors.white/95%)] data-[hover]:[--btn-icon:theme(colors.white/95%)]',
     ],
     sky: [
-      'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.sky.500)] [--btn-border:theme(colors.sky.600/80%)]',
-      '[--btn-icon:theme(colors.white/60%)] data-[active]:[--btn-icon:theme(colors.white/80%)] data-[hover]:[--btn-icon:theme(colors.white/80%)]',
+      'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.sky.500)] [--btn-border:theme(colors.sky.600/95%)]',
+      '[--btn-icon:theme(colors.white/95%)] data-[active]:[--btn-icon:theme(colors.white)] data-[hover]:[--btn-icon:theme(colors.white)]',
+    ],
+    skyLight: [
+      'text-sky-700 [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.sky.300)] [--btn-border:theme(colors.sky.300/95%)]',
+      '[--btn-icon:theme(colors.sky.800/80%)] data-[active]:[--btn-icon:theme(colors.sky.800/95%)] data-[hover]:[--btn-icon:theme(colors.sky.800/95%)]',
     ],
     blue: [
       'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.blue.600)] [--btn-border:theme(colors.blue.700/90%)]',
-      '[--btn-icon:theme(colors.blue.400)] data-[active]:[--btn-icon:theme(colors.blue.300)] data-[hover]:[--btn-icon:theme(colors.blue.300)]',
+      '[--btn-icon:theme(colors.blue.200)] data-[active]:[--btn-icon:theme(colors.blue.100)] data-[hover]:[--btn-icon:theme(colors.blue.100)]',
     ],
     violet: [
       'text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.violet.500)] [--btn-border:theme(colors.violet.600/90%)]',

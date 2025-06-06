@@ -18,9 +18,9 @@ const PlaceBlueprintForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
     const openedGroup = useNodesStore((state) => state.openedGroup);
     const addNode = useNodesStore((state) => state.addNode);
+    const addConnection = useConnectionsStore((state) => state.addConnection);
     const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
-    const addConnection = useConnectionsStore((state) => state.addConnection);
     const getBlueprint = useBlueprintsStore((state) => state.getBlueprint);
     const { startDraggingAfterPaste } = useDraggable();
 
@@ -105,7 +105,7 @@ const PlaceBlueprintForm: React.FC = () => {
         <form method="post" className="p-10">
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>{blueprint.name}</Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5" />
                 </Button>
             </div>

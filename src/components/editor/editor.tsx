@@ -8,12 +8,10 @@ import useNodesStore from "@/stores/nodesStore";
 
 import {useZoom} from "@/hooks/editor/useZoom";
 import {usePan} from "@/hooks/editor/usePan";
-import {useAutoAddRouteNodes} from "@/hooks/editor/useAutoAddRouteNodes";
 import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 import {useDeselectOnClickOutside} from "@/hooks/editor/nodes/useDeselectOnClickOutside";
 import {useDeleteNode} from "@/hooks/editor/nodes/useDeleteNode";
 import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
-import {useAutoAddScheduleNodes} from "@/hooks/editor/useAutoAddScheduleNodes";
 import {useAutoUpdateScheduleNodes} from "@/hooks/editor/useAutoUpdateScheduleNodes";
 import {useAutoUpdateRouteNodes} from "@/hooks/editor/useAutoUpdateRouteNodes";
 
@@ -32,8 +30,11 @@ import clsx from "clsx";
 import {EditorMode} from "@/types/types";
 import {useAutoFitNodes} from "@/hooks/editor/nodes/useAutoFitNodes";
 import {useExecutionGlowListener} from "@/hooks/editor/nodes/useExecutionGlowListener";
-import {useExecutionStateListener} from "@/hooks/editor/nodes/useExecutionStateListener";
+// import {useExecutionStateListener} from "@/hooks/editor/nodes/useExecutionStateListener";
 import EditorIntroTour from "@/components/guidedtour/editor-intro-tour";
+import IsExecuting from "@/components/editor/is-executing";
+import {addRouteNodesIfNeeded} from "@/utils/addRouteNodesIfNeeded";
+import {addScheduleNodesIfNeeded} from "@/utils/addScheduleNodesIfNeeded";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -55,7 +56,8 @@ export default function Editor() {
     const editorMode = useEditorStore((state) => state.editorMode);
     const isFormOpen = useEditorStore((state) => state.isFormOpen);
     const activeVersionId = useEditorStore(state => state.activeVersionId);
-    const isExecuting = useEditorStore(state => state.isExecuting);
+    const activeRouteId = useEditorStore((state) => state.activeRouteId);
+    const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
 
     const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
     const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
@@ -77,9 +79,7 @@ export default function Editor() {
     const [isInteracted, setIsInteracted] = useState(false);
 
     useGlobalStoreListenersWithImmediateSave();
-    useAutoAddRouteNodes();
     useAutoUpdateRouteNodes();
-    useAutoAddScheduleNodes();
     useAutoUpdateScheduleNodes();
 
     // eslint-disable-next-line
@@ -92,6 +92,18 @@ export default function Editor() {
         return () => cancelAnimationFrame(frame);
     // eslint-disable-next-line
     }, [nodesToRender]);
+
+    useEffect(() => {
+        if (activeRouteId) {
+            addRouteNodesIfNeeded(activeRouteId);
+        }
+    }, [activeRouteId]);
+
+    useEffect(() => {
+        if (activeScheduleId) {
+            addScheduleNodesIfNeeded(activeScheduleId);
+        }
+    }, [activeScheduleId]);
 
     const updateEditorPosition = useCallback(() => {
         if (contentRef.current) {
@@ -269,7 +281,7 @@ export default function Editor() {
 
     useAutoFitNodes(contentRef, nodesToRender, 40, activeVersionId);
     useExecutionGlowListener(activeVersionId as string);
-    useExecutionStateListener(activeVersionId as string);
+    // useExecutionStateListener(activeVersionId as string);
 
     return (
         <div
@@ -334,18 +346,7 @@ export default function Editor() {
                 </div>
             )}
 
-            {isExecuting && (
-                <div className="absolute top-0 left-0 w-full z-40 pointer-events-none">
-                    <div className="mx-auto max-w-2xl mt-4 bg-zinc-800/80 border border-white/25 dark:bg-zinc-800/80 backdrop-blur-sm
-                                    rounded-md py-2 px-4 flex items-center justify-center gap-3 text-white shadow-md">
-                        <div
-                            className="animate-spin h-4 w-4 border-2 border-sky-500 border-t-transparent rounded-full"/>
-                        <span className="text-sm font-medium">
-                            {typeof isExecuting === 'string' ? isExecuting : 'Executing...'}
-                        </span>
-                    </div>
-                </div>
-            )}
+            <IsExecuting />
 
             <Grid/>
 

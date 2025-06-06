@@ -4,16 +4,21 @@ import {stateToHTML} from "draft-js-export-html";
 import {stateFromHTML} from 'draft-js-import-html';
 import "draft-js/dist/Draft.css";
 import {BoldIcon, ItalicIcon, ListBulletIcon, NumberedListIcon, UnderlineIcon} from "@heroicons/react/24/outline";
-import {Button} from "@/components/button";
+import clsx from "clsx";
 
 interface RichTextEditorProps {
     disabled?: boolean;
     value?: string;
     onChange: (html: string) => void;
-}
+    categoryBorder?: string;
+    categoryMainTextColor?: string;
+    categorySubTextColor?: string;
+    categoryBackgroundColor?: string;
+    categoryGradientBackgroundColor?: string;
+};
 
 const createEditorStateFromValue = (
-    value?: string
+    value?: string,
 ): EditorState => {
     if (!value || value.trim() === "") {
         return EditorState.createEmpty();
@@ -29,7 +34,16 @@ const createEditorStateFromValue = (
     }
 };
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({disabled = false, value = "", onChange}) => {
+const RichTextEditor: React.FC<RichTextEditorProps> = ({
+    disabled = false,
+    value = "",
+    onChange,
+    categoryBorder = 'border border-sky-200 dark:border-zinc-700',
+    categoryMainTextColor = 'text-sky-500 dark:text-white/70',
+    categorySubTextColor = 'text-sky-800 dark:text-white/70',
+    categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
+    categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900'
+}) => {
     const [editorState, setEditorState] = useState(() => createEditorStateFromValue(value));
 
     useEffect(() => {
@@ -78,66 +92,87 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({disabled = false, value 
     const currentBlockType = RichUtils.getCurrentBlockType(editorState);
 
     return (
-        <div className="relative border border-white/10 bg-zinc-700/40 p-3 min-h-52 rounded-md">
+        <div
+            className={`relative border ${categoryBorder} ${categoryBackgroundColor} p-3 min-h-52 rounded-md`}>
             {disabled && (
-                <div className="absolute inset-0 bg-black/40 rounded-md z-10 pointer-events-none"/>
+                <div className="absolute inset-0 bg-white/40 dark:bg-black/40 rounded-md z-10 pointer-events-none"/>
             )}
             <div className="flex gap-2 mb-3">
-                <Button
-                    plain
+                <button
                     type="button"
-                    className={currentInlineStyle.has("BOLD") ? "bg-zinc-900" : ""}
+                    className={clsx(
+                        "w-8 h-8 p-1 flex items-center justify-center rounded-sm transition-colors",
+                        currentInlineStyle.has("BOLD")
+                            ? "bg-sky-400 dark:bg-zinc-900"
+                            : "hover:bg-sky-100 dark:hover:bg-zinc-800"
+                    )}
                     onMouseDown={(e: React.MouseEvent) => {
                         e.preventDefault();
                         toggleInlineStyle("BOLD");
                     }}
                 >
-                    <BoldIcon className="h-5 w-5"/>
-                </Button>
-                <Button
-                    plain
+                    <BoldIcon className="h-4 w-4 text-sky-600 dark:text-white" />
+                </button>
+                <button
                     type="button"
-                    className={currentInlineStyle.has("ITALIC") ? "bg-zinc-900" : ""}
                     onMouseDown={(e: React.MouseEvent) => {
                         e.preventDefault();
                         toggleInlineStyle("ITALIC");
                     }}
+                    className={clsx(
+                        "w-8 h-8 p-1 flex items-center justify-center rounded-sm transition-colors",
+                        currentInlineStyle.has("ITALIC")
+                            ? "bg-sky-400 dark:bg-zinc-900"
+                            : "hover:bg-sky-100 dark:hover:bg-zinc-800"
+                    )}
                 >
-                    <ItalicIcon className="h-5 w-5"/>
-                </Button>
-                <Button
-                    plain
+                    <ItalicIcon className="h-4 w-4 text-sky-600 dark:text-white" />
+                </button>
+                <button
                     type="button"
-                    className={currentInlineStyle.has("UNDERLINE") ? "bg-zinc-900" : ""}
+                    className={clsx(
+                        "w-8 h-8 p-1 flex items-center justify-center rounded-sm transition-colors",
+                        currentInlineStyle.has("UNDERLINE")
+                            ? "bg-sky-400 dark:bg-zinc-900"
+                            : "hover:bg-sky-100 dark:hover:bg-zinc-800"
+                    )}
                     onMouseDown={(e: React.MouseEvent) => {
                         e.preventDefault();
                         toggleInlineStyle("UNDERLINE");
                     }}
                 >
-                    <UnderlineIcon className="h-5 w-5"/>
-                </Button>
-                <Button
-                    plain
+                    <UnderlineIcon className="h-4 w-4 text-sky-600 dark:text-white" />
+                </button>
+                <button
                     type="button"
-                    className={currentBlockType === "unordered-list-item" ? "bg-zinc-900" : ""}
+                    className={clsx(
+                        "w-8 h-8 p-1 flex items-center justify-center rounded-sm transition-colors",
+                        currentBlockType === "unordered-list-item"
+                            ? "bg-sky-400 dark:bg-zinc-900"
+                            : "hover:bg-sky-100 dark:hover:bg-zinc-800"
+                    )}
                     onMouseDown={(e: React.MouseEvent) => {
                         e.preventDefault();
                         toggleBlockType("unordered-list-item");
                     }}
                 >
-                    <ListBulletIcon className="h-5 w-5"/>
-                </Button>
-                <Button
-                    plain
+                    <ListBulletIcon className="h-4 w-4 text-sky-600 dark:text-white" />
+                </button>
+                <button
                     type="button"
-                    className={currentBlockType === "ordered-list-item" ? "bg-zinc-900" : ""}
+                    className={clsx(
+                        "w-8 h-8 p-1 flex items-center justify-center rounded-sm transition-colors",
+                        currentBlockType === "ordered-list-item"
+                            ? "bg-sky-400 dark:bg-zinc-900"
+                            : "hover:bg-sky-100 dark:hover:bg-zinc-800"
+                    )}
                     onMouseDown={(e: React.MouseEvent) => {
                         e.preventDefault();
                         toggleBlockType("ordered-list-item");
                     }}
                 >
-                    <NumberedListIcon className="h-5 w-5"/>
-                </Button>
+                    <NumberedListIcon className="h-4 w-4 text-sky-600 dark:text-white" />
+                </button>
             </div>
 
             <Editor

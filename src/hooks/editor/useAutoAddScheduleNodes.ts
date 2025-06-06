@@ -10,6 +10,7 @@ import {
 } from "@/types/types";
 import {format} from "date-fns";
 
+// @DEPRECATED
 export function useAutoAddScheduleNodes() {
     const hasAddedMap = useRef<Record<string, boolean>>({});
 

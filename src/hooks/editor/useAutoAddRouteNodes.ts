@@ -15,6 +15,7 @@ import {
 } from "@/types/types";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 
+// @DEPRECATED
 export function useAutoAddRouteNodes() {
     const hasAddedMap = useRef<Record<string, boolean>>({});
 
@@ -27,6 +28,10 @@ export function useAutoAddRouteNodes() {
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
     const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
 
+    const dynamicRoute = useDynamicRoutesStore((state) =>
+        activeRouteId ? state.routesById[activeRouteId] : undefined
+    );
+
     useEffect(() => {
         if (!activeRouteId) return;
         if (hasAddedMap.current[activeRouteId]) return;
@@ -37,8 +42,7 @@ export function useAutoAddRouteNodes() {
         const dynamicRoute = getDynamicRoute(activeRouteId);
 
         if (!routeNode || !mockRouteNode || !dynamicRoute) return;
-
-        hasAddedMap.current[activeRouteId] = true; // ✅ markeer als toegevoegd
+        hasAddedMap.current[activeRouteId] = true;
 
         routeNode.id = uuidv4();
         routeNode.driven = true;
@@ -93,7 +97,6 @@ export function useAutoAddRouteNodes() {
         updateNodeVariable(mockRouteNode.id, 'route_variables', routeVariables);
         updateNodeVariable(routeNode.id, 'method', dynamicRoute.method as string);
         updateNodeVariable(mockRouteNode.id, 'method', dynamicRoute.method as string);
-
     }, [
         nodes,
         availableNodes,
@@ -102,6 +105,7 @@ export function useAutoAddRouteNodes() {
         getDynamicRoute,
         addNode,
         addConnection,
-        updateNodeVariable
+        updateNodeVariable,
+        dynamicRoute
     ]);
 }

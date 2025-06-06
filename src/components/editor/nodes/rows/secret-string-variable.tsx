@@ -13,6 +13,9 @@ type Props = {
     disabled?: boolean;
     groupId?: string;
     isMirror?: boolean;
+    categoryMainTextColor?: string;
+    categorySubTextColor?: string;
+    isInService?: boolean;
 };
 
 const SecretStringVariable: React.FC<Props> = ({
@@ -23,12 +26,15 @@ const SecretStringVariable: React.FC<Props> = ({
     disabled = false,
     groupId,
     isMirror = false,
+    categoryMainTextColor = 'text-sky-600 dark:text-white',
+    categorySubTextColor = 'text-sky-400 dark:text-slate-400',
+    isInService = false
 }): React.ReactElement => {
 
     const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
 
     return (
-        <div className={`flex items-center justify-between rounded-md w-full pl-5 pr-3 pt-1 relative ${disabled && 'opacity-0'}`}>
+        <div className={`flex items-center justify-between rounded-md w-full pl-4 pr-4 pt-1 relative ${disabled && 'opacity-0'}`}>
             {variable.has_in && isMirror && !onlyOut && (
                 <FakeConnector in />
             )}
@@ -36,26 +42,26 @@ const SecretStringVariable: React.FC<Props> = ({
                 in
                 nodeId={nodeId}
                 handle={variable.handle}
-                disabled={disabled}
+                disabled={disabled || isInService}
                 groupId={groupId}
                 nodeVariableType={'string'}
             />}
             <div className="flex items-center truncate">
-                <h3 className={`font-semibold truncate ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-600 dark:text-white'}`}>
+                <h3 className={`font-semibold truncate ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`}>
                     {(groupId && variable.group_name_override) ? variable.group_name_override : variable.name}:
                 </h3>
-                <DocumentTextIcon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-yellow-300 dark:text-yellow-300' : 'text-sky-400 dark:text-slate-400'}`} />
+                <DocumentTextIcon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`} />
                 {variable.value ? (
-                    <span className="ml-1">********</span>
+                    <span className={`ml-1 ${categorySubTextColor}`}>********</span>
                 ) : (
-                    <span className="ml-1"></span>
+                    <span className={`ml-1 ${categorySubTextColor}`}></span>
                 )}
             </div>
             {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
                 out
                 nodeId={nodeId}
                 handle={variable.handle}
-                disabled={disabled}
+                disabled={disabled || isInService}
                 groupId={groupId}
                 nodeVariableType={'string'}
             />}

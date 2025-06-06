@@ -6,9 +6,21 @@ import {Node} from "@/types/types";
 
 type Props = {
     node: Node;
+    categoryBorder?: string;
+    categoryMainTextColor?: string;
+    categorySubTextColor?: string;
+    categoryBackgroundColor?: string;
+    categoryGradientBackgroundColor?: string;
 };
 
-const NodeHandle: React.FC<Props> = ({node}) => {
+const NodeHandle: React.FC<Props> = ({
+    node,
+    categoryBorder = 'border border-sky-200 dark:border-zinc-700',
+    categoryMainTextColor = 'text-sky-500 dark:text-white/70',
+    categorySubTextColor = 'text-sky-800 dark:text-white/70',
+    categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
+    categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
+}) => {
     const updateNodeHandle = useNodesStore((state) => state.updateNodeHandle);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,6 +40,7 @@ const NodeHandle: React.FC<Props> = ({node}) => {
                     value={node.handle as string || ""}
                     onChange={handleChange}
                     placeholder={'handle'}
+                    className={`${categoryBackgroundColor} rounded-md dark:text-white ${categoryBorder}`}
                 />
             </Field>
         </Fieldset>

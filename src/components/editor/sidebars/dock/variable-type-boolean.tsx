@@ -1,13 +1,12 @@
 import React from "react";
 
-import useNodesStore from "@/stores/nodesStore";
-
 import {VariableTypeProps} from "@/types/types";
 import {Field, Fieldset} from "@/components/fieldset";
 import {Checkbox, CheckboxField} from "@/components/checkbox";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
-import useConnectionsStore from "@/stores/connectionsStore";
 import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
+import useNodesStore from "@/stores/nodesStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 
 const VariableTypeBoolean: React.FC<VariableTypeProps> = ({
     nodeId,
@@ -15,6 +14,12 @@ const VariableTypeBoolean: React.FC<VariableTypeProps> = ({
     publishedButton = true,
     onChange,
     currentValue,
+    inDock = true,
+    categoryBorder = 'border border-sky-200 dark:border-zinc-700',
+    categoryMainTextColor = 'text-sky-500 dark:text-white/70',
+    categorySubTextColor = 'text-sky-800 dark:text-white/70',
+    categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
+    categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
 }): React.ReactElement => {
     const updateNodeVariable =
         useNodesStore((state) => state.updateNodeVariable);
@@ -42,10 +47,11 @@ const VariableTypeBoolean: React.FC<VariableTypeProps> = ({
                     <Field>
                         <CheckboxField>
                             <Checkbox
-                                disabled={variable?.dock?.enabled === false || variable.published}
+                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
                                 name={variable.handle}
                                 checked={!!displayValue}
                                 onChange={handleChange}
+                                className={`${categoryBorder}`}
                             />
                         </CheckboxField>
                     </Field>

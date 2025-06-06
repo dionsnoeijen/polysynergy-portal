@@ -12,14 +12,20 @@ type Props = {
     node: Node;
     preview?: boolean;
     icon?: string;
+    categoryMainTextColor?: string;
+    categorySubTextColor?: string;
+    categoryBorderColor?: string;
 };
 
 const ServiceHeading: React.FC<Props> = ({
-                                             nodeName = "Node Name",
-                                             node,
-                                             preview = false,
-                                             icon
-                                         }) => {
+    nodeName = "Node Name",
+    node,
+    preview = false,
+    icon,
+    categoryMainTextColor = 'text-sky-600 dark:text-white',
+    categorySubTextColor = 'text-sky-600 dark:text-white',
+    categoryBorderColor = 'border-sky-600 dark:border-white',
+}) => {
     const detachService = useNodesStore((state) => state.detachService);
 
     const [showDetachAlert, setShowDetachAlert] = useState(false);
@@ -47,25 +53,21 @@ const ServiceHeading: React.FC<Props> = ({
     };
 
     return (
-        <div
-            className={`flex items-center justify-between w-full pl-5 pr-3 pt-1 pb-1 mb-1 relative border-b border-white/20`}
-        >
+        <div className={`flex items-center justify-between w-full pl-4 pr-4 pt-1 pb-1 mb-1 relative border-b ${categoryBorderColor}`}>
+
             <div className="flex items-center truncate">
-                <h3 className="font-semibold truncate text-sky-600 dark:text-white">
-                    {nodeName}
-                </h3>
+                <h3 className={`font-semibold truncate ${categoryMainTextColor}`}>{nodeName}</h3>
             </div>
 
             <div className="flex items-center space-x-0">
-                <Button
-                    plain
+                <button
                     className="p-0"
                     disabled={preview}
                     style={{padding: "2px"}}
                     onClick={() => setShowDetachAlert(true)}
                 >
                     <ArrowRightCircleIcon
-                        className="m-0"
+                        className={`m-0 w-5 h-5 ${categorySubTextColor}`}
                         style={{
                             marginTop: "2px",
                             marginLeft: "0px",
@@ -73,16 +75,15 @@ const ServiceHeading: React.FC<Props> = ({
                             marginRight: "0px",
                         }}
                     />
-                </Button>
-                <Button
-                    plain
+                </button>
+                <button
                     className="p-0"
                     disabled={preview}
                     style={{padding: "2px"}}
                     onClick={() => setShowInfoDialog(true)}
                 >
                     <InformationCircleIcon
-                        className="m-0"
+                        className={`m-0 w-5 h-5 ${categorySubTextColor}`}
                         style={{
                             marginTop: "2px",
                             marginLeft: "0px",
@@ -90,7 +91,7 @@ const ServiceHeading: React.FC<Props> = ({
                             marginRight: "0px",
                         }}
                     />
-                </Button>
+                </button>
             </div>
 
             {showDetachAlert && (
@@ -112,7 +113,10 @@ const ServiceHeading: React.FC<Props> = ({
                 >
                     <DialogTitle className={'text-left flex items-center'}>
                         {icon && (
-                            <NodeIcon icon={icon} className={'inline border bg-white border-white/50 mr-3'}/>
+                            <NodeIcon
+                                icon={icon}
+                                className={`inline border w-10 h-10 ${categoryMainTextColor} dark:bg-white border-sky-500 dark:border-white/50 mr-3`}
+                            />
                         )}
                         Service <ChevronRightIcon className={'w-4 h-4 inline'}/> {service?.category} <ChevronRightIcon
                         className={'w-4 h-4 inline'}/> {service?.name}</DialogTitle>

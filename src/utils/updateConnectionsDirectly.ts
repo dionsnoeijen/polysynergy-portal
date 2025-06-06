@@ -57,14 +57,14 @@ export const updateConnectionsDirectly = (
 
             // Update start dot position
             if (startDotElement) {
-                startDotElement.style.left = `${startPosition.x - 6.5}px`;
-                startDotElement.style.top = `${startPosition.y - 6.5}px`;
+                startDotElement.style.left = `${startPosition.x - 5.5}px`;
+                startDotElement.style.top = `${startPosition.y - 5.5}px`;
             }
 
             // Update end dot position
             if (endDotElement) {
-                endDotElement.style.left = `${endPosition.x - 6.5}px`;
-                endDotElement.style.top = `${endPosition.y - 6.5}px`;
+                endDotElement.style.left = `${endPosition.x - 5.5}px`;
+                endDotElement.style.top = `${endPosition.y - 5.5}px`;
             }
 
             updatedConnections.push(connection);

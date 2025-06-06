@@ -8,12 +8,18 @@ import {Divider} from "@/components/divider";
 import Editor from "@monaco-editor/react";
 import {Button} from "@/components/button";
 import {fetchNodeSerialization} from "@/api/nodeApi";
-import {LockClosedIcon} from "@heroicons/react/16/solid";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
+import {XMarkIcon} from "@heroicons/react/24/outline";
+import {useTheme} from "next-themes";
 
 const NodeEditorForm: React.FC = () => {
-    const {getNode} = useNodesStore();
-    const {closeForm, formEditVariable, formEditRecordId} = useEditorStore();
+    const {theme} = useTheme();
+
+    const getNode = useNodesStore((state) => state.getNode);
+    const closeForm = useEditorStore((state) => state.closeForm);
+    const formEditVariable = useEditorStore((state) => state.formEditVariable);
+    const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+
     const [node, setNode] = useState<NodeType>();
     const [code, setCode] = useState<string>('');
     const [isBaseNode, setIsBaseNode] = useState<boolean>(true);
@@ -40,14 +46,13 @@ const NodeEditorForm: React.FC = () => {
 
         debounceTimeout.current = setTimeout(async () => {
             const nodeResponse = await fetchNodeSerialization(value);
-
             if (nodeResponse.status !== 200) {
                 console.log(nodeResponse.json());
                 return;
             }
 
             const json: { node: NodeType } = await nodeResponse.json();
-            const node = json.node;
+            const node = structuredClone(json.node);
 
             node.view = {
                 x: 0,
@@ -86,7 +91,7 @@ const NodeEditorForm: React.FC = () => {
 
     useEffect(() => {
         if (formEditRecordId) {
-            const node = getNode(formEditRecordId);
+            const node = getNode(formEditRecordId as string);
             if (!node) return;
 
             if (node.path.includes('__main__')) {
@@ -108,11 +113,14 @@ const NodeEditorForm: React.FC = () => {
 
     return (
         <form onSubmit={handleSubmit} method="post">
-            <Heading className="p-10">
-                {node && node.name}: {formEditVariable?.handle}
-
-                {isBaseNode && (<p>BASE NODE</p>)}
-            </Heading>
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <Heading className="p-10">
+                    {node && node.name}: {formEditVariable?.handle}
+                </Heading>
+                <Button type="button" onClick={() => closeForm()} color="sky">
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
+            </div>
 
             <Divider className="my-0" soft bleed/>
 
@@ -122,19 +130,27 @@ const NodeEditorForm: React.FC = () => {
 
             <Divider className="my-0" soft bleed/>
 
-            <div className={'p-5'}>
-                <Button onClick={() => setShowUnlockAlert(true)}><LockClosedIcon />Locked</Button>
+            <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-md p-4 mx-10 my-6">
+                <p className="font-semibold">This feature is under construction.</p>
+                <p className="text-sm mt-1">
+                    {"You'll soon be able to create and edit your own custom nodes directly in the editor. For now, code editing is disabled."}
+                </p>
             </div>
+
+            {/*<div className={'p-5'}>*/}
+            {/*    <Button onClick={() => setShowUnlockAlert(true)}><LockClosedIcon />Locked</Button>*/}
+            {/*</div>*/}
             <section className="grid sm:grid-cols-1">
                 <Editor
                     height={`${editorHeight}px`}
                     defaultLanguage="python"
                     defaultValue={code}
                     onChange={handleEditorChange}
-                    theme="vs-dark"
+                    theme={theme === "dark" ? "monokai" : "rjv-default"}
                     onMount={handleEditorDidMount}
                     options={{
-                        //readOnly: isBaseNode,
+                        // readOnly: isBaseNode,
+                        readOnly: true,
                         minimap: {enabled: false},
                         scrollBeyondLastLine: false,
                         scrollbar: {
@@ -157,8 +173,10 @@ const NodeEditorForm: React.FC = () => {
 
             {showUnlockAlert && (
                 <Alert size="md" className="text-center" open={showUnlockAlert}
-                       onClose={() => setShowUnlockAlert(false)}>
-                    <AlertTitle>Are you sure you want to delete this account?</AlertTitle>
+                       onClose={(
+
+                       ) => setShowUnlockAlert(false)}>
+                    <AlertTitle>This editor is locked.</AlertTitle>
                     <AlertDescription>This action cannot be undone, and denies the account access to the
                         system.</AlertDescription>
                     <AlertActions>

@@ -64,7 +64,7 @@ export default function Logs() {
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [activeVersionId, lastTimestamp, paused]);
 
     useEffect(() => {
@@ -81,14 +81,16 @@ export default function Logs() {
 
     return (
         <div className="flex h-full">
-            <div className="flex-1 border-r border-white/10 h-full flex flex-col">
-                <div className="border-b border-white/10 p-2">
-                    <h3 className="text-white font-bold text-sm">Logs</h3>
+            <div className="flex-1 border-r dark:border-white/10 h-full flex flex-col">
+                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
+                    <h3 className="text-sky-500 dark:text-white font-bold text-sm">Logs</h3>
                 </div>
-                <div className="flex-1 overflow-scroll text-sm font-mono p-2 bg-black text-white relative">
+                <div
+                    className="overflow-auto text-sm font-mono p-2 bg-transparent dark:bg-black text-sky-500 dark:text-white relative max-w-full break-words">
                     {loading ? (
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="animate-spin h-5 w-5 border-2 border-sky-500 border-t-transparent rounded-full"></div>
+                            <div
+                                className="animate-spin h-5 w-5 border-2 border-sky-500 border-t-transparent rounded-full"></div>
                         </div>
                     ) : logs.length === 0 ? (
                         <div className="text-zinc-500">No logs available.</div>
@@ -98,14 +100,14 @@ export default function Logs() {
                             const isInfo = log.message.includes("[INFO]");
 
                             return (
-                                <div key={index}>
+                                <div key={index} className="whitespace-normal break-all">
                                     <span className="text-zinc-500 mr-2">
                                         [{new Date(log.timestamp).toLocaleTimeString()}]
                                     </span>
-                                        <span className="mr-2 px-1 rounded text-xs bg-zinc-700">
+                                    <span className="mr-2 px-1 rounded text-xs bg-zinc-700">
                                         {log.variant}
                                     </span>
-                                        <span className={isError ? "text-red-400" : isInfo ? "text-green-400" : ""}>
+                                    <span className={isError ? "text-red-400" : isInfo ? "text-green-400" : ""}>
                                         {log.message}
                                     </span>
                                 </div>
@@ -115,15 +117,15 @@ export default function Logs() {
                 </div>
             </div>
 
-            <div className="w-12 flex items-center rounded justify-center border-l border-white/10 bg-zinc-900">
+            <div className="w-12 flex items-center rounded rounded-l-none rounded-r-md justify-center border-l border-sky-500/50 dark:border-white/10 bg-sky-100 dark:bg-zinc-900">
                 {paused && (
-                    <Button
-                        plain
+                    <button
                         onClick={handleResume}
                         title="Resume logs"
+                        className="bg-sky-400 hover:bg-sky-500 dark:bg-zinc-400 dark:hover:bg-zinc-600 p-2 rounded-md"
                     >
-                        <ArrowPathIcon className="w-4 h-4"/>
-                    </Button>
+                        <ArrowPathIcon className="w-4 h-4 text-white"/>
+                    </button>
                 )}
             </div>
         </div>

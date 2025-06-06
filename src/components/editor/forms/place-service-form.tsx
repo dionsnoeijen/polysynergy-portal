@@ -142,7 +142,7 @@ const PlaceServiceForm: React.FC = () => {
                 <Heading>
                     {service.name}
                 </Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5" />
                 </Button>
             </div>

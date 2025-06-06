@@ -7,7 +7,7 @@ import {Text} from "@/components/text";
 import {Input} from "@/components/input";
 import {Textarea} from "@/components/textarea";
 import {Button} from "@/components/button";
-import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType} from "@/types/types";
+import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType, Stage} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {Select} from "@/components/select";
@@ -15,11 +15,14 @@ import {Checkbox, CheckboxField} from "@/components/checkbox";
 import {formatSegments} from "@/utils/formatters";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from '@/components/alert';
 import {useRouter, useParams} from 'next/navigation';
+import useStagesStore from "@/stores/stagesStore";
 
 const DynamicRouteForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
     const formType = useEditorStore((state) => state.formType);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
+    const stages = useStagesStore((state) => state.stages);
 
     const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
     const storeDynamicRoute = useDynamicRoutesStore((state) => state.storeDynamicRoute);
@@ -37,7 +40,7 @@ const DynamicRouteForm: React.FC = () => {
 
     useEffect(() => {
         if (formType === FormType.EditRoute && formEditRecordId) {
-            const route = getDynamicRoute(formEditRecordId);
+            const route = getDynamicRoute(formEditRecordId as string);
             if (route) {
                 setDescription(route.description);
                 setMethod(route.method);
@@ -126,7 +129,7 @@ const DynamicRouteForm: React.FC = () => {
 
             if (formType === FormType.EditRoute && formEditRecordId) {
                 const updatedRoute: Route = {
-                    id: formEditRecordId,
+                    id: formEditRecordId as string,
                     description,
                     segments,
                     method,
@@ -162,15 +165,17 @@ const DynamicRouteForm: React.FC = () => {
         };
     }, [showDeleteAlert, handleDelete, setShowDeleteAlert]);
 
+    const basePath = `https://${activeProjectId}{{stage}}`;
+
     return (
         <form onSubmit={handleSubmit} method={'post'} className={'p-10'}>
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>{formType === FormType.AddRoute ? 'Add ' : 'Edit '}Route</Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
-                    <XMarkIcon className="w-5 h-5" />
+                <Button type="button" onClick={() => closeForm()} color="sky">
+                    <XMarkIcon className="w-5 h-5"/>
                 </Button>
             </div>
-            <Divider className="my-4" soft bleed />
+            <Divider className="my-4" soft bleed/>
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">
@@ -187,7 +192,7 @@ const DynamicRouteForm: React.FC = () => {
                 </div>
             </section>
 
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">
@@ -210,18 +215,34 @@ const DynamicRouteForm: React.FC = () => {
                 </div>
             </section>
 
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             <section className="grid gap-x-8 gap-y-6 sm:grid-cols-1">
                 <div className="space-y-1">
                     <Subheading>URL Segments</Subheading>
-                    <Text>
-                        <b className="text-white">{method}</b>: /{formatSegments(segments)}
-                    </Text>
+                    <div className="space-y-1">
+                        {stages.map((stage) => {
+                            const isProd = stage.is_production;
+                            const stagePrefix = isProd ? '' : `-${stage.name}`;
+                            const fullUrl = `${basePath.replace('{{stage}}', stagePrefix)}/${formatSegments(segments)}`;
+
+                            return (
+                                <div key={stage.name} className="flex items-start gap-2">
+                                    <span className="w-24 shrink-0 font-semibold text-sky-600 dark:text-white">
+                                        {stage.name}
+                                    </span>
+                                    <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                                    <span className="uppercase font-medium">{method}</span>: {fullUrl}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 <div>
-                    <Table className="mt-4 [--gutter:theme(spacing.6)] lg:[--gutter:theme(spacing.10)]" dense bleed grid>
+                    <Table className="mt-4 [--gutter:theme(spacing.6)] lg:[--gutter:theme(spacing.10)]" dense bleed
+                           grid>
                         <TableHead>
                             <TableRow>
                                 <TableHeader></TableHeader>
@@ -327,13 +348,13 @@ const DynamicRouteForm: React.FC = () => {
                         </TableBody>
                     </Table>
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end mt-2">
                         <Button type="button" plain onClick={addSegment}>Add Segment</Button>
                     </div>
                 </div>
             </section>
 
-            <Divider className="my-10" soft bleed />
+            <Divider className="my-10" soft bleed/>
 
             {formType === FormType.EditRoute && (
                 <>
@@ -356,13 +377,14 @@ const DynamicRouteForm: React.FC = () => {
                 <Button type="button" onClick={() => closeForm()} plain>
                     Cancel
                 </Button>
-                <Button type="submit">
+                <Button color={'sky'} type="submit">
                     {formType === FormType.AddRoute ? 'Create route' : 'Update route'}
                 </Button>
             </div>
 
             {showDeleteAlert && (
-                <Alert size="md" className="text-center" open={showDeleteAlert} onClose={() => setShowDeleteAlert(false)}>
+                <Alert size="md" className="text-center" open={showDeleteAlert}
+                       onClose={() => setShowDeleteAlert(false)}>
                     <AlertTitle>Are you sure you want to delete this route?</AlertTitle>
                     <AlertDescription>This action cannot be undone.</AlertDescription>
                     <AlertActions>

@@ -30,7 +30,7 @@ const BlueprintForm: React.FC = () => {
 
     useEffect(() => {
         if (formType === FormType.EditBlueprint && formEditRecordId) {
-            const blueprint = getBlueprint(formEditRecordId);
+            const blueprint = getBlueprint(formEditRecordId as string);
             if (blueprint) {
                 setName(blueprint.name);
                 setCategory(blueprint.metadata.category);
@@ -97,7 +97,7 @@ const BlueprintForm: React.FC = () => {
                 <Heading>
                     {formType === FormType.AddBlueprint ? "Add " : "Edit "} Blueprint
                 </Heading>
-                <Button type="button" onClick={() => closeForm()} plain>
+                <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5" />
                 </Button>
             </div>

@@ -27,20 +27,17 @@ export const useConnectorHandlers = (
     isGroup: boolean = false,
     disabled: boolean = false
 ) => {
-    const {
-        getConnection,
-        addConnection,
-        removeConnectionById,
-        findInConnectionsByNodeIdAndHandle,
-        updateConnection,
-    } = useConnectionsStore();
-    const {
-        setIsDrawingConnection,
-    } = useEditorStore();
-    const {
-        setNodeFlowState,
-        openedGroup
-    } = useNodesStore();
+
+    const getConnection = useConnectionsStore((state) => state.getConnection);
+    const addConnection = useConnectionsStore((state) => state.addConnection);
+    const removeConnectionById = useConnectionsStore((state) => state.removeConnectionById);
+    const findInConnectionsByNodeIdAndHandle = useConnectionsStore((state) => state.findInConnectionsByNodeIdAndHandle);
+    const updateConnection = useConnectionsStore((state) => state.updateConnection);
+
+    const setIsDrawingConnection = useEditorStore((state) => state.setIsDrawingConnection);
+
+    const setNodeFlowState = useNodesStore((state) => state.setNodeFlowState);
+    const openedGroup = useNodesStore((state) => state.openedGroup);
 
     const startedFromGroup = useRef(false);
     const activeConnectorVariableTypeRef = useRef<string | null>(null);
@@ -50,20 +47,32 @@ export const useConnectorHandlers = (
             ? activeConnectorVariableTypeRef.current.split(',')
             : [];
 
-        const invalidInConnectors = [...document.querySelectorAll(`[data-type="in"][data-node-id]`)]
-            .filter((el) => {
-                const nodeTypes = (el.getAttribute("data-variable-type") || "").split(",");
-                return !nodeTypes.some(type => activeTypes.includes(type));
-            });
+        const allInConnectors = [...document.querySelectorAll(`[data-type="in"][data-node-id]`)];
+        const allOutConnectors = [...document.querySelectorAll(`[data-type="out"][data-node-id]`)];
 
-        const allOutConnectors = document.querySelectorAll(`[data-type="out"][data-node-id]`);
-
-        allOutConnectors.forEach((connector) => {
-            (connector as HTMLElement).style.opacity = '0.5';
+        [...allInConnectors, ...allOutConnectors].forEach((el) => {
+            const elStyle = (el as HTMLElement).style;
+            elStyle.opacity = '0.5';
+            elStyle.outline = 'none';
         });
 
-        invalidInConnectors.forEach((connector) => {
-            (connector as HTMLElement).style.opacity = '0.5';
+        allInConnectors.forEach((el) => {
+            const nodeTypes = (el.getAttribute("data-variable-type") || "").split(",");
+            const isValid = nodeTypes.some(type => activeTypes.includes(type));
+
+            if (isValid) {
+                const elStyle = (el as HTMLElement).style;
+                elStyle.opacity = '1';
+                elStyle.outline = '4px solid rgba(59, 130, 246, 0.9)';
+
+                const animatedEl = el.querySelector(".connector-animatable");
+                if (animatedEl) {
+                  animatedEl.classList.add("animate-[snap-white_0.2s_ease-out]");
+                  setTimeout(() => {
+                    animatedEl.classList.remove("animate-[snap-white_0.2s_ease-out]");
+                  }, 250);
+                }
+            }
         });
     };
 
@@ -71,6 +80,8 @@ export const useConnectorHandlers = (
         const connectors = document.querySelectorAll(`[data-type="in"], [data-type="out"]`);
         connectors.forEach((connector) => {
             (connector as HTMLElement).style.opacity = "";
+            (connector as HTMLElement).style.outline = 'none';
+            (connector as HTMLElement).style.boxShadow = '';
         });
     };
 
@@ -241,6 +252,14 @@ export const useConnectorHandlers = (
                     return;
                 }
 
+                const animatedEl = target.querySelector(".connector-animatable");
+                if (animatedEl) {
+                  animatedEl.classList.add("animate-[snap-white_0.2s_ease-out]");
+                  setTimeout(() => {
+                    animatedEl.classList.remove("animate-[snap-white_0.2s_ease-out]");
+                  }, 250);
+                }
+
                 if (connection) {
                     connection.targetHandle = targetHandle;
                     connection.targetNodeId = targetNodeId;
@@ -275,8 +294,10 @@ export const useConnectorHandlers = (
         const target = (e.target as HTMLElement).closest(
             '[data-type="in"], [data-type="out"]'
         ) as HTMLElement;
-        const enabled = target.getAttribute("data-enabled");
+        const enabled = target.getAttribute("data-enabled") === "true";
+
         if (disabled || !enabled) return;
+
         if ((isIn && !isGroup) || (isOut && isGroup)) {
             handleMouseDownOnInConnector(e);
         } else {

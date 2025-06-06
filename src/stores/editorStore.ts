@@ -44,10 +44,10 @@ export type EditorState = {
     setIsDrawingConnection: (drawing: string) => void;
     showForm: boolean;
     formType: FormType | null;
-    formEditRecordId: string | null | undefined;
+    formEditRecordId: string | null | undefined | object;
     formEditVariable?: NodeVariable | null;
     isFormOpen: () => boolean;
-    openForm: (type: FormType, formEditRecordId?: null | string, variable?: NodeVariable) => void;
+    openForm: (type: FormType, formEditRecordId?: null | string | object, variable?: NodeVariable) => void;
     closeForm: (closeFormMessage?: string | null) => void;
     closeFormMessage?: string | null;
     editorPosition: { x: number; y: number };
@@ -139,6 +139,9 @@ export type EditorState = {
 
     setHasAutoFitted(setupId: string, value: boolean): void;
     getHasAutoFitted(setupId: string): boolean;
+
+    visibleNodeCount: number;
+    setVisibleNodeCount: (count: number) => void;
 };
 
 const useEditorStore = create<EditorState>((set, get) => ({
@@ -260,7 +263,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
     openForm: (
         type: FormType,
-        formEditRecordId: null | string = null,
+        formEditRecordId: null | string | object = null,
         variable?: NodeVariable | null
     ) => set({
         showForm: true,
@@ -442,6 +445,9 @@ const useEditorStore = create<EditorState>((set, get) => ({
         },
     })),
     getHasAutoFitted: (setupId: string) => get().hasAutoFitted[setupId] || false,
+
+    visibleNodeCount: 0,
+    setVisibleNodeCount: (count) => set({visibleNodeCount: count})
 }));
 
 export default useEditorStore;

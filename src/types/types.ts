@@ -58,6 +58,7 @@ export enum FormType {
     AddConfig = 'addConfig',
     PlaceConfig = 'placeConfig',
     PublishedVariableForm = 'publishedVariableForm',
+    PublishedVariableSettings = 'publishedVariableSettings',
     EditTemplate = 'editTemplate',
     AddProjectEnvVar = 'addProjectEnvVar',
     EditProjectEnvVar = 'editProjectEnvVar',
@@ -428,6 +429,12 @@ export type VariableTypeProps = {
     publishedButton: boolean;
     onChange?: (value: null | string | number | boolean | string[] | NodeVariable[]) => void;
     currentValue?: string;
+    inDock: boolean;
+    categoryBorder?: string;
+    categoryMainTextColor?: string;
+    categorySubTextColor?: string;
+    categoryBackgroundColor?: string;
+    categoryGradientBackgroundColor?: string;
 };
 
 export type Secret = {

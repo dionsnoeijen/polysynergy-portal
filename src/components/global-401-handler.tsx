@@ -8,6 +8,7 @@ import {
   DialogBody,
   DialogActions,
 } from '@/components/dialog';
+import {Button} from "@/components/button";
 
 export function Global401Handler({ children }: { children: ReactNode }) {
   const [showKickout, setShowKickout] = useState(false);
@@ -39,12 +40,12 @@ export function Global401Handler({ children }: { children: ReactNode }) {
         </DialogDescription>
         <DialogBody />
         <DialogActions>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 rounded bg-brand text-white"
+          <Button
+              color={"sky"}
+              onClick={() => window.location.reload()}
           >
             Sign In
-          </button>
+          </Button>
         </DialogActions>
       </Dialog>
     </>

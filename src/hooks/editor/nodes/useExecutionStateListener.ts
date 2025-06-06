@@ -17,8 +17,8 @@ type StateMessage = {
 export function useExecutionStateListener(flowId: string) {
     const getNode = useNodesStore((state) => state.getNode);
     const clearMockStore = useMockStore((state) => state.clearMockStore);
-    const setMockConnections = useMockStore((state) => state.setMockConnections);
     const addOrUpdateMockNode = useMockStore((state) => state.addOrUpdateMockNode);
+    const setMockConnections = useMockStore((state) => state.setMockConnections);
     const setHasMockData = useMockStore((state) => state.setHasMockData);
 
     useEffect(() => {
@@ -37,6 +37,7 @@ export function useExecutionStateListener(flowId: string) {
         pubnub.addListener({
             message: async (envelope) => {
                 const message = envelope.message as StateMessage;
+
                 if (!message || !message.run_id) return;
 
                 if (message.event === 'run_start') {
@@ -58,14 +59,22 @@ export function useExecutionStateListener(flowId: string) {
 
                 const nodeFlowNode = getNode(message.node_id);
 
+                const type =
+                    typeof nodeFlowNode?.path === 'undefined' ? 'GroupNode' :
+                    nodeFlowNode?.path.split(".").pop();
+
                 addOrUpdateMockNode({
                     id: message.node_id,
                     handle: nodeFlowNode?.handle,
                     runId: message.run_id,
                     killed: message.status === 'killed',
-                    type: nodeFlowNode?.path.split(".").pop(),
+                    type: type,
                     started: message.event === 'start_node',
-                    variables: {}, // je haalt later pas de echte op
+                    variables: {},
+                    status:
+                        message.event === 'start_node' ? 'executing' :
+                        message.event === 'end_node' ? (message.status || 'killed') :
+                        undefined,
                 } as MockNode);
             },
         })

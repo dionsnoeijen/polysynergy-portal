@@ -11,7 +11,12 @@ import useConnectionsStore from "@/stores/connectionsStore";
 import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
 import {shortenFileName} from "@/utils/shortenFileName";
 
-const VariableTypeFiles: React.FC<VariableTypeProps> = ({ variable, nodeId, publishedButton = true }): React.ReactElement => {
+const VariableTypeFiles: React.FC<VariableTypeProps> = ({
+    variable,
+    nodeId,
+    publishedButton = true,
+    inDock = true
+}): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
 
     const openForm = useEditorStore((state) => state.openForm);
@@ -24,7 +29,7 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({ variable, nodeId, publ
 
     return (
         <div className={'relative'}>
-            {variable?.dock?.enabled === false || variable.published && (
+            {variable?.dock?.enabled === false || (variable.published && inDock) && (
                 <div className="absolute inset-0 bg-black/40 rounded-md z-10 pointer-events-none"/>
             )}
             {isValueConnected ? (

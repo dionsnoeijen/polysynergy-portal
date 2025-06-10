@@ -609,7 +609,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                             if (subHandle && Array.isArray(variable.value)) {
                                 return {
                                     ...variable,
-                                    value: variable.value.map((subVar: NodeVariable) =>
+                                    value: (variable.value as NodeVariable[]).map((subVar: NodeVariable) =>
                                         subVar.handle === subHandle
                                             ? {
                                                 ...subVar,

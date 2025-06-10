@@ -6,7 +6,7 @@ import useEditorStore from "@/stores/editorStore";
 const TopRightEditorListener: React.FC = () => {
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const isActive = useListenerStore((state) =>
-        state.isListenerActive(activeVersionId)
+        state.isListenerActive(activeVersionId as string)
     );
     const initListenerStatus = useListenerStore((state) => state.initListenerStatus);
     const toggleListener = useListenerStore((state) => state.toggleListener);

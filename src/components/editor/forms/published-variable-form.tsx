@@ -19,7 +19,6 @@ import {XMarkIcon} from "@heroicons/react/24/outline";
 const PublishedVariableForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
     const nodes = useNodesStore((state) => state.nodes);
-    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     // const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const activeRouteId = useEditorStore((state) => state.activeRouteId);

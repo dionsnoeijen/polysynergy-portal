@@ -20,7 +20,7 @@ export default function ScheduleTree(): ReactElement {
             items={schedules}
             title={'Schedules'}
             activeItem={activeScheduleId}
-            formEditingItem={formEditRecordId}
+            formEditingItem={formEditRecordId as string}
             fundamental={Fundamental.Schedule}
             dataTourId={'add-schedule-button'}
             renderItem={(schedule: Schedule) => (

@@ -53,7 +53,7 @@ export default function SecretTree(): ReactElement {
             items={secrets}
             title="Secrets"
             activeItem={activeProjectVariableId}
-            formEditingItem={formEditRecordId}
+            formEditingItem={formEditRecordId as string}
             fundamental={Fundamental.Secret}
             dataTourId="add-secret-button"
             renderItem={(secret: Secret) => (

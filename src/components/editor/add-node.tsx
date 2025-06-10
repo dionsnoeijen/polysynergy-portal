@@ -49,16 +49,6 @@ const AddNode: React.FC = () => {
         setSearchPhrase("");
         resetSelectedNodeIndex();
 
-        if (node?.category === 'service') {
-            openForm(FormType.PlaceService, node.id);
-            return;
-        }
-
-        if (node?.category === 'blueprint') {
-            openForm(FormType.PlaceBlueprint, node.id);
-            return;
-        }
-
         const replaceIdWith = uuidv4();
         setAddingNode(replaceIdWith);
 

@@ -1,7 +1,6 @@
 import React from "react";
 import {ChevronDownIcon, ChevronLeftIcon, PlusIcon} from "@heroicons/react/24/outline";
 import {Fundamental, ListItemWithId} from "@/types/types";
-import {Button} from "@/components/button";
 import useEditorStore from "@/stores/editorStore";
 import clsx from "clsx";
 

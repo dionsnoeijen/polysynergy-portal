@@ -173,5 +173,6 @@ export function useExecutionGlowListener(flowId: string) {
             nodeExecutionState.clear();
             cleanupExecutionGlow();
         };
+    // eslint-disable-next-line
     }, [flowId]);
 }

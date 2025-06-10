@@ -7,7 +7,7 @@ import {Text} from "@/components/text";
 import {Input} from "@/components/input";
 import {Textarea} from "@/components/textarea";
 import {Button} from "@/components/button";
-import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType, Stage} from "@/types/types";
+import {FormType, HttpMethod, Route, RouteSegment, RouteSegmentType} from "@/types/types";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {ArrowDownIcon, ArrowUpIcon, MinusCircleIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import {Select} from "@/components/select";

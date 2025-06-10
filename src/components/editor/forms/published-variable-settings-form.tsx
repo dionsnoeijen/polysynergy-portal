@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import {Heading, Subheading} from "@/components/heading";
-import {FormType, Node, NodeVariable, NodeVariableType} from "@/types/types";
+import {Node, NodeVariable, NodeVariableType} from "@/types/types";
 import {Button} from "@/components/button";
-import {ArrowRightCircleIcon, XMarkIcon} from "@heroicons/react/24/outline";
+import {XMarkIcon} from "@heroicons/react/24/outline";
 import {Divider} from "@/components/divider";
 import useEditorStore from "@/stores/editorStore";
 import {Text} from "@/components/text";
@@ -33,7 +33,7 @@ const PublishedVariableSettingsForm: React.FC = () => {
     const [subPublished, setSubPublished] = useState<Record<string, boolean>>(() => {
         if (currentVariable?.type === NodeVariableType.Dict && Array.isArray(currentVariable.value)) {
             return Object.fromEntries(
-                currentVariable.value.map((subVar: NodeVariable) => [subVar.handle, subVar.published || false])
+                (currentVariable.value as NodeVariable[]).map((subVar: NodeVariable) => [subVar.handle, subVar.published || false])
             );
         }
         return {};
@@ -44,14 +44,15 @@ const PublishedVariableSettingsForm: React.FC = () => {
             currentVariable?.type === NodeVariableType.Dict &&
             Array.isArray(currentVariable.value)
         ) {
-            const hasAnySubPublished = currentVariable.value.some((subVar: NodeVariable) => subVar.published);
+            const hasAnySubPublished = (currentVariable.value as NodeVariable[]).some((subVar: NodeVariable) => subVar.published);
             if (published && !hasAnySubPublished) {
                 const updatedSubs = Object.fromEntries(
-                    currentVariable.value.map((subVar: NodeVariable) => [subVar.handle, true])
+                    (currentVariable.value as NodeVariable[]).map((subVar: NodeVariable) => [subVar.handle, true])
                 );
                 setSubPublished(updatedSubs);
             }
         }
+    // eslint-disable-next-line
     }, []);
 
     const toggleLocalSubPublished = (handle: string) => {
@@ -72,7 +73,7 @@ const PublishedVariableSettingsForm: React.FC = () => {
         }
 
         if (currentVariable?.type === NodeVariableType.Dict && Array.isArray(currentVariable.value)) {
-            for (const subVar of currentVariable.value) {
+            for (const subVar of (currentVariable.value as NodeVariable[])) {
                 const fullHandle = `${currentVariable.handle}.${subVar.handle}`;
                 const wasPublished = subVar.published || false;
                 const nowPublished = subPublished[subVar.handle] || false;
@@ -116,7 +117,7 @@ const PublishedVariableSettingsForm: React.FC = () => {
 
                             if (currentVariable?.type === NodeVariableType.Dict && Array.isArray(currentVariable.value)) {
                                 const updatedSubs = Object.fromEntries(
-                                    currentVariable.value.map((subVar: NodeVariable) => [subVar.handle, newPublished])
+                                    (currentVariable.value as NodeVariable[]).map((subVar: NodeVariable) => [subVar.handle, newPublished])
                                 );
                                 setSubPublished(updatedSubs);
                             }
@@ -172,7 +173,7 @@ const PublishedVariableSettingsForm: React.FC = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {currentVariable.value.map((subVar: NodeVariable, index: number) => (
+                                    {(currentVariable.value as NodeVariable[]).map((subVar: NodeVariable, index: number) => (
                                         <TableRow key={subVar.handle + index}>
                                             <TableCell>{subVar.handle}</TableCell>
                                             <TableCell>
@@ -193,7 +194,7 @@ const PublishedVariableSettingsForm: React.FC = () => {
 
             <Divider className="my-10" soft bleed/>
             <div className="flex justify-end gap-4">
-                <Button type="button" onClick={closeForm} plain>
+                <Button type="button" onClick={() => closeForm()} plain>
                     Cancel
                 </Button>
                 <Button color="sky" type="submit">

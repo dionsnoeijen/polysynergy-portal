@@ -3,7 +3,6 @@ import useEditorStore from "@/stores/editorStore";
 import apiConfig from "@/config";
 import {getIdToken} from "@/api/auth/authToken";
 import {ArrowPathIcon} from "@heroicons/react/24/outline";
-import {Button} from "@/components/button";
 
 interface LogEntry {
     function: string;

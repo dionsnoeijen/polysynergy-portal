@@ -47,8 +47,6 @@ export enum FormType {
     AddNode = 'addNewNode',
     EditJson = 'editJson',
     EditFiles = 'editFiles',
-    PlaceService = 'placeService',
-    PlaceBlueprint = 'placeBlueprint',
     AddProjectVariable = 'addProjectVariable',
     EditProjectVariable = 'editProjectVariable',
     AddProjectSecret = 'addProjectSecret',
@@ -177,7 +175,7 @@ export type NodeVariable = {
     name?: string;
     handle: string;
     parentHandle?: string;
-    value: null | string | number | boolean | string[] | NodeVariable[];
+    value: null | undefined | string | number | boolean | string[] | NodeVariable[];
     published: boolean;
     published_title?: string;
     published_description?: string;
@@ -497,4 +495,10 @@ export type EnvVar = {
     value?: string;
     stage: string;
     projectId: string;
+};
+
+export type ApiKey = {
+    key_id: string;
+    label: string;
+    key: string;
 };

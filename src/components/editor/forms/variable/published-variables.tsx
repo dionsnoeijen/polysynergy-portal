@@ -376,6 +376,7 @@ const PublishedVariables: React.FC<Props> = ({
             setActiveTabKey(tabItems[0]?.key ?? "default");
             hasInitializedTabs.current = true;
         }
+    // eslint-disable-next-line
     }, [
         getNodeVariable,
         getSecretNodes,

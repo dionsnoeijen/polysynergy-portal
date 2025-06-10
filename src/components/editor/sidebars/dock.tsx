@@ -3,7 +3,6 @@ import React from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 
-import clsx from "clsx";
 import Heading from "@/components/editor/sidebars/elements/heading";
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
 import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";

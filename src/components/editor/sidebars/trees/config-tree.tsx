@@ -18,7 +18,7 @@ export default function ConfigTree(): ReactElement {
             items={configs}
             title={`Configs`}
             activeItem={activeConfigId}
-            formEditingItem={formEditRecordId}
+            formEditingItem={formEditRecordId as string}
             fundamental={Fundamental.Config}
             dataTourId={"add-config-button"}
             renderItem={(config: Config) => (

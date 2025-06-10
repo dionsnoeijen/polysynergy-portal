@@ -5,7 +5,6 @@ import Connector from "@/components/editor/nodes/connector";
 import FakeConnector from "@/components/editor/nodes/fake-connector";
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 import useConnectionsStore from "@/stores/connectionsStore";
-import useNodesStore from "@/stores/nodesStore";
 
 type Props = {
     variable: NodeVariable;

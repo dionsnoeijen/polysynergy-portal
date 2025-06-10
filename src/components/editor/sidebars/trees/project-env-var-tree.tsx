@@ -53,7 +53,7 @@ export default function ProjectEnvVarTree(): ReactElement {
             items={envVars}
             title="Environment Variables"
             activeItem={activeProjectVariableId}
-            formEditingItem={formEditRecordId}
+            formEditingItem={formEditRecordId as string}
             fundamental={Fundamental.EnvVar}
             dataTourId={"add-environment-variable-button"}
             renderItem={(envVar: EnvVar) => (

@@ -15,7 +15,7 @@ type ProjectSecretsStore = {
     getSecret: (secretId: string) => Secret | undefined;
     fetchSecrets: () => Promise<Secret[]>;
     createSecret: (key: string, secret_value: string, stage: string) => Promise<Secret | undefined>;
-    updateSecret: (secret: Secret) => Promise<Secret | undefined>;
+    updateSecret: (secret: Secret, stage: string) => Promise<Secret | undefined>;
     deleteSecret: (secretId: string) => Promise<void>;
 };
 
@@ -63,10 +63,10 @@ const useProjectSecretsStore = create<ProjectSecretsStore>((set, get) => ({
         }
     },
 
-    updateSecret: async (secret: Secret) => {
+    updateSecret: async (secret: Secret, stage: string) => {
         const {activeProjectId} = useEditorStore.getState();
         try {
-            await updateProjectSecretAPI(activeProjectId, secret.id, secret.value as string);
+            await updateProjectSecretAPI(activeProjectId, secret.id, secret.value as string, stage);
             set((state) => ({
                 secrets: state.secrets.map((s) => (s.id === secret.id ? secret : s)),
             }));

@@ -9,8 +9,6 @@ import CodeEditorForm from "@/components/editor/forms/code-editor-form";
 import BlueprintForm from "@/components/editor/forms/blueprint-form";
 import NodeEditorForm from "@/components/editor/forms/node-editor-form";
 import JsonEditorForm from "@/components/editor/forms/json-editor-form";
-import PlaceServiceForm from "@/components/editor/forms/place-service-form";
-import PlaceBlueprintForm from "@/components/editor/forms/place-blueprint-form";
 import ProjectSecretsForm from "@/components/editor/forms/project-secrets-form";
 import ProjectPublishForm from "@/components/editor/forms/project-publish-form";
 import ConfigForm from "@/components/editor/forms/config-form";
@@ -76,12 +74,6 @@ const Form: React.FC = () => {
             )}
             {(formType === FormType.EditFiles) && (
                 <FileEditorForm />
-            )}
-            {(formType === FormType.PlaceService) && (
-                <PlaceServiceForm />
-            )}
-            {(formType === FormType.PlaceBlueprint) && (
-                <PlaceBlueprintForm />
             )}
             {(
                 formType === FormType.AddProjectSecret ||

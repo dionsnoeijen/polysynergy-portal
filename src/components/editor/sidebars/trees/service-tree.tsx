@@ -1,4 +1,4 @@
-import React, {ReactElement, useEffect, useState} from "react";
+import React, {ReactElement, useEffect, useRef, useState} from "react";
 import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import {FormType, Fundamental, Service, Node} from "@/types/types";
 import {PencilIcon, PlusIcon} from "@heroicons/react/24/outline";
@@ -7,6 +7,7 @@ import useEditorStore from "@/stores/editorStore";
 import findTopLevelGroup from "@/utils/findTopLevelGroup";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
+import placeService from "@/utils/placeService";
 
 export default function ServiceTree(): ReactElement {
     const services = useServicesStore((state) => state.services);
@@ -19,6 +20,12 @@ export default function ServiceTree(): ReactElement {
     const clearTempConnections = useConnectionsStore((state) => state.clearTempConnections);
     const addTempConnections = useConnectionsStore((state) => state.addTempConnections);
     const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
+
+    const getNodesByServiceHandleAndVariant = useNodesStore((state) => state.getNodesByServiceHandleAndVariant);
+    const addNode = useNodesStore((state) => state.addNode);
+    const addConnection = useConnectionsStore((state) => state.addConnection);
+    const openedGroup = useNodesStore((state) => state.openedGroup);
+    const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
 
     const [addDisabled, setAddDisabled] = useState(true);
 
@@ -49,6 +56,35 @@ export default function ServiceTree(): ReactElement {
         openForm(FormType.EditService, service.id);
     };
 
+    const mousePos = useRef({x: 0, y: 0});
+
+    /* track global muispositie zodat we die hebben in onClick */
+    useEffect(() => {
+        const handler = (e: MouseEvent) => (mousePos.current = {x: e.screenX, y: e.screenY});
+        window.addEventListener("mousemove", handler);
+        return () => window.removeEventListener("mousemove", handler);
+    }, []);
+
+    const placeServiceHandler = (serviceId: string) => {
+        const service = services.find((s) => s.id === serviceId);
+        if (!service) return;
+
+        placeService({
+            service,
+            mouseScreenXY: mousePos.current,
+            addNode,
+            addConnection,
+            getNodesByServiceHandleAndVariant,
+            openedGroup,
+            addNodeToGroup,
+        });
+
+        // eventueel UI-state resetten
+        clearTempNodes();
+        clearTempConnections();
+        setSelectedNodes([]);
+    };
+
     return (
         <TreeList
             items={services}
@@ -56,11 +92,14 @@ export default function ServiceTree(): ReactElement {
             activeItem={activeServiceId}
             formEditingItem={formEditRecordId as string}
             fundamental={Fundamental.Service}
-            toggleOpen={() => {setAddDisabled(!(selectedNodes.length === 1))}}
+            toggleOpen={() => {
+                setAddDisabled(!(selectedNodes.length === 1))
+            }}
             dataTourId={"add-service-button"}
             renderItem={(service: Service) => (
                 <div className="flex justify-between items-center w-full">
-                    <span className={`select-none truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white`}>{service.name}</span>
+                    <span
+                        className={`select-none truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white`}>{service.name}</span>
                     <div className="flex gap-2 mr-2">
                         <button
                             onClick={() => handleEditService(service)}
@@ -70,7 +109,7 @@ export default function ServiceTree(): ReactElement {
                             <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
                         </button>
                         <button
-                            onClick={() => openForm(FormType.PlaceService, service.id)}
+                            onClick={() => placeServiceHandler(service.id as string)}
                             type="button"
                             className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : 'text-sky-500 dark:text-white/70'}`}
                         >

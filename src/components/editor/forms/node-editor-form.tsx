@@ -22,6 +22,7 @@ const NodeEditorForm: React.FC = () => {
 
     const [node, setNode] = useState<NodeType>();
     const [code, setCode] = useState<string>('');
+    // eslint-disable-next-line
     const [isBaseNode, setIsBaseNode] = useState<boolean>(true);
     const [showUnlockAlert, setShowUnlockAlert] = useState<boolean>(false);
     const [editorHeight, setEditorHeight] = useState(400);

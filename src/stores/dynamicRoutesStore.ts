@@ -94,6 +94,7 @@ const useDynamicRoutesStore = create<DynamicRoutesStore>((
             await deleteDynamicRouteAPI(routeId);
             set((state) => {
                 const newRoutes = state.routes.filter((r) => r.id !== routeId);
+                // eslint-disable-next-line
                 const {[routeId]: _, ...rest} = state.routesById;
                 return {
                     routes: newRoutes,

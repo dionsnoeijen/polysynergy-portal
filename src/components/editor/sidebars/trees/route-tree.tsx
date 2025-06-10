@@ -20,7 +20,7 @@ export default function RouteTree(): ReactElement {
             items={routes}
             title={`Routes`}
             activeItem={activeRouteId}
-            formEditingItem={formEditRecordId}
+            formEditingItem={formEditRecordId as string}
             fundamental={Fundamental.Route}
             dataTourId="add-route-button"
             renderItem={(route) => (

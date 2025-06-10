@@ -32,7 +32,6 @@ const ListVariable: React.FC<Props> = ({
     groupId,
     isMirror = false,
     categoryMainTextColor = 'text-sky-600 dark:text-white',
-    categorySubTextColor = 'text-sky-400 dark:text-slate-400',
     isInService = false
 }) => {
 

@@ -8,11 +8,11 @@ import CustomPopoverHome from "@/components/guidedtour/custom-popover-home";
 const steps = [
     {
         selector: '[data-tour-id="create-project"]',
-        content: 'Hier begin je met het aanmaken van je project.',
+        content: 'This is where you can create a project.',
     },
     {
         selector: '[data-tour-id="trash-toggle"]',
-        content: 'Hier kun je verwijderde projecten bekijken of terugzetten.',
+        content: 'Removed projects are here, they can be restored.',
     },
 ];
 

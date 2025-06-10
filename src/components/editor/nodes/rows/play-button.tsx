@@ -21,7 +21,6 @@ const PlayButton: React.FC<Props> = ({
     centered = true,
     staged = false,
     categoryMainTextColor = 'text-sky-600 dark:text-white',
-    categorySubTextColor = 'text-sky-400 dark:text-slate-400'
 }) => {
     const handlePlay = useHandlePlay();
     const stages = useStagesStore((state) => state.stages);

@@ -1,5 +1,3 @@
-'use client';
-
 import {PopoverContentProps} from '@reactour/tour';
 import {XMarkIcon} from '@heroicons/react/24/outline';
 

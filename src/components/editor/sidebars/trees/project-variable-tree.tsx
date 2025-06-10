@@ -25,7 +25,7 @@ export default function ProjectVariableTree(): ReactElement {
             items={variableItems}
             title="Project Variables"
             activeItem={activeProjectVariableId}
-            formEditingItem={formEditRecordId}
+            formEditingItem={formEditRecordId as string}
             fundamental={Fundamental.Variable}
             dataTourId={"add-environment-variable-button"}
             renderItem={(variable: NodeVariableWithId) => (

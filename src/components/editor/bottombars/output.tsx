@@ -4,8 +4,7 @@ import {ChevronLeftIcon} from "@heroicons/react/24/outline";
 import useEditorStore from "@/stores/editorStore";
 import {getNodeExecutionDetails} from "@/api/executionApi";
 import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
-import {Button} from "@/components/button";
-import {Route, Stage} from "@/types/types";
+import {Route} from "@/types/types";
 import {formatSegments} from "@/utils/formatters";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import useStagesStore from "@/stores/stagesStore";
@@ -115,11 +114,11 @@ const Output: React.FC = (): React.ReactElement => {
                     <h3 className="text-sky-500 dark:text-white/80">Summary</h3>
                 </div>
                 <div className="flex-1 overflow-auto p-4 text-sm text-white/80">
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        <Button color="sky">Share</Button>
-                        <Button color="sky">Duplicate</Button>
-                        <Button color="sky">Export JSON</Button>
-                    </div>
+                    {/*<div className="flex flex-wrap gap-2 mb-4">*/}
+                    {/*    <Button color="sky">Share</Button>*/}
+                    {/*    <Button color="sky">Duplicate</Button>*/}
+                    {/*    <Button color="sky">Export JSON</Button>*/}
+                    {/*</div>*/}
 
                     {activeItem && (
                         <section className="mb-4 rounded-md border border-white/10 p-4">
@@ -128,7 +127,7 @@ const Output: React.FC = (): React.ReactElement => {
                                 const basePath = `https://${activeProjectId}{{stage}}`;
                                 const isProd = stage.is_production;
                                 const stagePrefix = isProd ? '' : `-${stage.name}`;
-                                const fullUrl = `${basePath.replace('{{stage}}', stagePrefix)}/${formatSegments((activeItem as Route)?.segments)}`;
+                                const fullUrl = `${basePath.replace('{{stage}}', stagePrefix)}.polysynergy.com/${formatSegments((activeItem as Route)?.segments)}`;
                                 return (
                                     <div key={stage.name} className="flex items-start gap-2">
                                         <span className="w-24 shrink-0 font-semibold text-sky-600 dark:text-white">
@@ -151,13 +150,13 @@ const Output: React.FC = (): React.ReactElement => {
                     </ul>
 
                     <ul className="text-sm dark:text-white/70 space-y-1">
-                        <li><span className="text-sky-500 dark:text-white">Nodes:</span> {mockNodes.length}</li>
-                        <li><span className="text-sky-500 dark:text-white">Start time:</span> 14:42:08</li>
-                        <li><span className="text-sky-500 dark:text-white">Duration:</span> 1.7s</li>
-                        <li><span className="text-sky-500 dark:text-white">Result:</span> success</li>
+                        <li><span className="text-sky-500 dark:text-white">Executed Nodes:</span> {mockNodes.length}</li>
+                        {/*<li><span className="text-sky-500 dark:text-white">Start time:</span> 14:42:08</li>*/}
+                        {/*<li><span className="text-sky-500 dark:text-white">Duration:</span> 1.7s</li>*/}
+                        {/*<li><span className="text-sky-500 dark:text-white">Result:</span> success</li>*/}
                     </ul>
 
-                    <div className="mt-6 text-sky-500">View full logs →</div>
+                    {/*<div className="mt-6 text-sky-500">View full logs →</div>*/}
                 </div>
             </div>
         </div>

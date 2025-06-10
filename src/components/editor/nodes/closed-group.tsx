@@ -7,7 +7,6 @@ import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 
 import {GroupProps, NodeCollapsedConnector, NodeVariable} from "@/types/types";
 import {ChevronDownIcon, ChevronUpIcon, GlobeAltIcon} from "@heroicons/react/24/outline";
-import {Button} from "@/components/button";
 
 import Connector from "@/components/editor/nodes/connector";
 import ServiceHeading from "@/components/editor/nodes/rows/service-heading";

@@ -134,7 +134,7 @@ export default function TreeList<T extends ListItemWithId>({
                         className={clsx(
                             "w-full flex items-center justify-between gap-2 px-3 py-2",
                             "rounded-md border border-dotted text-sky-500 border-sky-500 dark:border-white/50",
-                            "bg-white/60 hover:bg-sky-100 dark:hover:bg-white/10",
+                            "bg-white/60 dark:bg-black/60 hover:bg-sky-100 dark:hover:bg-white/10",
                             "transition-colors duration-200"
                         )}
                     >

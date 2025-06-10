@@ -12,14 +12,13 @@ import {ChevronUpIcon, Cog8ToothIcon, UserIcon} from "@heroicons/react/24/outlin
 import useProjectsStore from "@/stores/projectsStore";
 import useEditorStore from "@/stores/editorStore";
 import {useEffect, useState} from "react";
-import { Project } from "@/types/types";
+import {Project} from "@/types/types";
 
-export default function SidebarTenantHeader()
-{
+export default function SidebarTenantHeader() {
     const fetchProject = useProjectsStore((state) => state.fetchProject);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
 
-    const [project, setProject] = useState<Partial<Project>>({ name: 'No Project' });
+    const [project, setProject] = useState<Partial<Project>>({name: 'No Project'});
 
     useEffect(() => {
         fetchProject(activeProjectId).then(project => {
@@ -34,22 +33,23 @@ export default function SidebarTenantHeader()
         <SidebarHeader className={'border-none p-0'}>
             <Dropdown>
                 <DropdownButton as={SidebarItem}>
-                    {/*<Avatar square={true} src="/ps-logo-simple-color.svg" />*/}
                     <SidebarLabel>{project.name}</SidebarLabel>
-                    <ChevronUpIcon />
+                    <ChevronUpIcon/>
                 </DropdownButton>
                 <DropdownMenu className="min-w-80 lg:min-w-64" anchor="top start">
-                    <DropdownItem href="/">
-                        <Avatar slot="icon" src="/teams/catalyst.svg" />
+                    <DropdownItem
+                        onClick={() => window.location.assign('/')}
+                    >
+                        <Avatar src="/ps-logo-simple-color.svg" slot="icon"/>
                         <DropdownLabel>Projects</DropdownLabel>
                     </DropdownItem>
-                    <DropdownDivider />
+                    <DropdownDivider/>
                     <DropdownItem href="/account">
-                        <UserIcon />
+                        <UserIcon/>
                         <DropdownLabel>Account</DropdownLabel>
                     </DropdownItem>
                     <DropdownItem href="/settings">
-                        <Cog8ToothIcon />
+                        <Cog8ToothIcon/>
                         <DropdownLabel>Settings</DropdownLabel>
                     </DropdownItem>
                 </DropdownMenu>

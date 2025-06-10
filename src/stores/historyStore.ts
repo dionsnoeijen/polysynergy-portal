@@ -24,9 +24,6 @@ export const useHistoryStore = create<HistoryStore>((set, get) => ({
     future: [],
 
     save: () => {
-
-        console.log('Saving history', get().history.length, get().future.length)
-
         const {nodes, groupStack, openedGroup} = useNodesStore.getState()
         const {connections} = useConnectionsStore.getState()
         const snapshot: HistoryEntry = {

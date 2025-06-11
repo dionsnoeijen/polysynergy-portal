@@ -7,6 +7,7 @@ import useProjectSecretsStore from "@/stores/projectSecretsStore";
 import useServicesStore from "@/stores/servicesStore";
 import useStagesStore from "@/stores/stagesStore";
 import useEnvVarsStore from "@/stores/envVarsStore";
+import useAvailableNodeStore from "@/stores/availableNodesStore";
 
 export function useAutoFetch() {
     const blueprints = useBlueprintsStore((s) => s.blueprints);
@@ -37,7 +38,14 @@ export function useAutoFetch() {
     const isFetchingEnvVars = useEnvVarsStore((s) => s.isFetching);
     const hasEnvVarsInitialFetched = useEnvVarsStore((s) => s.hasInitialFetched);
 
+    const availableNodes = useAvailableNodeStore((s) => s.availableNodes);
+    const isFetchingAvailableNodes = useAvailableNodeStore((s) => s.isFetching);
+    const hasAvailableNodesInitialFetched = useAvailableNodeStore((s) => s.hasInitialFetched);
+
     useEffect(() => {
+        if (availableNodes.length === 0 && !hasAvailableNodesInitialFetched && !isFetchingAvailableNodes) {
+            useAvailableNodeStore.getState().fetchAvailableNodes();
+        }
         if (blueprints.length === 0 && !hasBlueprintsInitialFetched && !isFetchingBlueprints) {
             useBlueprintsStore.getState().fetchBlueprints();
         }
@@ -59,13 +67,5 @@ export function useAutoFetch() {
         if (envVars.length === 0 && !hasEnvVarsInitialFetched && !isFetchingEnvVars) {
             useEnvVarsStore.getState().fetchEnvVars();
         }
-    }, [
-        hasBlueprintsInitialFetched,
-        hasRoutesInitialFetched,
-        hasSchedulesInitialFetched,
-        hasSecretsInitialFetched,
-        hasServicesInitialFetched,
-        hasStagesInitialFetched,
-        hasEnvVarsInitialFetched,
-    ]);
+    }, [hasBlueprintsInitialFetched, hasRoutesInitialFetched, hasSchedulesInitialFetched, hasSecretsInitialFetched, hasServicesInitialFetched, hasStagesInitialFetched, hasEnvVarsInitialFetched, blueprints.length, isFetchingBlueprints, routes.length, isFetchingRoutes, schedules.length, isFetchingSchedules, secrets.length, isFetchingSecrets, services.length, isFetchingServices, stages.length, isFetchingStages, envVars.length, isFetchingEnvVars]);
 }

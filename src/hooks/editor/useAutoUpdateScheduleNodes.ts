@@ -13,10 +13,12 @@ export function useAutoUpdateScheduleNodes() {
     useEffect(() => {
         if (!activeScheduleId) return;
 
-        const schedule = getSchedule(activeScheduleId);
+        const schedule =
+            getSchedule(activeScheduleId);
         if (!schedule) return;
 
-        const scheduleNodes = getNodesByPath(`nodes.nodes.schedule.schedule.Schedule`);
+        const scheduleNodes =
+            getNodesByPath(`nodes.nodes.schedule.schedule.Schedule`);
         if (!scheduleNodes) return;
 
         scheduleNodes.forEach((node) => {

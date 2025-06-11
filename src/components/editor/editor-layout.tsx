@@ -90,9 +90,6 @@ const EditorLayout = ({
     useEffect(() => {
         setHeight({horizontalEditorLayout: window.innerHeight * 0.85});
         setWindowHeight(window.innerHeight);
-
-        fetchAvailableNodes();
-
         const handleResize = () => setWindowHeight(window.innerHeight);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
@@ -333,7 +330,7 @@ const EditorLayout = ({
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">
-                                        <p className="text-white">Loading node setup... AVID: {activeVersionId}</p>
+                                        <p className="text-white">Loading node setup...</p>
                                     </div>
                                 )
                             ) : (

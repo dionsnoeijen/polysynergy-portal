@@ -6,6 +6,8 @@ import useEditorStore from "@/stores/editorStore";
 
 type AvailableNodeStore = {
     selectedNodeIndex: number;
+    isFetching?: boolean;
+    hasInitialFetched?: boolean;
     setSelectedNodeIndex: (index: number | ((prevIndex: number) => number)) => void;
     resetSelectedNodeIndex: () => void;
     availableNodes: Node[];
@@ -53,13 +55,16 @@ const useAvailableNodeStore = create<AvailableNodeStore>((set, get) => ({
     fetchAvailableNodes: async () => {
         const activeProjectId = useEditorStore.getState().activeProjectId;
         if (!activeProjectId) return;
+        set({ isFetching: true });
         try {
             let data: Node[] = await fetchAvailableNodesAPI(activeProjectId);
             data = addIdsToAvailableNodes(data);
-            set({ availableNodes: data });
+            set({ availableNodes: data, hasInitialFetched: true });
             get().filterAvailableNodes();
         } catch (error) {
             console.error("Failed to fetch available nodes:", error);
+        } finally {
+            set({ isFetching: false });
         }
     },
 }));

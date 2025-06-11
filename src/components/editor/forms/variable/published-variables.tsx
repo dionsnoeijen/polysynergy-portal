@@ -80,6 +80,7 @@ const PublishedVariables: React.FC<Props> = ({
     const [dictVariables, setDictVariables] = useState<{ [nodeId: string]: { [handle: string]: NodeVariable[] } }>({});
     const [simpleVariables, setSimpleVariables] = useState<{ [nodeId: string]: { [handle: string]: string } }>({});
     const [secretVariables, setSecretVariables] = useState<{ key: string, value: string }[]>([]);
+    // eslint-disable-next-line
     const [envVariables, setEnvVariables] = useState<{ key: string; value: string }[]>([]);
 
     const hasInitializedTabs = useRef(false);

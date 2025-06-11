@@ -10,6 +10,20 @@ html {
     @apply rounded-md shadow-sm ring-1 bg-zinc-200 dark:bg-zinc-900 ring-white/10;
 }
 
+/* globals.css of in jouw layout component */
+
+/* Safari/Chrome/Edge (WebKit/Blink) */
+::-webkit-scrollbar {
+  width: 0px;          /* geen breedte */
+  height: 0px;         /* geen hoogte (horiz.) */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: none;      /* verberg balk */
+  -ms-overflow-style: none;   /* IE/old Edge fallback */
+}
+
 @keyframes fadeInOut {
     0% {
         opacity: 0;

@@ -8,6 +8,7 @@ import useEditorStore from "@/stores/editorStore";
 
 type ServicesStore = {
     reset: () => void;
+    isFetching: boolean;
     hasInitialFetched: boolean;
     services: Service[];
     getService: (serviceId: string) => Service | undefined;
@@ -27,6 +28,7 @@ const useServicesStore = create<ServicesStore>((
         });
     },
 
+    isFetching: false,
     hasInitialFetched: false,
 
     services: [],
@@ -48,11 +50,15 @@ const useServicesStore = create<ServicesStore>((
     fetchServices: async () => {
         const {activeProjectId} = useEditorStore.getState();
         if (!activeProjectId) return;
+
+        set({ isFetching: true });
         try {
             const data: Service[] = await fetchServicesAPI(activeProjectId);
             set({services: data, hasInitialFetched: true});
         } catch (error) {
             console.error('Failed to fetch services:', error);
+        } finally {
+            set({ isFetching: false });
         }
     },
 

@@ -10,6 +10,7 @@ import {Secret} from '@/types/types';
 
 type ProjectSecretsStore = {
     reset: () => void;
+    isFetching: boolean;
     hasInitialFetched: boolean;
     secrets: Secret[];
     getSecret: (secretId: string) => Secret | undefined;
@@ -27,6 +28,8 @@ const useProjectSecretsStore = create<ProjectSecretsStore>((set, get) => ({
         });
     },
 
+    isFetching: false,
+
     hasInitialFetched: false,
 
     secrets: [],
@@ -36,13 +39,16 @@ const useProjectSecretsStore = create<ProjectSecretsStore>((set, get) => ({
 
     fetchSecrets: async () => {
         const {activeProjectId} = useEditorStore.getState();
+        if (!activeProjectId) return;
+        set({isFetching: true});
         try {
-            if (!activeProjectId) return;
             const data = await fetchProjectSecretsAPI(activeProjectId);
             set({secrets: data.secrets, hasInitialFetched: true});
             return data;
         } catch (error) {
             console.error("Failed to fetch secrets:", error);
+        } finally {
+            set({isFetching: false});
         }
     },
 

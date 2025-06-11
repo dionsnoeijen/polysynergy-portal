@@ -54,8 +54,8 @@ const SECRET_EXISTS = 0;
 const SECRET_MUST_BE_CREATED = 1;
 
 const PublishedVariables: React.FC<Props> = ({
-    nodes,
-}) => {
+                                                 nodes,
+                                             }) => {
     const leadsToPlayConfig = useNodesStore((state) => state.leadsToPlayConfig);
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
@@ -66,8 +66,7 @@ const PublishedVariables: React.FC<Props> = ({
     const getMockResultForNode = useMockStore((state) => state.getMockResultForNode);
     const handlePlay = useHandlePlay();
 
-    const stagesFromStore = useStagesStore((state) => state.stages);
-    const stages = [{name: "mock"}, ...stagesFromStore];
+    const stages = useStagesStore((state) => state.stages);
 
     const fetchSecrets = useProjectSecretsStore((state) => state.fetchSecrets);
     const envVars = useEnvVarsStore((state) => state.envVars);
@@ -376,7 +375,7 @@ const PublishedVariables: React.FC<Props> = ({
             setActiveTabKey(tabItems[0]?.key ?? "default");
             hasInitializedTabs.current = true;
         }
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [
         getNodeVariable,
         getSecretNodes,
@@ -392,7 +391,7 @@ const PublishedVariables: React.FC<Props> = ({
 
     return (
         <div className="flex flex-col gap-4 relative">
-            <IsExecuting />
+            <IsExecuting/>
 
             <div className="mb-4 flex gap-2 border-b border-sky-500/50 dark:border-white/10">
                 {tabs.map((tab) => (
@@ -418,7 +417,8 @@ const PublishedVariables: React.FC<Props> = ({
             )}
 
             {!activeTab || activeTab?.group.variables.length === 0 ? (
-                <div className="rounded-md border border-sky-500/50 dark:border-white/10 p-4 text-sky-500 dark:text-white/60 text-sm italic">
+                <div
+                    className="rounded-md border border-sky-500/50 dark:border-white/10 p-4 text-sky-500 dark:text-white/60 text-sm italic">
                     No published variables
                 </div>
             ) : (
@@ -456,7 +456,8 @@ const PublishedVariables: React.FC<Props> = ({
                                                     <label className="text-sm text-sky-500/70 dark:text-white/70">
                                                         {stage.name}{" "}
                                                         {hasSecret && (
-                                                            <span className="text-xs text-sky-500/50 dark:text-white/50">(has value)</span>
+                                                            <span
+                                                                className="text-xs text-sky-500/50 dark:text-white/50">(has value)</span>
                                                         )}
                                                     </label>
                                                     <div className="flex gap-2">
@@ -510,19 +511,20 @@ const PublishedVariables: React.FC<Props> = ({
                                     <div className="space-y-3">
                                         {stages.map((stage) => {
                                             const existing = envVars.find(
-                                                (v) => v.key === variable.value && v.stage === stage.name
+                                                (v) => v.key === variable.value && v.values[stage.name]
                                             );
                                             const localKey = `${stage.name}@${variable.value}`;
-                                            const local = envVariables.find((v) => v.key === localKey);
+                                            // const local = envVariables.find((v) => v.key === localKey);
 
-                                            const value = local?.value ?? existing?.value ?? "";
+                                            const value = existing?.values[stage.name]?.value ?? "";
 
                                             return (
                                                 <div key={`${nodeId}-${stage.name}`}>
                                                     <label className="text-sm text-sky-500/70 dark:text-white/70">
                                                         {stage.name}{" "}
                                                         {existing && (
-                                                            <span className="text-xs text-sky-500/50 dark:text-white/50">(has value)</span>
+                                                            <span
+                                                                className="text-xs text-sky-500/50 dark:text-white/50">(has value)</span>
                                                         )}
                                                     </label>
                                                     <div className="flex gap-2">
@@ -574,7 +576,7 @@ const PublishedVariables: React.FC<Props> = ({
                                         handleDictVariableChange(nodeId, updatedVariables, handle)
                                     }
                                 />
-                                <Divider className="my-10" soft bleed />
+                                <Divider className="my-10" soft bleed/>
                             </div>
                         );
                     } else {
@@ -641,7 +643,8 @@ const PublishedVariables: React.FC<Props> = ({
                         if (!result?.variables) return null;
 
                         return (
-                            <div className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4 bg-sky-50 dark:bg-white/5">
+                            <div
+                                className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4 bg-sky-50 dark:bg-white/5">
                                 <div className="mb-2 text-sky-500 dark:text-white font-semibold text-sm">
                                     Result
                                 </div>

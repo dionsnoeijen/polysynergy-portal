@@ -11,46 +11,78 @@ import useStagesStore from "@/stores/stagesStore";
 import useEditorStore from "@/stores/editorStore";
 import useEnvVarsStore from "@/stores/envVarsStore";
 
-import {FormType} from "@/types/types";
+import {EnvVar, FormType} from "@/types/types";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
+import IsExecuting from "@/components/editor/is-executing";
 
 const ProjectEnvVarsForm: React.FC = () => {
-    const stagesFromStore = useStagesStore((state) => state.stages);
-    const stages = [{name: "mock"}, ...stagesFromStore];
+    const stages = useStagesStore((state) => state.stages);
 
     const formType = useEditorStore((state) => state.formType);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
+    const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
 
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
     const createEnvVar = useEnvVarsStore((state) => state.createEnvVar);
-    // const deleteEnvVar = useEnvVarsStore((state) => state.deleteEnvVar);
     const closeForm = useEditorStore((state) => state.closeForm);
+    const deleteEnvVar = useEnvVarsStore((state) => state.deleteEnvVar);
+    const getEnvVarByKey = useEnvVarsStore((state) => state.getEnvVarByKey);
 
     const [key, setKey] = useState("");
     const [values, setValues] = useState<Record<string, string>>({});
     const [error, setError] = useState<string | null>(null);
 
+    const updateEnvVar = useEnvVarsStore((state) => state.updateEnvVar);
+    const envVar = useEnvVarsStore((state) =>
+        state.envVars.find((v) => v.key === key)
+    );
+
     const handleSave = async (stage: string) => {
-        if (!key.trim() || !values[stage]?.trim()) {
+        setIsExecuting("Saving...");
+        const value = values[stage];
+        if (!key.trim() || !value.trim()) {
             setError("Missing key or value");
             return;
         }
+
         setError(null);
-        await createEnvVar(key, values[stage], stage);
+
+        if (envVar && envVar.values[stage]) {
+            const updated: EnvVar = {
+                ...envVar,
+                values: {
+                    ...envVar.values,
+                    [stage]: {
+                        ...envVar.values[stage],
+                        value,
+                    },
+                },
+            };
+            await updateEnvVar(updated, stage);
+        } else {
+            await createEnvVar(key, value, stage);
+        }
+        setIsExecuting(null);
     };
+
 
     const handleDelete = useCallback(async () => {
         if (!formEditRecordId || !activeProjectId) return;
 
-        // const parts = formEditRecordId.split("#");
-        // // const stage = parts[2];
-        // // const key = parts[3];
-        // // await deleteEnvVar(activeProjectId, stage, key);
+        const envVar = getEnvVarByKey(formEditRecordId as string);
+        if (!envVar) return;
+
+        const entries = Object.entries(envVar.values);
+
+        for (const [stage, {id}] of entries) {
+            await deleteEnvVar(id, stage);
+        }
+
         setShowDeleteAlert(false);
         closeForm("Variable deleted successfully");
-    }, [formEditRecordId, activeProjectId, closeForm]);
+    }, [formEditRecordId, activeProjectId, getEnvVarByKey, closeForm, deleteEnvVar]);
 
     const handleCancel = () => {
         closeForm();
@@ -63,29 +95,29 @@ const ProjectEnvVarsForm: React.FC = () => {
             activeProjectId
         ) {
             const ensureEnvVarsLoaded = async () => {
-                const {hasInitialFetched, getEnvVarsByKey} = useEnvVarsStore.getState();
-
-                if (!hasInitialFetched) {
-                    await useEnvVarsStore.getState().fetchEnvVars();
+                const envVar = getEnvVarByKey(formEditRecordId as string);
+                if (!envVar) {
+                    return;
                 }
 
-                const envVarsForKey = getEnvVarsByKey(formEditRecordId as string);
-
-                setKey(formEditRecordId as string);
-
-                const valuesObj: Record<string, string> = {};
-                for (const env of envVarsForKey) {
-                    valuesObj[env.stage] = env.value || "";
-                }
-                setValues(valuesObj);
+                setKey(envVar.key);
+                setValues(
+                    Object.fromEntries(
+                        Object
+                            .entries(envVar?.values || {})
+                            .map(([stage, data]) => [stage, data?.value ?? ""])
+                    )
+                );
             };
 
             ensureEnvVarsLoaded();
         }
-    }, [formType, formEditRecordId, activeProjectId]);
+    }, [formType, formEditRecordId, activeProjectId, getEnvVarByKey]);
 
     return (
         <form onSubmit={(e) => e.preventDefault()} className="p-10">
+            <IsExecuting/>
+
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>Add Environment Variable</Heading>
                 <Button type="button" onClick={handleCancel} color="sky">
@@ -126,13 +158,6 @@ const ProjectEnvVarsForm: React.FC = () => {
                 </div>
             ))}
 
-            <Divider className="my-10" soft bleed/>
-            <div className="flex justify-end">
-                <Button type="button" onClick={handleCancel} plain>
-                    Close
-                </Button>
-            </div>
-
             {formType === FormType.EditProjectEnvVar && (
                 <>
                     <Divider className="my-10" soft bleed/>
@@ -151,20 +176,27 @@ const ProjectEnvVarsForm: React.FC = () => {
             )}
 
             {showDeleteAlert && (
-                <Alert size="md" className="text-center" open={showDeleteAlert}
-                       onClose={() => setShowDeleteAlert(false)}>
-                    <AlertTitle>Are you sure you want to delete this variable?</AlertTitle>
-                    <AlertDescription>This action cannot be undone.</AlertDescription>
-                    <AlertActions>
-                        <Button onClick={() => setShowDeleteAlert(false)} plain>
-                            Cancel
-                        </Button>
-                        <Button color="red" onClick={handleDelete}>
-                            Yes, delete
-                        </Button>
-                    </AlertActions>
-                </Alert>
+            <Alert size="md" className="text-center" open={showDeleteAlert}
+                   onClose={() => setShowDeleteAlert(false)}>
+                <AlertTitle>Are you sure you want to delete this variable?</AlertTitle>
+                <AlertDescription>This action cannot be undone.</AlertDescription>
+                <AlertActions>
+                    <Button onClick={() => setShowDeleteAlert(false)} plain>
+                        Cancel
+                    </Button>
+                    <Button color="red" onClick={handleDelete}>
+                        Yes, delete
+                    </Button>
+                </AlertActions>
+            </Alert>
             )}
+
+            <Divider className="my-10" soft bleed/>
+            <div className="flex justify-end">
+                <Button type="button" onClick={handleCancel} plain>
+                    Close
+                </Button>
+            </div>
         </form>
     );
 };

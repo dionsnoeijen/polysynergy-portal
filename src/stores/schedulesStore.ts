@@ -10,6 +10,7 @@ import { Schedule } from '@/types/types';
 
 type SchedulesStore = {
     reset: () => void;
+    isFetching: boolean;
     hasInitialFetched: boolean;
     schedules: Schedule[];
     getSchedule: (scheduleId: string) => Schedule | undefined;
@@ -29,6 +30,7 @@ const useSchedulesStore = create<SchedulesStore>((
         });
     },
 
+    isFetching: false,
     hasInitialFetched: false,
 
     schedules: [],
@@ -40,11 +42,15 @@ const useSchedulesStore = create<SchedulesStore>((
     fetchSchedules: async () => {
         const { activeProjectId } = useEditorStore.getState();
         if (!activeProjectId) return;
+
+        set({ isFetching: true });
         try {
             const data: Schedule[] = await fetchSchedulesAPI(activeProjectId);
             set({ schedules: data, hasInitialFetched: true });
         } catch (error) {
             console.error('Failed to fetch schedules:', error);
+        } finally {
+            set({ isFetching: false });
         }
     },
 

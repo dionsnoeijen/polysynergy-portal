@@ -21,8 +21,7 @@ import useStagesStore from "@/stores/stagesStore";
 import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
 
 const ProjectSecretsForm: React.FC = () => {
-    const stagesFromStore = useStagesStore((state) => state.stages);
-    const stages = [{name: "mock"}, ...stagesFromStore];
+    const stages = useStagesStore((state) => state.stages);
 
     const closeForm = useEditorStore((state) => state.closeForm);
     const formType = useEditorStore((state) => state.formType);

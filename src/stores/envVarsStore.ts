@@ -10,10 +10,10 @@ import {EnvVar} from '@/types/types';
 
 type EnvVarsStore = {
     reset: () => void;
+    isFetching: boolean;
     hasInitialFetched: boolean;
     envVars: EnvVar[];
-    getEnvVarsByKey: (key: string) => EnvVar[];
-    getEnvVar: (id: string) => EnvVar | undefined;
+    getEnvVarByKey: (key: string) => EnvVar | undefined;
     fetchEnvVars: () => Promise<EnvVar[] | undefined>;
     createEnvVar: (key: string, value: string, stage: string) => Promise<EnvVar | undefined>;
     updateEnvVar: (envVar: EnvVar, stage: string) => Promise<EnvVar | undefined>;
@@ -28,27 +28,30 @@ const useEnvVarsStore = create<EnvVarsStore>((set, get) => ({
         });
     },
 
+    isFetching: false,
     hasInitialFetched: false,
     envVars: [],
 
-    getEnvVarsByKey: (rawId: string): EnvVar[] => {
-        const parts = rawId.split("#");
-        const key = parts.length === 4 ? parts[3] : rawId;
-        return get().envVars.filter((env) => env.key === key);
+    getEnvVarByKey: (key: string): EnvVar | undefined => {
+        return get().envVars.find((env) => env.key === key);
     },
-
-    getEnvVar: (id: string): EnvVar | undefined =>
-        get().envVars.find((env) => env.id === id),
 
     fetchEnvVars: async () => {
         const {activeProjectId} = useEditorStore.getState();
         if (!activeProjectId) return;
+
+        set({isFetching: true});
         try {
             const data = await fetchProjectEnvVarsAPI(activeProjectId);
-            set({envVars: data.envVars || [], hasInitialFetched: true});
+            set({
+                envVars: data.envVars || [],
+                hasInitialFetched: true
+            });
             return data.envVars;
         } catch (error) {
             console.error("Failed to fetch environment variables:", error);
+        } finally {
+            set({isFetching: false});
         }
     },
 
@@ -56,15 +59,48 @@ const useEnvVarsStore = create<EnvVarsStore>((set, get) => ({
         const {activeProjectId} = useEditorStore.getState();
         try {
             const response = await createProjectEnvVarAPI(activeProjectId, key, value, stage);
-            const newVar: EnvVar = {
-                id: response?.id || `${stage}-${key}`,
-                key,
+            const stageData = {
+                id: response?.id || `${stage}#${key}`,
                 value,
-                stage,
-                projectId: activeProjectId,
             };
-            set((state) => ({envVars: [...state.envVars, newVar]}));
-            return newVar;
+
+            set((state) => {
+                const existing = state.envVars.find((e) => e.key === key);
+                if (existing) {
+                    return {
+                        envVars: state.envVars.map((e) =>
+                            e.key === key
+                                ? {
+                                    ...e,
+                                    values: {
+                                        ...e.values,
+                                        [stage]: stageData,
+                                    },
+                                }
+                                : e
+                        ),
+                    };
+                } else {
+                    const newVar: EnvVar = {
+                        key,
+                        projectId: activeProjectId,
+                        values: {
+                            [stage]: stageData,
+                        },
+                    };
+                    return {
+                        envVars: [...state.envVars, newVar],
+                    };
+                }
+            });
+
+            return {
+                key,
+                projectId: activeProjectId,
+                values: {
+                    [stage]: stageData,
+                },
+            };
         } catch (error) {
             console.error("Failed to create env var:", error);
         }
@@ -72,12 +108,38 @@ const useEnvVarsStore = create<EnvVarsStore>((set, get) => ({
 
     updateEnvVar: async (envVar: EnvVar, stage: string) => {
         const {activeProjectId} = useEditorStore.getState();
+        const stageData = envVar.values[stage];
+        if (!stageData) return;
+
         try {
-            await updateProjectEnvVarAPI(activeProjectId, envVar.id, envVar.value || '', stage);
+            await updateProjectEnvVarAPI(activeProjectId, envVar.key, stageData.value, stage);
+
             set((state) => ({
-                envVars: state.envVars.map((e) => (e.id === envVar.id ? envVar : e)),
+                envVars: state.envVars.map((e) =>
+                    e.key === envVar.key
+                        ? {
+                            ...e,
+                            values: {
+                                ...e.values,
+                                [stage]: {
+                                    ...e.values[stage],
+                                    value: stageData.value,
+                                },
+                            },
+                        }
+                        : e
+                ),
             }));
-            return envVar;
+
+            return {
+                ...envVar,
+                values: {
+                    ...envVar.values,
+                    [stage]: {
+                        ...stageData,
+                    },
+                },
+            };
         } catch (error) {
             console.error("Failed to update env var:", error);
         }
@@ -87,8 +149,21 @@ const useEnvVarsStore = create<EnvVarsStore>((set, get) => ({
         const {activeProjectId} = useEditorStore.getState();
         try {
             await deleteProjectEnvVarAPI(activeProjectId, id, stage);
+
             set((state) => ({
-                envVars: state.envVars.filter((e) => e.id !== id),
+                envVars: state.envVars
+                    .map((e) => {
+                        if (e.values[stage]?.id === id) {
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            const {[stage]: _, ...remainingStages} = e.values;
+                            return {
+                                ...e,
+                                values: remainingStages,
+                            };
+                        }
+                        return e;
+                    })
+                    .filter((e) => Object.keys(e.values).length > 0), // Filter lege entries
             }));
         } catch (error) {
             console.error("Failed to delete env var:", error);

@@ -10,6 +10,7 @@ import {Route} from "@/types/types";
 
 type DynamicRoutesStore = {
     reset: () => void;
+    isFetching: boolean;
     hasInitialFetched: boolean;
     routes: Route[];
     routesById: Record<string, Route>;
@@ -31,6 +32,7 @@ const useDynamicRoutesStore = create<DynamicRoutesStore>((
         });
     },
 
+    isFetching: false,
     hasInitialFetched: false,
 
     routes: [],
@@ -47,11 +49,15 @@ const useDynamicRoutesStore = create<DynamicRoutesStore>((
     fetchDynamicRoutes: async () => {
         const {activeProjectId} = useEditorStore.getState();
         if (!activeProjectId) return;
+
+        set({isFetching: true});
         try {
             const data: Route[] = await fetchDynamicRoutesAPI(activeProjectId);
             set({routes: data, hasInitialFetched: true});
         } catch (error) {
             console.error('Failed to fetch routes:', error);
+        } finally {
+            set({isFetching: false});
         }
     },
 

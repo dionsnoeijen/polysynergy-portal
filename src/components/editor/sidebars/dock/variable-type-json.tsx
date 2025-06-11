@@ -37,16 +37,18 @@ const VariableTypeJson: React.FC<VariableTypeProps> = ({
                 <div className="absolute inset-0 bg-black/40 rounded-md z-10 pointer-events-none"/>
             )}
              {isValueConnected ? (
-                 <ValueConnected variable={variable} />
+                 <ValueConnected
+                     variable={variable}
+                 />
              ) : (
                  <Fieldset>
                     {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
                     <Field>
                         <button
-                            className={`text-slate-500 hover:text-slate-600 w-full pb-1 ring-1 ring-white/20 rounded-md`}
+                            className={`${categoryBackgroundColor} w-full pb-1 ring-1 rounded-md dark:text-white ${categoryBorder}`}
                             onClick={() => onEdit(nodeId)}
                         >
-                            <PencilIcon className="w-4 h-4 inline text-slate-300"/>
+                            <PencilIcon className="w-4 h-4 inline text-white/50"/>
                         </button>
                     </Field>
                 </Fieldset>

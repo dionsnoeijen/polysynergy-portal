@@ -69,6 +69,7 @@ export enum InOut {
 
 export type ListItemWithId = {
     id?: string;
+    key?: string;
 };
 
 export type Position = {
@@ -490,11 +491,14 @@ export interface PublishMatrixResponse {
 }
 
 export type EnvVar = {
-    id: string;
     key: string;
-    value?: string;
-    stage: string;
     projectId: string;
+    values: {
+        [stage: string]: {
+            id: string,
+            value: string
+        };
+    };
 };
 
 export type ApiKey = {

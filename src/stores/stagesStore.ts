@@ -10,6 +10,7 @@ import useEditorStore from "@/stores/editorStore";
 
 type StagesStore = {
     stages: Stage[];
+    isFetching: boolean;
     hasInitialFetched: boolean;
     fetchStages: () => Promise<void>;
     createStage: (name: string, isProduction: boolean) => Promise<Stage | undefined>;
@@ -21,16 +22,22 @@ type StagesStore = {
 const useStagesStore = create<StagesStore>((set: Parameters<StateCreator<StagesStore>>[0]) => ({
     stages: [],
 
+    isFetching: false,
     hasInitialFetched: false,
 
     fetchStages: async () => {
         const {activeProjectId} = useEditorStore.getState();
         if (!activeProjectId) return;
+
+        set({isFetching: true});
+
         try {
             const result = await fetchStagesAPI(activeProjectId);
             set({stages: result, hasInitialFetched: true});
         } catch (error) {
             console.error("Failed to fetch stages:", error);
+        } finally {
+            set({isFetching: false});
         }
     },
 
@@ -80,7 +87,6 @@ const useStagesStore = create<StagesStore>((set: Parameters<StateCreator<StagesS
             const updated = [...state.stages];
             const [moved] = updated.splice(fromIndex, 1);
             updated.splice(toIndex, 0, moved);
-            // optimistic update
             return {stages: updated};
         });
 

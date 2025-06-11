@@ -10,6 +10,7 @@ import useEditorStore from "@/stores/editorStore";
 
 type BlueprintsStore = {
     reset: () => void;
+    isFetching: boolean;
     hasInitialFetched: boolean;
     blueprints: Blueprint[];
     getBlueprint: (blueprintId: string) => Blueprint | undefined;
@@ -30,6 +31,7 @@ const useBlueprintsStore = create<BlueprintsStore>((
         });
     },
 
+    isFetching: false,
     hasInitialFetched: false,
 
     blueprints: [],
@@ -76,11 +78,16 @@ const useBlueprintsStore = create<BlueprintsStore>((
     fetchBlueprints: async () => {
         const { activeProjectId } = useEditorStore.getState();
         if (!activeProjectId) return;
+
+        set({isFetching: true});
+
         try {
             const data: Blueprint[] = await fetchBlueprintsAPI(activeProjectId);
             set({ blueprints: data, hasInitialFetched: true });
         } catch (error) {
             console.error('Failed to fetch blueprints:', error);
+        } finally {
+            set({isFetching: false});
         }
     }
 }));

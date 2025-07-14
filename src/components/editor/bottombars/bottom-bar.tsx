@@ -4,6 +4,7 @@ import useEditorStore, { BottomBarView } from "@/stores/editorStore";
 import Debug from "@/components/editor/bottombars/debug";
 import Output from "@/components/editor/bottombars/output";
 import Logs from "@/components/editor/bottombars/logs";
+import Chat from "@/components/editor/bottombars/chat";
 
 const BottomBar: React.FC = (): React.ReactElement => {
     const bottomBarView = useEditorStore((state) => state.bottomBarView);
@@ -15,6 +16,7 @@ const BottomBar: React.FC = (): React.ReactElement => {
                 {bottomBarView === BottomBarView.Debug && <Debug />}
                 {bottomBarView === BottomBarView.Output && <Output />}
                 {bottomBarView === BottomBarView.Logs && <Logs />}
+                {bottomBarView === BottomBarView.Chat && <Chat />}
             </div>
         </>
     );

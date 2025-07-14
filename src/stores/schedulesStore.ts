@@ -17,7 +17,7 @@ type SchedulesStore = {
     fetchSchedules: () => Promise<void>;
     storeSchedule: (schedule: Schedule) => Promise<Schedule | undefined>;
     updateSchedule: (schedule: Schedule) => Promise<Schedule | undefined>;
-    deleteSchedule: (scheduleId: string) => Promise<void>;
+    deleteSchedule: (projectId: string, scheduleId: string) => Promise<void>;
 };
 
 const useSchedulesStore = create<SchedulesStore>((
@@ -67,8 +67,9 @@ const useSchedulesStore = create<SchedulesStore>((
     },
 
     updateSchedule: async (schedule: Schedule): Promise<Schedule | undefined> => {
+        const { activeProjectId } = useEditorStore.getState();
         try {
-            const response = await updateScheduleAPI(schedule.id as string, schedule);
+            const response = await updateScheduleAPI(activeProjectId, schedule.id as string, schedule);
             set((state) => ({
                 schedules: state.schedules.map((s) => (s.id === schedule.id ? schedule : s)),
             }));
@@ -78,9 +79,9 @@ const useSchedulesStore = create<SchedulesStore>((
         }
     },
 
-    deleteSchedule: async (scheduleId: string) => {
+    deleteSchedule: async (projectId: string, scheduleId: string) => {
         try {
-            await deleteScheduleAPI(scheduleId);
+            await deleteScheduleAPI(projectId, scheduleId);
             set((state) => ({
                 schedules: state.schedules.filter((s) => s.id !== scheduleId),
             }));

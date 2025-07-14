@@ -224,7 +224,7 @@ const DynamicRouteForm: React.FC = () => {
                         {stages.map((stage) => {
                             const isProd = stage.is_production;
                             const stagePrefix = isProd ? '' : `-${stage.name}`;
-                            const fullUrl = `${basePath.replace('{{stage}}', stagePrefix)}/${formatSegments(segments)}`;
+                            const fullUrl = `${basePath.replace('{{stage}}', stagePrefix)}.polysynergy.com/${formatSegments(segments)}`;
 
                             return (
                                 <div key={stage.name} className="flex items-start gap-2">

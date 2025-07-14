@@ -7,7 +7,7 @@ export const storeBlueprint = async (
 ): Promise<Blueprint> => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${config.API_URL}/blueprints/`, {
+        const response = await fetch(`${config.LOCAL_API_URL}/blueprints/`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -31,7 +31,7 @@ export const storeBlueprint = async (
 
 export const fetchBlueprint = async (blueprintId: string): Promise<Blueprint> => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/blueprints/${blueprintId}/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/blueprints/${blueprintId}/`, {
         headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${idToken}`,
@@ -42,7 +42,7 @@ export const fetchBlueprint = async (blueprintId: string): Promise<Blueprint> =>
 
 export const updateBlueprint = async (blueprintId: string, updatedData: Partial<Blueprint>) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/blueprints/${blueprintId}/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/blueprints/${blueprintId}/`, {
         method: 'PUT',
         headers: {
             'Accept': 'application/json',
@@ -56,7 +56,7 @@ export const updateBlueprint = async (blueprintId: string, updatedData: Partial<
 
 export const deleteBlueprint = async (blueprintId: string) => {
     const idToken = getIdToken();
-    return await fetch(`${config.API_URL}/blueprints/${blueprintId}/`, {
+    return await fetch(`${config.LOCAL_API_URL}/blueprints/${blueprintId}/`, {
         method: 'DELETE',
         headers: {
             'Accept': 'application/json',
@@ -69,7 +69,7 @@ export const fetchBlueprints = async (projectId: string): Promise<Blueprint[]> =
     try {
         const idToken = getIdToken();
         const response = await fetch(
-            `${config.API_URL}/blueprints/?project_id=${projectId}`,
+            `${config.LOCAL_API_URL}/blueprints/?project_id=${projectId}`,
             {
                 headers: {
                     'Accept': 'application/json',

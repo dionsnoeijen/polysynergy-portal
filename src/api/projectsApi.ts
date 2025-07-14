@@ -5,7 +5,7 @@ import config from "@/config";
 export const fetchProjects = async ({ trashed = false }: { trashed?: boolean }) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/projects/?trashed=${trashed}`,
+        `${config.LOCAL_API_URL}/projects/?trashed=${trashed}`,
         {
             headers: {
                 'Accept': 'application/json',
@@ -24,7 +24,7 @@ export const fetchProjects = async ({ trashed = false }: { trashed?: boolean }) 
 export const fetchProject = async (projectId: string) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/`,
+        `${config.LOCAL_API_URL}/projects/${projectId}/`,
         {
             headers: {
                 'Accept': 'application/json',
@@ -42,7 +42,7 @@ export const fetchProject = async (projectId: string) => {
 
 export const createProject = async (name: string) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/projects/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/projects/`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -50,8 +50,7 @@ export const createProject = async (name: string) => {
             'Authorization': `Bearer ${idToken}`,
         },
         body: JSON.stringify({
-            name: name,
-            routes: [],
+            name: name
         })
     });
     return response.json();
@@ -59,7 +58,7 @@ export const createProject = async (name: string) => {
 
 export const deleteProject = async (projectId: string) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/projects/${projectId}/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/projects/${projectId}/`, {
         method: 'DELETE',
         headers: {
             'Accept': 'application/json',
@@ -71,7 +70,7 @@ export const deleteProject = async (projectId: string) => {
 
 export const updateProject = async (projectId: string, updatedData: Partial<Project>) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/projects/${projectId}/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/projects/${projectId}/`, {
         method: 'PATCH',
         headers: {
             'Accept': 'application/json',
@@ -85,7 +84,7 @@ export const updateProject = async (projectId: string, updatedData: Partial<Proj
 
 export const restoreProject = async (projectId: string) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/projects/${projectId}/restore/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/projects/${projectId}/restore/`, {
         method: 'PATCH',
         headers: {
             'Accept': 'application/json',

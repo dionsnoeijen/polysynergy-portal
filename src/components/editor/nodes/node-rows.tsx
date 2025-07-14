@@ -214,9 +214,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             data-node-id={node.id}
         >
             {mockNode && <ExecutionOrder mockNode={mockNode} centered={false}/>}
-            {node?.has_enabled_switch && (
-                <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
-            )}
+            <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
             <div className="flex items-center gap-2">
                 {node?.has_play_button ? (
                     <PlayButton

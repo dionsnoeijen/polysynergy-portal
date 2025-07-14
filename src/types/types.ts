@@ -110,6 +110,7 @@ export enum NodeVariableType {
     Node = 'node',
     Int = 'int',
     Float = 'float',
+    Avatar = 'avatar',
 }
 
 export enum NodeType {
@@ -189,6 +190,8 @@ export type NodeVariable = {
     out_type_override?: string;
     in_type_override?: string;
     dock?: Dock;
+    node?: boolean;
+    metadata?: object;
 };
 
 export type NodeVariableWithId = NodeVariable & ListItemWithId;

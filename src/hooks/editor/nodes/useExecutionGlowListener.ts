@@ -9,6 +9,7 @@ type ExecutionMessage = {
     node_id?: string;
     event: 'run_start' | 'start_node' | 'end_node' | 'run_end';
     status?: 'success' | 'killed' | 'error';
+    order?: number;
     run_id?: string;
 };
 
@@ -36,6 +37,7 @@ export function useExecutionGlowListener(flowId: string) {
         pubnub.addListener({
             message: (envelope) => {
                 const message = envelope.message as ExecutionMessage;
+
                 const event = message.event;
                 let node_id = message.node_id;
 
@@ -79,7 +81,7 @@ export function useExecutionGlowListener(flowId: string) {
                         : nodeFlowNode?.path.split(".").pop();
 
                 addOrUpdateMockNode({
-                    id: node_id,
+                    id: `${node_id}-${message.order || 0}`,
                     handle: nodeFlowNode?.handle,
                     runId: message.run_id,
                     killed: message.status === 'killed',

@@ -11,25 +11,28 @@ export const updateService = async (
 ) => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${config.API_URL}/services/${id}/`, {
-            method: 'PUT',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({
-                name,
-                metadata: {
-                    category,
-                    description
+        const response = await fetch(
+            `${config.LOCAL_API_URL}/services/${id}/`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`,
                 },
-                node_setup_content: {
-                    nodes: packagedData.nodes,
-                    connections: packagedData.connections
-                }
-            }),
-        });
+                body: JSON.stringify({
+                    name,
+                    metadata: {
+                        category,
+                        description
+                    },
+                    node_setup_content: {
+                        nodes: packagedData.nodes,
+                        connections: packagedData.connections
+                    }
+                }),
+            }
+        );
 
         return await response.json();
     } catch (error) {
@@ -41,13 +44,16 @@ export const updateService = async (
 export const deleteService = async (id: string) => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${config.API_URL}/services/${id}/`, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${idToken}`,
-            },
-        });
+        const response = await fetch(
+            `${config.LOCAL_API_URL}/services/${id}/`,
+            {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${idToken}`,
+                },
+            }
+        );
 
         if (!response.ok) {
             const errorMessage = await response.text();
@@ -69,24 +75,27 @@ export const storeService = async (
 ) => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${config.API_URL}/services/`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({
-                id,
-                name,
-                metadata: { category, description },
-                node_setup_content: {
-                    nodes: packagedData.nodes,
-                    connections: packagedData.connections
+        const response = await fetch(
+            `${config.LOCAL_API_URL}/services/`,
+            {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`,
                 },
-                project_ids: projectIds,
-            }),
-        });
+                body: JSON.stringify({
+                    id,
+                    name,
+                    metadata: { category, description },
+                    node_setup_content: {
+                        nodes: packagedData.nodes,
+                        connections: packagedData.connections
+                    },
+                    project_ids: projectIds,
+                }),
+            }
+        );
 
         if (!response.ok) {
             const errorMessage = await response.text();
@@ -103,7 +112,7 @@ export const storeService = async (
 export const fetchServices = async (projectId: string) => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${config.API_URL}/services/?project_id=${projectId}`, {
+        const response = await fetch(`${config.LOCAL_API_URL}/services/`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${idToken}`,

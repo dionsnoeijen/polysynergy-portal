@@ -25,6 +25,8 @@ async function fetchAndApplyNodeSetup({
 
     let version = null;
 
+    const activeProjectId = useEditorStore.getState().activeProjectId;
+
     const getVersion = (versions: NodeSetupVersion[] | undefined) => {
         if (!versionId) {
             version = versions
@@ -38,11 +40,11 @@ async function fetchAndApplyNodeSetup({
 
     try {
         if (routeId) {
-            const route: Route = await fetchDynamicRouteAPI(routeId);
+            const route: Route = await fetchDynamicRouteAPI(routeId, activeProjectId);
             version = getVersion(route?.node_setup?.versions);
         }
         if (scheduleId) {
-            const schedule = await fetchScheduleAPI(scheduleId);
+            const schedule = await fetchScheduleAPI(scheduleId, activeProjectId);
             version = getVersion(schedule?.node_setup?.versions);
         }
         if (blueprintId) {

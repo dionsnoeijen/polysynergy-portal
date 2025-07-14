@@ -9,7 +9,7 @@ export const createStageAPI = async (
 ): Promise<Stage> => {
     const idToken = getIdToken();
 
-    const response = await fetch(`${config.API_URL}/stages/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/stages/`, {
         method: "POST",
         headers: {
             Accept: "application/json",
@@ -27,8 +27,7 @@ export const createStageAPI = async (
         throw new Error("Failed to create stage");
     }
 
-    const data = await response.json();
-    return data.stage;
+    return await response.json();
 };
 
 export const fetchStagesAPI = async (
@@ -36,7 +35,7 @@ export const fetchStagesAPI = async (
 ): Promise<Stage[]> => {
     const idToken = getIdToken();
 
-    const response = await fetch(`${config.API_URL}/stages/?project_id=${projectId}`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/stages/?project_id=${projectId}`, {
         method: "GET",
         headers: {
             Accept: "application/json",
@@ -52,7 +51,7 @@ export const deleteStageAPI = async (
 ): Promise<Response> => {
     const idToken = getIdToken();
 
-    return fetch(`${config.API_URL}/stages/${stageId}/`, {
+    return fetch(`${config.LOCAL_API_URL}/stages/${stageId}/`, {
         method: "DELETE",
         headers: {
             Accept: "application/json",
@@ -70,7 +69,7 @@ export const updateStageAPI = async (
 ): Promise<Stage> => {
     const idToken = getIdToken();
 
-    const response = await fetch(`${config.API_URL}/stages/${stageId}/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/stages/${stageId}/`, {
         method: "PUT",
         headers: {
             Accept: "application/json",
@@ -84,8 +83,7 @@ export const updateStageAPI = async (
         throw new Error("Failed to update stage");
     }
 
-    const data = await response.json();
-    return data.stage;
+    return await response.json();
 };
 
 export const reorderStagesAPI = async (
@@ -94,7 +92,7 @@ export const reorderStagesAPI = async (
 ): Promise<Response> => {
     const idToken = getIdToken();
 
-    return fetch(`${config.API_URL}/stages/reorder/`, {
+    return fetch(`${config.LOCAL_API_URL}/stages/reorder/`, {
         method: "POST",
         headers: {
             Accept: "application/json",
@@ -114,7 +112,7 @@ export const fetchPublishMatrixAPI = async (
     const idToken = getIdToken();
 
     const response = await fetch(
-        `${config.API_URL}/dynamic-routes/publish-matrix/?project_id=${projectId}`,
+        `${config.LOCAL_API_URL}/dynamic-routes/publish-matrix/?project_id=${projectId}`,
         {
             method: "GET",
             headers: {

@@ -1,5 +1,4 @@
-import {useEffect} from "react";
-
+import { useEffect } from "react";
 import useBlueprintsStore from "@/stores/blueprintsStore";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import useSchedulesStore from "@/stores/schedulesStore";
@@ -10,62 +9,74 @@ import useEnvVarsStore from "@/stores/envVarsStore";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 
 export function useAutoFetch() {
-    const blueprints = useBlueprintsStore((s) => s.blueprints);
-    const isFetchingBlueprints = useBlueprintsStore((s) => s.isFetching);
-    const hasBlueprintsInitialFetched = useBlueprintsStore((s) => s.hasInitialFetched);
-
-    const routes = useDynamicRoutesStore((s) => s.routes);
-    const isFetchingRoutes = useDynamicRoutesStore((s) => s.isFetching);
-    const hasRoutesInitialFetched = useDynamicRoutesStore((s) => s.hasInitialFetched);
-
-    const schedules = useSchedulesStore((s) => s.schedules);
-    const isFetchingSchedules = useSchedulesStore((s) => s.isFetching);
-    const hasSchedulesInitialFetched = useSchedulesStore((s) => s.hasInitialFetched);
-
-    const secrets = useProjectSecretsStore((s) => s.secrets);
-    const isFetchingSecrets = useProjectSecretsStore((s) => s.isFetching);
-    const hasSecretsInitialFetched = useProjectSecretsStore((s) => s.hasInitialFetched);
-
-    const services = useServicesStore((s) => s.services);
-    const isFetchingServices = useServicesStore((s) => s.isFetching);
-    const hasServicesInitialFetched = useServicesStore((s) => s.hasInitialFetched);
-
-    const stages = useStagesStore((s) => s.stages);
-    const isFetchingStages = useStagesStore((s) => s.isFetching);
-    const hasStagesInitialFetched = useStagesStore((s) => s.hasInitialFetched);
-
-    const envVars = useEnvVarsStore((s) => s.envVars);
-    const isFetchingEnvVars = useEnvVarsStore((s) => s.isFetching);
-    const hasEnvVarsInitialFetched = useEnvVarsStore((s) => s.hasInitialFetched);
-
-    const availableNodes = useAvailableNodeStore((s) => s.availableNodes);
-    const isFetchingAvailableNodes = useAvailableNodeStore((s) => s.isFetching);
-    const hasAvailableNodesInitialFetched = useAvailableNodeStore((s) => s.hasInitialFetched);
+    const blueprintsStore = useBlueprintsStore.getState();
+    const routesStore = useDynamicRoutesStore.getState();
+    const schedulesStore = useSchedulesStore.getState();
+    const secretsStore = useProjectSecretsStore.getState();
+    const servicesStore = useServicesStore.getState();
+    const stagesStore = useStagesStore.getState();
+    const envVarsStore = useEnvVarsStore.getState();
+    const nodesStore = useAvailableNodeStore.getState();
 
     useEffect(() => {
-        if (availableNodes.length === 0 && !hasAvailableNodesInitialFetched && !isFetchingAvailableNodes) {
-            useAvailableNodeStore.getState().fetchAvailableNodes();
-        }
-        if (blueprints.length === 0 && !hasBlueprintsInitialFetched && !isFetchingBlueprints) {
-            useBlueprintsStore.getState().fetchBlueprints();
-        }
-        if (routes.length === 0 && !hasRoutesInitialFetched && !isFetchingRoutes) {
-            useDynamicRoutesStore.getState().fetchDynamicRoutes();
-        }
-        if (schedules.length === 0 && !hasSchedulesInitialFetched && !isFetchingSchedules) {
-            useSchedulesStore.getState().fetchSchedules();
-        }
-        if (secrets.length === 0 && !hasSecretsInitialFetched && !isFetchingSecrets) {
-            useProjectSecretsStore.getState().fetchSecrets();
-        }
-        if (services.length === 0 && !hasServicesInitialFetched && !isFetchingServices) {
-            useServicesStore.getState().fetchServices();
-        }
-        if (stages.length === 0 && !hasStagesInitialFetched && !isFetchingStages) {
-            useStagesStore.getState().fetchStages();
-        }
-        if (envVars.length === 0 && !hasEnvVarsInitialFetched && !isFetchingEnvVars) {
-            useEnvVarsStore.getState().fetchEnvVars();
-        }
-    }, [hasBlueprintsInitialFetched, hasRoutesInitialFetched, hasSchedulesInitialFetched, hasSecretsInitialFetched, hasServicesInitialFetched, hasStagesInitialFetched, hasEnvVarsInitialFetched, blueprints.length, isFetchingBlueprints, routes.length, isFetchingRoutes, schedules.length, isFetchingSchedules, secrets.length, isFetchingSecrets, services.length, isFetchingServices, stages.length, isFetchingStages, envVars.length, isFetchingEnvVars]);
+        const fetchIf = (should: boolean, fn: () => void) => {
+            if (should) fn();
+        };
+
+        fetchIf(
+            nodesStore.availableNodes.length === 0 &&
+                !nodesStore.hasInitialFetched &&
+                !nodesStore.isFetching,
+            nodesStore.fetchAvailableNodes
+        );
+
+        fetchIf(
+            blueprintsStore.blueprints.length === 0 &&
+                !blueprintsStore.hasInitialFetched &&
+                !blueprintsStore.isFetching,
+            blueprintsStore.fetchBlueprints
+        );
+
+        fetchIf(
+            routesStore.routes.length === 0 &&
+                !routesStore.hasInitialFetched &&
+                !routesStore.isFetching,
+            routesStore.fetchDynamicRoutes
+        );
+
+        fetchIf(
+            schedulesStore.schedules.length === 0 &&
+                !schedulesStore.hasInitialFetched &&
+                !schedulesStore.isFetching,
+            schedulesStore.fetchSchedules
+        );
+
+        fetchIf(
+            secretsStore.secrets.length === 0 &&
+                !secretsStore.hasInitialFetched &&
+                !secretsStore.isFetching,
+            secretsStore.fetchSecrets
+        );
+
+        fetchIf(
+            servicesStore.services.length === 0 &&
+                !servicesStore.hasInitialFetched &&
+                !servicesStore.isFetching,
+            servicesStore.fetchServices
+        );
+
+        fetchIf(
+            stagesStore.stages.length === 0 &&
+                !stagesStore.hasInitialFetched &&
+                !stagesStore.isFetching,
+            stagesStore.fetchStages
+        );
+
+        fetchIf(
+            envVarsStore.envVars.length === 0 &&
+                !envVarsStore.hasInitialFetched &&
+                !envVarsStore.isFetching,
+            envVarsStore.fetchEnvVars
+        );
+    }, []);
 }

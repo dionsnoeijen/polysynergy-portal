@@ -7,10 +7,12 @@ import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import Editor from "@monaco-editor/react";
 import {XMarkIcon} from "@heroicons/react/24/outline";
+import {useTheme} from "next-themes";
 
 const JsonEditorForm: React.FC = () => {
     const getNode = useNodesStore((state) => state.getNode);
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
+    const {theme} = useTheme();
 
     const closeForm = useEditorStore((state) => state.closeForm);
     const formEditVariable = useEditorStore((state) => state.formEditVariable);
@@ -66,19 +68,19 @@ const JsonEditorForm: React.FC = () => {
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>{node && node.name}: {formEditVariable?.handle}</Heading>
                 <Button type="button" onClick={() => closeForm()} color="sky">
-                    <XMarkIcon className="w-5 h-5" />
+                    <XMarkIcon className="w-5 h-5"/>
                 </Button>
             </div>
-            <Divider className="my-4" soft bleed />
+            <Divider className="my-4" soft bleed/>
 
             <section className="grid sm:grid-cols-1">
                 <div className="h-[500px] overflow-hidden -ml-10 -mr-10">
                     <Editor
                         height={`100%`}
-                        defaultLanguage="json"
+                        defaultLanguage="handlebars"
                         defaultValue={json}
                         onChange={handleEditorChange}
-                        theme="vs-dark"
+                        theme={theme === "dark" ? "vs-dark" : "rjv-default"}
                         onMount={handleEditorDidMount}
                         options={{
                             minimap: {enabled: false},

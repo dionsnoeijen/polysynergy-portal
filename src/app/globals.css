@@ -25,3 +25,9 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* public/hide-dev.css */
+#__next-build-watcher,
+#__next-route-announcer {
+  display: none !important;
+}

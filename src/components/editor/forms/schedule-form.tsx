@@ -23,6 +23,7 @@ const ScheduleForm: React.FC = () => {
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const setActiveScheduleId = useEditorStore((state) => state.setActiveScheduleId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
 
     const getSchedule = useSchedulesStore((state) => state.getSchedule);
     const storeSchedule = useSchedulesStore((state) => state.storeSchedule);
@@ -89,7 +90,7 @@ const ScheduleForm: React.FC = () => {
     };
 
     const handleDelete = async () => {
-        await deleteSchedule(formEditRecordId as string);
+        await deleteSchedule(activeProjectId, formEditRecordId as string);
         setActiveScheduleId('');
         closeForm("Schedule deleted");
         setShowDeleteAlert(false);

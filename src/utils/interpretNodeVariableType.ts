@@ -14,6 +14,12 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         types.splice(types.indexOf('None'), 1);
     }
 
+    // Special
+    if ((variable.metadata as { custom?: string })?.custom === 'openai_avatar') {
+        return { baseType: NodeVariableType.Avatar, validationType: NodeVariableType.Avatar, containsNone };
+    }
+
+
     if (types.includes('true_path')) {
         return { baseType: NodeVariableType.TruePath, validationType: types.join(','), containsNone };
     } else if (types.includes('false_path')) {

@@ -8,6 +8,7 @@ export enum BottomBarView {
     Output = 'Output',
     Debug = 'Debug',
     Logs = 'Logs',
+    Chat = 'Chat',
 }
 
 export type ContextMenu = {

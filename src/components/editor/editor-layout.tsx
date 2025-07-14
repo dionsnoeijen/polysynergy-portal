@@ -270,9 +270,8 @@ const EditorLayout = ({
     return (
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
             {/*<PerformanceHUD />*/}
-            <ItemManagerIntroTour />
+            <ItemManagerIntroTour/>
             {isExecuting && (
-                // This is to make sure interactions are blocked during execution
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                 </div>
             )}
@@ -324,9 +323,9 @@ const EditorLayout = ({
                                         {/*<DrawingLayer panPosition={panPosition} zoomFactor={zoomFactor} />*/}
                                         <Editor key={'editor-' + activeVersionId}/>
                                         <BottomDrawToolbar/>
-                                        <TopRightEditorListener />
+                                        <TopRightEditorListener/>
                                         <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
-                                        <VersionPublishedMenu />
+                                        <VersionPublishedMenu/>
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">
@@ -334,6 +333,7 @@ const EditorLayout = ({
                                     </div>
                                 )
                             ) : (
+
                                 <div className="flex justify-center items-center h-full">
                                     <p className="text-sky-500 dark:text-white">
                                         Select a route, schedule or blueprint to start editing nodes
@@ -356,10 +356,6 @@ const EditorLayout = ({
                                 className="absolute top-0 left-0 bottom-0 w-[8px] cursor-col-resize"
                             />
                         </div>
-                        {/*<div*/}
-                        {/*    style={{width: width.dock}}*/}
-                        {/*    className="absolute right-0 bottom-0 h-4 bg-gradient-to-t from-[#18181BFF] to-transparent"*/}
-                        {/*/>*/}
                     </>
                 )}
 

@@ -11,7 +11,6 @@ export default function RootLayout({children}: { children: ReactNode }) {
     return (
         <html lang="en" suppressHydrationWarning>
         <head>
-
             <Script
                 id="theme-init"
                 strategy="beforeInteractive"
@@ -24,7 +23,6 @@ export default function RootLayout({children}: { children: ReactNode }) {
 })();`
                 }}
             />
-
             <style
                 dangerouslySetInnerHTML={{
                     __html: `
@@ -35,7 +33,6 @@ export default function RootLayout({children}: { children: ReactNode }) {
 `
                 }}
             />
-
             <link rel="preconnect" href="https://rsms.me/"/>
             <link rel="stylesheet" href="https://rsms.me/inter/inter.css"/>
             <title>PolySynergy</title>

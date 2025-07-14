@@ -9,7 +9,7 @@ export const fetchNodeSetupVersionAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/`,
+        `${config.LOCAL_API_URL}/node-setup/${type}/${setupId}/version/${versionId}/`,
         {
             headers: {
                 Accept: "application/json",
@@ -29,7 +29,8 @@ export const updateNodeSetupVersionAPI = async (
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/${projectId}/`,
+        //`${config.LOCAL_API_URL}/node-setup/${type}/${setupId}/version/${versionId}/${projectId}/`,
+        `${config.LOCAL_API_URL}/node-setup/${type}/${setupId}/version/${versionId}/`,
         {
             method: "PUT",
             headers: {

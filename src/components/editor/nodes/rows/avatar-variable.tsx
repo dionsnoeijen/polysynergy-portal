@@ -62,9 +62,6 @@ const AvatarVariable: React.FC<Props> = ({
             className={`flex items-center justify-between rounded-md ${!variable.value ? 'pl-4 pr-4 pt-1' : 'p-0 -mt-1'} w-full relative ${disabled ? 'opacity-40' : ''}`}>
             <div className="flex items-center truncate gap-2">
                 {renderAvatar()}
-                <h3 className={`font-semibold truncate`}>
-                    {(groupId && variable.group_name_override) ? variable.group_name_override : variable.name}
-                </h3>
             </div>
         </div>
     );

@@ -18,6 +18,7 @@ import FileVariable from "@/components/editor/nodes/rows/file-variable";
 import DependencyVariable from "@/components/editor/nodes/rows/dependency-variable";
 import NodeVariablePlaceholder from "@/components/editor/nodes/rows/node-variable";
 import TemplateVariable from "@/components/editor/nodes/rows/template-variable";
+import AvatarVariable from "@/components/editor/nodes/rows/avatar-variable";
 
 type Props = {
     node: Node;
@@ -63,6 +64,8 @@ const NodeVariables: React.FC<Props> = ({
         <>
             {variables.map(({ variable, nodeId }) => {
                 if (!variable) return null;
+                if (variable.node === false) return null;
+
                 if (!nodeId) {
                     // In case of editing the node (by coding), there is no nodeId
                     nodeId = 'temp-id';
@@ -151,6 +154,8 @@ const getVariableComponent = (
             return <TemplateVariable key={key} {...commonProps} />;
         case NodeVariableType.Node:
             return <NodeVariablePlaceholder key={key} {...commonProps} />;
+        case NodeVariableType.Avatar:
+            return <AvatarVariable key={key} {...commonProps} />;
         case NodeVariableType.Boolean:
         case NodeVariableType.TruePath:
         case NodeVariableType.FalsePath:

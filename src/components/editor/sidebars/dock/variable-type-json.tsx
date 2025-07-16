@@ -48,7 +48,7 @@ const VariableTypeJson: React.FC<VariableTypeProps> = ({
                             className={`${categoryBackgroundColor} w-full pb-1 ring-1 rounded-md dark:text-white ${categoryBorder}`}
                             onClick={() => onEdit(nodeId)}
                         >
-                            <PencilIcon className="w-4 h-4 inline text-white/50"/>
+                            <PencilIcon className="w-4 h-4 inline text-sky-700/50 dark:text-white/50"/>
                         </button>
                     </Field>
                 </Fieldset>

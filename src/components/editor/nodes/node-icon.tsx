@@ -1,6 +1,27 @@
 import React from "react";
 import clsx from "clsx";
 
+const isSimpleSvg = (svg: string): boolean => {
+    const complexityIndicators = [
+        /<style[\s\S]*?>[\s\S]*?<\/style>/,
+        /<defs[\s\S]*?>[\s\S]*?<\/defs>/,
+        /<clipPath[\s\S]*?>[\s\S]*?<\/clipPath>/,
+        /<linearGradient[\s\S]*?>[\s\S]*?<\/linearGradient>/,
+        /<radialGradient[\s\S]*?>[\s\S]*?<\/radialGradient>/,
+        /<pattern[\s\S]*?>[\s\S]*?<\/pattern>/,
+        /url\(#/,
+        /filter="/,
+        /font-family="/,
+        /class="/,
+        /fill="/,
+        /stroke="/,
+        /stop-color=/,
+        /stop-opacity=/,
+    ];
+
+    return !complexityIndicators.some((regex) => regex.test(svg));
+};
+
 const normalizeSvg = (raw: string, preserveColor: boolean = false): string => {
     let svg = raw
         .replace(/<\?xml[^>]*>/g, "") // remove XML declaration
@@ -32,20 +53,24 @@ const normalizeSvg = (raw: string, preserveColor: boolean = false): string => {
 };
 
 const NodeIcon = ({
-    className,
-    icon,
-    preserveColor = false,
-}: {
+                      className,
+                      icon,
+                      preserveColor = false,
+                  }: {
     className?: string;
     icon: string;
     preserveColor?: boolean;
 }) => {
-    const processedSvg = normalizeSvg(icon, preserveColor);
+
+    const isSimple = isSimpleSvg(icon);
+    const processedSvg = isSimple
+        ? normalizeSvg(icon, preserveColor) // force currentColor
+        : normalizeSvg(icon, true); // bewaar originele styling
 
     return (
         <div className={clsx("rounded inline-flex items-center justify-center overflow-hidden", className)}>
             <div
-                dangerouslySetInnerHTML={{ __html: processedSvg }}
+                dangerouslySetInnerHTML={{__html: processedSvg}}
             />
         </div>
     );

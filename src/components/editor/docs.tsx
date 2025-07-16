@@ -4,9 +4,9 @@ import remarkGfm from "remark-gfm";
 import useEditorStore from "@/stores/editorStore";
 import { Button } from "@/components/button";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Divider } from "@/components/divider";
+import { Heading } from "@/components/heading";
 import Editor from "@monaco-editor/react";
-import {Divider} from "@/components/divider";
-import {Heading} from "@/components/heading";
 
 const Docs: React.FC = () => {
     const docsMarkdown = useEditorStore((state) => state.docsMarkdown);

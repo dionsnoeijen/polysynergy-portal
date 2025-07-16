@@ -10,7 +10,8 @@ export const getNodeExecutionDetails = async (
     subStage: string
 ) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/execution/${activeVersionId}/${runId}/${nodeId}/${order}?stage=${stage}&sub_stage=${subStage}`, {
+    const baseNodeId = nodeId.replace(/-\d+$/, '');
+    const response = await fetch(`${config.API_URL}/execution/${activeVersionId}/${runId}/${baseNodeId}/${order}?stage=${stage}&sub_stage=${subStage}`, {
         headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${idToken}`,

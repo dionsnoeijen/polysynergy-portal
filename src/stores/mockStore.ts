@@ -68,7 +68,7 @@ const useMockStore = create<MockState>((set, get) => ({
         }
     },
     getMockNode: (nodeId) => {
-        return get().mockNodes.find((node) => node.id === nodeId);
+        return get().mockNodes.find((node) => node.id.replace(/-\d+$/, '') === nodeId);
     },
     getMockConnection: (connectionId) => {
         return get().mockConnections.find((connection) => connection.uuid === connectionId);

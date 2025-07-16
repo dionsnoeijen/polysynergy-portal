@@ -1,6 +1,8 @@
 import React from "react";
-import ReactJson from "react-json-view";
 import {useTheme} from "next-themes";
+import dynamic from "next/dynamic";
+
+const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
 
 interface FormattedNodeOutputProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

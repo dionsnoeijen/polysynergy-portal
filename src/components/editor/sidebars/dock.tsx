@@ -34,6 +34,7 @@ import {
     getCategoryTextColor,
     NodeSubType
 } from "@/hooks/editor/nodes/useNodeColor";
+import VariableTypeAvatar from "@/components/editor/sidebars/dock/variable-type-avatar";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -60,6 +61,7 @@ export const VariableTypeComponents = {
     [NodeVariableType.Json]: VariableTypeJson,
     [NodeVariableType.Files]: VariableTypeFiles,
     [NodeVariableType.Template]: VariableTypeTemplate,
+    [NodeVariableType.Avatar]: VariableTypeAvatar,
     [NodeVariableType.Node]: null,
 };
 

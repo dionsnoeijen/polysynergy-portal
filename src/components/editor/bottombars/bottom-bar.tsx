@@ -15,6 +15,7 @@ const BottomBar: React.FC = (): React.ReactElement => {
                 {bottomBarView === BottomBarView.Debug && <Debug />}
                 {bottomBarView === BottomBarView.Output && <Output />}
                 {bottomBarView === BottomBarView.Logs && <Logs />}
+                {bottomBarView === BottomBarView.Chat && <Chat />}
             </div>
         </>
     );

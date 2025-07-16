@@ -42,8 +42,6 @@ export default function BlueprintTree(): ReactElement {
 
         const packagedData: Package = blueprint.node_setup.versions[0].content;
 
-        console.log(packagedData);
-
         if (!packagedData) return;
 
         const {nodes, connections} = unpackNode(packagedData);
@@ -59,8 +57,6 @@ export default function BlueprintTree(): ReactElement {
         if (unpackedConnections.length > 0) {
             unpackedConnections.forEach((c) => addConnection(c));
         }
-
-        console.log(unpackedConnections, unpackedNodes);
 
         const nodesToAdd = unpackedNodes.map((n) => {
             const nodeCopy = {...n, variables: [...n.variables]};

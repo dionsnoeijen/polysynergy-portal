@@ -44,7 +44,7 @@ const useEnvVarsStore = create<EnvVarsStore>((set, get) => ({
         try {
             const data = await fetchProjectEnvVarsAPI(activeProjectId);
             set({
-                envVars: data.envVars || [],
+                envVars: data || [],
                 hasInitialFetched: true
             });
             return data.envVars;

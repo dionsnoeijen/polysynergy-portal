@@ -22,7 +22,7 @@ export const updateService = async (
                 },
                 body: JSON.stringify({
                     name,
-                    metadata: {
+                    meta: {
                         category,
                         description
                     },
@@ -87,7 +87,7 @@ export const storeService = async (
                 body: JSON.stringify({
                     id,
                     name,
-                    metadata: { category, description },
+                    meta: { category, description },
                     node_setup_content: {
                         nodes: packagedData.nodes,
                         connections: packagedData.connections
@@ -112,7 +112,7 @@ export const storeService = async (
 export const fetchServices = async (projectId: string) => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${config.LOCAL_API_URL}/services/`, {
+        const response = await fetch(`${config.LOCAL_API_URL}/services/?project_id=${projectId}`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${idToken}`,

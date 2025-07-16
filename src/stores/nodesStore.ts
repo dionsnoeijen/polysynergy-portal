@@ -500,13 +500,13 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     getSecretNodes: (): Node[] => {
         return get().nodes.filter(
-            (node) => node.path === 'nodes.nodes.secret.variable_secret.VariableSecret'
+            (node) => node.path === 'polysynergy_nodes.secret.variable_secret.VariableSecret'
         );
     },
 
     getEnvironmentVariableNodes: (): Node[] => {
         return get().nodes.filter(
-            (node) => node.path === 'nodes.nodes.environment.variable_environment.VariableEnvironment'
+            (node) => node.path === 'polysynergy_nodes.environment.variable_environment.VariableEnvironment'
         );
     },
 
@@ -1092,8 +1092,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
             const node = get().getNode(nodeId);
             if (!node) return undefined;
 
-            if (node.path === "nodes.nodes.play.config.PlayConfig" ||
-                node.path === "nodes.nodes.play.play.Play") {
+            if (node.path === "polysynergy_nodes.play.config.PlayConfig" ||
+                node.path === "polysynergy_nodes.play.play.Play") {
                 return node;
             }
 
@@ -1122,8 +1122,8 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         const nodes = get().nodes;
 
         return nodes.find((node) =>
-            node.path === "nodes.nodes.mock.mock_schedule.MockSchedule" ||
-            node.path === "nodes.nodes.mock.mock_route_request.MockRouteRequest"
+            node.path === "polysynergy_nodes.mock.mock_schedule.MockSchedule" ||
+            node.path === "polysynergy_nodes.mock.mock_route_request.MockRouteRequest"
         );
     },
 

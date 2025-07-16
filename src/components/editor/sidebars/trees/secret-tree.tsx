@@ -23,7 +23,7 @@ export default function SecretTree(): ReactElement {
     };
 
     const handleAddSecretNode = (mouseX: number, mouseY: number, key: string) => {
-        let node: Node | undefined = getAvailableNodeByPath('nodes.nodes.secret.variable_secret.VariableSecret');
+        let node: Node | undefined = getAvailableNodeByPath('polysynergy_nodes.secret.variable_secret.VariableSecret');
         if (!node) return;
 
         node = JSON.parse(JSON.stringify(node)) as Node;

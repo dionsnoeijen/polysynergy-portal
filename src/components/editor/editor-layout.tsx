@@ -24,6 +24,8 @@ import useMockStore from "@/stores/mockStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
 import ItemManagerIntroTour from "@/components/guidedtour/item-manager-intro-tour";
+import {addScheduleNodesIfNeeded} from "@/utils/addScheduleNodesIfNeeded";
+import {addRouteNodesIfNeeded} from "@/utils/addRouteNodesIfNeeded";
 
 // const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false })
 const Editor = dynamic(() => import('@/components/editor/editor'), {
@@ -31,12 +33,12 @@ const Editor = dynamic(() => import('@/components/editor/editor'), {
 });
 
 const EditorLayout = ({
-    projectUuid,
-    routeUuid,
-    scheduleUuid,
-    blueprintUuid,
-    configUuid,
-}: {
+                          projectUuid,
+                          routeUuid,
+                          scheduleUuid,
+                          blueprintUuid,
+                          configUuid,
+                      }: {
     projectUuid?: string,
     routeUuid?: string,
     scheduleUuid?: string,
@@ -68,7 +70,6 @@ const EditorLayout = ({
     const setActiveRouteId = useEditorStore((state) => state.setActiveRouteId);
     const setActiveScheduleId = useEditorStore((state) => state.setActiveScheduleId);
     const setActiveBlueprintId = useEditorStore((state) => state.setActiveBlueprintId);
-    const setActiveConfigId = useEditorStore((state) => state.setActiveConfigId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const closeFormMessage = useEditorStore((state) => state.closeFormMessage);
@@ -100,52 +101,28 @@ const EditorLayout = ({
     }, [projectUuid, setActiveProjectId]);
 
     useEffect(() => {
-        if (!routeUuid) return;
-
-        setActiveBlueprintId('');
-        setActiveScheduleId('');
-        setActiveConfigId('');
-        setActiveRouteId(routeUuid);
-
-        fetchAndApplyNodeSetup({routeId: routeUuid});
-        setIsExecuting(null);
-    }, [routeUuid, setActiveBlueprintId, setActiveScheduleId, setActiveConfigId, setActiveRouteId, setIsExecuting]);
-
-    useEffect(() => {
-        if (!scheduleUuid) return;
-
-        setActiveRouteId('');
-        setActiveBlueprintId('');
-        setActiveConfigId('');
-        setActiveScheduleId(scheduleUuid);
-
-        fetchAndApplyNodeSetup({scheduleId: scheduleUuid});
-        setIsExecuting(null);
-    }, [scheduleUuid, setActiveRouteId, setActiveBlueprintId, setActiveConfigId, setActiveScheduleId, setIsExecuting]);
-
-    useEffect(() => {
-        if (!blueprintUuid) return;
-
-        setActiveRouteId('');
-        setActiveScheduleId('');
-        setActiveConfigId('');
-        setActiveBlueprintId(blueprintUuid);
-
-        fetchAndApplyNodeSetup({blueprintId: blueprintUuid});
-        setIsExecuting(null);
-    }, [blueprintUuid, setActiveRouteId, setActiveScheduleId, setActiveConfigId, setActiveBlueprintId, setIsExecuting]);
-
-    useEffect(() => {
-        if (!configUuid) return;
-
-        setActiveRouteId('');
-        setActiveScheduleId('');
-        setActiveBlueprintId('');
-        setActiveConfigId(configUuid);
-
-        fetchAndApplyNodeSetup({configId: configUuid});
-        setIsExecuting(null);
-    }, [configUuid, setActiveRouteId, setActiveScheduleId, setActiveBlueprintId, setActiveConfigId, setIsExecuting]);
+        if (routeUuid) {
+            setActiveRouteId(routeUuid);
+            setActiveScheduleId('');
+            setActiveBlueprintId('');
+            fetchAndApplyNodeSetup({routeId: routeUuid});
+            addRouteNodesIfNeeded(routeUuid);
+            setIsExecuting(null);
+        } else if (scheduleUuid) {
+            setActiveRouteId('');
+            setActiveScheduleId(scheduleUuid);
+            setActiveBlueprintId('');
+            fetchAndApplyNodeSetup({scheduleId: scheduleUuid});
+            addScheduleNodesIfNeeded(scheduleUuid);
+            setIsExecuting(null);
+        } else if (blueprintUuid) {
+            setActiveRouteId('');
+            setActiveScheduleId('');
+            setActiveBlueprintId(blueprintUuid);
+            fetchAndApplyNodeSetup({blueprintId: blueprintUuid});
+            setIsExecuting(null);
+        }
+    }, [routeUuid, scheduleUuid, blueprintUuid, setActiveRouteId, setActiveScheduleId, setActiveBlueprintId, setIsExecuting]);
 
     useAutoFetch();
 

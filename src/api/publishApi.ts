@@ -112,7 +112,7 @@ export const fetchPublishMatrixAPI = async (
     const idToken = getIdToken();
 
     const response = await fetch(
-        `${config.LOCAL_API_URL}/dynamic-routes/publish-matrix/?project_id=${projectId}`,
+        `${config.LOCAL_API_URL}/publish-matrix/?project_id=${projectId}`,
         {
             method: "GET",
             headers: {

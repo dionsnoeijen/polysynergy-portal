@@ -19,7 +19,6 @@ const AvatarVariable: React.FC<Props> = ({
     variable,
     nodeId,
     disabled = false,
-    groupId,
 }): React.ReactElement => {
 
     const isGenerating = useAvatarStore(state => state.isGenerating(nodeId));

@@ -80,10 +80,10 @@ export default function useGlobalStoreListenersWithImmediateSave() {
 
     useEffect(() => {
         const unsubNodes = useNodesStore.subscribe(() => {
-            saveNodeSetup();
+            setTimeout(() => saveNodeSetup(), 0);
         });
         const unsubConns = useConnectionsStore.subscribe(() => {
-            saveNodeSetup();
+            setTimeout(() => saveNodeSetup(), 0);
         });
 
         return () => {

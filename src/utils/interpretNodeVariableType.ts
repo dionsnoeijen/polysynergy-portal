@@ -14,11 +14,9 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         types.splice(types.indexOf('None'), 1);
     }
 
-    // Special
     if ((variable.metadata as { custom?: string })?.custom === 'openai_avatar') {
         return { baseType: NodeVariableType.Avatar, validationType: NodeVariableType.Avatar, containsNone };
     }
-
 
     if (types.includes('true_path')) {
         return { baseType: NodeVariableType.TruePath, validationType: types.join(','), containsNone };
@@ -63,7 +61,7 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         return { baseType: NodeVariableType.DateTime, validationType: types.join(','), containsNone };
     } else if (types.includes('bool')) {
         return { baseType: NodeVariableType.Boolean, validationType: types.join(','), containsNone };
-    } else if (types.some((type) => type.startsWith('nodes.nodes'))) {
+    } else if (types.some((type) => type.startsWith('polysynergy_nodes'))) {
         return { baseType: NodeVariableType.Dependency, validationType: types.join(','), containsNone };
     }
 

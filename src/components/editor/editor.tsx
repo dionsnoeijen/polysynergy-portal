@@ -30,11 +30,8 @@ import clsx from "clsx";
 import {EditorMode} from "@/types/types";
 import {useAutoFitNodes} from "@/hooks/editor/nodes/useAutoFitNodes";
 import {useExecutionGlowListener} from "@/hooks/editor/nodes/useExecutionGlowListener";
-// import {useExecutionStateListener} from "@/hooks/editor/nodes/useExecutionStateListener";
 import EditorIntroTour from "@/components/guidedtour/editor-intro-tour";
 import IsExecuting from "@/components/editor/is-executing";
-import {addRouteNodesIfNeeded} from "@/utils/addRouteNodesIfNeeded";
-import {addScheduleNodesIfNeeded} from "@/utils/addScheduleNodesIfNeeded";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -56,8 +53,6 @@ export default function Editor() {
     const editorMode = useEditorStore((state) => state.editorMode);
     const isFormOpen = useEditorStore((state) => state.isFormOpen);
     const activeVersionId = useEditorStore(state => state.activeVersionId);
-    const activeRouteId = useEditorStore((state) => state.activeRouteId);
-    const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
 
     const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
     const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
@@ -90,20 +85,8 @@ export default function Editor() {
             updateConnectionsDirectly(connections);
         });
         return () => cancelAnimationFrame(frame);
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [nodesToRender]);
-
-    useEffect(() => {
-        if (activeRouteId) {
-            addRouteNodesIfNeeded(activeRouteId);
-        }
-    }, [activeRouteId]);
-
-    useEffect(() => {
-        if (activeScheduleId) {
-            addScheduleNodesIfNeeded(activeScheduleId);
-        }
-    }, [activeScheduleId]);
 
     const updateEditorPosition = useCallback(() => {
         if (contentRef.current) {
@@ -281,7 +264,6 @@ export default function Editor() {
 
     useAutoFitNodes(contentRef, nodesToRender, 40, activeVersionId);
     useExecutionGlowListener(activeVersionId as string);
-    // useExecutionStateListener(activeVersionId as string);
 
     return (
         <div
@@ -328,7 +310,7 @@ export default function Editor() {
             }}
             ref={contentRef}
         >
-            <EditorIntroTour />
+            <EditorIntroTour/>
             {!isDraft && (
                 <div
                     className={`absolute top-0 left-0 w-full h-full z-20 pointer-events-auto 
@@ -346,7 +328,7 @@ export default function Editor() {
                 </div>
             )}
 
-            <IsExecuting />
+            <IsExecuting/>
 
             <Grid/>
 

@@ -3,11 +3,12 @@ import { Blueprint } from "@/types/types";
 import config from "@/config";
 
 export const storeBlueprint = async (
+    projectId: string,
     blueprint: Blueprint
 ): Promise<Blueprint> => {
     try {
         const idToken = getIdToken();
-        const response = await fetch(`${config.LOCAL_API_URL}/blueprints/`, {
+        const response = await fetch(`${config.LOCAL_API_URL}/blueprints/?project_id=${projectId}`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -29,9 +30,12 @@ export const storeBlueprint = async (
     }
 };
 
-export const fetchBlueprint = async (blueprintId: string): Promise<Blueprint> => {
+export const fetchBlueprint = async (
+    blueprintId: string,
+    projectId: string
+): Promise<Blueprint> => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.LOCAL_API_URL}/blueprints/${blueprintId}/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/blueprints/${blueprintId}/?project_id=${projectId}`, {
         headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${idToken}`,
@@ -40,9 +44,13 @@ export const fetchBlueprint = async (blueprintId: string): Promise<Blueprint> =>
     return response.json();
 };
 
-export const updateBlueprint = async (blueprintId: string, updatedData: Partial<Blueprint>) => {
+export const updateBlueprint = async (
+    projectId: string,
+    blueprintId: string,
+    updatedData: Partial<Blueprint>
+) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.LOCAL_API_URL}/blueprints/${blueprintId}/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/blueprints/${blueprintId}/?project_id=${projectId}`, {
         method: 'PUT',
         headers: {
             'Accept': 'application/json',
@@ -54,9 +62,12 @@ export const updateBlueprint = async (blueprintId: string, updatedData: Partial<
     return response.json();
 };
 
-export const deleteBlueprint = async (blueprintId: string) => {
+export const deleteBlueprint = async (
+    projectId: string,
+    blueprintId: string
+) => {
     const idToken = getIdToken();
-    return await fetch(`${config.LOCAL_API_URL}/blueprints/${blueprintId}/`, {
+    return await fetch(`${config.LOCAL_API_URL}/blueprints/${blueprintId}/?project_id=${projectId}`, {
         method: 'DELETE',
         headers: {
             'Accept': 'application/json',

@@ -182,7 +182,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                             <PlayButton
                                 disabled={node.view.disabled}
                                 nodeId={node.id}
-                                staged={node.path === 'nodes.nodes.play.play.Play'}
+                                staged={node.path === 'polysynergy_nodes.play.play.Play'}
                                 categoryMainTextColor={categoryMainTextColor}
                                 categorySubTextColor={categorySubTextColor}
                             />

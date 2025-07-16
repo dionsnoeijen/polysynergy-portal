@@ -5,11 +5,12 @@ import useSchedulesStore from "@/stores/schedulesStore";
 import { v4 as uuidv4 } from "uuid";
 import { Connection as ConnectionType, Node, Schedule } from "@/types/types";
 import { format } from "date-fns";
+import useEditorStore from "@/stores/editorStore";
 
 const addScheduleNodes = (schedule: Schedule) => {
     const getNodeByPath = useAvailableNodeStore.getState().getAvailableNodeByPath;
-    const template1: Node | undefined = getNodeByPath("nodes.nodes.schedule.schedule.Schedule");
-    const template2: Node | undefined = getNodeByPath("nodes.nodes.mock.mock_schedule.MockSchedule");
+    const template1: Node | undefined = getNodeByPath("polysynergy_nodes.schedule.schedule.Schedule");
+    const template2: Node | undefined = getNodeByPath("polysynergy_nodes.mock.mock_schedule.MockSchedule");
 
     if (!template1 || !template2) return;
 
@@ -69,6 +70,12 @@ export function addScheduleNodesIfNeeded(scheduleId: string) {
     const maxTicks = 50;
 
     const checkInterval = setInterval(() => {
+        const activeId = useEditorStore.getState().activeScheduleId;
+        if (activeId !== scheduleId) {
+            clearInterval(checkInterval);
+            return;
+        }
+
         const schedule = useSchedulesStore.getState().getSchedule(scheduleId);
         const nodes = useNodesStore.getState().nodes;
         if (!schedule || nodes.length > 0) {

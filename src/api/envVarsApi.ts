@@ -6,7 +6,7 @@ export const fetchProjectEnvVarsAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/env-vars/`,
+        `${config.LOCAL_API_URL}/env-vars/?project_id=${projectId}`,
         {
             headers: {
                 Accept: 'application/json',
@@ -25,7 +25,7 @@ export const createProjectEnvVarAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/env-vars/`,
+        `${config.LOCAL_API_URL}/env-vars/?project_id=${projectId}`,
         {
             method: 'POST',
             headers: {
@@ -56,7 +56,7 @@ export const deleteProjectEnvVarAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/env-vars/${stage}/${key}/`,
+        `${config.LOCAL_API_URL}/env-vars/${stage}/${key}/?project_id=${projectId}`,
         {
             method: 'DELETE',
             headers: {

@@ -294,23 +294,15 @@ export type Metadata = {
 export type Blueprint = {
     id?: string;
     name: string;
-    metadata: Metadata;
+    meta: Metadata;
     node_setup?: NodeSetup;
     project_ids?: string[];
 };
 
-export type Config = {
-    id?: string;
-    name: string;
-    metadata: Metadata;
-    node_setup?: NodeSetup;
-    project_ids?: string[];
-}
-
 export type Service = {
     id?: string;
     name: string;
-    metadata: Metadata;
+    meta: Metadata;
     node_setup: NodeSetup;
     project_ids?: string[];
 };

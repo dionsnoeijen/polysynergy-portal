@@ -6,8 +6,7 @@ export const fetchAvailableNodesAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        //`${config.API_URL}/nodes/?project_id=${projectId}`,
-        `${config.LOCAL_API_URL}/nodes/`,
+        `${config.LOCAL_API_URL}/nodes/?project_id=${projectId}`,
         {
             headers: {
                 'Accept': 'application/json',

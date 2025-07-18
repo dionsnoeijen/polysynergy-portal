@@ -6,7 +6,7 @@ export const fetchClientAccount = async (
     cognitoId: string
 ): Promise<Response> => {
     const idToken = getIdToken();
-    return await fetch(`${config.API_URL}/accounts/${cognitoId}/`,
+    return await fetch(`${config.LOCAL_API_URL}/accounts/${cognitoId}/`,
         {
             headers: {
                 'Accept': 'application/json',
@@ -17,7 +17,7 @@ export const fetchClientAccount = async (
 
 export const fetchClientAccounts = async (): Promise<Account[]> => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/accounts/tenant/`,
+    const response = await fetch(`${config.LOCAL_API_URL}/accounts/tenant/`,
         {
             headers: {
                 'Accept': 'application/json',

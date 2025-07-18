@@ -54,32 +54,32 @@ const PublishMatrix: React.FC = () => {
     }, [activeProjectId]);
 
     const handleRoutePublish = async (routeId: string, stage: string) => {
-        await publishNodeSetupRouteVersionAPI(routeId, stage);
+        await publishNodeSetupRouteVersionAPI(routeId, stage, activeProjectId);
         await fetchData();
     };
 
     const handleRouteUnpublish = async (routeId: string, stage: string) => {
-        await unpublishNodeSetupRouteVersionAPI(routeId, stage);
+        await unpublishNodeSetupRouteVersionAPI(routeId, stage, activeProjectId);
         await fetchData();
     };
 
     const handleRouteUpdate = async (routeId: string, stage: string) => {
-        await updateNodeSetupRouteVersionAPI(routeId, stage);
+        await updateNodeSetupRouteVersionAPI(routeId, stage, activeProjectId);
         await fetchData();
     };
 
     const handleSchedulePublish = async (scheduleId: string, stage: string) => {
-        await publishNodeSetupScheduleVersionAPI(scheduleId, stage);
+        await publishNodeSetupScheduleVersionAPI(scheduleId, stage, activeProjectId);
         await fetchData();
     };
 
     const handleScheduleUnpublish = async (scheduleId: string, stage: string) => {
-        await unpublishNodeSetupScheduleVersionAPI(scheduleId, stage);
+        await unpublishNodeSetupScheduleVersionAPI(scheduleId, stage, activeProjectId);
         await fetchData();
     };
 
     const handleScheduleUpdate = async (scheduleId: string, stage: string) => {
-        await updateNodeSetupScheduleVersionAPI(scheduleId, stage);
+        await updateNodeSetupScheduleVersionAPI(scheduleId, stage, activeProjectId);
         await fetchData();
     };
 

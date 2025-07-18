@@ -6,7 +6,7 @@ export const activateFlowListenerAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/flow-listener/${versionId}/activate/`,
+        `${config.LOCAL_API_URL}/listeners/${versionId}/activate/`,
         {
             method: 'POST',
             headers: {
@@ -23,7 +23,7 @@ export const deactivateFlowListenerAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/flow-listener/${versionId}/deactivate/`,
+        `${config.LOCAL_API_URL}/listeners/${versionId}/deactivate/`,
         {
             method: 'POST',
             headers: {
@@ -40,7 +40,7 @@ export const fetchFlowListenerStatusAPI = async (
 ): Promise<{ is_active: boolean }> => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/flow-listener/${versionId}/`,
+        `${config.LOCAL_API_URL}/listeners/${versionId}/`,
         {
             method: 'GET',
             headers: {

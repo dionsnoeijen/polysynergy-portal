@@ -9,7 +9,6 @@ import {Button} from "@/components/button";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import {useEffect, useState} from "react";
 import {format} from "date-fns";
-import {Select} from "@/components/select";
 import {deleteClientAccount, inviteClientAccount, resendClientAccountInvite} from "@/api/clientAccountsApi";
 import useAccountsStore from "@/stores/accountsStore";
 import {Roles} from "@/types/types";
@@ -90,7 +89,6 @@ export default function AccountsPage() {
                     <TableRow>
                         <TableHeader>Email (username)</TableHeader>
                         <TableHeader>Name</TableHeader>
-                        <TableHeader>Role</TableHeader>
                         <TableHeader>Created</TableHeader>
                         <TableHeader>Activated</TableHeader>
                         <TableHeader className="text-right">Actions</TableHeader>
@@ -107,7 +105,6 @@ export default function AccountsPage() {
                                     ? `${account.first_name} ${account.last_name}`
                                     : 'Available after this account is activated'}
                             </TableCell>
-                            <TableCell>{account.memberships[0].role.name}</TableCell>
                             <TableCell>{format(new Date(account.created_at), "dd-MM-yyyy HH:mm:ss")}</TableCell>
                             <TableCell>
                                 {account.active ?
@@ -142,18 +139,18 @@ export default function AccountsPage() {
                             />
                             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
                         </TableCell>
-                        <TableCell>
-                            <Select
-                                name={'role'}
-                                className={'w-full'}
-                                defaultValue={Roles.Editor}
-                                onChange={(e) => setInviteRole(e.target.value as Roles)}
-                            >
-                                <option value={Roles.Admin}>Admin</option>
-                                <option value={Roles.Editor}>Editor</option>
-                                <option value={Roles.Viewer}>Viewer</option>
-                            </Select>
-                        </TableCell>
+                        {/*<TableCell>*/}
+                        {/*    <Select*/}
+                        {/*        name={'role'}*/}
+                        {/*        className={'w-full'}*/}
+                        {/*        defaultValue={Roles.Editor}*/}
+                        {/*        onChange={(e) => setInviteRole(e.target.value as Roles)}*/}
+                        {/*    >*/}
+                        {/*        <option value={Roles.Admin}>Admin</option>*/}
+                        {/*        <option value={Roles.Editor}>Editor</option>*/}
+                        {/*        <option value={Roles.Viewer}>Viewer</option>*/}
+                        {/*    </Select>*/}
+                        {/*</TableCell>*/}
                         <TableCell className="text-right">
                             <Button onClick={handleInviteAccount} disabled={isLoading}>
                                 <PlusIcon/>

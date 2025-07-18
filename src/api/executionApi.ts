@@ -11,7 +11,7 @@ export const getNodeExecutionDetails = async (
 ) => {
     const idToken = getIdToken();
     const baseNodeId = nodeId.replace(/-\d+$/, '');
-    const response = await fetch(`${config.API_URL}/execution/${activeVersionId}/${runId}/${baseNodeId}/${order}?stage=${stage}&sub_stage=${subStage}`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/execution/${activeVersionId}/${runId}/${baseNodeId}/${order}?stage=${stage}&sub_stage=${subStage}`, {
         headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${idToken}`,
@@ -30,7 +30,7 @@ export const getConnectionExecutionDetails = async (
     runId: string,
 ) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/execution/connections/${activeVersionId}/${runId}/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/execution/connections/${activeVersionId}/${runId}/`, {
         headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${idToken}`,

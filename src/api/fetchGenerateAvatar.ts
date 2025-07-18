@@ -1,9 +1,13 @@
 import { getIdToken } from './auth/authToken';
 import config from "@/config";
 
-export const fetchGenerateAvatar = async (nodeId: string, name: string, instructions: string): Promise<string | null> => {
+export const fetchGenerateAvatar = async (
+    nodeId: string,
+    name: string,
+    instructions: string
+): Promise<string | null> => {
     const idToken = getIdToken();
-    const res = await fetch(`${config.API_URL}/avatar/${nodeId}/`, {
+    const res = await fetch(`${config.LOCAL_API_URL}/avatar/${nodeId}/`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

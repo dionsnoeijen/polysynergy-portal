@@ -5,7 +5,6 @@ import config from "@/config";
 export const fetchSchedulesAPI = async (projectId: string) => {
     const idToken = getIdToken();
     const response = await fetch(
-        // `${config.API_URL}/schedules/?project_id=${projectId}`,
         `${config.LOCAL_API_URL}/schedules/?project_id=${projectId}`,
         {
             headers: {
@@ -23,7 +22,6 @@ export const fetchSchedule = async (
 ): Promise<Schedule> => {
     const idToken = getIdToken();
     const response = await fetch(
-        //`${config.API_URL}/schedules/${scheduleId}/`,
         `${config.LOCAL_API_URL}/schedules/${scheduleId}/?project_id=${projectId}`,
         {
             headers: {
@@ -41,7 +39,6 @@ export const storeScheduleAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        // `${config.API_URL}/schedules/`,
         `${config.LOCAL_API_URL}/schedules/?project_id=${projectId}`,
         {
             method: 'POST',
@@ -65,7 +62,6 @@ export const updateScheduleAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        // `${config.API_URL}/schedules/${scheduleId}/`,
         `${config.LOCAL_API_URL}/schedules/${scheduleId}/?project_id=${projectId}`,
         {
             method: 'PATCH',

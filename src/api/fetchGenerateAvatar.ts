@@ -7,7 +7,7 @@ export const fetchGenerateAvatar = async (
     instructions: string
 ): Promise<string | null> => {
     const idToken = getIdToken();
-    const res = await fetch(`${config.LOCAL_API_URL}/avatar/${nodeId}/`, {
+    const res = await fetch(`${config.LOCAL_API_URL}/avatars/${nodeId}/`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

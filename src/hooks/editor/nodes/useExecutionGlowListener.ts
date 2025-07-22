@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import PubNub from 'pubnub';
 import useNodesStore from "@/stores/nodesStore";
 import useMockStore, { MockNode } from '@/stores/mockStore';
 import {getConnectionExecutionDetails} from "@/api/executionApi";
@@ -26,142 +25,124 @@ export function useExecutionGlowListener(flowId: string) {
         cleanupExecutionGlow();
         if (!flowId) return;
 
-        const pubnub = new PubNub({
-            subscribeKey: process.env.NEXT_PUBLIC_PUBNUB_SUBSCRIBE_KEY!,
-            userId: 'poly_synergy_flow',
-        });
+        const socket = new WebSocket(`ws://localhost:8090/ws/v1/execution/${flowId}`);
 
-        const channel = `flow-${flowId}`;
-        pubnub.subscribe({ channels: [channel] });
+        socket.onmessage = (event) => {
+            const message: ExecutionMessage = JSON.parse(event.data);
 
-        pubnub.addListener({
-            message: (envelope) => {
-                const message = envelope.message as ExecutionMessage;
+            console.log("Execution message received:", message);
 
-                const event = message.event;
-                let node_id = message.node_id;
+            const eventType = message.event;
+            let node_id = message.node_id;
 
-                if (event === 'run_start') {
-                    cleanupExecutionGlow();
-                    return;
-                }
+            if (eventType === 'run_start') {
+                cleanupExecutionGlow();
+                return;
+            }
 
-                if (event === 'run_end') {
-                    setTimeout(async () => {
-                        const executingEls = document.querySelectorAll('[data-node-id].executing');
-                        executingEls.forEach((el) => {
-                            el.classList.remove('executing');
-                            el.classList.remove('executed-success');
-                            el.classList.remove('executed-killed');
-                        });
-                        groupStates.clear();
-                        nodeExecutionState.clear();
+            if (eventType === 'run_end') {
+                setTimeout(async () => {
+                    const executingEls = document.querySelectorAll('[data-node-id].executing');
+                    executingEls.forEach((el) => {
+                        el.classList.remove('executing', 'executed-success', 'executed-killed');
+                    });
+                    groupStates.clear();
+                    nodeExecutionState.clear();
 
-                        const activeVersionId = useEditorStore.getState().activeVersionId;
-                        const data = await getConnectionExecutionDetails(
-                            activeVersionId as string,
-                            message.run_id as string
-                        );
-                        setMockConnections(data);
-                        setHasMockData(true);
-                    return;
-                    }, 100);
-                    return;
-                }
+                    const activeVersionId = useEditorStore.getState().activeVersionId;
+                    const data = await getConnectionExecutionDetails(
+                        activeVersionId as string,
+                        message.run_id as string
+                    );
+                    setMockConnections(data);
+                    setHasMockData(true);
+                }, 100);
+                return;
+            }
 
-                if (!node_id || !message.run_id) return;
+            if (!node_id || !message.run_id) return;
 
-                let el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement;
+            let el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement;
+            const nodeFlowNode = getNode(node_id);
+            const type = typeof nodeFlowNode?.path === 'undefined'
+                ? 'GroupNode'
+                : nodeFlowNode?.path.split(".").pop();
 
-                const nodeFlowNode = getNode(node_id);
-
-                const type =
-                    typeof nodeFlowNode?.path === 'undefined'
-                        ? 'GroupNode'
-                        : nodeFlowNode?.path.split(".").pop();
-
-                addOrUpdateMockNode({
-                    id: `${node_id}-${message.order || 0}`,
-                    handle: nodeFlowNode?.handle,
-                    runId: message.run_id,
-                    killed: message.status === 'killed',
-                    type: type,
-                    started: event === 'start_node',
-                    variables: {},
-                    status:
-                        event === 'start_node'
-                            ? 'executing'
-                            : event === 'end_node'
+            addOrUpdateMockNode({
+                id: `${node_id}-${message.order || 0}`,
+                handle: nodeFlowNode?.handle,
+                runId: message.run_id,
+                killed: message.status === 'killed',
+                type,
+                started: eventType === 'start_node',
+                variables: {},
+                status:
+                    eventType === 'start_node'
+                        ? 'executing'
+                        : eventType === 'end_node'
                             ? message.status || 'killed'
                             : undefined,
-                } as MockNode);
+            } as MockNode);
 
-                // Group fallback
-                if (!el) {
-                    const groupInfo = useNodesStore.getState().findNearestVisibleGroupWithCount?.(node_id);
-                    if (!groupInfo) return;
+            // Group fallback...
+            if (!el) {
+                const groupInfo = useNodesStore.getState().findNearestVisibleGroupWithCount?.(node_id);
+                if (!groupInfo) return;
 
-                    node_id = groupInfo.groupId;
-                    el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement;
-                    if (!el) return;
+                node_id = groupInfo.groupId;
+                el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement;
+                if (!el) return;
 
-                    const { groupId, count } = groupInfo;
-                    const current = groupStates.get(groupId) || { count, remaining: 0 };
+                const { groupId, count } = groupInfo;
+                const current = groupStates.get(groupId) || { count, remaining: 0 };
 
-                    if (event === 'start_node') {
-                        current.remaining += 1;
+                if (eventType === 'start_node') {
+                    current.remaining += 1;
+                    groupStates.set(groupId, current);
+                    if (current.remaining === 1) el.classList.add('executing');
+                } else if (eventType === 'end_node') {
+                    current.remaining = Math.max(0, current.remaining - 1);
+                    if (current.remaining === 0) {
+                        el.classList.remove('executing');
+                        el.classList.add(`executed-${message.status || 'killed'}`);
+                        groupStates.delete(groupId);
+                    } else {
                         groupStates.set(groupId, current);
-                        if (current.remaining === 1) {
-                            el.classList.add('executing');
-                        }
-                    } else if (event === 'end_node') {
-                        current.remaining = Math.max(0, current.remaining - 1);
-                        if (current.remaining === 0) {
-                            el.classList.remove('executing');
-                            el.classList.add(`executed-${message.status || 'killed'}`);
-                            groupStates.delete(groupId);
-                        } else {
-                            groupStates.set(groupId, current);
-                        }
-                    }
-                    return;
-                }
-
-                // Individual node
-                const state = nodeExecutionState.get(node_id) || { started: false, ended: false };
-
-                if (event === 'start_node') {
-                    state.started = true;
-                    nodeExecutionState.set(node_id, state);
-                    el.classList.add('executing');
-
-                    if (state.ended) {
-                        el.classList.remove('executing');
-                        el.classList.add(`executed-${state.status || 'success'}`);
-                        nodeExecutionState.delete(node_id);
-                    }
-                } else if (event === 'end_node') {
-                    state.ended = true;
-                    state.status = message.status || 'success';
-                    nodeExecutionState.set(node_id, state);
-
-                    if (state.started) {
-                        el.classList.remove('executing');
-                        el.classList.add(`executed-${state.status}`);
-                        nodeExecutionState.delete(node_id);
                     }
                 }
-            },
-        });
+                return;
+            }
+
+            // Individual node
+            const state = nodeExecutionState.get(node_id) || { started: false, ended: false };
+
+            if (eventType === 'start_node') {
+                state.started = true;
+                nodeExecutionState.set(node_id, state);
+                el.classList.add('executing');
+                if (state.ended) {
+                    el.classList.remove('executing');
+                    el.classList.add(`executed-${state.status || 'success'}`);
+                    nodeExecutionState.delete(node_id);
+                }
+            } else if (eventType === 'end_node') {
+                state.ended = true;
+                state.status = message.status || 'success';
+                nodeExecutionState.set(node_id, state);
+                if (state.started) {
+                    el.classList.remove('executing');
+                    el.classList.add(`executed-${state.status}`);
+                    nodeExecutionState.delete(node_id);
+                }
+            }
+        };
 
         function cleanupExecutionGlow() {
             const elements = document.querySelectorAll('[data-node-id]');
             elements.forEach((el) => {
                 el.classList.remove('executing');
                 el.classList.forEach((cls) => {
-                    if (cls.startsWith('executed-')) {
-                        el.classList.remove(cls);
-                    }
+                    if (cls.startsWith('executed-')) el.classList.remove(cls);
                 });
             });
             groupStates.clear();
@@ -169,12 +150,10 @@ export function useExecutionGlowListener(flowId: string) {
         }
 
         return () => {
-            pubnub.unsubscribeAll();
-            pubnub.removeAllListeners();
+            socket.close();
             groupStates.clear();
             nodeExecutionState.clear();
             cleanupExecutionGlow();
         };
-    // eslint-disable-next-line
     }, [flowId]);
 }

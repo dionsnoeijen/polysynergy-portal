@@ -30,7 +30,7 @@ export const getConnectionExecutionDetails = async (
     runId: string,
 ) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.LOCAL_API_URL}/execution/connections/${activeVersionId}/${runId}/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/execution/${activeVersionId}/${runId}/connections/`, {
         headers: {
             'Accept': 'application/json',
             'Authorization': `Bearer ${idToken}`,

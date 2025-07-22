@@ -84,6 +84,10 @@ const EditorLayout = ({
 
     const isExecuting = useEditorStore((state) => state.isExecuting);
 
+    // useWebSocket("ws://localhost:8090/ws/v1/execution", (event) => {
+    //     console.log("WebSocket message:", event.data);
+    // });
+
     useEffect(() => {
         clearMockStore();
     }, [clearMockStore, pathname]);

@@ -38,7 +38,7 @@ export const createClientAccount = async (
     }
 ): Promise<Response> => {
     const idToken = getIdToken();
-    return await fetch(`${config.API_URL}/accounts/`,
+    return await fetch(`${config.LOCAL_API_URL}/accounts/`,
         {
             method: 'POST',
             headers: {

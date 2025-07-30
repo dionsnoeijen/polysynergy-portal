@@ -4,6 +4,7 @@ import useMockStore, {MockNode} from '@/stores/mockStore';
 import {getConnectionExecutionDetails} from "@/api/executionApi";
 import useEditorStore from "@/stores/editorStore";
 import useChatStore from '@/stores/chatStore';
+import config from "@/config";
 
 type ExecutionMessage = {
     node_id?: string;
@@ -29,7 +30,7 @@ export function useWebSocketListener(flowId: string) {
         cleanupExecutionGlow();
         if (!flowId) return;
 
-        const socket = new WebSocket(`ws://localhost:8090/ws/v1/execution/${flowId}`);
+        const socket = new WebSocket(`${config.WEBSOCKET_URL}/execution/${flowId}`);
 
         socket.onmessage = (event) => {
             const message: ExecutionMessage = JSON.parse(event.data);

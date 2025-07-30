@@ -21,10 +21,10 @@ export default function RootLayout({children}: { children: ReactNode }) {
   const theme = saved || (useDark ? 'dark' : 'light');
   document.documentElement.setAttribute('data-theme', theme);
   
-  console.log("Cognito:", {
-    clientId: process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID,
-    redirect: process.env.NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL
-  });
+      console.log("Cognito:", {
+        clientId: "${process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID}",
+        redirect: "${process.env.NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL}"
+      });
 })();`
                 }}
             />

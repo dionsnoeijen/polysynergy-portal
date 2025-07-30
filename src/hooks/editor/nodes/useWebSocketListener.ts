@@ -11,6 +11,7 @@ type ExecutionMessage = {
     status?: 'success' | 'killed' | 'error';
     order?: number;
     run_id?: string;
+    content?: string;
 };
 
 const groupStates = new Map<string, { count: number, remaining: number }>();
@@ -194,5 +195,6 @@ export function useWebSocketListener(flowId: string) {
             nodeExecutionState.clear();
             cleanupExecutionGlow();
         };
+    // eslint-disable-next-line
     }, [flowId]);
 }

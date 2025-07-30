@@ -1,22 +1,22 @@
 import React, {useEffect, useState} from "react";
-import useMockStore from "@/stores/mockStore";
 import {ChevronLeftIcon} from "@heroicons/react/24/outline";
-import useEditorStore from "@/stores/editorStore";
 import {getNodeExecutionDetails} from "@/api/executionApi";
 import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
-import {Route} from "@/types/types";
-import {formatSegments} from "@/utils/formatters";
-import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
-import useStagesStore from "@/stores/stagesStore";
 import Chat from "@/components/editor/bottombars/chat";
+import {Route} from "@/types/types";
+import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
+import useMockStore from "@/stores/mockStore";
+import useEditorStore from "@/stores/editorStore";
+// import {formatSegments} from "@/utils/formatters";
+// import useStagesStore from "@/stores/stagesStore";
 
 const Output: React.FC = (): React.ReactElement => {
     const mockNodes = useMockStore((state) => state.mockNodes);
-    const activeProjectId = useEditorStore((state) => state.activeProjectId);
+    // const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
     const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
-    const stages = useStagesStore((state) => state.stages);
+    // const stages = useStagesStore((state) => state.stages);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [expandedNodes, setExpandedNodes] = useState<Record<string, any>>({});
@@ -52,6 +52,7 @@ const Output: React.FC = (): React.ReactElement => {
         }));
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [activeItem, setActiveItem] = useState<Route | undefined>();
     useEffect(() => {
         let isMounted = true;

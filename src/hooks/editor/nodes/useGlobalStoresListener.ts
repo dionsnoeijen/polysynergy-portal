@@ -58,6 +58,7 @@ export default function useGlobalStoreListenersWithImmediateSave() {
             savingInProgress = false;
             debounceTimeout = null;
         }
+    // eslint-disable-next-line
     }, [activeVersionId, activeProjectId, activeRouteId, activeScheduleId, activeBlueprintId, activeConfigId, setIsSaving]);
 
     const saveNodeSetup = useCallback(() => {

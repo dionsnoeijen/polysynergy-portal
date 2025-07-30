@@ -38,12 +38,12 @@ export default function RootLayout({children}: { children: ReactNode }) {
             <title>PolySynergy</title>
         </head>
         <body>
-        <ThemeProvider>
-            <AuthContextProvider>
-                <AuthHandler/>
-                <AuthWrapper><Global401Handler>{children}</Global401Handler></AuthWrapper>
-            </AuthContextProvider>
-        </ThemeProvider>
+            <ThemeProvider>
+                <AuthContextProvider>
+                    <AuthHandler/>
+                    <AuthWrapper><Global401Handler>{children}</Global401Handler></AuthWrapper>
+                </AuthContextProvider>
+            </ThemeProvider>
         </body>
         </html>
     )

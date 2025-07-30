@@ -46,7 +46,7 @@ const AvatarVariable: React.FC<Props> = ({
     return (
         <div className="w-full flex justify-center items-center bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden">
             <img
-                src={value as string}
+                src={value as unknown as string}
                 alt="Avatar"
                 className="max-h-48 w-auto object-contain"
                 onError={(e) => {

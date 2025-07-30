@@ -21,7 +21,10 @@ const useChatStore = create<ChatStore>((set) => ({
 
     addUserMessage: (text, runId) =>
         set((state) => {
-            const messages = [...(state.messagesByRun[runId] || []), {sender: 'user', text}];
+            const messages = [
+                ...(state.messagesByRun[runId] || []),
+                {sender: 'user', text} as const,
+            ];
             return {
                 messagesByRun: {
                     ...state.messagesByRun,
@@ -32,7 +35,10 @@ const useChatStore = create<ChatStore>((set) => ({
 
     startAgentMessage: (runId, nodeId?) =>
         set((state) => {
-            const messages = [...(state.messagesByRun[runId] || []), {sender: 'agent', text: '', node_id: nodeId}];
+            const messages = [
+                ...(state.messagesByRun[runId] || []),
+                {sender: 'agent', text: '', node_id: nodeId} as const,
+            ];
             return {
                 messagesByRun: {
                     ...state.messagesByRun,
@@ -61,6 +67,7 @@ const useChatStore = create<ChatStore>((set) => ({
     clearChatStore: (runId) =>
         set((state) => {
             if (runId) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const {[runId]: _, ...rest} = state.messagesByRun;
                 return {messagesByRun: rest};
             }

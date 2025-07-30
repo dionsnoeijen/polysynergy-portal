@@ -66,7 +66,7 @@ const BooleanVariable: React.FC<Props> = ({
                 handle={variable.handle}
                 disabled={disabled || isInService}
                 groupId={groupId}
-                nodeVariableType={interpretNodeVariableType(variable).validationType}
+                nodeVariableType={variable?.out_type_override ?? interpretNodeVariableType(variable).validationType}
             />}
             {variable.has_out && isMirror && !onlyIn && (
                 <FakeConnector out/>

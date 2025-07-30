@@ -29,7 +29,7 @@ const RichTextAreaVariable: React.FC<Props> = ({
     isMirror = false,
     categoryMainTextColor = 'text-sky-600 dark:text-white',
     categorySubTextColor = 'text-sky-400 dark:text-slate-400',
-    isInService = false
+isInService = false
 }): React.ReactElement => {
 
     const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
@@ -40,7 +40,7 @@ const RichTextAreaVariable: React.FC<Props> = ({
         <div
             className={`flex items-center justify-between rounded-md w-full pl-4 pr-4 pt-1 relative ${disabled && 'opacity-0'}`}>
             {variable.has_in && isMirror && !onlyOut && (
-                <FakeConnector in />
+                <FakeConnector in/>
             )}
             {variable.has_in && !isMirror && !disabled && !onlyOut && <Connector
                 in
@@ -50,20 +50,30 @@ const RichTextAreaVariable: React.FC<Props> = ({
                 groupId={groupId}
                 nodeVariableType={validationType}
             />}
-            {isValueConnected ? <span className="ml-1"><BoltIcon className={'w-4 h-4 text-orange-800 dark:text-yellow-300'} /></span> : (
-            <>
-                {variable.value ? (
-                    <div className={`note-text ${categorySubTextColor}`} dangerouslySetInnerHTML={{__html: variable.value as string}}/>
-                ) : (
+            {isValueConnected ? (
                     <>
                         <h3 className={`font-semibold truncate ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`}>
                             {(groupId && variable.group_name_override) ? variable.group_name_override : variable.name}:
                         </h3>
-                        <DocumentTextIcon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`} />
+                        <span className="ml-1"><BoltIcon className={'w-4 h-4 text-orange-800 dark:text-yellow-300'}/></span>
+                    </>
+                ) :
+                (
+                    <>
+                        {variable.value ? (
+                            <div className={`note-text ${categorySubTextColor}`}
+                                 dangerouslySetInnerHTML={{__html: variable.value as string}}/>
+                        ) : (
+                            <>
+                                <h3 className={`font-semibold truncate ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`}>
+                                    {(groupId && variable.group_name_override) ? variable.group_name_override : variable.name}:
+                                </h3>
+                                <DocumentTextIcon
+                                    className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`}/>
+                            </>
+                        )}
                     </>
                 )}
-            </>
-            )}
             {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
                 out
                 nodeId={nodeId}
@@ -73,7 +83,7 @@ const RichTextAreaVariable: React.FC<Props> = ({
                 nodeVariableType={validationType}
             />}
             {variable.has_out && isMirror && !onlyIn && (
-                <FakeConnector out />
+                <FakeConnector out/>
             )}
         </div>
     );

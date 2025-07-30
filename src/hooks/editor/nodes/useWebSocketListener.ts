@@ -1,12 +1,13 @@
-import { useEffect } from 'react';
+import {useEffect} from 'react';
 import useNodesStore from "@/stores/nodesStore";
-import useMockStore, { MockNode } from '@/stores/mockStore';
+import useMockStore, {MockNode} from '@/stores/mockStore';
 import {getConnectionExecutionDetails} from "@/api/executionApi";
 import useEditorStore from "@/stores/editorStore";
+import useChatStore from '@/stores/chatStore';
 
 type ExecutionMessage = {
     node_id?: string;
-    event: 'run_start' | 'start_node' | 'end_node' | 'run_end';
+    event: 'run_start' | 'start_node' | 'end_node' | 'run_end' | "start_tool" | "end_tool" | "RunResponseContent" | "TeamRunResponseContent" | "TeamToolCallCompleted";
     status?: 'success' | 'killed' | 'error';
     order?: number;
     run_id?: string;
@@ -15,11 +16,13 @@ type ExecutionMessage = {
 const groupStates = new Map<string, { count: number, remaining: number }>();
 const nodeExecutionState = new Map<string, { started: boolean; ended: boolean; status?: string }>();
 
-export function useExecutionGlowListener(flowId: string) {
+export function useWebSocketListener(flowId: string) {
     const getNode = useNodesStore((state) => state.getNode);
     const addOrUpdateMockNode = useMockStore((state) => state.addOrUpdateMockNode);
     const setMockConnections = useMockStore((state) => state.setMockConnections);
     const setHasMockData = useMockStore((state) => state.setHasMockData);
+    const startAgentMessage = useChatStore((state) => state.startAgentMessage);
+    const appendToAgentMessage = useChatStore((state) => state.appendToAgentMessage);
 
     useEffect(() => {
         cleanupExecutionGlow();
@@ -29,15 +32,48 @@ export function useExecutionGlowListener(flowId: string) {
 
         socket.onmessage = (event) => {
             const message: ExecutionMessage = JSON.parse(event.data);
-
-            console.log("Execution message received:", message);
-
             const eventType = message.event;
             let node_id = message.node_id;
 
+            if ((
+                message.event === 'RunResponseContent' ||
+                message.event === 'TeamRunResponseContent') && message.content) {
+                const {run_id, content} = message;
+                if (!run_id) return;
+
+                const hasMessages = useChatStore.getState().messagesByRun?.[run_id];
+                if (!hasMessages) {
+                    startAgentMessage(run_id, node_id);
+                }
+                appendToAgentMessage(content, run_id, node_id);
+            }
+
+            if (message.event === 'TeamToolCallCompleted') {
+                console.log(message);
+            }
+
             if (eventType === 'run_start') {
                 cleanupExecutionGlow();
+                useChatStore.getState().setActiveRunId(message.run_id as string);
+                useChatStore.getState().clearChatStore(message.run_id);
                 return;
+            }
+
+            if (eventType === 'start_tool') {
+                console.log(`Tool started: ${node_id}`);
+                const toolEl = document.querySelector(`[data-node-id="${node_id}"]`);
+                console.log(`Tool el: ${toolEl}`);
+                if (toolEl) toolEl.classList.add('executing-tool');
+            }
+
+            if (eventType === 'end_tool') {
+                console.log(`Tool ended: ${node_id}`);
+                setTimeout(() => {
+                    const toolEl = document.querySelector(`[data-node-id="${node_id}"]`);
+                    if (toolEl) {
+                        toolEl.classList.remove('executing-tool');
+                    }
+                }, 5000);
             }
 
             if (eventType === 'run_end') {
@@ -68,21 +104,23 @@ export function useExecutionGlowListener(flowId: string) {
                 ? 'GroupNode'
                 : nodeFlowNode?.path.split(".").pop();
 
-            addOrUpdateMockNode({
-                id: `${node_id}-${message.order || 0}`,
-                handle: nodeFlowNode?.handle,
-                runId: message.run_id,
-                killed: message.status === 'killed',
-                type,
-                started: eventType === 'start_node',
-                variables: {},
-                status:
-                    eventType === 'start_node'
-                        ? 'executing'
-                        : eventType === 'end_node'
-                            ? message.status || 'killed'
-                            : undefined,
-            } as MockNode);
+            if (eventType === 'start_node' || eventType === 'end_node') {
+                addOrUpdateMockNode({
+                    id: `${node_id}-${message.order || 0}`,
+                    handle: nodeFlowNode?.handle,
+                    runId: message.run_id,
+                    killed: message.status === 'killed',
+                    type,
+                    started: eventType === 'start_node',
+                    variables: {},
+                    status:
+                        eventType === 'start_node'
+                            ? 'executing'
+                            : eventType === 'end_node'
+                                ? message.status || 'killed'
+                                : undefined,
+                } as MockNode);
+            }
 
             // Group fallback...
             if (!el) {
@@ -93,8 +131,8 @@ export function useExecutionGlowListener(flowId: string) {
                 el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement;
                 if (!el) return;
 
-                const { groupId, count } = groupInfo;
-                const current = groupStates.get(groupId) || { count, remaining: 0 };
+                const {groupId, count} = groupInfo;
+                const current = groupStates.get(groupId) || {count, remaining: 0};
 
                 if (eventType === 'start_node') {
                     current.remaining += 1;
@@ -114,7 +152,7 @@ export function useExecutionGlowListener(flowId: string) {
             }
 
             // Individual node
-            const state = nodeExecutionState.get(node_id) || { started: false, ended: false };
+            const state = nodeExecutionState.get(node_id) || {started: false, ended: false};
 
             if (eventType === 'start_node') {
                 state.started = true;
@@ -141,6 +179,7 @@ export function useExecutionGlowListener(flowId: string) {
             const elements = document.querySelectorAll('[data-node-id]');
             elements.forEach((el) => {
                 el.classList.remove('executing');
+                el.classList.remove('executing-tool');
                 el.classList.forEach((cls) => {
                     if (cls.startsWith('executed-')) el.classList.remove(cls);
                 });

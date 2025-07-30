@@ -84,16 +84,12 @@ const EditorLayout = ({
 
     const isExecuting = useEditorStore((state) => state.isExecuting);
 
-    // useWebSocket("ws://localhost:8090/ws/v1/execution", (event) => {
-    //     console.log("WebSocket message:", event.data);
-    // });
-
     useEffect(() => {
         clearMockStore();
     }, [clearMockStore, pathname]);
 
     useEffect(() => {
-        setHeight({horizontalEditorLayout: window.innerHeight * 0.85});
+        setHeight({horizontalEditorLayout: window.innerHeight * 0.6});
         setWindowHeight(window.innerHeight);
         const handleResize = () => setWindowHeight(window.innerHeight);
         window.addEventListener('resize', handleResize);

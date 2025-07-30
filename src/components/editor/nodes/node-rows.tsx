@@ -239,7 +239,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                         {node.service?.name?.trim() === '' ? '...' : node.service?.name || node.name}
                     </h3>
                     <h5 className={`text-xs truncate ${categorySubTextColor} -mt-0.5`}>
-                        {node.category}
+                        {node.handle} : {node.category}
                     </h5>
                 </div>
                 <button onClick={handleCollapse} className="ml-auto p-1 px-1 py-1">

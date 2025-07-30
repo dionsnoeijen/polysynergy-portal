@@ -29,7 +29,7 @@ import useDraggable from "@/hooks/editor/nodes/useDraggable";
 import clsx from "clsx";
 import {EditorMode} from "@/types/types";
 import {useAutoFitNodes} from "@/hooks/editor/nodes/useAutoFitNodes";
-import {useExecutionGlowListener} from "@/hooks/editor/nodes/useExecutionGlowListener";
+import {useWebSocketListener} from "@/hooks/editor/nodes/useWebSocketListener";
 import EditorIntroTour from "@/components/guidedtour/editor-intro-tour";
 import IsExecuting from "@/components/editor/is-executing";
 
@@ -263,7 +263,7 @@ export default function Editor() {
     }, []);
 
     useAutoFitNodes(contentRef, nodesToRender, 40, activeVersionId);
-    useExecutionGlowListener(activeVersionId as string);
+    useWebSocketListener(activeVersionId as string);
 
     return (
         <div

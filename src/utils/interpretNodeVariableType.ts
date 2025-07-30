@@ -61,7 +61,7 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         return { baseType: NodeVariableType.DateTime, validationType: types.join(','), containsNone };
     } else if (types.includes('bool')) {
         return { baseType: NodeVariableType.Boolean, validationType: types.join(','), containsNone };
-    } else if (types.some((type) => type.startsWith('polysynergy_nodes'))) {
+    } else if (types.some((type) => type.includes('.') && /^[a-z_][\w.]+$/.test(type))) {
         return { baseType: NodeVariableType.Dependency, validationType: types.join(','), containsNone };
     }
 

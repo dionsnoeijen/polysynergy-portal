@@ -16,6 +16,7 @@ import {EditorMode, FormType} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
 import Image from "next/image";
+import useChatStore from "@/stores/chatStore";
 
 const TopLeftEditorMenu: React.FC = () => {
     const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
@@ -25,6 +26,7 @@ const TopLeftEditorMenu: React.FC = () => {
     const setEditorMode = useEditorStore((state) => state.setEditorMode);
 
     const clearMockStore = useMockStore((state) => state.clearMockStore);
+    const clearChatStore = useChatStore((state) => state.clearChatStore);
     const hasMockData = useMockStore((state) => state.hasMockData);
     const mainPlayNode = useNodesStore((state) => state.findMainPlayNode());
     const handlePlay = useHandlePlay();
@@ -45,6 +47,7 @@ const TopLeftEditorMenu: React.FC = () => {
         'c': {
             handler: () => {
                 clearMockStore();
+                clearChatStore();
             },
         },
         'b': {

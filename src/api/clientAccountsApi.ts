@@ -53,7 +53,7 @@ export const createClientAccount = async (
 
 export const inviteClientAccount = async (email: string, role: string): Promise<Response> => {
     const idToken = getIdToken();
-    return await fetch(`${config.API_URL}/accounts/invite/`,
+    return await fetch(`${config.LOCAL_API_URL}/accounts/invite/`,
         {
             method: 'POST',
             headers: {
@@ -68,7 +68,7 @@ export const inviteClientAccount = async (email: string, role: string): Promise<
 
 export const resendClientAccountInvite = async (accountId: string): Promise<Response> => {
     const idToken = getIdToken();
-    return await fetch(`${config.API_URL}/accounts/${accountId}/resend-invitation/`,
+    return await fetch(`${config.LOCAL_API_URL}/accounts/resend-invitation/${accountId}/`,
         {
             method: 'POST',
             headers: {
@@ -81,7 +81,7 @@ export const resendClientAccountInvite = async (accountId: string): Promise<Resp
 
 export const deleteClientAccount = async (accountId: string): Promise<Response> => {
     const idToken = getIdToken();
-    return await fetch(`${config.API_URL}/accounts/${accountId}/delete/`,
+    return await fetch(`${config.LOCAL_API_URL}/accounts/${accountId}/delete/`,
         {
             method: 'DELETE',
             headers: {
@@ -98,7 +98,7 @@ export const activateClientAccount = async (
     cognitoId: string
 ): Promise<Response> => {
     const idToken = getIdToken();
-    return await fetch(`${config.API_URL}/accounts/${cognitoId}/activate/`,
+    return await fetch(`${config.LOCAL_API_URL}/activate/${cognitoId}/`,
         {
             method: 'POST',
             headers: {

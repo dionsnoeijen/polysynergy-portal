@@ -16,8 +16,6 @@ export default function Page() {
 
     return (
         <ApplicationLayout>
-
-
             <form method="post" className="mx-auto max-w-4xl">
                 <Heading>Account, {auth.user?.profile.email}</Heading>
 
@@ -56,8 +54,12 @@ export default function Page() {
                         <Text>This is how customers can contact you for support.</Text>
                     </div>
                     <div className="space-y-4">
-                        <Input type="email" aria-label="Organization Email" name="email"
-                               defaultValue="info@example.com"/>
+                        <Input
+                            type="email"
+                            aria-label="Organization Email"
+                            name="email"
+                            defaultValue="info@example.com"
+                        />
                         <CheckboxField>
                             <Checkbox name="email_is_public" defaultChecked/>
                             <Label>Show email on public profile</Label>

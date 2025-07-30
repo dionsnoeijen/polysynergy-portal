@@ -20,10 +20,6 @@ export default function RootLayout({children}: { children: ReactNode }) {
                       const useDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                       const theme = saved || (useDark ? 'dark' : 'light');
                       document.documentElement.setAttribute('data-theme', theme);
-                      console.log("Cognito:", {
-                        clientId: "${process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID}",
-                        redirect: "${process.env.NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL}"
-                      });
                     })();`
                 }}
             />
@@ -39,6 +35,7 @@ export default function RootLayout({children}: { children: ReactNode }) {
             />
             <link rel="preconnect" href="https://rsms.me/"/>
             <link rel="stylesheet" href="https://rsms.me/inter/inter.css"/>
+
             <title>PolySynergy</title>
         </head>
             <body>

@@ -24,7 +24,7 @@ export default function Logs() {
     const fetchLogs = async () => {
         if (paused) return;
 
-        let url = `${apiConfig.API_URL}/lambda-logs/${activeVersionId}/`;
+        let url = `${apiConfig.LOCAL_API_URL}/execution/${activeVersionId}/logs/`;
         if (lastTimestamp) url += `?after=${lastTimestamp}`;
 
         try {

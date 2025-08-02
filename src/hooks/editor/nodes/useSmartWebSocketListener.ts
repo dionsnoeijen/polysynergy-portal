@@ -1,0 +1,220 @@
+import {useEffect} from 'react';
+import useNodesStore from "@/stores/nodesStore";
+import useMockStore, {MockNode} from '@/stores/mockStore';
+import {getConnectionExecutionDetails} from "@/api/executionApi";
+import useEditorStore from "@/stores/editorStore";
+import useChatStore from '@/stores/chatStore';
+import config from "@/config";
+import { useSmartWebSocket } from '@/hooks/editor/useSmartWebSocket';
+
+type ExecutionMessage = {
+    node_id?: string;
+    event: 'run_start' | 'start_node' | 'end_node' | 'run_end' | "start_tool" | "end_tool" | "RunResponseContent" | "TeamRunResponseContent" | "TeamToolCallCompleted";
+    status?: 'success' | 'killed' | 'error';
+    order?: number;
+    run_id?: string;
+    content?: string;
+};
+
+const groupStates = new Map<string, { count: number, remaining: number }>();
+const nodeExecutionState = new Map<string, { started: boolean; ended: boolean; status?: string }>();
+
+export function useSmartWebSocketListener(flowId: string) {
+    const getNode = useNodesStore((state) => state.getNode);
+    const addOrUpdateMockNode = useMockStore((state) => state.addOrUpdateMockNode);
+    const setMockConnections = useMockStore((state) => state.setMockConnections);
+    const setHasMockData = useMockStore((state) => state.setHasMockData);
+    const startAgentMessage = useChatStore((state) => state.startAgentMessage);
+    const appendToAgentMessage = useChatStore((state) => state.appendToAgentMessage);
+
+    const websocketUrl = flowId ? `${config.WEBSOCKET_URL}/execution/${flowId}` : '';
+
+    const { 
+        connectionStatus, 
+        isConnected, 
+        onMessage 
+    } = useSmartWebSocket(websocketUrl, {
+        enabled: !!flowId,
+        autoConnect: true,
+        heartbeatInterval: 30000, // 30 seconds
+        pingTimeout: 5000,       // 5 seconds
+        maxReconnectAttempts: 10,
+        maxBackoffDelay: 30000   // 30 seconds max delay
+    });
+
+    useEffect(() => {
+        if (!flowId) return;
+
+        cleanupExecutionGlow();
+
+        const unsubscribe = onMessage((event) => {
+            const message: ExecutionMessage = JSON.parse(event.data);
+            const eventType = message.event;
+            let node_id = message.node_id;
+
+            if ((
+                message.event === 'RunResponseContent' ||
+                message.event === 'TeamRunResponseContent') && message.content) {
+                const {run_id, content} = message;
+                if (!run_id) return;
+
+                const hasMessages = useChatStore.getState().messagesByRun?.[run_id];
+                if (!hasMessages) {
+                    startAgentMessage(run_id, node_id);
+                }
+                appendToAgentMessage(content, run_id, node_id);
+            }
+
+            if (message.event === 'TeamToolCallCompleted') {
+                console.log(message);
+            }
+
+            if (eventType === 'run_start') {
+                cleanupExecutionGlow();
+                useChatStore.getState().setActiveRunId(message.run_id as string);
+                useChatStore.getState().clearChatStore(message.run_id);
+                return;
+            }
+
+            if (eventType === 'start_tool') {
+                console.log(`Tool started: ${node_id}`);
+                const toolEl = document.querySelector(`[data-node-id="${node_id}"]`);
+                console.log(`Tool el: ${toolEl}`);
+                if (toolEl) toolEl.classList.add('executing-tool');
+            }
+
+            if (eventType === 'end_tool') {
+                console.log(`Tool ended: ${node_id}`);
+                setTimeout(() => {
+                    const toolEl = document.querySelector(`[data-node-id="${node_id}"]`);
+                    if (toolEl) {
+                        toolEl.classList.remove('executing-tool');
+                    }
+                }, 5000);
+            }
+
+            if (eventType === 'run_end') {
+                setTimeout(async () => {
+                    const executingEls = document.querySelectorAll('[data-node-id].executing');
+                    executingEls.forEach((el) => {
+                        el.classList.remove('executing', 'executed-success', 'executed-killed');
+                    });
+                    groupStates.clear();
+                    nodeExecutionState.clear();
+
+                    const activeVersionId = useEditorStore.getState().activeVersionId;
+                    const data = await getConnectionExecutionDetails(
+                        activeVersionId as string,
+                        message.run_id as string
+                    );
+                    setMockConnections(data);
+                    setHasMockData(true);
+                }, 100);
+                return;
+            }
+
+            if (!node_id || !message.run_id) return;
+
+            let el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement;
+            const nodeFlowNode = getNode(node_id);
+            const type = typeof nodeFlowNode?.path === 'undefined'
+                ? 'GroupNode'
+                : nodeFlowNode?.path.split(".").pop();
+
+            if (eventType === 'start_node' || eventType === 'end_node') {
+                addOrUpdateMockNode({
+                    id: `${node_id}-${message.order || 0}`,
+                    handle: nodeFlowNode?.handle,
+                    runId: message.run_id,
+                    killed: message.status === 'killed',
+                    type,
+                    started: eventType === 'start_node',
+                    variables: {},
+                    status:
+                        eventType === 'start_node'
+                            ? 'executing'
+                            : eventType === 'end_node'
+                                ? message.status || 'killed'
+                                : undefined,
+                } as MockNode);
+            }
+
+            // Group fallback...
+            if (!el) {
+                const groupInfo = useNodesStore.getState().findNearestVisibleGroupWithCount?.(node_id);
+                if (!groupInfo) return;
+
+                node_id = groupInfo.groupId;
+                el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement;
+                if (!el) return;
+
+                const {groupId, count} = groupInfo;
+                const current = groupStates.get(groupId) || {count, remaining: 0};
+
+                if (eventType === 'start_node') {
+                    current.remaining += 1;
+                    groupStates.set(groupId, current);
+                    if (current.remaining === 1) el.classList.add('executing');
+                } else if (eventType === 'end_node') {
+                    current.remaining = Math.max(0, current.remaining - 1);
+                    if (current.remaining === 0) {
+                        el.classList.remove('executing');
+                        el.classList.add(`executed-${message.status || 'killed'}`);
+                        groupStates.delete(groupId);
+                    } else {
+                        groupStates.set(groupId, current);
+                    }
+                }
+                return;
+            }
+
+            // Individual node
+            const state = nodeExecutionState.get(node_id) || {started: false, ended: false};
+
+            if (eventType === 'start_node') {
+                state.started = true;
+                nodeExecutionState.set(node_id, state);
+                el.classList.add('executing');
+                if (state.ended) {
+                    el.classList.remove('executing');
+                    el.classList.add(`executed-${state.status || 'success'}`);
+                    nodeExecutionState.delete(node_id);
+                }
+            } else if (eventType === 'end_node') {
+                state.ended = true;
+                state.status = message.status || 'success';
+                nodeExecutionState.set(node_id, state);
+                if (state.started) {
+                    el.classList.remove('executing');
+                    el.classList.add(`executed-${state.status}`);
+                    nodeExecutionState.delete(node_id);
+                }
+            }
+        });
+
+        return () => {
+            unsubscribe();
+            groupStates.clear();
+            nodeExecutionState.clear();
+            cleanupExecutionGlow();
+        };
+    }, [flowId, onMessage, getNode, addOrUpdateMockNode, setMockConnections, setHasMockData, startAgentMessage, appendToAgentMessage]);
+
+    function cleanupExecutionGlow() {
+        const elements = document.querySelectorAll('[data-node-id]');
+        elements.forEach((el) => {
+            el.classList.remove('executing');
+            el.classList.remove('executing-tool');
+            el.classList.forEach((cls) => {
+                if (cls.startsWith('executed-')) el.classList.remove(cls);
+            });
+        });
+        groupStates.clear();
+        nodeExecutionState.clear();
+    }
+
+    return {
+        connectionStatus,
+        isConnected
+    };
+}

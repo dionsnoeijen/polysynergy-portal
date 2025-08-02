@@ -1,313 +1,72 @@
 'use client';
 
-import React, {useRef, useEffect, useCallback, useMemo, useState} from 'react';
-
-import useEditorStore, {EditorState} from "@/stores/editorStore";
-import useConnectionsStore from "@/stores/connectionsStore";
-import useNodesStore from "@/stores/nodesStore";
-
-import {useZoom} from "@/hooks/editor/useZoom";
-import {usePan} from "@/hooks/editor/usePan";
-import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
-import {useDeselectOnClickOutside} from "@/hooks/editor/nodes/useDeselectOnClickOutside";
-import {useDeleteNode} from "@/hooks/editor/nodes/useDeleteNode";
-import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
-import {useAutoUpdateScheduleNodes} from "@/hooks/editor/useAutoUpdateScheduleNodes";
-import {useAutoUpdateRouteNodes} from "@/hooks/editor/useAutoUpdateRouteNodes";
+import React, { useRef } from 'react';
 
 import Grid from "@/components/editor/grid";
 import Node from "@/components/editor/nodes/node";
 import Connection from "@/components/editor/nodes/connection";
 import BoxSelect from "@/components/editor/box-select";
-import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import OpenGroup from "@/components/editor/nodes/open-group";
 import DeleteDialog from "@/components/editor/nodes/delete-dialog";
 import AddNode from "@/components/editor/add-node";
-import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import PointZeroIndicator from "@/components/editor/point-zero-indicator";
-import useDraggable from "@/hooks/editor/nodes/useDraggable";
-import clsx from "clsx";
-import {EditorMode} from "@/types/types";
-import {useAutoFitNodes} from "@/hooks/editor/nodes/useAutoFitNodes";
-import {useSmartWebSocketListener} from "@/hooks/editor/nodes/useSmartWebSocketListener";
 import EditorIntroTour from "@/components/guidedtour/editor-intro-tour";
 import IsExecuting from "@/components/editor/is-executing";
 
+import { useEditorTransform } from "@/hooks/editor/useEditorTransform";
+import { useEditorEventHandlers } from "@/hooks/editor/useEditorEventHandlers";
+import { useEditorKeyBindings } from "@/hooks/editor/useEditorKeyBindings";
+import { useEditorState } from "@/hooks/editor/useEditorState";
+import { useAutoUpdateScheduleNodes } from "@/hooks/editor/useAutoUpdateScheduleNodes";
+import { useAutoUpdateRouteNodes } from "@/hooks/editor/useAutoUpdateRouteNodes";
+import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
+import { useAutoFitNodes } from "@/hooks/editor/nodes/useAutoFitNodes";
+import { EditorMode } from "@/types/types";
+
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
-    const mousePositionRef = useRef<{ x: number; y: number }>({x: 0, y: 0});
-    const transformLayerRef = useRef<HTMLDivElement>(null);
 
-    const setEditorPosition = useEditorStore((state) => state.setEditorPosition);
-    const isDragging = useEditorStore((state) => state.isDragging);
-    const selectedNodes = useEditorStore((state) => state.selectedNodes);
-    const deleteNodesDialogOpen = useEditorStore((state) => state.deleteNodesDialogOpen);
-    const setDeleteNodesDialogOpen = useEditorStore((state) => state.setDeleteNodesDialogOpen);
-    const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
-    const openContextMenu = useEditorStore((state) => state.openContextMenu);
-    const copySelectedNodes = useEditorStore((state) => state.copySelectedNodes);
-    const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
-    const pasteNodes = useEditorStore((state) => state.pasteNodes);
-    const isPasting = useEditorStore((state) => state.isPasting);
-    const isDraft = useEditorStore((state) => state.isDraft);
-    const editorMode = useEditorStore((state) => state.editorMode);
-    const isFormOpen = useEditorStore((state) => state.isFormOpen);
-    const activeVersionId = useEditorStore(state => state.activeVersionId);
+    // Custom hooks for separated concerns
+    const { transformLayerRef } = useEditorTransform();
+    const {
+        isMouseDown,
+        handleMouseDownDispatch,
+        handleMouseMoveDispatch,
+        handleMouseUpDispatch,
+        handleMouseLeaveDispatch,
+        handleContextMenu
+    } = useEditorEventHandlers(contentRef);
+    const { handleConfirmDelete, handleCancelDelete } = useEditorKeyBindings();
+    const {
+        isInteracted,
+        setIsInteracted,
+        selectedNodes,
+        deleteNodesDialogOpen,
+        isDraft,
+        editorMode,
+        activeVersionId,
+        nodesToRender,
+        openGroups,
+        connections,
+        connectionStatus,
+        containerClass
+    } = useEditorState(isMouseDown);
 
-    const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
-    const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
-
-    const nodes = useNodesStore((state) => state.nodes);
-
-    const connections = useConnectionsStore((state) => state.connections);
-    const {handleDeleteSelectedNodes} = useDeleteNode();
-    const {handleZoom} = useZoom();
-    const {handlePanMouseDown, handleMouseMove, handleMouseUp} = usePan();
-    const {handleEditorMouseDown} = useDeselectOnClickOutside();
-    const {createGroup} = useGrouping();
-
-    const {startDraggingAfterPaste} = useDraggable();
-
-    // eslint-disable-next-line
-    const [isSpacePressed, setIsSpacePressed] = useState(false);
-    const [isMouseDown, setIsMouseDown] = useState(false);
-    const [isInteracted, setIsInteracted] = useState(false);
-
+    // Global listeners and auto-updates
     useGlobalStoreListenersWithImmediateSave();
     useAutoUpdateRouteNodes();
     useAutoUpdateScheduleNodes();
-
-    // eslint-disable-next-line
-    const nodesToRender = useMemo(() => getNodesToRender(), [getNodesToRender, nodes]);
-
-    useEffect(() => {
-        const frame = requestAnimationFrame(() => {
-            updateConnectionsDirectly(connections);
-        });
-        return () => cancelAnimationFrame(frame);
-        // eslint-disable-next-line
-    }, [nodesToRender]);
-
-    const updateEditorPosition = useCallback(() => {
-        if (contentRef.current) {
-            const rect = contentRef.current.getBoundingClientRect();
-            setEditorPosition({x: rect.left, y: rect.top});
-        }
-    }, [setEditorPosition]);
-
-    useEffect(() => {
-        updateEditorPosition();
-        window.addEventListener('resize', updateEditorPosition);
-        return () => window.removeEventListener('resize', updateEditorPosition);
-    }, [setEditorPosition, updateEditorPosition]);
-
-    const handleMousePositionUpdate = useCallback((e: React.MouseEvent) => {
-        mousePositionRef.current = {x: e.clientX, y: e.clientY};
-    }, []);
-
-    useKeyBindings({
-        'delete': {
-            handler: () => {
-                if (selectedNodes.length > 0) setDeleteNodesDialogOpen(true);
-            },
-            condition: () => selectedNodes.length > 0
-        },
-        'x': {
-            handler: () => {
-                if (selectedNodes.length > 0) setDeleteNodesDialogOpen(true);
-            },
-            condition: () => selectedNodes.length > 0
-        },
-        'backspace': {
-            handler: () => {
-                if (selectedNodes.length > 0) setDeleteNodesDialogOpen(true);
-            },
-            condition: () => selectedNodes.length > 0
-        },
-        'a': {
-            handler: () => setShowAddingNode(true),
-        },
-        'shift+a': {
-            handler: () => setShowAddingNode(true),
-        },
-        'ctrl+shift+g': {
-            handler: () => console.log('DEGROUP'),
-            condition: () => selectedNodes.length > 0
-        },
-        'ctrl+g': {
-            handler: () => createGroup(),
-            condition: () => selectedNodes.length > 0
-        },
-        'ctrl+d': {
-            handler: () => console.log('Duplicate selected nodes'),
-            condition: () => selectedNodes.length > 0
-        },
-        'ctrl+x': {
-            handler: () => console.log('Cut selected nodes'),
-            condition: () => selectedNodes.length > 0
-        },
-        'ctrl+c': {
-            handler: () => copySelectedNodes(),
-            condition: () => selectedNodes.length > 0
-        },
-        'ctrl+v': {
-            handler: () => {
-                const pastedNodeIds = pasteNodes();
-                startDraggingAfterPaste(pastedNodeIds);
-            },
-            condition: () => true // of bijvoorbeeld `editorMode === EditorMode.Select`
-        }
-    });
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            const target = e.target as HTMLElement;
-            const tag = target.tagName.toLowerCase();
-            const isTextInput = ['input', 'textarea'].includes(tag) || target.isContentEditable;
-
-            if (isTextInput) return;
-
-            if (e.code === 'Space') {
-                e.preventDefault();
-                setIsSpacePressed(true);
-                useEditorStore.getState().setEditorModeWithMemory(EditorMode.Pan);
-            }
-        };
-
-        const handleKeyUp = (e: KeyboardEvent) => {
-            if (e.code === 'Space') {
-                setIsSpacePressed(false);
-                const {previousEditorMode} = useEditorStore.getState();
-                useEditorStore.getState().setEditorMode(previousEditorMode);
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp);
-        };
-    }, []);
-
-    useEffect(() => {
-        const handleWheelGlobal = (e: WheelEvent) => {
-            const contentEl = contentRef.current;
-            if (!contentEl) return;
-            const hoveredEl = document.elementFromPoint(e.clientX, e.clientY);
-            if (hoveredEl?.closest('[data-type="editor"], [data-type="drawing-layer"]')) {
-                e.preventDefault();
-                handleZoom(e as unknown as React.WheelEvent, contentEl.getBoundingClientRect());
-            }
-        };
-        window.addEventListener('wheel', handleWheelGlobal, {passive: false});
-        return () => window.removeEventListener('wheel', handleWheelGlobal);
-    }, [handleZoom]);
-
-    const handleConfirmDelete = () => {
-        handleDeleteSelectedNodes(selectedNodes);
-        setDeleteNodesDialogOpen(false);
-    };
-
-    const handleCancelDelete = () => {
-        setDeleteNodesDialogOpen(false);
-    };
-
-    const handleContextMenu = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openContextMenu(
-            e.clientX,
-            e.clientY,
-            [
-                {
-                    label: "Add Node",
-                    action: () => setShowAddingNode(true),
-                }
-            ]
-        );
-    };
-
-    useEffect(() => {
-        const applyTransform = (state: EditorState) => {
-            const pan = state.getPanPositionForVersion();
-            const zoom = state.getZoomFactorForVersion();
-
-            if (transformLayerRef.current) {
-                transformLayerRef.current.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`;
-            }
-        };
-
-        applyTransform(useEditorStore.getState());
-
-        const unsubscribe = useEditorStore.subscribe((state, prevState) => {
-            const vid = state.activeVersionId;
-            if (!vid) return;
-
-            const pan = state.panPositionsByVersion[vid];
-            const prevPan = prevState.panPositionsByVersion[vid];
-            const zoom = state.zoomFactorByVersion[vid];
-            const prevZoom = prevState.zoomFactorByVersion[vid];
-
-            if (
-                pan?.x !== prevPan?.x ||
-                pan?.y !== prevPan?.y ||
-                zoom !== prevZoom
-            ) {
-                applyTransform(state);
-            }
-        });
-
-        return () => unsubscribe();
-    }, []);
-
     useAutoFitNodes(contentRef, nodesToRender, 40, activeVersionId);
-    const { connectionStatus, isConnected } = useSmartWebSocketListener(activeVersionId as string);
 
     return (
         <div
             data-type="editor"
-            className={clsx(
-                "relative w-full h-full rounded-md",
-                isFormOpen() ? 'overflow-scroll' : 'overflow-hidden',
-                nodeToMoveToGroupId ? "cursor-crosshair" :
-                    editorMode === EditorMode.Pan && isMouseDown ? "cursor-grabbing" :
-                        editorMode === EditorMode.Pan ? "cursor-grab" :
-                            "cursor-default"
-            )}
-            onMouseDown={(e) => {
-                setIsMouseDown(true);
-                switch (editorMode) {
-                    case EditorMode.Pan:
-                        handlePanMouseDown(e);
-                        break;
-                    case EditorMode.Select:
-                        handleEditorMouseDown();
-                        break;
-                    case EditorMode.BoxSelect:
-                        // eventueel BoxSelect-handling
-                        break;
-                    case EditorMode.Draw:
-                        // laat DrawingLayer dit zelf doen, pointer-events aan etc.
-                        break;
-                }
-            }}
-            onMouseMove={(e) => {
-                handleMousePositionUpdate(e);
-                if (isDragging || isPasting) return;
-                handleMouseMove(e);
-            }}
-            onMouseUp={() => {
-                setIsMouseDown(false);
-                handleMouseUp();
-            }}
-            onMouseLeave={() => {
-                setIsMouseDown(false);
-                handleMouseUp();
-            }}
-            onContextMenu={isDraft ? handleContextMenu : () => {
-            }}
+            className={containerClass}
+            onMouseDown={handleMouseDownDispatch}
+            onMouseMove={handleMouseMoveDispatch}
+            onMouseUp={handleMouseUpDispatch}
+            onMouseLeave={handleMouseLeaveDispatch}
+            onContextMenu={handleContextMenu}
             ref={contentRef}
         >
             <EditorIntroTour/>
@@ -344,7 +103,7 @@ export default function Editor() {
             >
                 <PointZeroIndicator/>
 
-                {getOpenGroups().map((group) => (
+                {openGroups.map((group) => (
                     <OpenGroup key={`group-${group.id}`} node={group}/>
                 ))}
 

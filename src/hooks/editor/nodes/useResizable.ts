@@ -1,8 +1,11 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
+import useConnectionsStore from '@/stores/connectionsStore';
 import { Node } from '@/types/types';
 import {snapToGrid} from "@/utils/snapToGrid";
+import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 
 type Size = {
     width: number;
@@ -14,6 +17,7 @@ const useResizable = (node: Node) => {
     const [ isResizing, setIsResizing ] = useState(false);
     const { zoomFactor } = useEditorStore();
     const { updateNodeWidth } = useNodesStore();
+    const connections = useConnectionsStore((state) => state.connections);
 
     const sizeRef = useRef(size);
     sizeRef.current = size;
@@ -33,8 +37,22 @@ const useResizable = (node: Node) => {
         const handleMouseMove = (moveEvent: MouseEvent) => {
             const deltaX = moveEvent.movementX / zoomFactor;
             const newWidth = Math.max(100, sizeRef.current.width + deltaX);
-
-            setSize((prevSize) => ({ ...prevSize, width: newWidth }));
+            
+            // Direct DOM manipulation for immediate visual feedback
+            const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`) as HTMLElement;
+            if (nodeEl) {
+                nodeEl.style.width = `${newWidth}px`;
+            }
+            
+            // Update React state for consistency
+            flushSync(() => {
+                setSize((prevSize) => ({ ...prevSize, width: newWidth }));
+            });
+            
+            // Update connections to follow the resizing node
+            requestAnimationFrame(() => {
+                updateConnectionsDirectly(connections);
+            });
         };
 
         const handleMouseUp = () => {

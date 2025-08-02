@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {ChevronLeftIcon} from "@heroicons/react/24/outline";
 import {getNodeExecutionDetails} from "@/api/executionApi";
 import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
-import Chat from "@/components/editor/bottombars/chat";
+import EnhancedChat from "@/components/editor/bottombars/enhanced-chat";
 import {Route} from "@/types/types";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import useMockStore from "@/stores/mockStore";
@@ -111,8 +111,8 @@ const Output: React.FC = (): React.ReactElement => {
                 <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
                     <h3 className="text-sky-500 dark:text-white/80">Chat</h3>
                 </div>
-                <div className="flex-1 overflow-auto p-4 text-sm text-white/80">
-                    <Chat />
+                <div className="flex-1 overflow-auto text-sm text-white/80">
+                    <EnhancedChat />
                 </div>
             </div>
         </div>

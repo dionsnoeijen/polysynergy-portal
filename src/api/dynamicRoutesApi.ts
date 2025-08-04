@@ -68,7 +68,7 @@ export const updateDynamicRoute = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.LOCAL_API_URL}/routes/${routeId}/versions/${activeVersionId}/?=project_id=${projectId}`,
+        `${config.LOCAL_API_URL}/routes/${routeId}/versions/${activeVersionId}/?project_id=${projectId}`,
         {
             method: 'PATCH',
             headers: {

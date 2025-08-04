@@ -74,9 +74,6 @@ const Note: React.FC<NoteProps> = ({ note, isSelected, onSelect, onUpdate, onEdi
             onEditingChange(false);
         };
 
-        const setTextareaWidth = (newWidth: number) => {
-            textarea.style.width = newWidth + 'px';
-        };
 
         textarea.addEventListener('keydown', (e) => {
             if (e.keyCode === 13 && !e.shiftKey) {

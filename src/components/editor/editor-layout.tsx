@@ -76,7 +76,6 @@ const EditorLayout = ({
         showDocs,
         activeVersionId,
         closeFormMessage,
-        isExecuting,
         fetchAvailableNodes
     } = useLayoutState();
 

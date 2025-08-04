@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import useEditorStore from '@/stores/editorStore';
 import useAvailableNodeStore from '@/stores/availableNodesStore';
 import { useAutoFetch } from './useAutoFetch';

@@ -12,7 +12,7 @@ import ExecutionOrder from '@/components/editor/nodes/execution-order';
 interface ExpandedNodeProps {
     node: Node;
     preview: boolean;
-    mockNode: any;
+    mockNode: unknown;
     styles: {
         border: string;
         background: string;

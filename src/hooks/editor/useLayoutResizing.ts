@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
 import { flushSync } from 'react-dom';
-import useEditorStore from '@/stores/editorStore';
 
 export enum ResizeWhat {
     ItemManager = 'itemManager',
@@ -9,13 +8,12 @@ export enum ResizeWhat {
 }
 
 interface ResizeConfig {
-    updatePanelDimensions: (newWidth?: any, newHeight?: any) => void;
     updateEditorPosition: () => void;
     setWidth: React.Dispatch<React.SetStateAction<{itemManager: number, dock: number}>>;
     setHeight: React.Dispatch<React.SetStateAction<{horizontalEditorLayout: number}>>;
 }
 
-export const useLayoutResizing = ({ updatePanelDimensions, updateEditorPosition, setWidth, setHeight }: ResizeConfig) => {
+export const useLayoutResizing = ({ updateEditorPosition, setWidth, setHeight }: ResizeConfig) => {
     const [resizing, setResizing] = useState<ResizeWhat | null>(null);
 
     const startResizing = useCallback((resizeWhat: ResizeWhat) => {

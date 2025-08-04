@@ -11,7 +11,7 @@ import {useShallow} from 'zustand/shallow';
 
 interface NodeStylingOptions {
     isService: boolean;
-    mockNode: any;
+    mockNode: unknown;
     hasMockData: boolean;
     isNodeInService: boolean;
     preview: boolean;

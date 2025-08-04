@@ -9,7 +9,6 @@ export interface PlayButtonLogicProps {
     centered?: boolean;
     staged?: boolean;
     categoryMainTextColor?: string;
-    categorySubTextColor?: string;
 }
 
 export const usePlayButtonLogic = ({
@@ -18,8 +17,7 @@ export const usePlayButtonLogic = ({
     collapsed = false,
     centered = true,
     staged = false,
-    categoryMainTextColor = 'text-sky-600 dark:text-white',
-    categorySubTextColor
+    categoryMainTextColor = 'text-sky-600 dark:text-white'
 }: PlayButtonLogicProps) => {
     const handlePlay = useHandlePlay();
     const stages = useStagesStore((state) => state.stages);

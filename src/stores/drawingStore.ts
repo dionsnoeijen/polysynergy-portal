@@ -90,7 +90,7 @@ interface DrawingState {
     
 }
 
-const useDrawingStore = create<DrawingState>((set, get) => ({
+const useDrawingStore = create<DrawingState>((set) => ({
     notes: [],
     shapes: [],
     paths: [],

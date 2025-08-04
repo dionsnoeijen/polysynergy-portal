@@ -40,7 +40,7 @@ export const processImageFile = (file: File): Promise<ProcessedImage> => {
                 const originalHeight = img.height;
 
                 // Calculate new dimensions while maintaining aspect ratio
-                let { width, height } = calculateDimensions(originalWidth, originalHeight, MAX_DIMENSIONS);
+                const { width, height } = calculateDimensions(originalWidth, originalHeight, MAX_DIMENSIONS);
 
                 // For GIFs, we want to preserve them as-is (no canvas processing)
                 if (file.type === 'image/gif') {

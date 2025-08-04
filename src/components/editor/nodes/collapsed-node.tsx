@@ -8,7 +8,7 @@ import ExecutionOrder from '@/components/editor/nodes/execution-order';
 
 interface CollapsedNodeProps {
     node: Node;
-    mockNode: any;
+    mockNode: unknown;
     styles: {
         background: string;
         mainText: string;

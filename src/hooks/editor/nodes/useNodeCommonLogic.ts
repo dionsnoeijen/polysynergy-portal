@@ -11,7 +11,6 @@ export const useNodeCommonLogic = (node: Node, preview: boolean = false) => {
     const mockNode = useMockStore((state) => state.getMockNode(node.id));
     const hasMockData = useMockStore((state) => state.hasMockData);
     const isPanning = useEditorStore((state) => state.isPanning);
-    const isZooming = useEditorStore((state) => state.isZooming);
     const visibleNodeCount = useEditorStore((state) => state.visibleNodeCount);
 
     return useMemo(() => ({

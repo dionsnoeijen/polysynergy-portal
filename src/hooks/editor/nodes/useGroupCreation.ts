@@ -15,7 +15,6 @@ const useGroupCreation = () => {
     const showGroup = useNodesStore((state) => state.showGroup);
     const removeNodeFromGroupStore = useNodesStore((state) => state.removeNodeFromGroup);
     const getGroupById = useNodesStore((state) => state.getGroupById);
-    const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);
     const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
     const addGroupNode = useNodesStore((state) => state.addGroupNode);
     const disableAllNodesViewExceptByIds = useNodesStore((state) => state.disableAllNodesViewExceptByIds);

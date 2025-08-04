@@ -113,10 +113,10 @@ const EnhancedChat: React.FC = () => {
             </div>
 
             {/* Input area */}
-            <div className="border-t border-gray-200 dark:border-white/10 p-4">
-                <div className="flex gap-2 max-w-3xl mx-auto items-end">
+            <div className="border-t border-sky-500/50 dark:border-white/10 p-4">
+                <div className="relative max-w-3xl mx-auto">
                     <textarea
-                        className="flex-1 resize-none border rounded-lg p-2 min-h-[40px] max-h-[120px] text-sm dark:bg-neutral-900 dark:text-white"
+                        className="w-full resize-none border border-sky-500/50 dark:border-white/20 rounded-md p-3 pr-12 min-h-[40px] max-h-[120px] text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-white/40 transition-colors"
                         rows={1}
                         value={input}
                         placeholder={`Prompt${selectedPromptNode ? ` for ${selectedPromptNode.name}` : ''}...`}
@@ -129,11 +129,11 @@ const EnhancedChat: React.FC = () => {
                         }}
                     />
                     <button
-                        className="bg-sky-600 hover:bg-sky-700 text-white p-2 rounded-full disabled:opacity-50"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-sky-500 hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-700 text-white p-1.5 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         onClick={handleSend}
                         disabled={!selectedPromptNodeId}
                     >
-                        <ArrowUpIcon className="h-5 w-5" />
+                        <ArrowUpIcon className="h-4 w-4" />
                     </button>
                 </div>
             </div>

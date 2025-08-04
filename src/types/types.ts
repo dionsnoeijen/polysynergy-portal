@@ -60,6 +60,7 @@ export enum FormType {
     EditTemplate = 'editTemplate',
     AddProjectEnvVar = 'addProjectEnvVar',
     EditProjectEnvVar = 'editProjectEnvVar',
+    ExportSharing = 'exportSharing',
 }
 
 export enum InOut {

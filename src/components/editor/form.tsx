@@ -17,6 +17,7 @@ import PublishedVariableForm from "@/components/editor/forms/published-variable-
 import TemplateEditorForm from "@/components/editor/forms/template-editor-form";
 import ProjectEnvVarsForm from "@/components/editor/forms/project-env-vars-form";
 import PublishedVariableSettingsForm from "@/components/editor/forms/published-variable-settings-form";
+import ExportSharingForm from "@/components/editor/forms/export-sharing-form";
 
 const Form: React.FC = () => {
     const formType = useEditorStore((state) => state.formType);
@@ -99,6 +100,11 @@ const Form: React.FC = () => {
                 formType === FormType.PublishedVariableSettings
             ) && (
                 <PublishedVariableSettingsForm />
+            )}
+            {(
+                formType === FormType.ExportSharing
+            ) && (
+                <ExportSharingForm />
             )}
         </div>
     );

@@ -5,6 +5,8 @@
 
 # PolySynergy Portal
 
+> 🚀 **Get Started**: This is part of the [PolySynergy Orchestrator](https://github.com/dionsnoeijen/polysynergy-orchestrator) - a visual workflow automation platform. Start there to set up the complete system and begin building AI agent workflows.
+
 ## Overview
 
 The PolySynergy Portal is a sophisticated visual node-based workflow editor that enables users to create, manage, and execute complex data processing pipelines through an intuitive drag-and-drop interface. Built with Next.js and TypeScript, it provides real-time collaboration features, advanced canvas interactions, and seamless integration with various data sources and AI services.

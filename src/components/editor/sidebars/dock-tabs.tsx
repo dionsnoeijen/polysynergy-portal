@@ -11,7 +11,7 @@ type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
 };
 
-const DockTabs: React.FC<Props> = ({ toggleClose, ...props }) => {
+const DockTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
     const isExecuting = useEditorStore((state) => state.isExecuting);
     const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -36,7 +36,7 @@ const DockTabs: React.FC<Props> = ({ toggleClose, ...props }) => {
     ];
 
     return (
-        <div {...props} className="absolute left-0 top-0 right-0 bottom-0 flex flex-col">
+        <div {...restProps} className="absolute left-0 top-0 right-0 bottom-0 flex flex-col">
             <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
                 <Tab.List className="flex p-1 border border-sky-500/50 dark:border-white/20 rounded-md bg-white dark:bg-zinc-800">
                     {tabs.map((tab, index) => (

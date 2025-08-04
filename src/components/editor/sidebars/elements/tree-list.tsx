@@ -33,8 +33,12 @@ export default function TreeList<T extends ListItemWithId>({
     const closeTree = useEditorStore((state) => state.closeTree);
     const isOpen = useEditorStore((state) => state.isTreeOpen(fundamental));
     const isFormOpen = useEditorStore((state) => state.isFormOpen());
+    const isExecuting = useEditorStore((state) => state.isExecuting);
 
     const handleTreeToggle = (isOpen: boolean) => {
+        // Disable tree interactions during execution
+        if (isExecuting) return;
+        
         if (isOpen) {
             closeTree(fundamental);
         } else {
@@ -105,8 +109,8 @@ export default function TreeList<T extends ListItemWithId>({
                         <div
                             className="border border-sky-500/50 bg-white dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
                             <button
-                                disabled={addDisabled}
-                                onClick={addButtonClick}
+                                disabled={addDisabled || isExecuting}
+                                onClick={isExecuting ? () => {} : addButtonClick}
                                 className={clsx(
                                     "w-full flex items-center justify-center p-1",
                                     "rounded-tr-none rounded-tl-none text-sky-500 dark:text-white/70",
@@ -128,8 +132,8 @@ export default function TreeList<T extends ListItemWithId>({
             <div className="mt-[10px]">
                 {addButtonClick && (
                     <button
-                        disabled={addDisabled}
-                        onClick={addButtonClick}
+                        disabled={addDisabled || isExecuting}
+                        onClick={isExecuting ? () => {} : addButtonClick}
                         data-tour-id={dataTourId ?? null}
                         className={clsx(
                             "w-full flex items-center justify-between gap-2 px-3 py-2",

@@ -12,12 +12,14 @@ export const useEditorState = (isMouseDown?: boolean) => {
 
     // Store selectors
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
+    const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
     const deleteNodesDialogOpen = useEditorStore((state) => state.deleteNodesDialogOpen);
     const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
     const isDraft = useEditorStore((state) => state.isDraft);
     const editorMode = useEditorStore((state) => state.editorMode);
     const isFormOpen = useEditorStore((state) => state.isFormOpen);
     const activeVersionId = useEditorStore(state => state.activeVersionId);
+    const isExecuting = useEditorStore((state) => state.isExecuting);
 
     const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
     const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
@@ -46,6 +48,13 @@ export const useEditorState = (isMouseDown?: boolean) => {
         isFormOpen() ? 'overflow-scroll' : 'overflow-hidden',
         cursorClass
     ), [isFormOpen, cursorClass]);
+
+    // Clear node selections when execution starts
+    useEffect(() => {
+        if (isExecuting && selectedNodes.length > 0) {
+            setSelectedNodes([]);
+        }
+    }, [isExecuting, selectedNodes.length, setSelectedNodes]);
 
     // Update connections when nodes change
     useEffect(() => {

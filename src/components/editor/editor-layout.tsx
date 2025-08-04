@@ -5,7 +5,7 @@ import { ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon } from "@hero
 import dynamic from 'next/dynamic';
 
 import ItemManager from "@/components/editor/sidebars/item-manager";
-import Dock from "@/components/editor/sidebars/dock";
+import DockTabs from "@/components/editor/sidebars/dock-tabs";
 import Form from "@/components/editor/form";
 import Docs from "@/components/editor/docs";
 import BottomBar from "@/components/editor/bottombars/bottom-bar";
@@ -23,7 +23,7 @@ import { useDebugTools } from "@/hooks/editor/useDebugTools";
 import { useLayoutEventHandlers } from "@/hooks/editor/useLayoutEventHandlers";
 import { useLayoutState } from "@/hooks/editor/useLayoutState";
 
-// const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false })
+const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false });
 const Editor = dynamic(() => import('@/components/editor/editor'), {
     ssr: false
 });
@@ -60,7 +60,7 @@ const EditorLayout = ({
     
     const { updateEditorPosition } = useLayoutEventHandlers();
     
-    const { ResizeWhat, resizing, startResizing } = useLayoutResizing({
+    const { ResizeWhat, startResizing } = useLayoutResizing({
         updatePanelDimensions,
         updateEditorPosition,
         setWidth,
@@ -100,10 +100,6 @@ const EditorLayout = ({
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
             {/*<PerformanceHUD />*/}
             <ItemManagerIntroTour/>
-            {isExecuting && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                </div>
-            )}
             {closeFormMessage && (
                 <>
                     <div className="z-20 fixed top-0 left-0 right-0 h-[1px] bg-green-500 animate-progress"></div>
@@ -149,7 +145,7 @@ const EditorLayout = ({
                             projectUuid && (routeUuid || scheduleUuid || blueprintUuid || configUuid) ? (
                                 activeVersionId ? (
                                     <>
-                                        {/*<DrawingLayer panPosition={panPosition} zoomFactor={zoomFactor} />*/}
+                                        <DrawingLayer />
                                         <Editor key={'editor-' + activeVersionId}/>
                                         <BottomDrawToolbar/>
                                         <TopRightEditorListener/>
@@ -177,7 +173,7 @@ const EditorLayout = ({
                     <>
                         <div style={{width: width.dock}} className="absolute top-0 right-0 bottom-0 overflow-scroll" data-panel="dock">
                             <div className="absolute inset-[10px]">
-                                <Dock toggleClose={toggleCloseDock}/>
+                                <DockTabs toggleClose={toggleCloseDock}/>
                             </div>
                             <button
                                 onMouseDown={() => startResizing(ResizeWhat.Dock)}

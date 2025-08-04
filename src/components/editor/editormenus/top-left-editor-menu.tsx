@@ -5,7 +5,7 @@ import {
     AdjustmentsHorizontalIcon,
     ArrowUturnUpIcon,
     CursorArrowRaysIcon,
-    // PaintBrushIcon,
+    PaintBrushIcon,
     PlayIcon,
     PlusIcon,
     StopIcon
@@ -146,20 +146,25 @@ const TopLeftEditorMenu: React.FC = () => {
 
                 <Divider className={'mt-1 mb-1'}/>
 
-                {/*<div className="flex flex-col items-start justify-center w-full h-full rounded hover:bg-zinc-600">*/}
-                {/*    <button*/}
-                {/*        type="button"*/}
-                {/*        className={`w-full text-lg font-semibold text-white rounded p-2 ${editorMode === EditorMode.Draw ? 'bg-sky-500' : 'bg-transparent'}`}*/}
-                {/*        onMouseDown={() => {*/}
-                {/*            setEditorMode(EditorMode.Draw)*/}
-                {/*        }}*/}
-                {/*        title={'Draw'}*/}
-                {/*    >*/}
-                {/*        <PaintBrushIcon className="w-4 h-4"/>*/}
-                {/*    </button>*/}
-                {/*</div>*/}
+                <div className="flex flex-col items-start justify-center w-full h-full rounded hover:bg-zinc-600">
+                    <button
+                        type="button"
+                        className={`w-full text-lg font-semibold rounded p-2 ${editorMode === EditorMode.Draw ? 'bg-sky-500 text-white' : 'text-sky-500 hover:text-white dark:text-white hover:bg-sky-300 dark:hover:bg-zinc-600 bg-transparent'}`}
+                        onMouseDown={() => {
+                            if (editorMode === EditorMode.Draw) {
+                                setEditorMode(EditorMode.Select);
+                            } else {
+                                setEditorMode(EditorMode.Draw);
+                            }
+                        }}
+                        title={'Draw (D)'}
+                        data-tour-id="draw-button"
+                    >
+                        <PaintBrushIcon className="w-4 h-4"/>
+                    </button>
+                </div>
 
-                {/*<Divider className={'mt-1 mb-1'}/>*/}
+                <Divider className={'mt-1 mb-1'}/>
 
                 <div className="flex flex-col items-start justify-center w-full h-full">
                     <button

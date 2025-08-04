@@ -16,6 +16,11 @@ const useNodeMouseDown = (
     const handleNodeMouseDown = useCallback(
         (e: React.MouseEvent) => {
             if (node.view.disabled) return;
+            
+            // Disable node selection during execution
+            const isExecuting = useEditorStore.getState().isExecuting;
+            if (isExecuting) return;
+            
             const editorMode = useEditorStore.getState().editorMode;
             if (editorMode !== EditorMode.Select) return;
 

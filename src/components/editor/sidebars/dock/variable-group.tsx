@@ -32,8 +32,8 @@ const VariableGroup: React.FC<Props> = ({
             )}
             <div
                 className={`flex justify-between items-center border-b ${categoryBorderColor} ${categoryGradientBackgroundColor} p-2`}>
-                <div className="flex items-center gap-2">
-                    <span className={`${categoryMainTextColor}`}>{title}</span>
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className={`${categoryMainTextColor} truncate`}>{title}</span>
                     {formattedVersion && (
                     <span
                         className={`text-xs px-2 py-0.5 ${categoryBackgroundColor} rounded ${categorySubTextColor}`}>

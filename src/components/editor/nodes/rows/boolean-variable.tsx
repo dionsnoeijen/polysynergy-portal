@@ -1,10 +1,7 @@
-import React from "react";
-import { NodeVariable } from "@/types/types";
-import {BoltIcon, CheckCircleIcon, XCircleIcon} from "@heroicons/react/24/outline";
-import Connector from "@/components/editor/nodes/connector";
-import FakeConnector from "@/components/editor/nodes/fake-connector";
-import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
-import useConnectionsStore from "@/stores/connectionsStore";
+import React from 'react';
+import {NodeVariable} from '@/types/types';
+import InterpretedVariableContainer from '@/components/editor/nodes/rows/containers/interpreted-variable-container';
+import BooleanContent from '@/components/editor/nodes/rows/components/boolean-content';
 
 type Props = {
     variable: NodeVariable;
@@ -31,48 +28,22 @@ const BooleanVariable: React.FC<Props> = ({
     categorySubTextColor = 'text-sky-400 dark:text-slate-400',
     isInService = false
 }) => {
-
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
-
     return (
-        <div
-            className={`flex items-center justify-between rounded-md w-full pl-4 pr-4 pt-1 relative ${disabled && 'select-none opacity-0'}`}>
-            {variable.has_in && isMirror && !onlyOut && (
-                <FakeConnector in/>
-            )}
-            {variable.has_in && !isMirror && !disabled && !onlyOut && <Connector
-                in
-                nodeId={nodeId}
-                handle={variable.handle}
-                disabled={disabled || isInService}
-                groupId={groupId}
-                nodeVariableType={interpretNodeVariableType(variable).validationType}
-            />}
-            <div className="flex items-center truncate">
-                <h3 className={`font-semibold truncate ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`}>
-                    {(groupId && variable.group_name_override) ? variable.group_name_override : variable.name}:
-                </h3>
-                {variable.value ? (
-                    <CheckCircleIcon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`} />
-                ) : (
-                    <XCircleIcon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`} />
-                )}
-                {variable.value && <span className={`ml-1 ${categorySubTextColor}`}>{variable.value as string}</span>}
-                {isValueConnected && <span className="ml-1"><BoltIcon className={'w-4 h-4 text-orange-800 dark:text-yellow-300'} /></span>}
-            </div>
-            {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
-                out
-                nodeId={nodeId}
-                handle={variable.handle}
-                disabled={disabled || isInService}
-                groupId={groupId}
-                nodeVariableType={interpretNodeVariableType(variable).validationType}
-            />}
-            {variable.has_out && isMirror && !onlyIn && (
-                <FakeConnector out/>
-            )}
-        </div>
-    )
+        <InterpretedVariableContainer
+            variable={variable}
+            nodeId={nodeId}
+            onlyIn={onlyIn}
+            onlyOut={onlyOut}
+            disabled={disabled}
+            groupId={groupId}
+            isMirror={isMirror}
+            categoryMainTextColor={categoryMainTextColor}
+            categorySubTextColor={categorySubTextColor}
+            isInService={isInService}
+        >
+            {(logic) => <BooleanContent logic={logic} />}
+        </InterpretedVariableContainer>
+    );
 };
 
 export default BooleanVariable;

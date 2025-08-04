@@ -1,162 +1,71 @@
-import React, {useEffect, useState} from "react";
-import useMockStore from "@/stores/mockStore";
-import {ChevronLeftIcon} from "@heroicons/react/24/outline";
-import useEditorStore from "@/stores/editorStore";
-import {getNodeExecutionDetails} from "@/api/executionApi";
-import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
-import {Route} from "@/types/types";
-import {formatSegments} from "@/utils/formatters";
-import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
-import useStagesStore from "@/stores/stagesStore";
+import React, { useState, useEffect } from "react";
+import EnhancedChat from "@/components/editor/bottombars/enhanced-chat";
+import Logs from "@/components/editor/bottombars/logs";
 
 const Output: React.FC = (): React.ReactElement => {
-    const mockNodes = useMockStore((state) => state.mockNodes);
-    const activeProjectId = useEditorStore((state) => state.activeProjectId);
-    const activeVersionId = useEditorStore((state) => state.activeVersionId);
-    const activeRouteId = useEditorStore((state) => state.activeRouteId);
-    const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
-    const stages = useStagesStore((state) => state.stages);
+    const [logsRatio, setLogsRatio] = useState(40); // Logs width percentage
+    const [isDragging, setIsDragging] = useState(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [expandedNodes, setExpandedNodes] = useState<Record<string, any>>({});
-
-    const reversedNodes = [...mockNodes]
-        .sort((a, b) => a.order - b.order)
-        .reverse();
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const toggleNode = async (node: any) => {
-        const nodeKey = `${node.id}-${node.order}`;
-        if (expandedNodes[nodeKey]) {
-            setExpandedNodes((prev) => {
-                const newState = {...prev};
-                delete newState[nodeKey];
-                return newState;
-            });
-            return;
-        }
-
-        const data = await getNodeExecutionDetails(
-            activeVersionId as string,
-            node.runId,
-            node.id,
-            node.order,
-            'mock',
-            'mock'
-        );
-
-        setExpandedNodes((prev) => ({
-            ...prev,
-            [nodeKey]: data,
-        }));
+    // Handle resizing for logs/chat layout
+    const handleMouseDown = (e: React.MouseEvent) => {
+        setIsDragging(true);
+        e.preventDefault();
     };
 
-    const [activeItem, setActiveItem] = useState<Route | undefined>();
     useEffect(() => {
-        let isMounted = true;
+        if (!isDragging) return;
 
-        const check = () => {
-            const item = activeRouteId ? getDynamicRoute(activeRouteId) : undefined;
-            if (isMounted) {
-                setActiveItem(item);
-            }
+        const handleMouseMove = (e: MouseEvent) => {
+            const container = document.querySelector('[data-panel="output-logs-chat"]') as HTMLElement;
+            if (!container) return;
+
+            const rect = container.getBoundingClientRect();
+            const newRatio = Math.min(80, Math.max(20, ((e.clientX - rect.left) / rect.width) * 100));
+            setLogsRatio(newRatio);
         };
 
-        check(); // immediate
-        const interval = setInterval(check, 250); // continue checking if needed
+        const handleMouseUp = () => {
+            setIsDragging(false);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
 
         return () => {
-            isMounted = false;
-            clearInterval(interval);
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [activeRouteId, getDynamicRoute]);
+    }, [isDragging]);
 
     return (
-        <div className="flex h-full">
-            <div className="w-1/2 min-w-[300px] border-r border-white/10 h-full flex flex-col">
+        <div className="flex h-full" data-panel="output-logs-chat">
+            <div 
+                className="border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col"
+                style={{ width: `${logsRatio}%` }}
+            >
                 <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
-                    <h3 className="text-sky-500 dark:text-white/80">Node</h3>
+                    <h3 className="text-sky-500 dark:text-white/80">Logs</h3>
                 </div>
-                <div className="flex-1 overflow-auto">
-                    {reversedNodes.map((node, index) => {
-                        const nodeKey = `${node.id}-${node.order}`;
-                        const isOpen = !!expandedNodes[nodeKey];
-                        return (
-                            <div key={nodeKey} className="border-b border-sky-500/50 dark:border-white/10 p-2">
-                                <div
-                                    className="flex justify-between items-center cursor-pointer hover:bg-white/5"
-                                    onClick={() => toggleNode(node)}
-                                >
-                                    <span className="inline-flex items-center gap-2">
-                                        <span
-                                            className="flex items-center justify-center w-8 h-8 rounded-full bg-sky-500 text-white">
-                                            {reversedNodes.length - index}
-                                        </span>
-                                        <span className="text-sm font-bold">{node.type}</span>:
-                                        <span className="text-[0.7rem] font-light">{node.handle}</span>
-                                    </span>
-                                    <ChevronLeftIcon
-                                        className={`w-4 h-4 transition-transform ${isOpen ? "-rotate-90" : ""} text-sky-500 dark:text-white/80`}
-                                    />
-                                </div>
-
-                                {isOpen && expandedNodes[nodeKey]?.variables && (
-                                    <FormattedNodeOutput variables={expandedNodes[nodeKey].variables}/>
-                                )}
-                            </div>
-                        );
-                    })}
+                <div className="flex-1 overflow-auto text-sm text-white/80">
+                    <Logs />
                 </div>
             </div>
 
-            <div className="w-1/2 min-w-[300px] border-l border-sky-500/50 dark:border-white/10 h-full flex flex-col">
+            {/* Resizable divider */}
+            <div 
+                className="w-1 bg-sky-500/50 dark:bg-white/20 cursor-col-resize hover:bg-sky-500 dark:hover:bg-white/40 transition-colors"
+                onMouseDown={handleMouseDown}
+            />
+
+            <div 
+                className="border-l border-sky-500/50 dark:border-white/10 h-full flex flex-col"
+                style={{ width: `${100 - logsRatio}%` }}
+            >
                 <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
-                    <h3 className="text-sky-500 dark:text-white/80">Summary</h3>
+                    <h3 className="text-sky-500 dark:text-white/80">Chat</h3>
                 </div>
-                <div className="flex-1 overflow-auto p-4 text-sm text-white/80">
-                    {/*<div className="flex flex-wrap gap-2 mb-4">*/}
-                    {/*    <Button color="sky">Share</Button>*/}
-                    {/*    <Button color="sky">Duplicate</Button>*/}
-                    {/*    <Button color="sky">Export JSON</Button>*/}
-                    {/*</div>*/}
-
-                    {activeItem && (
-                        <section className="mb-4 rounded-md border border-white/10 p-4">
-                            <span className={'font-bold'}>Route</span><br/>
-                            {stages.map((stage) => {
-                                const basePath = `https://${activeProjectId}{{stage}}`;
-                                const isProd = stage.is_production;
-                                const stagePrefix = isProd ? '' : `-${stage.name}`;
-                                const fullUrl = `${basePath.replace('{{stage}}', stagePrefix)}.polysynergy.com/${formatSegments((activeItem as Route)?.segments)}`;
-                                return (
-                                    <div key={stage.name} className="flex items-start gap-2">
-                                        <span className="w-24 shrink-0 font-semibold text-sky-600 dark:text-white">
-                                            {stage.name}
-                                        </span>
-                                        <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                                            <span className="uppercase font-medium">{activeItem.method}</span>: {fullUrl}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </section>
-                    )}
-
-                    <ul className="text-sm text-sky-500 dark:text-white/70 space-y-1 mb-6">
-                        <li><span className="text-sky-500 dark:text-white">Project id:</span> {activeProjectId}</li>
-                        <li><span
-                            className="text-sky-500 dark:text-white">Node setup version id:</span> {activeVersionId}
-                        </li>
-                    </ul>
-
-                    <ul className="text-sm dark:text-white/70 space-y-1">
-                        <li><span className="text-sky-500 dark:text-white">Executed Nodes:</span> {mockNodes.length}</li>
-                        {/*<li><span className="text-sky-500 dark:text-white">Start time:</span> 14:42:08</li>*/}
-                        {/*<li><span className="text-sky-500 dark:text-white">Duration:</span> 1.7s</li>*/}
-                        {/*<li><span className="text-sky-500 dark:text-white">Result:</span> success</li>*/}
-                    </ul>
-
-                    {/*<div className="mt-6 text-sky-500">View full logs →</div>*/}
+                <div className="flex-1 overflow-auto text-sm text-white/80">
+                    <EnhancedChat />
                 </div>
             </div>
         </div>

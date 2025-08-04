@@ -43,7 +43,7 @@ const useProjectSecretsStore = create<ProjectSecretsStore>((set, get) => ({
         set({isFetching: true});
         try {
             const data = await fetchProjectSecretsAPI(activeProjectId);
-            set({secrets: data.secrets, hasInitialFetched: true});
+            set({secrets: data, hasInitialFetched: true});
             return data;
         } catch (error) {
             console.error("Failed to fetch secrets:", error);

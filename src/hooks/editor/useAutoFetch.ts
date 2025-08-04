@@ -78,5 +78,6 @@ export function useAutoFetch() {
                 !envVarsStore.isFetching,
             envVarsStore.fetchEnvVars
         );
+    // eslint-disable-next-line
     }, []);
 }

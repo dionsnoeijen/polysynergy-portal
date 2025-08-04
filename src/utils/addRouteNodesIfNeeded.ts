@@ -12,11 +12,12 @@ import {
     RouteSegmentType,
 } from "@/types/types";
 import useConnectionsStore from "@/stores/connectionsStore";
+import useEditorStore from "@/stores/editorStore";
 
 const addRouteNodes = (route: Route) => {
     const getNodeByPath = useAvailableNodeStore.getState().getAvailableNodeByPath;
-    const routeTemplate = getNodeByPath("nodes.nodes.route.route.Route");
-    const mockTemplate = getNodeByPath("nodes.nodes.mock.mock_route_request.MockRouteRequest");
+    const routeTemplate = getNodeByPath("polysynergy_nodes.route.route.Route");
+    const mockTemplate = getNodeByPath("polysynergy_nodes.mock.mock_route_request.MockRouteRequest");
 
     if (!routeTemplate || !mockTemplate) return;
 
@@ -85,8 +86,13 @@ const addRouteNodes = (route: Route) => {
 export function addRouteNodesIfNeeded(routeId: string) {
     let ticks = 0;
     const maxTicks = 50;
-
     const checkInterval = setInterval(() => {
+        const activeId = useEditorStore.getState().activeRouteId;
+        if (activeId !== routeId) {
+            clearInterval(checkInterval);
+            return;
+        }
+
         const route = useDynamicRoutesStore.getState().getDynamicRoute(routeId);
         const nodes = useNodesStore.getState().nodes;
         if (!route || nodes.length > 0) {

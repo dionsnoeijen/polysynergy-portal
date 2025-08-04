@@ -5,7 +5,7 @@ import config from "@/config";
 export const fetchProjectSecretsAPI = async (projectId: string) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/secrets/`,
+        `${config.LOCAL_API_URL}/secrets/?project_id=${projectId}`,
         {
             headers: {
                 Accept: "application/json",
@@ -26,7 +26,7 @@ export const createProjectSecretAPI = async (
     const idToken = getIdToken();
 
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/secrets/`,
+        `${config.LOCAL_API_URL}/secrets/?project_id=${projectId}`,
         {
             method: "POST",
             headers: {
@@ -48,7 +48,7 @@ export const updateProjectSecretAPI = async (
 ): Promise<Secret> => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/secrets/`,
+        `${config.LOCAL_API_URL}/secrets/?project_id=${projectId}`,
         {
             method: "PUT",
             headers: {
@@ -69,7 +69,7 @@ export const deleteProjectSecretAPI = async (
     const idToken = getIdToken();
 
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/secrets/`,
+        `${config.LOCAL_API_URL}/secrets/?project_id=${projectId}`,
         {
             method: "DELETE",
             headers: {
@@ -92,7 +92,7 @@ export const fetchProjectSecretDetailAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/projects/${projectId}/secrets/${secretId}/`,
+        `${config.LOCAL_API_URL}/secrets/${secretId}/?project_id=${projectId}`,
         {
             headers: {
                 Accept: "application/json",

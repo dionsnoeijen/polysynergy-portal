@@ -43,8 +43,7 @@ const useBlueprintsStore = create<BlueprintsStore>((
     storeBlueprint: async (blueprint: Blueprint) => {
         const { activeProjectId } = useEditorStore.getState();
         try {
-            blueprint.project_ids = [activeProjectId];
-            const response = await storeBlueprintAPI(blueprint);
+            const response = await storeBlueprintAPI(activeProjectId, blueprint);
             blueprint.id = response.id;
             set((state) => ({blueprints: [...state.blueprints, blueprint]}));
         } catch (error) {
@@ -53,8 +52,9 @@ const useBlueprintsStore = create<BlueprintsStore>((
     },
 
     updateBlueprint: async (blueprint: Blueprint): Promise<Blueprint | undefined> => {
+        const { activeProjectId } = useEditorStore.getState();
         try {
-            const response = await updateBlueprintAPI(blueprint.id as string, blueprint);
+            const response = await updateBlueprintAPI(activeProjectId, blueprint.id as string, blueprint);
             set((state) => ({
                 blueprints: state.blueprints.map((b) => (b.id === blueprint.id ? blueprint : b)),
             }));
@@ -65,8 +65,9 @@ const useBlueprintsStore = create<BlueprintsStore>((
     },
 
     deleteBlueprint: async (blueprintId: string) => {
+        const { activeProjectId } = useEditorStore.getState();
         try {
-            await deleteBlueprintAPI(blueprintId);
+            await deleteBlueprintAPI(activeProjectId, blueprintId);
             set((state) => ({
                 blueprints: state.blueprints.filter((b) => b.id !== blueprintId),
             }));

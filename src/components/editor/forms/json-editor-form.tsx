@@ -68,10 +68,10 @@ const JsonEditorForm: React.FC = () => {
             <div className="flex items-center justify-between gap-4 mb-6">
                 <Heading>{node && node.name}: {formEditVariable?.handle}</Heading>
                 <Button type="button" onClick={() => closeForm()} color="sky">
-                    <XMarkIcon className="w-5 h-5" />
+                    <XMarkIcon className="w-5 h-5"/>
                 </Button>
             </div>
-            <Divider className="my-4" soft bleed />
+            <Divider className="my-4" soft bleed/>
 
             <section className="grid sm:grid-cols-1">
                 <div className="h-[500px] overflow-hidden -ml-10 -mr-10">

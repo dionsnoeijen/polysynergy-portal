@@ -30,25 +30,26 @@ export default function useGlobalStoreListenersWithImmediateSave() {
 
     const doSave = useCallback(async () => {
         if (!activeVersionId || savingInProgress) return;
+
+        const [fundamentalId, type] = getCurrentFundamental();
+        const last = lastTypeAndVersionRef.current;
+
+        if (!fundamentalId || !type) return;
+
+        // ⛔ skip save als type en versie niet matchen met vorige
+        if (last.versionId !== activeVersionId || last.type !== type) {
+            lastTypeAndVersionRef.current = {type, versionId: activeVersionId};
+            return;
+        }
+
         savingInProgress = true;
         setIsSaving(true);
+
         try {
             const {nodes, groupStack, openedGroup} = useNodesStore.getState();
             const {connections} = useConnectionsStore.getState();
             const payload = {nodes, connections, groups: {groupStack, openedGroup}};
-
-            const args = [activeVersionId, activeProjectId, payload] as const;
-
-            if (activeRouteId) {
-                await updateNodeSetupVersionAPI(activeRouteId, ...args, Fundamental.Route);
-            } else if (activeScheduleId) {
-                await updateNodeSetupVersionAPI(activeScheduleId, ...args, Fundamental.Schedule);
-            } else if (activeBlueprintId) {
-                await updateNodeSetupVersionAPI(activeBlueprintId, ...args, Fundamental.Blueprint);
-            } else if (activeConfigId) {
-                await updateNodeSetupVersionAPI(activeConfigId, ...args, Fundamental.Config);
-            }
-
+            await updateNodeSetupVersionAPI(fundamentalId, activeVersionId, activeProjectId, payload, type);
             lastSaveTimeRef.current = Date.now();
         } catch (err) {
             console.error('Failed to save node setup:', err);
@@ -57,7 +58,8 @@ export default function useGlobalStoreListenersWithImmediateSave() {
             savingInProgress = false;
             debounceTimeout = null;
         }
-    }, [activeBlueprintId, activeConfigId, activeProjectId, activeRouteId, activeScheduleId, activeVersionId, setIsSaving]);
+    // eslint-disable-next-line
+    }, [activeVersionId, activeProjectId, activeRouteId, activeScheduleId, activeBlueprintId, activeConfigId, setIsSaving]);
 
     const saveNodeSetup = useCallback(() => {
         const now = Date.now();
@@ -73,6 +75,19 @@ export default function useGlobalStoreListenersWithImmediateSave() {
         }
     }, [doSave, setIsSaving]);
 
+    const lastTypeAndVersionRef = useRef<{ type: Fundamental | null, versionId: string | null }>({
+        type: null,
+        versionId: null,
+    });
+
+    const getCurrentFundamental = (): [string | undefined, Fundamental | null] => {
+        if (activeRouteId) return [activeRouteId, Fundamental.Route];
+        if (activeScheduleId) return [activeScheduleId, Fundamental.Schedule];
+        if (activeBlueprintId) return [activeBlueprintId, Fundamental.Blueprint];
+        if (activeConfigId) return [activeConfigId, Fundamental.Config];
+        return [undefined, null];
+    };
+
     useEffect(() => {
         lastSaveTimeRef.current = Date.now();
         cancelPendingSave();
@@ -80,10 +95,10 @@ export default function useGlobalStoreListenersWithImmediateSave() {
 
     useEffect(() => {
         const unsubNodes = useNodesStore.subscribe(() => {
-            saveNodeSetup();
+            setTimeout(() => saveNodeSetup(), 0);
         });
         const unsubConns = useConnectionsStore.subscribe(() => {
-            saveNodeSetup();
+            setTimeout(() => saveNodeSetup(), 0);
         });
 
         return () => {

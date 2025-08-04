@@ -11,7 +11,6 @@ import NodeEditorForm from "@/components/editor/forms/node-editor-form";
 import JsonEditorForm from "@/components/editor/forms/json-editor-form";
 import ProjectSecretsForm from "@/components/editor/forms/project-secrets-form";
 import ProjectPublishForm from "@/components/editor/forms/project-publish-form";
-import ConfigForm from "@/components/editor/forms/config-form";
 import FileEditorForm from "@/components/editor/forms/file-editor-form";
 import ListVariableForm from "@/components/editor/forms/list-variable-form";
 import PublishedVariableForm from "@/components/editor/forms/published-variable-form";
@@ -56,12 +55,6 @@ const Form: React.FC = () => {
                 formType === FormType.EditBlueprint
             ) && (
                 <BlueprintForm />
-            )}
-            {(
-                formType === FormType.AddConfig ||
-                formType === FormType.EditConfig
-            ) && (
-                <ConfigForm />
             )}
             {(
                 formType === FormType.AddNode ||

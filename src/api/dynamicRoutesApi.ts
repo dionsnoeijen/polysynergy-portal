@@ -1,43 +1,56 @@
-import { Route } from "@/types/types";
-import { getIdToken } from "@/api/auth/authToken";
+import {Route} from "@/types/types";
+import {getIdToken} from "@/api/auth/authToken";
 import config from "@/config";
 
 export const fetchDynamicRoutes = async (projectId: string): Promise<Route[]> => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/dynamic-routes/?project_id=${projectId}`, {
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${idToken}`,
-        },
-    });
+    const response = await fetch(
+        `${config.LOCAL_API_URL}/routes/?project_id=${projectId}`,
+        {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        }
+    );
     return response.json();
 };
 
-export const fetchDynamicRoute = async (routeId: string): Promise<Route> => {
+export const fetchDynamicRoute = async (
+    routeId: string,
+    projectId: string
+): Promise<Route> => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/dynamic-routes/${routeId}/`, {
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${idToken}`,
-        },
-    });
+    const response = await fetch(
+        `${config.LOCAL_API_URL}/routes/${routeId}/?project_id=${projectId}`,
+        {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        });
     return response.json();
 }
 
-export const storeDynamicRoute = async (projectId: string, route: Route) => {
+export const storeDynamicRoute = async (
+    projectId: string,
+    route: Route
+) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/dynamic-routes/`, {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-            ...route,
-            project_id: projectId,
-        }),
-    });
+    const response = await fetch(
+        // `${config.API_URL}/dynamic-routes/`,
+        `${config.LOCAL_API_URL}/routes/?project_id=${projectId}`,
+        {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({
+                ...route
+            }),
+        });
 
     if (!response.ok) {
         const errorData = await response.json();
@@ -54,28 +67,35 @@ export const updateDynamicRoute = async (
     updatedData: Partial<Route>
 ) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/dynamic-routes/${routeId}/${activeVersionId}/`, {
-        method: 'PATCH',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-            ...updatedData,
-            project_id: projectId
-        }),
-    });
+    const response = await fetch(
+        //`${config.API_URL}/dynamic-routes/${routeId}/${activeVersionId}/`,
+        `${config.LOCAL_API_URL}/routes/${routeId}/versions/${activeVersionId}/`,
+        {
+            method: 'PATCH',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({
+                ...updatedData,
+                project_id: projectId
+            }),
+        });
     return response.json();
 };
 
 export const deleteDynamicRoute = async (routeId: string) => {
     const idToken = getIdToken();
-    return await fetch(`${config.API_URL}/dynamic-routes/${routeId}/`, {
-        method: 'DELETE',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${idToken}`,
-        },
-    });
+    return await fetch(
+        // `${config.API_URL}/dynamic-routes/${routeId}/`,
+        `${config.LOCAL_API_URL}/routes/${routeId}/`,
+        {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        }
+    );
 };

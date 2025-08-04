@@ -23,7 +23,7 @@ export default function ProjectEnvVarTree(): ReactElement {
     };
 
     const handleAddEnvVarNode = (mouseX: number, mouseY: number, key: string) => {
-        let node: Node | undefined = getAvailableNodeByPath('nodes.nodes.environment.variable_environment.VariableEnvironment');
+        let node: Node | undefined = getAvailableNodeByPath('polysynergy_nodes.environment.variable_environment.VariableEnvironment');
         if (!node) return;
 
         node = JSON.parse(JSON.stringify(node)) as Node;

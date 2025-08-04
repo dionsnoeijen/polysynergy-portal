@@ -5,12 +5,15 @@ export const fetchAvailableNodesAPI = async (
     projectId: string
 ) => {
     const idToken = getIdToken();
-    const response = await fetch(`${config.API_URL}/nodes/?project_id=${projectId}`, {
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${idToken}`,
-        },
-    });
+    const response = await fetch(
+        `${config.LOCAL_API_URL}/nodes/?project_id=${projectId}`,
+        {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        }
+    );
 
     return response.json();
 };

@@ -16,8 +16,8 @@ export function useAutoUpdateRouteNodes() {
         const route = getDynamicRoute(activeRouteId);
         if (!route) return;
 
-        const routeNodes = getNodesByPath(`nodes.nodes.route.route.Route`);
-        const mockRouteNodes = getNodesByPath(`nodes.nodes.mock.mock_route_request.MockRouteRequest`);
+        const routeNodes = getNodesByPath(`polysynergy_nodes.route.route.Route`);
+        const mockRouteNodes = getNodesByPath(`polysynergy_nodes.mock.mock_route_request.MockRouteRequest`);
 
         if (!routeNodes || !mockRouteNodes) return;
 

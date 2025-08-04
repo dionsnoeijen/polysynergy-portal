@@ -1,7 +1,7 @@
 import {Heading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Button} from "@/components/button";
-import {Blueprint, Config, Fundamental, Route, Schedule, Service} from "@/types/types";
+import {Blueprint, Fundamental, Route, Schedule, Service} from "@/types/types";
 import React, {useEffect, useState} from "react";
 
 import useEditorStore from "@/stores/editorStore";
@@ -9,7 +9,6 @@ import useNodesStore from "@/stores/nodesStore";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import useSchedulesStore from "@/stores/schedulesStore";
 import useServicesStore from "@/stores/servicesStore";
-import useConfigsStore from "@/stores/configsStore";
 import useBlueprintsStore from "@/stores/blueprintsStore";
 
 import PublishedVariables from "@/components/editor/forms/variable/published-variables";
@@ -30,11 +29,10 @@ const PublishedVariableForm: React.FC = () => {
     const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
     const getSchedule = useSchedulesStore((state) => state.getSchedule);
     const getService = useServicesStore((state) => state.getService);
-    const getConfig = useConfigsStore((state) => state.getConfig);
     const getBlueprint = useBlueprintsStore((state) => state.getBlueprint);
 
     const [error, setError] = useState<string | null>(null);
-    const [activeItem, setActiveItem] = useState<Route | Schedule | Service | Config | Blueprint | null | undefined>();
+    const [activeItem, setActiveItem] = useState<Route | Schedule | Service | Blueprint | null | undefined>();
     const [activeFundamental, setActiveFundamental] = useState<Fundamental | null>(null);
 
     useEffect(() => {
@@ -56,9 +54,6 @@ const PublishedVariableForm: React.FC = () => {
         } else if (activeServiceId) {
             activeItem = getService(activeServiceId);
             setActiveFundamental(Fundamental.Service);
-        } else if (activeConfigId) {
-            activeItem = getConfig(activeConfigId);
-            setActiveFundamental(Fundamental.Config);
         } else if (activeBlueprintId) {
             activeItem = getBlueprint(activeBlueprintId);
             setActiveFundamental(Fundamental.Blueprint);
@@ -72,7 +67,6 @@ const PublishedVariableForm: React.FC = () => {
         activeScheduleId,
         activeServiceId,
         getBlueprint,
-        getConfig,
         getDynamicRoute,
         getSchedule,
         getService
@@ -93,7 +87,7 @@ const PublishedVariableForm: React.FC = () => {
                     activeFundamental.slice(1)
                 }: {activeFundamental === Fundamental.Route ?
                     '/' + formatSegments((activeItem as Route)?.segments) :
-                    (activeItem as Schedule | Service | Config)?.name}
+                    (activeItem as Schedule | Service)?.name}
                 </Heading>
                 <Button type="button" onClick={() => closeForm()} color="sky">
                     <XMarkIcon className="w-5 h-5"/>

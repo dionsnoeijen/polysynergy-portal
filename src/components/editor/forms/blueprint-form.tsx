@@ -29,13 +29,15 @@ const BlueprintForm: React.FC = () => {
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
     useEffect(() => {
+        console.log("BlueprintForm useEffect", formType, formEditRecordId);
+
         if (formType === FormType.EditBlueprint && formEditRecordId) {
             const blueprint = getBlueprint(formEditRecordId as string);
             if (blueprint) {
                 setName(blueprint.name);
-                setCategory(blueprint.metadata.category);
-                setDescription(blueprint.metadata.description ?? "");
-                setIcon(blueprint.metadata.icon ?? "");
+                setCategory(blueprint.meta.category);
+                setDescription(blueprint.meta.description ?? "");
+                setIcon(blueprint.meta.icon ?? "");
             }
         }
     }, [formEditRecordId, formType, getBlueprint]);
@@ -46,7 +48,7 @@ const BlueprintForm: React.FC = () => {
         if (formType === FormType.AddBlueprint) {
             const newBlueprint: Blueprint = {
                 name: name,
-                metadata: {
+                meta: {
                     category: category,
                     description: description,
                     icon: icon,
@@ -58,7 +60,7 @@ const BlueprintForm: React.FC = () => {
             const updatedBlueprint: Blueprint = {
                 id: formEditRecordId as string,
                 name: name,
-                metadata: {
+                meta: {
                     category: category,
                     description: description,
                     icon: icon,
@@ -72,6 +74,7 @@ const BlueprintForm: React.FC = () => {
     const handleDelete = useCallback(() => {
         deleteBlueprint(formEditRecordId as string);
         closeForm('Blueprint deleted successfully');
+
         setShowDeleteAlert(false);
     }, [closeForm, deleteBlueprint, formEditRecordId]);
 

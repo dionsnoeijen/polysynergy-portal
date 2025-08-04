@@ -9,7 +9,7 @@ export const fetchNodeSetupVersionAPI = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/`,
+        `${config.LOCAL_API_URL}/node-setup/${type}/${setupId}/version/${versionId}/`,
         {
             headers: {
                 Accept: "application/json",
@@ -29,7 +29,8 @@ export const updateNodeSetupVersionAPI = async (
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/${projectId}/`,
+        //`${config.LOCAL_API_URL}/node-setup/${type}/${setupId}/version/${versionId}/${projectId}/`,
+        `${config.LOCAL_API_URL}/node-setup/${type}/${setupId}/version/${versionId}/?project_id=${projectId}`,
         {
             method: "PUT",
             headers: {
@@ -44,11 +45,12 @@ export const updateNodeSetupVersionAPI = async (
 
 export const publishNodeSetupRouteVersionAPI = (
     routeId: string,
-    stage: string
+    stage: string,
+    projectId: string
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/node-setup/route/${routeId}/publish/`,
+        `${config.LOCAL_API_URL}/routes/${routeId}/publish/?project_id=${projectId}`,
         {
             method: "POST",
             headers: {
@@ -63,11 +65,12 @@ export const publishNodeSetupRouteVersionAPI = (
 
 export const unpublishNodeSetupRouteVersionAPI = (
     routeId: string,
-    stage: string
+    stage: string,
+    projectId: string
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/node-setup/route/${routeId}/unpublish/`,
+        `${config.LOCAL_API_URL}/routes/${routeId}/unpublish/?project_id=${projectId}`,
         {
             method: "POST",
             headers: {
@@ -82,11 +85,12 @@ export const unpublishNodeSetupRouteVersionAPI = (
 
 export const updateNodeSetupRouteVersionAPI = (
     routeId: string,
-    stage: string
+    stage: string,
+    projectId: string
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/node-setup/route/${routeId}/update-stage/`,
+        `${config.LOCAL_API_URL}/routes/${routeId}/update-stage/?project_id=${projectId}`,
         {
             method: "POST",
             headers: {
@@ -101,11 +105,12 @@ export const updateNodeSetupRouteVersionAPI = (
 
 export const publishNodeSetupScheduleVersionAPI = (
     versionId: string,
-    stage: string
+    stage: string,
+    projectId: string
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/node-setup/schedule/${versionId}/publish/`,
+        `${config.LOCAL_API_URL}/schedules/${versionId}/publish/?project_id=${projectId}`,
         {
             method: "POST",
             headers: {
@@ -120,11 +125,12 @@ export const publishNodeSetupScheduleVersionAPI = (
 
 export const unpublishNodeSetupScheduleVersionAPI = (
     versionId: string,
-    stage: string
+    stage: string,
+    projectId: string
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/node-setup/schedule/${versionId}/unpublish/`,
+        `${config.API_URL}/schedules/${versionId}/unpublish/?project_id=${projectId}`,
         {
             method: "POST",
             headers: {
@@ -139,11 +145,12 @@ export const unpublishNodeSetupScheduleVersionAPI = (
 
 export const updateNodeSetupScheduleVersionAPI = (
     scheduleId: string,
-    stage: string
+    stage: string,
+    projectId: string
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/node-setup/schedule/${scheduleId}/update-stage/`,
+        `${config.API_URL}/schedules/${scheduleId}/update-stage/?project_id=${projectId}`,
         {
             method: "POST",
             headers: {

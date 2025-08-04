@@ -24,7 +24,7 @@ export default function Logs() {
     const fetchLogs = async () => {
         if (paused) return;
 
-        let url = `${apiConfig.API_URL}/lambda-logs/${activeVersionId}/`;
+        let url = `${apiConfig.LOCAL_API_URL}/execution/${activeVersionId}/logs/`;
         if (lastTimestamp) url += `?after=${lastTimestamp}`;
 
         try {
@@ -81,37 +81,36 @@ export default function Logs() {
     return (
         <div className="flex h-full">
             <div className="flex-1 border-r dark:border-white/10 h-full flex flex-col">
-                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
-                    <h3 className="text-sky-500 dark:text-white font-bold text-sm">Logs</h3>
-                </div>
                 <div
-                    className="overflow-auto text-sm font-mono p-2 bg-transparent dark:bg-black text-sky-500 dark:text-white relative max-w-full break-words">
+                    className="flex-1 overflow-auto text-sm font-mono bg-transparent dark:bg-black text-sky-500 dark:text-white relative max-w-full break-words">
                     {loading ? (
-                        <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black flex items-center justify-center">
                             <div
                                 className="animate-spin h-5 w-5 border-2 border-sky-500 border-t-transparent rounded-full"></div>
                         </div>
                     ) : logs.length === 0 ? (
-                        <div className="text-zinc-500">No logs available.</div>
+                        <div className="p-2 text-zinc-500">No logs available.</div>
                     ) : (
-                        [...logs].reverse().map((log, index) => {
-                            const isError = log.message.includes("[ERROR]");
-                            const isInfo = log.message.includes("[INFO]");
+                        <div className="p-2">
+                            {[...logs].reverse().map((log, index) => {
+                                const isError = log.message.includes("[ERROR]");
+                                const isInfo = log.message.includes("[INFO]");
 
-                            return (
-                                <div key={index} className="whitespace-normal break-all">
-                                    <span className="text-zinc-500 mr-2">
-                                        [{new Date(log.timestamp).toLocaleTimeString()}]
-                                    </span>
-                                    <span className="mr-2 px-1 rounded text-xs bg-zinc-700">
-                                        {log.variant}
-                                    </span>
-                                    <span className={isError ? "text-red-400" : isInfo ? "text-green-400" : ""}>
-                                        {log.message}
-                                    </span>
-                                </div>
-                            );
-                        })
+                                return (
+                                    <div key={index} className="whitespace-normal break-all">
+                                        <span className="text-zinc-500 mr-2">
+                                            [{new Date(log.timestamp).toLocaleTimeString()}]
+                                        </span>
+                                        <span className="mr-2 px-1 rounded text-xs bg-zinc-700">
+                                            {log.variant}
+                                        </span>
+                                        <span className={isError ? "text-red-400" : isInfo ? "text-green-400" : ""}>
+                                            {log.message}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     )}
                 </div>
             </div>

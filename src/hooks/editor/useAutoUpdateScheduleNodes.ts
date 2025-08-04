@@ -18,7 +18,7 @@ export function useAutoUpdateScheduleNodes() {
         if (!schedule) return;
 
         const scheduleNodes =
-            getNodesByPath(`nodes.nodes.schedule.schedule.Schedule`);
+            getNodesByPath(`polysynergy_nodes.schedule.schedule.Schedule`);
         if (!scheduleNodes) return;
 
         scheduleNodes.forEach((node) => {

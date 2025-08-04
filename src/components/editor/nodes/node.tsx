@@ -1,10 +1,10 @@
 import React from "react";
 import {NodeJumpType, NodeProps, NodeType} from "@/types/types";
-import NodeRows from "@/components/editor/nodes/node-rows";
 import NodeComparison from "@/components/editor/nodes/node-comparison";
 import NodeMath from "@/components/editor/nodes/node-math";
 import ClosedGroup from "@/components/editor/nodes/closed-group";
 import NodeJump from "@/components/editor/nodes/node-jump";
+import NodeRows from "@/components/editor/nodes/node-rows";
 
 const Node: React.FC<NodeProps> = ({ node, preview = false }) => {
     if (node.category === NodeType.Jump && node.type === NodeJumpType.To) {

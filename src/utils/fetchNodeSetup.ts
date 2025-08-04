@@ -4,26 +4,27 @@ import useEditorStore from "@/stores/editorStore";
 import {fetchDynamicRoute as fetchDynamicRouteAPI} from "@/api/dynamicRoutesApi";
 import {fetchBlueprint as fetchBlueprintAPI} from "@/api/blueprintApi";
 import {fetchSchedule as fetchScheduleAPI} from "@/api/schedulesApi";
-import {fetchConfig } from "@/api/configsApi";
 import {NodeSetupVersion, Route} from "@/types/types";
 
 async function fetchAndApplyNodeSetup({
     routeId = null,
     scheduleId = null,
     blueprintId = null,
-    configId = null,
     versionId = null,
 }: {
     routeId?: string | null;
     scheduleId?: string | null;
     blueprintId?: string | null;
-    configId?: string | null;
     versionId?: string | null;
 }) {
 
-    if (!routeId && !scheduleId && !blueprintId && !configId) return;
+    if (!routeId && !scheduleId && !blueprintId) return;
+
+    console.log("fetchAndApplyNodeSetup", { routeId, scheduleId, blueprintId });
 
     let version = null;
+
+    const activeProjectId = useEditorStore.getState().activeProjectId;
 
     const getVersion = (versions: NodeSetupVersion[] | undefined) => {
         if (!versionId) {
@@ -38,20 +39,16 @@ async function fetchAndApplyNodeSetup({
 
     try {
         if (routeId) {
-            const route: Route = await fetchDynamicRouteAPI(routeId);
+            const route: Route = await fetchDynamicRouteAPI(routeId, activeProjectId);
             version = getVersion(route?.node_setup?.versions);
         }
         if (scheduleId) {
-            const schedule = await fetchScheduleAPI(scheduleId);
+            const schedule = await fetchScheduleAPI(scheduleId, activeProjectId);
             version = getVersion(schedule?.node_setup?.versions);
         }
         if (blueprintId) {
-            const blueprint = await fetchBlueprintAPI(blueprintId);
+            const blueprint = await fetchBlueprintAPI(blueprintId, activeProjectId);
             version = getVersion(blueprint?.node_setup?.versions);
-        }
-        if (configId) {
-            const config = await fetchConfig(configId);
-            version = getVersion(config?.node_setup?.versions);
         }
 
         useEditorStore.getState().setIsDraft(version?.draft ?? false);

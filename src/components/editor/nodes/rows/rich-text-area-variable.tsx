@@ -1,10 +1,7 @@
 import React from "react";
 import {NodeVariable} from "@/types/types";
-import Connector from "@/components/editor/nodes/connector";
-import FakeConnector from "@/components/editor/nodes/fake-connector";
-import {BoltIcon, DocumentTextIcon} from "@heroicons/react/24/outline";
-import useConnectionsStore from "@/stores/connectionsStore";
-import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
+import InterpretedVariableContainer from '@/components/editor/nodes/rows/containers/interpreted-variable-container';
+import RichTextContent from '@/components/editor/nodes/rows/components/rich-text-content';
 
 type Props = {
     variable: NodeVariable;
@@ -31,52 +28,22 @@ const RichTextAreaVariable: React.FC<Props> = ({
     categorySubTextColor = 'text-sky-400 dark:text-slate-400',
     isInService = false
 }): React.ReactElement => {
-
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
-
-    const validationType = interpretNodeVariableType(variable).validationType;
-
     return (
-        <div
-            className={`flex items-center justify-between rounded-md w-full pl-4 pr-4 pt-1 relative ${disabled && 'opacity-0'}`}>
-            {variable.has_in && isMirror && !onlyOut && (
-                <FakeConnector in />
-            )}
-            {variable.has_in && !isMirror && !disabled && !onlyOut && <Connector
-                in
-                nodeId={nodeId}
-                handle={variable.handle}
-                disabled={disabled || isInService}
-                groupId={groupId}
-                nodeVariableType={validationType}
-            />}
-            {isValueConnected ? <span className="ml-1"><BoltIcon className={'w-4 h-4 text-orange-800 dark:text-yellow-300'} /></span> : (
-            <>
-                {variable.value ? (
-                    <div className={`note-text ${categorySubTextColor}`} dangerouslySetInnerHTML={{__html: variable.value as string}}/>
-                ) : (
-                    <>
-                        <h3 className={`font-semibold truncate ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`}>
-                            {(groupId && variable.group_name_override) ? variable.group_name_override : variable.name}:
-                        </h3>
-                        <DocumentTextIcon className={`w-4 h-4 ml-1 ${isValueConnected ? 'text-orange-800 dark:text-yellow-300' : `${categoryMainTextColor}`}`} />
-                    </>
-                )}
-            </>
-            )}
-            {variable.has_out && !isMirror && !disabled && !onlyIn && <Connector
-                out
-                nodeId={nodeId}
-                handle={variable.handle}
-                disabled={disabled || isInService}
-                groupId={groupId}
-                nodeVariableType={validationType}
-            />}
-            {variable.has_out && isMirror && !onlyIn && (
-                <FakeConnector out />
-            )}
-        </div>
+        <InterpretedVariableContainer
+            variable={variable}
+            nodeId={nodeId}
+            onlyIn={onlyIn}
+            onlyOut={onlyOut}
+            disabled={disabled}
+            groupId={groupId}
+            isMirror={isMirror}
+            categoryMainTextColor={categoryMainTextColor}
+            categorySubTextColor={categorySubTextColor}
+            isInService={isInService}
+        >
+            {(logic) => <RichTextContent logic={logic} />}
+        </InterpretedVariableContainer>
     );
-}
+};
 
 export default RichTextAreaVariable;

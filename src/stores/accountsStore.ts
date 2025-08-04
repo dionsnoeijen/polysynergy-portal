@@ -14,6 +14,7 @@ const useAccountsStore = create<AccountState>((set) => ({
     loggedInAccount: null,
     setLoggedInAccount: (account) => set({loggedInAccount: account}),
     fetchAccounts: async () => {
+
         try {
             const data: Account[] = await fetchClientAccounts();
             set({ accounts: data });

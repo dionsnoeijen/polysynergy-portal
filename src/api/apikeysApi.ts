@@ -8,7 +8,7 @@ export const fetchApiKeysAPI = async (
     const idToken = getIdToken();
 
     const response = await fetch(
-        `${config.API_URL}/api/keys/?project_id=${projectId}`,
+        `${config.LOCAL_API_URL}/api-keys/?project_id=${projectId}`,
         {
             method: "GET",
             headers: {
@@ -32,7 +32,7 @@ export const createApiKeyAPI = async (
 ): Promise<ApiKey> => {
     const idToken = getIdToken();
 
-    const response = await fetch(`${config.API_URL}/api/keys/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/api-keys/`, {
         method: "POST",
         headers: {
             Accept: "application/json",
@@ -55,7 +55,7 @@ export const updateApiKeyAPI = async (
 ): Promise<ApiKey> => {
     const idToken = getIdToken();
 
-    const response = await fetch(`${config.API_URL}/api/keys/${keyId}/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/api-keys/${keyId}/`, {
         method: "PATCH",
         headers: {
             Accept: "application/json",
@@ -75,7 +75,7 @@ export const updateApiKeyAPI = async (
 export const deleteApiKeyAPI = async (keyId: string): Promise<Response> => {
     const idToken = getIdToken();
 
-    return fetch(`${config.API_URL}/api/keys/${keyId}/`, {
+    return fetch(`${config.LOCAL_API_URL}/api-keys/${keyId}/`, {
         method: "DELETE",
         headers: {
             Accept: "application/json",

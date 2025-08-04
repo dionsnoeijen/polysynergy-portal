@@ -10,7 +10,7 @@ export const runMockApi = async (
 ): Promise<Response> => {
     const idToken = getIdToken();
     return await fetch(
-        `${config.API_URL}/mock/play/${projectId}/${activeVersionId}/${mockNodeId}?stage=${stage}&sub_stage=${subStage}`,
+        `${config.LOCAL_API_URL}/execution/${activeVersionId}/${mockNodeId}/?stage=${stage}&sub_stage=${subStage}&project_id=${projectId}`,
         {
             method: 'GET',
             headers: {

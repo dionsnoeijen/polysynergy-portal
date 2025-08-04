@@ -1,5 +1,6 @@
 import React from 'react';
 import {Node, NodeCollapsedConnector} from '@/types/types';
+import {MockNode} from '@/stores/mockStore';
 import {ChevronUpIcon, GlobeAltIcon} from '@heroicons/react/24/outline';
 import Connector from '@/components/editor/nodes/connector';
 import NodeIcon from '@/components/editor/nodes/node-icon';
@@ -8,7 +9,7 @@ import ExecutionOrder from '@/components/editor/nodes/execution-order';
 
 interface CollapsedNodeProps {
     node: Node;
-    mockNode: unknown;
+    mockNode: MockNode | null;
     styles: {
         background: string;
         mainText: string;

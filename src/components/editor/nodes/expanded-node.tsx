@@ -1,5 +1,6 @@
 import React from 'react';
 import {Node, NodeEnabledConnector, NodeType, NodeVariableType} from '@/types/types';
+import {MockNode} from '@/stores/mockStore';
 import {ChevronDownIcon, HomeIcon} from '@heroicons/react/24/outline';
 import Connector from '@/components/editor/nodes/connector';
 import ThreeWaySwitch from '@/components/editor/nodes/three-way-switch';
@@ -12,7 +13,7 @@ import ExecutionOrder from '@/components/editor/nodes/execution-order';
 interface ExpandedNodeProps {
     node: Node;
     preview: boolean;
-    mockNode: unknown;
+    mockNode: MockNode | null;
     styles: {
         border: string;
         background: string;

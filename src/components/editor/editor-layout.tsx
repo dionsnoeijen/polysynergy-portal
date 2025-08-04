@@ -55,7 +55,7 @@ const EditorLayout = ({
         setWindowDimensions,
         setWidth,
         setHeight
-    } = useLayoutPanels();
+    } = useLayoutPanels(blueprintUuid);
     
     const { updateEditorPosition } = useLayoutEventHandlers();
     

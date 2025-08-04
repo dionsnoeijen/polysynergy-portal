@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react';
 
-export const useLayoutPanels = () => {
+export const useLayoutPanels = (blueprintUuid?: string) => {
     const [width, setWidth] = useState({ itemManager: 256, dock: 256 });
     const [height, setHeight] = useState({ horizontalEditorLayout: 0 });
     const [windowHeight, setWindowHeight] = useState(0);
 
-    const [itemManagerClosed, setItemManagerClosed] = useState(false);
+    // Auto-open item manager if blueprint is in URL
+    const [itemManagerClosed, setItemManagerClosed] = useState(!blueprintUuid);
     const [dockClosed, setDockClosed] = useState(false);
     const [outputClosed, setOutputClosed] = useState(false);
 

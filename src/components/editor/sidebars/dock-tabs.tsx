@@ -15,10 +15,12 @@ const DockTabs: React.FC<Props> = ({ toggleClose, ...props }) => {
     const isExecuting = useEditorStore((state) => state.isExecuting);
     const [selectedIndex, setSelectedIndex] = useState(0);
 
-    // Auto-switch to Output tab when execution starts
+    // Auto-switch to Output tab when execution starts, back to Variables when it stops
     useEffect(() => {
-        if (isExecuting) {
+        if (isExecuting && typeof isExecuting === 'string') {
             setSelectedIndex(1); // Switch to Output tab (index 1)
+        } else if (!isExecuting) {
+            setSelectedIndex(0); // Switch back to Variables tab (index 0) when execution stops
         }
     }, [isExecuting]);
 
@@ -55,7 +57,7 @@ const DockTabs: React.FC<Props> = ({ toggleClose, ...props }) => {
                             }
                         >
                             {tab.name}
-                            {isExecuting && index === 1 && (
+                            {isExecuting && typeof isExecuting === 'string' && index === 1 && (
                                 <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-green-400"></span>
                             )}
                         </Tab>

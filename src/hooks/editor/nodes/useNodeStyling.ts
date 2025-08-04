@@ -1,5 +1,6 @@
 import {useMemo} from 'react';
 import {Node} from '@/types/types';
+import {MockNode} from '@/stores/mockStore';
 import useEditorStore from '@/stores/editorStore';
 import useNodeColor, {
     getCategoryBorderColor,
@@ -11,7 +12,7 @@ import {useShallow} from 'zustand/shallow';
 
 interface NodeStylingOptions {
     isService: boolean;
-    mockNode: unknown;
+    mockNode: Partial<MockNode> | undefined;
     hasMockData: boolean;
     isNodeInService: boolean;
     preview: boolean;

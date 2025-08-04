@@ -32,7 +32,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
             {node.view.collapsed ? (
                 <CollapsedNode
                     node={node}
-                    mockNode={commonLogic.mockNode}
+                    mockNode={commonLogic.mockNode || null}
                     styles={styles}
                     onCollapse={interactions.onCollapse}
                 />
@@ -40,7 +40,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                 <ExpandedNode
                     node={node}
                     preview={preview}
-                    mockNode={commonLogic.mockNode}
+                    mockNode={commonLogic.mockNode || null}
                     styles={styles}
                     isCollapsable={commonLogic.isCollapsable}
                     onCollapse={interactions.onCollapse}

@@ -68,8 +68,7 @@ export const updateDynamicRoute = async (
 ) => {
     const idToken = getIdToken();
     const response = await fetch(
-        //`${config.API_URL}/dynamic-routes/${routeId}/${activeVersionId}/`,
-        `${config.LOCAL_API_URL}/routes/${routeId}/versions/${activeVersionId}/`,
+        `${config.LOCAL_API_URL}/routes/${routeId}/versions/${activeVersionId}/?=project_id=${projectId}`,
         {
             method: 'PATCH',
             headers: {
@@ -77,10 +76,7 @@ export const updateDynamicRoute = async (
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
             },
-            body: JSON.stringify({
-                ...updatedData,
-                project_id: projectId
-            }),
+            body: JSON.stringify(updatedData),
         });
     return response.json();
 };

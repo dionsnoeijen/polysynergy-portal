@@ -52,7 +52,6 @@ const EditorLayout = ({
         toggleCloseItemManager,
         toggleCloseDock,
         toggleCloseOutput,
-        updatePanelDimensions,
         setWindowDimensions,
         setWidth,
         setHeight
@@ -61,7 +60,6 @@ const EditorLayout = ({
     const { updateEditorPosition } = useLayoutEventHandlers();
     
     const { ResizeWhat, startResizing } = useLayoutResizing({
-        updatePanelDimensions,
         updateEditorPosition,
         setWidth,
         setHeight

@@ -15,12 +15,10 @@ const DockTabs: React.FC<Props> = ({ toggleClose, ...props }) => {
     const isExecuting = useEditorStore((state) => state.isExecuting);
     const [selectedIndex, setSelectedIndex] = useState(0);
 
-    // Auto-switch to Output tab when execution starts, back to Variables when it stops
+    // Auto-switch to Output tab when execution starts
     useEffect(() => {
         if (isExecuting && typeof isExecuting === 'string') {
             setSelectedIndex(1); // Switch to Output tab (index 1)
-        } else if (!isExecuting) {
-            setSelectedIndex(0); // Switch back to Variables tab (index 0) when execution stops
         }
     }, [isExecuting]);
 

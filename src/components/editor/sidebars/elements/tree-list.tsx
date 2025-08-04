@@ -109,7 +109,7 @@ export default function TreeList<T extends ListItemWithId>({
                         <div
                             className="border border-sky-500/50 bg-white dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
                             <button
-                                disabled={addDisabled || isExecuting}
+                                disabled={addDisabled || Boolean(isExecuting)}
                                 onClick={isExecuting ? () => {} : addButtonClick}
                                 className={clsx(
                                     "w-full flex items-center justify-center p-1",
@@ -132,7 +132,7 @@ export default function TreeList<T extends ListItemWithId>({
             <div className="mt-[10px]">
                 {addButtonClick && (
                     <button
-                        disabled={addDisabled || isExecuting}
+                        disabled={addDisabled || Boolean(isExecuting)}
                         onClick={isExecuting ? () => {} : addButtonClick}
                         data-tour-id={dataTourId ?? null}
                         className={clsx(

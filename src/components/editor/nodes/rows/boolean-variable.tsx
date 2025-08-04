@@ -1,6 +1,6 @@
 import React from 'react';
 import {NodeVariable} from '@/types/types';
-import InterpretedVariableContainer from '@/components/editor/nodes/rows/containers/interpreted-variable-container';
+import BooleanVariableContainer from '@/components/editor/nodes/rows/containers/boolean-variable-container';
 import BooleanContent from '@/components/editor/nodes/rows/components/boolean-content';
 
 type Props = {
@@ -29,7 +29,7 @@ const BooleanVariable: React.FC<Props> = ({
     isInService = false
 }) => {
     return (
-        <InterpretedVariableContainer
+        <BooleanVariableContainer
             variable={variable}
             nodeId={nodeId}
             onlyIn={onlyIn}
@@ -42,7 +42,7 @@ const BooleanVariable: React.FC<Props> = ({
             isInService={isInService}
         >
             {(logic) => <BooleanContent logic={logic} />}
-        </InterpretedVariableContainer>
+        </BooleanVariableContainer>
     );
 };
 

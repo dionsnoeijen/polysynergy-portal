@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import useNodesStore from '@/stores/nodesStore';
+import { Node } from '@/types/types';
 
 const PROMPT_NODE_PATH = 'polysynergy_nodes_agno.agent.prompt_node.PromptNode';
 
@@ -7,7 +8,7 @@ export interface PromptNodeInfo {
   id: string;
   name: string;
   handle: string;
-  node: any; // The full node object
+  node: Node; // The full node object
 }
 
 export const usePromptNodeDetection = () => {
@@ -19,8 +20,8 @@ export const usePromptNodeDetection = () => {
     Object.values(nodes).forEach((node) => {
       if (node.path === PROMPT_NODE_PATH) {
         // Look for name variable first, fallback to node handle
-        const nameVariable = node.variables?.find((v: any) => v.handle === "name");
-        const displayName = nameVariable?.value || node.handle;
+        const nameVariable = node.variables?.find((v) => v.handle === "name");
+        const displayName = (nameVariable?.value ? String(nameVariable.value) : node.handle) || node.handle;
         
         detectedNodes.push({
           id: node.id,

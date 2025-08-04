@@ -37,7 +37,7 @@ const FileVariable: React.FC<Props> = (props) => {
                 categorySubTextColor={props.categorySubTextColor}
                 isInService={props.isInService}
             >
-                {(containerLogic) => <FileHeader logic={containerLogic} onToggle={props.onToggle} />}
+                {(containerLogic) => <FileHeader logic={{...containerLogic, isOpen: props.isOpen}} onToggle={props.onToggle} />}
             </InterpretedVariableContainer>
             <FileList logic={logic} />
         </>

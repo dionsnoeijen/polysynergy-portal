@@ -3,7 +3,7 @@ import EnhancedChat from "@/components/editor/bottombars/enhanced-chat";
 import Logs from "@/components/editor/bottombars/logs";
 
 const Output: React.FC = (): React.ReactElement => {
-    const [logsRatio, setLogsRatio] = useState(40); // Logs width percentage
+    const [logsRatio, setLogsRatio] = useState(60); // Logs width percentage (60/40 ratio)
     const [isDragging, setIsDragging] = useState(false);
 
     // Handle resizing for logs/chat layout

@@ -7,7 +7,6 @@ import {gatherAllIds, replaceIdsInJsonString, unpackNode} from "@/utils/packageG
 export enum BottomBarView {
     Output = 'Output',
     Debug = 'Debug',
-    Logs = 'Logs',
     Info = 'Info',
 }
 

@@ -22,7 +22,7 @@ export default function Logs() {
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
 
     const fetchLogs = async () => {
-        if (paused) return;
+        if (paused || !activeVersionId) return;
 
         let url = `${apiConfig.LOCAL_API_URL}/execution/${activeVersionId}/logs/`;
         if (lastTimestamp) url += `?after=${lastTimestamp}`;
@@ -54,7 +54,7 @@ export default function Logs() {
     };
 
     useEffect(() => {
-        if (paused) return;
+        if (paused || !activeVersionId) return;
 
         intervalRef.current = setInterval(() => {
             fetchLogs();
@@ -83,7 +83,12 @@ export default function Logs() {
             <div className="flex-1 border-r dark:border-white/10 h-full flex flex-col">
                 <div
                     className="flex-1 overflow-auto text-sm font-mono bg-transparent dark:bg-black text-sky-500 dark:text-white relative max-w-full break-words">
-                    {loading ? (
+                    {!activeVersionId ? (
+                        <div className="p-4 text-center text-zinc-500">
+                            <div className="mb-2">📋 No active node setup</div>
+                            <div className="text-xs">Run a workflow to see execution logs here</div>
+                        </div>
+                    ) : loading ? (
                         <div className="absolute inset-0 bg-black flex items-center justify-center">
                             <div
                                 className="animate-spin h-5 w-5 border-2 border-sky-500 border-t-transparent rounded-full"></div>

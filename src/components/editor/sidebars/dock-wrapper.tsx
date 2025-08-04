@@ -65,7 +65,7 @@ export const VariableTypeComponents = {
 };
 
 // This is a wrapper version of Dock without absolute positioning for use in tabs
-const DockWrapper: React.FC<Props> = ({toggleClose, ...props}) => {
+const DockWrapper: React.FC<Props> = (props) => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const openedGroup = useNodesStore((state) => state.openedGroup);
     const nodes = useNodesStore((state) => state.nodes);

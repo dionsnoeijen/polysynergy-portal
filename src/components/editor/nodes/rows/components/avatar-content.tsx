@@ -7,7 +7,7 @@ interface AvatarContentProps {
         nodeId: string;
         isGenerating: boolean;
         hasValue: boolean;
-        value: any;
+        value: unknown;
         avatarState: 'generating' | 'hasImage' | 'placeholder';
     };
 }

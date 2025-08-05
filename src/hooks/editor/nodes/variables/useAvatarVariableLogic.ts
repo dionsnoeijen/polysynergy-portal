@@ -21,7 +21,7 @@ export const useAvatarVariableLogic = ({
         const hasValue = value && !isPlaceholder(value);
         
         // Avatar has special className based on whether it has a value
-        const containerClassName = `flex items-center justify-between rounded-md ${!hasValue ? 'pl-4 pr-4 pt-1' : 'p-0 -mt-1'} w-full relative ${disabled ? 'opacity-40' : ''}`;
+        const containerClassName = `flex items-center justify-between rounded-md ${!hasValue ? 'pl-4 pr-4 pt-1' : 'p-0 -mt-1'} w-full relative z-[151] ${disabled ? 'opacity-40' : ''}`;
         
         // Avatar states for rendering
         const avatarState = isGenerating 

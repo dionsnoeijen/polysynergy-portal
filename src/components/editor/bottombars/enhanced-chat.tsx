@@ -18,10 +18,17 @@ const EnhancedChat: React.FC = () => {
     const [selectedPromptNodeId, setSelectedPromptNodeId] = useState<string>("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Set default selected prompt node
+    // Set default selected prompt node and handle node removal
     useEffect(() => {
-        if (promptNodes.length > 0 && !selectedPromptNodeId) {
-            setSelectedPromptNodeId(promptNodes[0].id);
+        if (promptNodes.length > 0) {
+            // If no node is selected, or the selected node no longer exists, select the first one
+            const selectedNodeExists = promptNodes.some(node => node.id === selectedPromptNodeId);
+            if (!selectedPromptNodeId || !selectedNodeExists) {
+                setSelectedPromptNodeId(promptNodes[0].id);
+            }
+        } else {
+            // No prompt nodes available, clear selection
+            setSelectedPromptNodeId("");
         }
     }, [promptNodes, selectedPromptNodeId]);
 

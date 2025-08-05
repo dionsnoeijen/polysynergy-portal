@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowUpIcon, PlayIcon } from '@heroicons/react/24/outline';
+import { ArrowUpIcon } from '@heroicons/react/24/outline';
 import useChatStore from '@/stores/chatStore';
 import useNodesStore from '@/stores/nodesStore';
 import { usePromptNodeDetection } from '@/hooks/editor/usePromptNodeDetection';
@@ -45,14 +45,9 @@ const EnhancedChat: React.FC = () => {
         }
         
         setInput("");
-    };
-
-    const handlePlayExecution = async () => {
-        if (!selectedPromptNodeId) return;
         
-        // Trigger execution of the flow starting from the prompt node
+        // Automatically trigger execution after sending the prompt
         try {
-            // Create a synthetic mouse event for the handlePlay function
             const syntheticEvent = {
                 preventDefault: () => {},
                 stopPropagation: () => {}
@@ -63,6 +58,7 @@ const EnhancedChat: React.FC = () => {
             console.error('Failed to trigger execution:', error);
         }
     };
+
 
     const selectedPromptNode = promptNodes.find(node => node.id === selectedPromptNodeId);
 
@@ -132,7 +128,7 @@ const EnhancedChat: React.FC = () => {
             <div className="border-t border-sky-500/50 dark:border-white/10 p-4">
                 <div className="relative max-w-3xl mx-auto">
                     <textarea
-                        className="w-full resize-none border border-sky-500/50 dark:border-white/20 rounded-md p-3 pr-20 min-h-[40px] max-h-[120px] text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-white/40 transition-colors"
+                        className="w-full resize-none border border-sky-500/50 dark:border-white/20 rounded-md p-3 pr-12 min-h-[40px] max-h-[120px] text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-white/40 transition-colors"
                         rows={1}
                         value={input}
                         placeholder={`Prompt${selectedPromptNode ? ` for ${selectedPromptNode.name}` : ''}...`}
@@ -144,24 +140,14 @@ const EnhancedChat: React.FC = () => {
                             }
                         }}
                     />
-                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
-                        <button
-                            className="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 text-white p-1.5 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            onClick={handlePlayExecution}
-                            disabled={!selectedPromptNodeId}
-                            title="Run workflow from this prompt node"
-                        >
-                            <PlayIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                            className="bg-sky-500 hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-700 text-white p-1.5 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            onClick={handleSend}
-                            disabled={!selectedPromptNodeId}
-                            title="Send message"
-                        >
-                            <ArrowUpIcon className="h-4 w-4" />
-                        </button>
-                    </div>
+                    <button
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-sky-500 hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-700 text-white p-1.5 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        onClick={handleSend}
+                        disabled={!selectedPromptNodeId}
+                        title="Send prompt and run workflow"
+                    >
+                        <ArrowUpIcon className="h-4 w-4" />
+                    </button>
                 </div>
             </div>
         </div>

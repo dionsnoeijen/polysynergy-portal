@@ -28,7 +28,7 @@ const NodeChatBubble: React.FC<Props> = ({ nodeId }) => {
     if (!runId || !text.trim()) return null;
 
     return (
-        <div className="absolute top-0 right-[-620px] z-50">
+        <div className="absolute top-0 right-[-620px] z-[9999]">
             <div className="absolute left-[-8px] top-3">
                 <div className="absolute w-0 h-0 border-t-[7px] border-b-[7px] border-r-[9px] border-t-transparent border-b-transparent border-r-sky-600 dark:border-r-sky-600" />
                 <div className="absolute top-[1px] left-[1px] w-0 h-0 border-t-[6px] border-b-[6px] border-r-[8px] border-t-transparent border-b-transparent border-r-white dark:border-r-neutral-800" />

@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import useEditorStore from "@/stores/editorStore";
 import { Input, InputGroup } from "@/components/input";
-import { ChevronRightIcon, MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { ChevronRightIcon, MagnifyingGlassIcon, FolderIcon } from "@heroicons/react/24/outline";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useNodesStore from "@/stores/nodesStore";
 import { globalToLocal } from "@/utils/positionUtils";
 import { useMousePosition } from "@/hooks/editor/useMousePosition";
 import { v4 as uuidv4 } from "uuid";
-import { Button } from "@/components/button";
 import { FormType } from "@/types/types";
 
 const AddNode: React.FC = () => {
@@ -17,7 +16,6 @@ const AddNode: React.FC = () => {
     const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
     const setAddingNode = useEditorStore((state) => state.setAddingNode);
     const openedGroup = useNodesStore((state) => state.openedGroup);
-    const openForm = useEditorStore((state) => state.openForm);
 
     const filteredAvailableNodes = useAvailableNodeStore((state) => state.filteredAvailableNodes);
     const selectedNodeIndex = useAvailableNodeStore((state) => state.selectedNodeIndex);
@@ -26,20 +24,36 @@ const AddNode: React.FC = () => {
     const setSearchPhrase = useAvailableNodeStore((state) => state.setSearchPhrase);
     const getAvailableNodeById = useAvailableNodeStore((state) => state.getAvailableNodeById);
     const searchPhrase = useAvailableNodeStore((state) => state.searchPhrase);
+    const categories = useAvailableNodeStore((state) => state.categories);
+    const selectedCategory = useAvailableNodeStore((state) => state.selectedCategory);
+    const setSelectedCategory = useAvailableNodeStore((state) => state.setSelectedCategory);
 
     const addNode = useNodesStore((state) => state.addNode);
     const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
 
     const { x: mouseX, y: mouseY } = useMousePosition();
 
+    const [focusedPanel, setFocusedPanel] = useState<'categories' | 'nodes'>('nodes');
+    const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
+    const [hasNavigated, setHasNavigated] = useState(false);
+
     const inputRef = useRef<HTMLInputElement | null>(null);
     const modalRef = useRef<HTMLDivElement | null>(null);
+    const categoriesRef = useRef<HTMLDivElement | null>(null);
+    const nodesRef = useRef<HTMLDivElement | null>(null);
+    const categoryItemRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const nodeItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     useEffect(() => {
         if (showAddingNode && inputRef.current) {
             inputRef.current.focus();
+            // Start with nodes panel focused for immediate search
+            setFocusedPanel('nodes');
+            setSelectedCategoryIndex(0);
+            setSelectedCategory(null);
+            setHasNavigated(false);
         }
-    }, [showAddingNode]);
+    }, [showAddingNode, setSelectedCategory]);
 
     const handleAddNodeAtPosition = useCallback((nodeId: string, screenX: number, screenY: number) => {
         const node = getAvailableNodeById(nodeId);
@@ -48,6 +62,7 @@ const AddNode: React.FC = () => {
         setShowAddingNode(false);
         setSearchPhrase("");
         resetSelectedNodeIndex();
+        setSelectedCategory(null);
 
         const replaceIdWith = uuidv4();
         setAddingNode(replaceIdWith);
@@ -72,11 +87,40 @@ const AddNode: React.FC = () => {
             addNodeToGroup(openedGroup, node.id);
         }
     // eslint-disable-next-line
-    }, [addNode, addNodeToGroup, getAvailableNodeById, openedGroup, setAddingNode, setShowAddingNode, setSearchPhrase, resetSelectedNodeIndex]);
+    }, [addNode, addNodeToGroup, getAvailableNodeById, openedGroup, setAddingNode, setShowAddingNode, setSearchPhrase, resetSelectedNodeIndex, setSelectedCategory]);
 
-    const handleAddNewNode = () => {
-        openForm(FormType.AddNode);
-    };
+    const handleCategorySelect = useCallback((category: string | null) => {
+        setSelectedCategory(category);
+        setSelectedNodeIndex(0);
+    }, [setSelectedCategory, setSelectedNodeIndex]);
+
+    // Scroll selected item into view
+    const scrollItemIntoView = useCallback((element: HTMLElement | null, container: HTMLElement | null) => {
+        if (!element || !container) return;
+        
+        const containerRect = container.getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+        
+        if (elementRect.top < containerRect.top) {
+            element.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        } else if (elementRect.bottom > containerRect.bottom) {
+            element.scrollIntoView({ block: 'end', behavior: 'smooth' });
+        }
+    }, []);
+
+    useEffect(() => {
+        // Scroll category into view when selected
+        if (focusedPanel === 'categories' && categoryItemRefs.current[selectedCategoryIndex]) {
+            scrollItemIntoView(categoryItemRefs.current[selectedCategoryIndex], categoriesRef.current);
+        }
+    }, [selectedCategoryIndex, focusedPanel, scrollItemIntoView]);
+
+    useEffect(() => {
+        // Scroll node into view when selected
+        if (focusedPanel === 'nodes' && nodeItemRefs.current[selectedNodeIndex]) {
+            scrollItemIntoView(nodeItemRefs.current[selectedNodeIndex], nodesRef.current);
+        }
+    }, [selectedNodeIndex, focusedPanel, scrollItemIntoView]);
 
     useEffect(() => {
         if (!showAddingNode) return;
@@ -86,23 +130,95 @@ const AddNode: React.FC = () => {
                 setShowAddingNode(false);
                 setSearchPhrase("");
                 resetSelectedNodeIndex();
+                setSelectedCategory(null);
             }
         };
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "ArrowDown") {
-                setSelectedNodeIndex((prev) =>
-                    Math.min(prev + 1, filteredAvailableNodes.length - 1)
-                );
-            } else if (e.key === "ArrowUp") {
-                setSelectedNodeIndex((prev) => Math.max(prev - 1, 0));
-            } else if (e.key === "Enter" && selectedNodeIndex >= 0) {
-                const nodeId = filteredAvailableNodes[selectedNodeIndex].id;
-                handleAddNodeAtPosition(nodeId, mouseX, mouseY);
-            } else if (e.key === "Escape") {
+            // Prevent default for arrow keys to avoid scrolling the page
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+            }
+
+            // If user starts typing (letters/numbers), ensure we're filtering
+            if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                // Focus the input if not already focused
+                if (document.activeElement !== inputRef.current) {
+                    inputRef.current?.focus();
+                }
+                return; // Let the input handle the character
+            }
+
+            if (e.key === "ArrowLeft") {
+                if (focusedPanel === 'nodes') {
+                    setFocusedPanel('categories');
+                    setHasNavigated(true);
+                    // Ensure a category is selected when switching panels
+                    if (selectedCategoryIndex === -1) {
+                        setSelectedCategoryIndex(0);
+                    }
+                }
+            } else if (e.key === "ArrowRight") {
+                if (focusedPanel === 'categories') {
+                    // Select the currently highlighted category first
+                    if (selectedCategoryIndex === 0) {
+                        handleCategorySelect(null);
+                    } else {
+                        handleCategorySelect(categories[selectedCategoryIndex - 1].name);
+                    }
+                    // Then switch to nodes panel
+                    setFocusedPanel('nodes');
+                    setSelectedNodeIndex(0);
+                    setHasNavigated(true);
+                }
+            } else if (focusedPanel === 'categories') {
+                if (e.key === "ArrowDown") {
+                    setSelectedCategoryIndex(prev => {
+                        const newIndex = Math.min(prev + 1, categories.length);
+                        setHasNavigated(true);
+                        return newIndex;
+                    });
+                } else if (e.key === "ArrowUp") {
+                    setSelectedCategoryIndex(prev => {
+                        const newIndex = Math.max(prev - 1, 0);
+                        setHasNavigated(true);
+                        return newIndex;
+                    });
+                } else if (e.key === "Enter") {
+                    if (selectedCategoryIndex === 0) {
+                        handleCategorySelect(null);
+                    } else {
+                        handleCategorySelect(categories[selectedCategoryIndex - 1].name);
+                    }
+                    // Switch focus to nodes panel after selecting category
+                    setFocusedPanel('nodes');
+                    setSelectedNodeIndex(0);
+                    setHasNavigated(true);
+                }
+            } else if (focusedPanel === 'nodes') {
+                if (e.key === "ArrowDown") {
+                    setSelectedNodeIndex((prev) => {
+                        const newIndex = Math.min(prev + 1, filteredAvailableNodes.length - 1);
+                        setHasNavigated(true);
+                        return newIndex;
+                    });
+                } else if (e.key === "ArrowUp") {
+                    setSelectedNodeIndex((prev) => {
+                        const newIndex = Math.max(prev - 1, 0);
+                        setHasNavigated(true);
+                        return newIndex;
+                    });
+                } else if (e.key === "Enter" && selectedNodeIndex >= 0 && filteredAvailableNodes[selectedNodeIndex]) {
+                    const nodeId = filteredAvailableNodes[selectedNodeIndex].id;
+                    handleAddNodeAtPosition(nodeId, mouseX, mouseY);
+                }
+            }
+            
+            if (e.key === "Escape") {
                 setShowAddingNode(false);
                 setSearchPhrase("");
                 resetSelectedNodeIndex();
+                setSelectedCategory(null);
             }
         };
 
@@ -117,14 +233,22 @@ const AddNode: React.FC = () => {
         showAddingNode,
         filteredAvailableNodes,
         selectedNodeIndex,
+        selectedCategoryIndex,
+        categories,
+        focusedPanel,
         setSelectedNodeIndex,
         resetSelectedNodeIndex,
         mouseX,
         mouseY,
         handleAddNodeAtPosition,
+        handleCategorySelect,
         setShowAddingNode,
-        setSearchPhrase
+        setSearchPhrase,
+        setSelectedCategory
     ]);
+
+    // Calculate total node count
+    const totalNodeCount = categories.reduce((sum, cat) => sum + cat.count, 0);
 
     return (
         <>
@@ -132,39 +256,141 @@ const AddNode: React.FC = () => {
                 <div
                     ref={modalRef}
                     onWheel={(e) => e.stopPropagation()}
-                    className="fixed p-4 bg-sky-100 dark:bg-black/90 dark:border-white/10 border-sky-500/50 rounded-lg shadow-lg w-[700px] h-[395px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-2/3 z-30"
+                    className="fixed p-4 bg-sky-100 dark:bg-black/90 dark:border-white/10 border-sky-500/50 rounded-lg shadow-lg w-[800px] h-[480px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-2/3 z-30"
                 >
-                    <InputGroup>
+                    <InputGroup className="mb-4">
                         <MagnifyingGlassIcon data-slot="icon" className="h-5 w-5 text-zinc-500" />
                         <Input
                             type="search"
-                            placeholder="Search node"
+                            placeholder={selectedCategory ? `Search in ${selectedCategory}...` : "Search all nodes..."}
                             value={searchPhrase}
                             onChange={(e) => setSearchPhrase(e.target.value)}
                             ref={inputRef}
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="off"
+                            spellCheck="false"
                         />
                     </InputGroup>
-                    <div className="absolute inset-4 top-16 bottom-16 overflow-y-auto">
-                        {filteredAvailableNodes.map((n, index) => (
+                    
+                    <div className="flex h-[calc(100%-80px)] gap-4 mt-4">
+                        {/* Categories Panel */}
+                        <div 
+                            ref={categoriesRef}
+                            className={`w-1/3 p-3 overflow-y-auto rounded-md transition-all ${
+                                focusedPanel === 'categories' 
+                                    ? 'bg-sky-50 dark:bg-zinc-800/50' 
+                                    : ''
+                            }`}
+                        >
+                            <div className={`text-xs font-semibold mb-3 uppercase tracking-wider transition-colors ${
+                                focusedPanel === 'categories'
+                                    ? 'text-sky-700 dark:text-sky-400'
+                                    : 'text-gray-500 dark:text-gray-400'
+                            }`}>
+                                Categories
+                            </div>
+                            
+                            {/* All Nodes option */}
                             <div
-                                key={'add-' + n.id}
-                                onClick={(e) => handleAddNodeAtPosition(n.id, e.clientX, e.clientY)}
-                                className={`cursor-pointer p-2 rounded-md ${
-                                    index === selectedNodeIndex
-                                        ? "bg-sky-300 text-sky-800 dark:bg-zinc-800 dark:text-white"
-                                        : "hover:bg-sky-400 text-sky-800 dark:hover:bg-zinc-800 dark:text-gray-300"
+                                ref={el => categoryItemRefs.current[0] = el}
+                                onClick={() => {
+                                    handleCategorySelect(null);
+                                    setFocusedPanel('nodes');
+                                }}
+                                className={`cursor-pointer p-2 rounded-md flex items-center justify-between mb-1 transition-colors ${
+                                    focusedPanel === 'categories' && selectedCategoryIndex === 0 && hasNavigated
+                                        ? "bg-sky-200 text-sky-800 dark:bg-zinc-700 dark:text-white"
+                                        : selectedCategory === null
+                                        ? "bg-sky-100 dark:bg-zinc-800"
+                                        : "hover:bg-sky-100 dark:hover:bg-zinc-800"
                                 }`}
                             >
-                                <span className="text-sm text-sky-800 dark:text-gray-400">{n.category}</span>
-                                <ChevronRightIcon className="h-5 inline text-sky-800 dark:text-gray-400" />
-                                {n.name}
+                                <div className="flex items-center gap-2">
+                                    <FolderIcon className="h-4 w-4" />
+                                    <span className="font-medium">All Nodes</span>
+                                </div>
+                                <span className="text-xs bg-sky-600 text-white dark:bg-zinc-600 px-2 py-0.5 rounded">
+                                    {totalNodeCount}
+                                </span>
                             </div>
-                        ))}
+                            
+                            {/* Category list */}
+                            {categories.map((category, index) => (
+                                <div
+                                    key={category.name}
+                                    ref={el => categoryItemRefs.current[index + 1] = el}
+                                    onClick={() => {
+                                        handleCategorySelect(category.name);
+                                        setFocusedPanel('nodes');
+                                    }}
+                                    className={`cursor-pointer p-2 rounded-md flex items-center justify-between mb-1 transition-colors ${
+                                        focusedPanel === 'categories' && selectedCategoryIndex === index + 1 && hasNavigated
+                                            ? "bg-sky-200 text-sky-800 dark:bg-zinc-700 dark:text-white"
+                                            : selectedCategory === category.name
+                                            ? "bg-sky-100 dark:bg-zinc-800"
+                                            : "hover:bg-sky-100 dark:hover:bg-zinc-800"
+                                    }`}
+                                >
+                                    <span className="capitalize">{category.name}</span>
+                                    <span className="text-xs bg-sky-100 dark:bg-zinc-900 px-2 py-0.5 rounded">
+                                        {category.count}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        {/* Nodes Panel */}
+                        <div 
+                            ref={nodesRef}
+                            className={`flex-1 p-3 overflow-y-auto rounded-md transition-all ${
+                                focusedPanel === 'nodes' 
+                                    ? 'bg-sky-50 dark:bg-zinc-800/50' 
+                                    : ''
+                            }`}
+                        >
+                            <div className={`text-xs font-semibold mb-3 uppercase tracking-wider transition-colors ${
+                                focusedPanel === 'nodes'
+                                    ? 'text-sky-700 dark:text-sky-400'
+                                    : 'text-gray-500 dark:text-gray-400'
+                            }`}>
+                                {selectedCategory ? `${selectedCategory} Nodes` : 'All Nodes'} 
+                                {searchPhrase && ` (filtered)`}
+                            </div>
+                            
+                            {filteredAvailableNodes.length === 0 ? (
+                                <div className="text-center text-gray-500 dark:text-gray-400 mt-8">
+                                    {searchPhrase ? 'No nodes found matching your search' : 'No nodes in this category'}
+                                </div>
+                            ) : (
+                                filteredAvailableNodes.map((n, index) => (
+                                    <div
+                                        key={'add-' + n.id}
+                                        ref={el => nodeItemRefs.current[index] = el}
+                                        onClick={(e) => handleAddNodeAtPosition(n.id, e.clientX, e.clientY)}
+                                        className={`cursor-pointer p-2 rounded-md mb-1 transition-colors ${
+                                            index === selectedNodeIndex && focusedPanel === 'nodes' && (hasNavigated || searchPhrase)
+                                                ? "bg-sky-200 text-sky-800 dark:bg-zinc-700 dark:text-white"
+                                                : "hover:bg-sky-100 text-sky-800 dark:hover:bg-zinc-800 dark:text-gray-300"
+                                        }`}
+                                    >
+                                        {!selectedCategory && (
+                                            <>
+                                                <span className="text-xs text-sky-600 dark:text-gray-500">{n.category}</span>
+                                                <ChevronRightIcon className="h-4 inline text-sky-600 dark:text-gray-500 mx-1" />
+                                            </>
+                                        )}
+                                        <span className="font-medium">{n.name}</span>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
-                    <div className="absolute bottom-4 right-4 left-4 h-auto overflow-y-auto">
-                        <Button color={'sky'} onClick={handleAddNewNode} className={'w-full'}>
-                            New Node <PlusIcon />
-                        </Button>
+                    
+                    {/* Keyboard hints */}
+                    <div className="absolute bottom-2 left-4 right-4 flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <span>↑↓ Navigate • ←→ Switch panels • Enter Select • Esc Close</span>
+                        <span>Type to search</span>
                     </div>
                 </div>
             )}

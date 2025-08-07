@@ -38,6 +38,7 @@ type DocumentationStore = {
     clearSearch: () => void;
     clearCurrentDocument: () => void;
     clearError: () => void;
+    updateGuides: (newGuides: Record<string, DocumentationDocument[]>) => void;
 };
 
 const useDocumentationStore = create<DocumentationStore>((set, get) => ({
@@ -163,6 +164,10 @@ const useDocumentationStore = create<DocumentationStore>((set, get) => ({
 
     clearError: () => {
         set({ error: null });
+    },
+
+    updateGuides: (newGuides) => {
+        set({ guides: { ...get().guides, ...newGuides } });
     },
 }));
 

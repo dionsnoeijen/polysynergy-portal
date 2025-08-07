@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import useEditorStore from "@/stores/editorStore";
 import useDocumentationStore, { DocumentationType } from "@/stores/documentationStore";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
+import { fetchAllDocumentationAPI } from "@/api/documentationApi";
 import { Button } from "@/components/button";
 import { Input, InputGroup } from "@/components/input";
 import { 
@@ -47,7 +48,8 @@ const EnhancedDocs: React.FC = () => {
         fetchDocument,
         clearSearch,
         clearCurrentDocument,
-        clearError
+        clearError,
+        updateGuides
     } = useDocumentationStore();
 
     useEffect(() => {
@@ -58,10 +60,24 @@ const EnhancedDocs: React.FC = () => {
     useEffect(() => {
         if (documentationType === 'general') {
             fetchCategories();
+            // Load document counts for all categories
+            loadAllDocumentCounts();
         } else if (documentationType === 'node' && !hasInitialFetched) {
             fetchAvailableNodes();
         }
     }, [documentationType, fetchCategories, fetchAvailableNodes, hasInitialFetched]);
+
+    const loadAllDocumentCounts = async () => {
+        try {
+            const response = await fetchAllDocumentationAPI();
+            console.log('Loaded all documentation for counts:', response);
+            // The response should have guides with documents, update the store
+            const updatedGuides = response.guides || {};
+            updateGuides(updatedGuides);
+        } catch (error) {
+            console.error('Failed to load document counts:', error);
+        }
+    };
 
     // Auto-select node when docsMarkdown is set and we're on node tab
     useEffect(() => {
@@ -266,6 +282,50 @@ const EnhancedDocs: React.FC = () => {
         );
     };
 
+    const handleInternalLink = (href: string) => {
+        console.log('Internal link clicked:', href);
+        
+        // Handle internal documentation links
+        if (href.startsWith('/documentation/') || href.startsWith('./') || href.startsWith('../')) {
+            // Parse different link formats
+            let targetCategory = '';
+            let targetDocument = '';
+            
+            if (href.startsWith('/documentation/')) {
+                // Format: /documentation/guides/getting-started
+                const parts = href.replace('/documentation/', '').split('/');
+                targetCategory = parts[0];
+                targetDocument = parts[1];
+            } else if (href.includes('/')) {
+                // Format: ./other-doc.md or ../category/doc.md
+                const cleanHref = href.replace('./', '').replace('../', '').replace('.md', '');
+                const parts = cleanHref.split('/');
+                if (parts.length === 2) {
+                    targetCategory = parts[0];
+                    targetDocument = parts[1];
+                } else {
+                    // Same category, different document
+                    targetCategory = selectedCategory || categories[0]?.id || '';
+                    targetDocument = parts[0];
+                }
+            }
+            
+            if (targetCategory && targetDocument) {
+                console.log(`Navigating to: ${targetCategory}/${targetDocument}`);
+                // Clear current document first
+                clearCurrentDocument();
+                // Set the category
+                setSelectedCategory(targetCategory);
+                // Fetch the specific document
+                fetchDocument(targetCategory, targetDocument);
+            }
+            
+            return true; // Handled
+        }
+        
+        return false; // Not handled, let it open normally
+    };
+
     const renderMarkdownContent = (content: string) => (
         <ReactMarkdown
             remarkPlugins={[remarkGfm]}
@@ -303,7 +363,24 @@ const EnhancedDocs: React.FC = () => {
                         </code>
                     );
                 },
-                a: ({ ...props }) => <a className="text-sky-600 dark:text-sky-400 hover:underline" {...props} />,
+                a: ({ href, children, ...props }) => {
+                    const handleClick = (e: React.MouseEvent) => {
+                        if (href && handleInternalLink(href)) {
+                            e.preventDefault();
+                        }
+                    };
+                    
+                    return (
+                        <a 
+                            href={href}
+                            className="text-sky-600 dark:text-sky-400 hover:underline cursor-pointer" 
+                            onClick={handleClick}
+                            {...props}
+                        >
+                            {children}
+                        </a>
+                    );
+                },
                 h1: ({ ...props }) => <h1 className="text-3xl font-bold mt-0 mb-2 leading-snug" {...props} />,
                 h2: ({ ...props }) => <h2 className="text-2xl font-semibold mt-5 mb-2 leading-snug" {...props} />,
                 h3: ({ ...props }) => <h3 className="text-xl font-semibold mt-4 mb-2 leading-snug" {...props} />,

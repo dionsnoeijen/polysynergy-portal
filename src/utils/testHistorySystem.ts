@@ -4,9 +4,10 @@
 import { useHistoryStore } from "@/stores/historyStore";
 import { nodeHistoryActions } from "@/stores/history";
 import useNodesStore from "@/stores/nodesStore";
+import { NodeType, FlowState } from "@/types/types";
 
 // This function can be called from the browser console to test undo/redo
-(window as Record<string, unknown>).testUndoRedo = () => {
+(window as unknown as Record<string, unknown>).testUndoRedo = () => {
     console.log("🧪 Testing Undo/Redo System");
     
     const historyStore = useHistoryStore.getState();
@@ -23,7 +24,7 @@ import useNodesStore from "@/stores/nodesStore";
         name: "Test Node",
         handle: "test-handle",
         category: "test",
-        type: "rows" as const,
+        type: NodeType.Rows,
         view: {
             x: 100,
             y: 100,
@@ -34,7 +35,7 @@ import useNodesStore from "@/stores/nodesStore";
             collapsed: false
         },
         variables: [],
-        flowState: "enabled" as const,
+        flowState: FlowState.Enabled,
         default_flow_state: "enabled",
         path: "/test",
         code: ""

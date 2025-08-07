@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import useEditorStore from "@/stores/editorStore";
@@ -52,6 +52,18 @@ const EnhancedDocs: React.FC = () => {
         updateGuides
     } = useDocumentationStore();
 
+    const loadAllDocumentCounts = useCallback(async () => {
+        try {
+            const response = await fetchAllDocumentationAPI();
+            console.log('Loaded all documentation for counts:', response);
+            // The response should have guides with documents, update the store
+            const updatedGuides = response.guides || {};
+            updateGuides(updatedGuides);
+        } catch (error) {
+            console.error('Failed to load document counts:', error);
+        }
+    }, [updateGuides]);
+
     useEffect(() => {
         const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         setEditorTheme(isDark ? "vs-dark" : "vs-light");
@@ -65,19 +77,7 @@ const EnhancedDocs: React.FC = () => {
         } else if (documentationType === 'node' && !hasInitialFetched) {
             fetchAvailableNodes();
         }
-    }, [documentationType, fetchCategories, fetchAvailableNodes, hasInitialFetched]);
-
-    const loadAllDocumentCounts = async () => {
-        try {
-            const response = await fetchAllDocumentationAPI();
-            console.log('Loaded all documentation for counts:', response);
-            // The response should have guides with documents, update the store
-            const updatedGuides = response.guides || {};
-            updateGuides(updatedGuides);
-        } catch (error) {
-            console.error('Failed to load document counts:', error);
-        }
-    };
+    }, [documentationType, fetchCategories, fetchAvailableNodes, hasInitialFetched, loadAllDocumentCounts]);
 
     // Auto-select node when docsMarkdown is set and we're on node tab
     useEffect(() => {

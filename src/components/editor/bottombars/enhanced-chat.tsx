@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { ArrowUpIcon } from '@heroicons/react/24/outline';
 import useChatStore from '@/stores/chatStore';
 import useNodesStore from '@/stores/nodesStore';
@@ -33,11 +33,16 @@ const EnhancedChat: React.FC = () => {
     }, [promptNodes, selectedPromptNodeId]);
 
     // Get messages for current run (keeping existing logic for now)
-    const sortedRunIds = Object.entries(messagesByRun)
-        .sort((a, b) => b[1].length - a[1].length)
-        .map(([runId]) => runId);
-    const latestRunId = sortedRunIds[0];
-    const messages = latestRunId ? messagesByRun[latestRunId] : [];
+    const { messages, latestRunId } = useMemo(() => {
+        const sortedRunIds = Object.entries(messagesByRun)
+            .sort((a, b) => b[1].length - a[1].length)
+            .map(([runId]) => runId);
+        const latestRunId = sortedRunIds[0];
+        return {
+            messages: latestRunId ? messagesByRun[latestRunId] : [],
+            latestRunId
+        };
+    }, [messagesByRun]);
 
     const handleSend = async () => {
         if (!input.trim()) return;

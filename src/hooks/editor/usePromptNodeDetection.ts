@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import useNodesStore from '@/stores/nodesStore';
 import { Node } from '@/types/types';
 
-const PROMPT_NODE_PATH = 'polysynergy_nodes_agno.agent.prompt_node.PromptNode';
+const PROMPT_NODE_PATH = 'polysynergy_nodes.play.prompt.Prompt';
 
 export interface PromptNodeInfo {
   id: string;

@@ -78,8 +78,8 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
 
     return (
         <div className="max-w-lg mx-auto p-10">
-            <h1 className="text-2xl font-semibold mb-6">Almost there!</h1>
-            <h3 className="text-lg font-medium mb-6">Complete your account</h3>
+            <h1 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">Almost there!</h1>
+            <h3 className="text-lg font-medium mb-6 text-gray-900 dark:text-white">Complete your account</h3>
 
             {error && <p className="text-red-600 mb-4">{error}</p>}
 
@@ -87,7 +87,7 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
                 {!isAccountSynced && (
                     <>
                         <div className="mb-4">
-                            <label className="block text-sm font-medium mb-2">Account Type</label>
+                            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Account Type</label>
                             <Select
                                 value={accountType}
                                 onChange={(e) => setAccountType(e.target.value)}
@@ -100,20 +100,25 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
 
                         {accountType === 'tenant' && (
                             <div className="mb-4">
-                                <label className="block text-sm font-medium mb-2">Organization Name</label>
+                                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                                    Organization Name <span className="text-red-500">*</span>
+                                </label>
                                 <Input
                                     value={tenantName}
                                     onChange={(e) => setTenantName(e.target.value)}
-                                    placeholder="Enter your company or organization name"
+                                    placeholder="e.g. Acme Corp, ABC Inc, My Business LLC"
                                     required
                                 />
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    The name of your company or organization
+                                </p>
                             </div>
                         )}
                     </>
                 )}
 
                 <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2">First Name</label>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">First Name</label>
                     <Input
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
@@ -123,7 +128,7 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
                 </div>
 
                 <div className="mb-4">
-                    <label className="block text-sm font-medium mb-2">Last Name</label>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Last Name</label>
                     <Input
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
@@ -138,12 +143,12 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
                             checked={termsAccepted}
                             onChange={() => setTermsAccepted(!termsAccepted)}
                         />
-                        <span className="ml-2">
+                        <span className="ml-2 text-gray-900 dark:text-white">
                             I accept the{" "}
                             <button
                                 type="button"
                                 onClick={() => setIsTermsModalOpen(true)}
-                                className="text-blue-600 underline"
+                                className="text-blue-600 dark:text-blue-400 underline"
                             >
                                 Terms & Conditions
                             </button>.
@@ -160,13 +165,13 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
 
             {isTermsModalOpen && (
                 <Modal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)}>
-                    <h2 className="text-xl font-semibold mb-4">Terms & Conditions</h2>
-                    <p className="mb-6">
+                    <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Terms & Conditions</h2>
+                    <p className="mb-6 text-gray-900 dark:text-white">
                         Welcome to PolySynergy! By creating an account and using our platform, you agree to the
                         following Terms & Conditions. Please read them carefully before proceeding.
                     </p>
 
-                    <ul className="list-disc pl-6 mb-6 space-y-4 text-sm text-gray-700">
+                    <ul className="list-disc pl-6 mb-6 space-y-4 text-sm text-gray-700 dark:text-gray-300">
                         <li>
                             <strong>Account Responsibilities:</strong> You are responsible for maintaining the
                             confidentiality of your account credentials and for all activities that occur under your
@@ -178,7 +183,7 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
                         </li>
                         <li>
                             <strong>Data Privacy:</strong> Your personal information will be processed in accordance
-                            with our <a href="/privacy-policy" className="text-blue-600 underline">Privacy Policy</a>.
+                            with our <a href="/privacy-policy" className="text-blue-600 dark:text-blue-400 underline">Privacy Policy</a>.
                             By agreeing to these terms, you consent to the processing of your data as described.
                         </li>
                         <li>
@@ -201,7 +206,7 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
                         </li>
                     </ul>
 
-                    <p className="mb-6">
+                    <p className="mb-6 text-gray-900 dark:text-white">
                         By proceeding, you confirm that you have read, understood, and agree to these Terms &
                         Conditions. If you do not agree, please discontinue your use of the platform.
                     </p>

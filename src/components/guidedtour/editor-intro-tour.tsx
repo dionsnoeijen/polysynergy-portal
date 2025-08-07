@@ -10,6 +10,14 @@ const steps = [
         content: 'Add a new node to your project. This is where you can start building your workflow. Shortcut: a',
     },
     {
+        selector: '[data-tour-id="undo-button"]',
+        content: 'Undo your last action. This will revert the most recent change to your workflow. Shortcut: Ctrl+Z'
+    },
+    {
+        selector: '[data-tour-id="redo-button"]',
+        content: 'Redo a previously undone action. This will restore a change you undid. Shortcut: Shift+Ctrl+Z'
+    },
+    {
         selector: '[data-tour-id="clear-mock-data-button"]',
         content: 'After a test run, you can clear the mock data. This will reset the state of your project. Shortcut: c',
     },
@@ -20,6 +28,14 @@ const steps = [
     {
         selector: '[data-tour-id="published-variable-button"]',
         content: 'Configure published variables and secrets for your flow.'
+    },
+    {
+        selector: '[data-tour-id="documentation-button"]',
+        content: 'Access documentation for nodes and general guides. Browse all available help and reference materials.'
+    },
+    {
+        selector: '[data-tour-id="draw-button"]',
+        content: 'Switch to drawing mode to create visual annotations and notes on your workflow. Shortcut: d'
     },
     {
         selector: '[data-tour-id="box-select-button"]',

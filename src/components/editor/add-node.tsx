@@ -10,6 +10,7 @@ import { globalToLocal } from "@/utils/positionUtils";
 import { useMousePosition } from "@/hooks/editor/useMousePosition";
 import { v4 as uuidv4 } from "uuid";
 import { FormType } from "@/types/types";
+import { nodeHistoryActions } from "@/stores/history";
 
 const AddNode: React.FC = () => {
     const showAddingNode = useEditorStore((state) => state.showAddingNode);
@@ -81,7 +82,8 @@ const AddNode: React.FC = () => {
 
         delete node.temp;
 
-        addNode(node, true);
+        // Use history-enabled node addition
+        nodeHistoryActions.addNodeWithHistory(node, true);
 
         if (openedGroup) {
             addNodeToGroup(openedGroup, node.id);

@@ -1,6 +1,5 @@
 import React from 'react';
 import {UserCircleIcon} from '@heroicons/react/24/outline';
-import NodeChatBubble from '@/components/editor/nodes/node-chat-bubble';
 
 interface AvatarContentProps {
     logic?: {
@@ -52,7 +51,6 @@ const AvatarContent: React.FC<AvatarContentProps> = ({ logic }) => {
 
     return (
         <>
-            <NodeChatBubble nodeId={logic.nodeId} />
             {renderAvatar()}
         </>
     );

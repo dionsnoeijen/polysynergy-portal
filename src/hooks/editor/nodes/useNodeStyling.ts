@@ -41,9 +41,13 @@ export const useNodeStyling = (node: Node, options: NodeStylingOptions) => {
             'z-0'
         ];
 
+        const isSelected = selectedNodes.includes(node.id);
+        
         const stateClasses = node.view.disabled 
             ? ['z-1', 'select-none', 'opacity-30']
-            : ['z-20', 'cursor-move'];
+            : isSelected 
+                ? ['z-50', 'cursor-move'] // Higher z-index for selected nodes to show chat bubbles
+                : ['z-20', 'cursor-move'];
 
         const addingClasses = node.view.adding 
             ? ['shadow-[0_0_15px_rgba(59,130,246,0.8)]']
@@ -68,6 +72,7 @@ export const useNodeStyling = (node: Node, options: NodeStylingOptions) => {
         node.category,
         options.preview,
         options.isService,
-        nodeColor
+        nodeColor,
+        selectedNodes // Added missing dependency for selection changes
     ]);
 };

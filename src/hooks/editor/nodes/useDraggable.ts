@@ -6,6 +6,7 @@ import {Connection, EditorMode} from "@/types/types";
 import {updateConnectionsDirectly} from "@/utils/updateConnectionsDirectly";
 import {updateNodesDirectly} from "@/utils/updateNodesDirectly";
 import {snapToGrid} from "@/utils/snapToGrid";
+import { nodeHistoryActions } from "@/stores/history";
 
 const useDraggable = () => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
@@ -88,9 +89,15 @@ const useDraggable = () => {
             return { id: nodeId, x, y };
         });
 
-        updatedNodes.forEach(({ id, x, y }) => {
-            updateNodePosition(id, x, y);
-        });
+        // Use history-enabled node position updates
+        if (updatedNodes.length === 1) {
+            // Single node move
+            const { id, x, y } = updatedNodes[0];
+            nodeHistoryActions.updateNodePositionWithHistory(id, x, y);
+        } else if (updatedNodes.length > 1) {
+            // Multiple node move - use batch operation
+            nodeHistoryActions.moveNodesWithHistory(updatedNodes.map(({ id, x, y }) => ({ nodeId: id, x, y })));
+        }
 
         updateNodesDirectly(
             updatedNodes.map(n => n.id),

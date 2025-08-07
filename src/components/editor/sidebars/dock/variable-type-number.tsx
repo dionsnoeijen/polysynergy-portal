@@ -7,6 +7,7 @@ import {Select} from "@/components/select";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 import useConnectionsStore from "@/stores/connectionsStore";
 import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
+import { nodeHistoryActions } from "@/stores/history";
 
 const VariableTypeNumber: React.FC<VariableTypeProps> = ({
     nodeId,
@@ -36,7 +37,8 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const newValue = parseFloat(e.target.value);
         if (!isNaN(newValue)) {
-            updateNodeVariable(nodeId, variable.handle, newValue);
+            // Use history-enabled variable update
+            nodeHistoryActions.updateNodeVariableWithHistory(nodeId, variable.handle, newValue);
         }
     };
 

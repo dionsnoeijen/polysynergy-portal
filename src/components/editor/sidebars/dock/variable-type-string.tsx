@@ -8,6 +8,7 @@ import { Select } from "@/components/select";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 import useConnectionsStore from "@/stores/connectionsStore";
 import {BoltIcon} from "@heroicons/react/24/outline";
+import { nodeHistoryActions } from "@/stores/history";
 
 const VariableTypeString: React.FC<VariableTypeProps> = ({
     nodeId,
@@ -33,7 +34,8 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
         if (onChange) {
             onChange(newValue);
         } else {
-            updateNodeVariable(nodeId, variable.handle, newValue);
+            // Use history-enabled variable update
+            nodeHistoryActions.updateNodeVariableWithHistory(nodeId, variable.handle, newValue);
         }
     };
 

@@ -2,6 +2,7 @@ import useConnectionsStore from "@/stores/connectionsStore";
 import useNodesStore from "@/stores/nodesStore";
 import { NodeType } from "@/types/types";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
+import { nodeHistoryActions, connectionHistoryActions } from "@/stores/history";
 
 export const useDeleteNode = () => {
     const removeNode = useNodesStore((state) => state.removeNode);
@@ -14,26 +15,48 @@ export const useDeleteNode = () => {
     const { deleteGroup, removeNodeFromGroup } = useGrouping();
 
     const handleDeleteSelectedNodes = (selectedNodes: string[]) => {
-        selectedNodes.map((nodeId) => {
-            const node = getNode(nodeId);
-            if (!node) return;
-            if (node?.type === NodeType.Group) {
-                deleteGroup(nodeId);
+        // Use batching for multiple node deletions
+        if (selectedNodes.length > 1) {
+            nodeHistoryActions.startNodeBatch(`Delete ${selectedNodes.length} nodes`);
+        }
+        
+        try {
+            selectedNodes.map((nodeId) => {
+                const node = getNode(nodeId);
+                if (!node) return;
+                if (node?.type === NodeType.Group) {
+                    deleteGroup(nodeId);
+                }
+                const groupId = isNodeInGroup(nodeId);
+                if (groupId) {
+                    removeNodeFromGroup(groupId, nodeId);
+                }
+                handleDeleteNode(nodeId);
+            });
+            
+            if (selectedNodes.length > 1) {
+                nodeHistoryActions.endNodeBatch();
             }
-            const groupId = isNodeInGroup(nodeId);
-            if (groupId) {
-                removeNodeFromGroup(groupId, nodeId);
+        } catch (error) {
+            if (selectedNodes.length > 1) {
+                nodeHistoryActions.cancelNodeBatch();
             }
-            handleDeleteNode(nodeId);
-        });
+            throw error;
+        }
     };
 
     const handleDeleteNode = (nodeId: string) => {
         const inConnections = findInConnectionsByNodeId(nodeId);
         const outConnections = findOutConnectionsByNodeId(nodeId);
         const connections = [...inConnections, ...outConnections];
-        removeConnections(connections);
-        removeNode(nodeId);
+        
+        // Remove connections with history
+        connections.forEach(connection => {
+            connectionHistoryActions.removeConnectionWithHistory(connection.id);
+        });
+        
+        // Remove node with history
+        nodeHistoryActions.removeNodeWithHistory(nodeId);
     };
 
     return { handleDeleteSelectedNodes, handleDeleteNode };

@@ -3,6 +3,7 @@ import { Connection as ConnectionProps } from "@/types/types";
 import { useTheme } from "next-themes";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 import useMockStore from "@/stores/mockStore";
+import { connectionHistoryActions } from "@/stores/history";
 
 type Props = { connection: ConnectionProps; };
 
@@ -13,6 +14,12 @@ const Connection: React.FC<Props> = ({ connection }) => {
 
     const [isReady, setIsReady] = useState(false);
     const [middle, setMiddle] = useState({ x: 0, y: 0 });
+
+    const handleConnectionClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // Delete connection with history
+        connectionHistoryActions.removeConnectionWithHistory(connection.id);
+    };
 
     const { theme } = useTheme();
     const mockConnection = useMockStore(
@@ -71,7 +78,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
             <svg
                 style={{
                     position: "absolute",
-                    pointerEvents: "none",
+                    pointerEvents: "auto",
                     overflow: "visible",
                     zIndex: 1,
                     opacity: isReady ? 1 : 0,
@@ -82,10 +89,14 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     ref={pathRef}
                     data-connection-id={connection.id}
                     stroke={color}
-                    strokeWidth={width}
+                    strokeWidth={Math.max(width, 8)} // Make it easier to click
                     fill="none"
                     strokeDasharray={dashArray}
-                />
+                    style={{ cursor: 'pointer' }}
+                    onClick={handleConnectionClick}
+                >
+                    <title>Click to delete connection</title>
+                </path>
                 {window.debugMode && (
                     <text
                         x={middle.x}

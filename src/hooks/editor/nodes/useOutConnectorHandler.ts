@@ -7,6 +7,7 @@ import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
 import { useConnectorVisualFeedback } from './useConnectorVisualFeedback';
 import { useConnectionTypeValidation } from './useConnectionTypeValidation';
+import { connectionHistoryActions } from '@/stores/history';
 
 export const useOutConnectorHandler = (
     nodeId: string,
@@ -98,25 +99,24 @@ export const useOutConnectorHandler = (
                 animateConnector(target);
 
                 if (connection) {
-                    connection.targetHandle = targetHandle;
-                    connection.targetNodeId = targetNodeId;
-                    connection.isInGroup = openedGroup as string;
+                    // First, remove the temporary connection
+                    removeConnectionById(id);
                     
-                    if (nodeGroupTarget && targetGroupId && groupId) {
-                        connection.sourceGroupId = groupId;
-                        connection.targetGroupId = targetGroupId;
-                    }
-                    if (!nodeGroupTarget && groupId) {
-                        connection.sourceGroupId = groupId;
-                    }
-                    if (targetGroupId && groupId === null) {
-                        connection.targetGroupId = targetGroupId;
-                    }
+                    // Create the final connection with all properties
+                    const finalConnection = {
+                        ...connection,
+                        targetHandle: targetHandle,
+                        targetNodeId: targetNodeId,
+                        isInGroup: openedGroup as string,
+                        sourceGroupId: (nodeGroupTarget && targetGroupId && groupId) ? groupId : 
+                                      (!nodeGroupTarget && groupId) ? groupId : 
+                                      (targetGroupId && groupId === null) ? undefined : connection.sourceGroupId,
+                        targetGroupId: (nodeGroupTarget && targetGroupId && groupId) ? targetGroupId :
+                                      (targetGroupId && groupId === null) ? targetGroupId : connection.targetGroupId
+                    };
                     
-                    const updatedConnection = updateConnectionsDirectly([connection]);
-                    updatedConnection.forEach((upd) => {
-                        updateConnection({ ...connection, ...upd });
-                    });
+                    // Add the final connection with history
+                    connectionHistoryActions.addConnectionWithHistory(finalConnection);
                 }
             } else {
                 removeConnectionById(id);

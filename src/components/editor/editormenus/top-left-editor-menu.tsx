@@ -1,59 +1,61 @@
 import React from "react";
 import useEditorStore from "@/stores/editorStore";
-import useMockStore from "@/stores/mockStore";
 import {
-    AdjustmentsHorizontalIcon,
-    ArrowUturnUpIcon,
-    BookOpenIcon,
     CursorArrowRaysIcon,
     PaintBrushIcon,
-    PlayIcon,
     PlusIcon,
-    StopIcon
+    StopIcon,
+    ArrowUturnLeftIcon,
+    ArrowUturnRightIcon
 } from "@heroicons/react/24/outline";
 import {Divider} from "@/components/divider";
 import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
-import {EditorMode, FormType} from "@/types/types";
-import useNodesStore from "@/stores/nodesStore";
-import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
+import {EditorMode} from "@/types/types";
 import Image from "next/image";
 import useChatStore from "@/stores/chatStore";
-import useDocumentationStore from "@/stores/documentationStore";
+import useMockStore from "@/stores/mockStore";
+import { useHistoryStore } from "@/stores/historyStore";
 
 const TopLeftEditorMenu: React.FC = () => {
     const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
-    const openForm = useEditorStore((state) => state.openForm);
-    const openDocs = useEditorStore((state) => state.openDocs);
-    
-    const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
-    const fetchCategories = useDocumentationStore((state) => state.fetchCategories);
-
     const editorMode = useEditorStore((state) => state.editorMode);
     const setEditorMode = useEditorStore((state) => state.setEditorMode);
-
-    const clearMockStore = useMockStore((state) => state.clearMockStore);
     const clearChatStore = useChatStore((state) => state.clearChatStore);
-    const hasMockData = useMockStore((state) => state.hasMockData);
-    const mainPlayNode = useNodesStore((state) => state.findMainPlayNode());
-    const handlePlay = useHandlePlay();
-
-    const handleOpenDocs = async () => {
-        setDocumentationType('general');
-        await fetchCategories();
-        openDocs('# Documentation\n\nLoading documentation...');
-    };
+    const clearMockStore = useMockStore((state) => state.clearMockStore);
+    
+    // History store hooks
+    const undo = useHistoryStore((state) => state.undo);
+    const redo = useHistoryStore((state) => state.redo);
+    const getLastAction = useHistoryStore((state) => state.getLastAction);
+    
+    // Get state values directly to ensure reactivity
+    const undoStack = useHistoryStore((state) => state.undoStack);
+    const redoStack = useHistoryStore((state) => state.redoStack);
+    const history = useHistoryStore((state) => state.history);
+    const future = useHistoryStore((state) => state.future);
+    const isEnabled = useHistoryStore((state) => state.isEnabled);
+    const isBatching = useHistoryStore((state) => state.isBatching);
+    
+    // Compute can undo/redo locally to ensure reactivity
+    const canUndo = (undoStack.length > 0 || history.length > 0) && isEnabled && !isBatching;
+    const canRedo = (redoStack.length > 0 || future.length > 0) && isEnabled && !isBatching;
+    
+    // Get last action for tooltip
+    const lastAction = undoStack[undoStack.length - 1] || null;
 
     useKeyBindings({
         'ctrl+z': {
             handler: () => {
-                console.info('Not yet implemented');
-                // useHistoryStore.getState().undo();
+                if (canUndo) {
+                    undo();
+                }
             }
         },
         'shift+ctrl+z': {
             handler: () => {
-                console.info('Not yet implemented');
-                // useHistoryStore.getState().redo();
+                if (canRedo) {
+                    redo();
+                }
             }
         },
         'c': {
@@ -100,77 +102,37 @@ const TopLeftEditorMenu: React.FC = () => {
 
                 <Divider className={'mt-1 mb-1'}/>
 
-                {/*<div className="flex flex-col items-start justify-center w-full h-full">*/}
-                {/*    <button*/}
-                {/*        disabled={true}*/}
-                {/*        className={`w-full text-lg font-semibold text-white rounded p-2`}*/}
-                {/*        title={'Undo'}*/}
-                {/*    >*/}
-                {/*        <ArrowTurnDownLeftIcon className={"w-4 h-4"}/>*/}
-                {/*    </button>*/}
-                {/*    <button*/}
-                {/*        disabled={true}*/}
-                {/*        className={`w-full text-lg font-semibold text-white rounded p-2`}*/}
-                {/*        title={'Redo'}*/}
-                {/*    >*/}
-                {/*        <ArrowTurnDownRightIcon className={"w-4 h-4"}/>*/}
-                {/*    </button>*/}
-                {/*</div>*/}
-
-                {/*<Divider className={'mt-1 mb-1'}/>*/}
-
                 <div className="flex flex-col items-start justify-center w-full h-full">
                     <button
-                        disabled={!hasMockData}
-                        type="button"
-                        className={`w-full text-lg font-semibold ${!hasMockData ? 'text-sky-500 dark:text-zinc-600' : 'text-white'} rounded p-2 ${!hasMockData ? 'bg-transparent' : 'bg-sky-500'}`}
-                        onMouseDown={clearMockStore}
-                        title={'Clear mock data'}
-                        data-tour-id="clear-mock-data-button"
+                        disabled={!canUndo}
+                        className={`w-full text-lg font-semibold rounded p-2 ${
+                            canUndo 
+                                ? 'text-sky-500 hover:text-white dark:text-white hover:bg-sky-300 dark:hover:bg-zinc-600 bg-transparent' 
+                                : 'text-gray-400 dark:text-gray-500 bg-transparent cursor-not-allowed'
+                        }`}
+                        title={canUndo ? `Undo: ${lastAction?.description || 'Last action'}` : 'Undo (Ctrl+Z)'}
+                        onClick={() => canUndo && undo()}
+                        data-tour-id="undo-button"
                     >
-                        <ArrowUturnUpIcon className="w-4 h-4"/>
+                        <ArrowUturnLeftIcon className="w-4 h-4"/>
                     </button>
                     <button
-                        disabled={!mainPlayNode}
-                        type="button"
-                        className={`w-full text-lg font-semibold text-sky-500 hover:text-white dark:text-white rounded p-2 hover:bg-sky-300 dark:hover:bg-zinc-600`}
-                        onMouseDown={(e) => handlePlay(e, mainPlayNode?.id as string)}
-                        title={'Play'}
-                        data-tour-id="main-play-button"
+                        disabled={!canRedo}
+                        className={`w-full text-lg font-semibold rounded p-2 ${
+                            canRedo 
+                                ? 'text-sky-500 hover:text-white dark:text-white hover:bg-sky-300 dark:hover:bg-zinc-600 bg-transparent' 
+                                : 'text-gray-400 dark:text-gray-500 bg-transparent cursor-not-allowed'
+                        }`}
+                        title={canRedo ? 'Redo (Shift+Ctrl+Z)' : 'Redo (Shift+Ctrl+Z)'}
+                        onClick={() => canRedo && redo()}
+                        data-tour-id="redo-button"
                     >
-                        <PlayIcon className="w-4 h-4"/>
+                        <ArrowUturnRightIcon className="w-4 h-4"/>
                     </button>
                 </div>
 
                 <Divider className={'mt-1 mb-1'}/>
 
-                <div className="flex flex-col items-start justify-center w-full h-full rounded hover:bg-zinc-600">
-                    <button
-                        type="button"
-                        className={`w-full text-lg font-semibold text-sky-500 hover:text-white dark:text-white rounded p-2 hover:bg-sky-300 dark:hover:bg-zinc-600`}
-                        onMouseDown={() => openForm(FormType.PublishedVariableForm)}
-                        title={'Published variables'}
-                        data-tour-id="published-variable-button"
-                    >
-                        <AdjustmentsHorizontalIcon className="w-4 h-4"/>
-                    </button>
-                </div>
-
-                <Divider className={'mt-1 mb-1'}/>
-
-                <div className="flex flex-col items-start justify-center w-full h-full rounded hover:bg-zinc-600">
-                    <button
-                        type="button"
-                        className={`w-full text-lg font-semibold text-sky-500 hover:text-white dark:text-white rounded p-2 hover:bg-sky-300 dark:hover:bg-zinc-600`}
-                        onMouseDown={handleOpenDocs}
-                        title={'Documentation'}
-                        data-tour-id="documentation-button"
-                    >
-                        <BookOpenIcon className="w-4 h-4"/>
-                    </button>
-                </div>
-
-                <Divider className={'mt-1 mb-1'}/>
 
                 <div className="flex flex-col items-start justify-center w-full h-full rounded hover:bg-zinc-600">
                     <button

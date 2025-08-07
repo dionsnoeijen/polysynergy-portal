@@ -2,6 +2,7 @@ import React from "react";
 
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
+import useDocumentationStore from "@/stores/documentationStore";
 
 import Heading from "@/components/editor/sidebars/elements/heading";
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
@@ -65,12 +66,13 @@ export const VariableTypeComponents = {
     [NodeVariableType.Node]: null,
 };
 
-const Dock: React.FC<Props> = ({toggleClose, ...props}) => {
+const Dock: React.FC<Props> = ({toggleClose, ...restProps}) => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const openedGroup = useNodesStore((state) => state.openedGroup);
     const nodes = useNodesStore((state) => state.nodes);
     const openDocs = useEditorStore((state) => state.openDocs);
     const setGroupNameOverride = useNodesStore((state) => state.setGroupNameOverride);
+    const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
 
 
     const node: Node | null | undefined = selectedNodes.length === 1 ?
@@ -117,7 +119,7 @@ const Dock: React.FC<Props> = ({toggleClose, ...props}) => {
 
     return (
         <div
-            {...props}
+            {...restProps}
             className={`absolute left-0 top-0 right-0 bottom-0 flex flex-col gap-2`}
         >
             <Heading arrowToLeft={true} toggleClose={toggleClose}>
@@ -142,7 +144,10 @@ const Dock: React.FC<Props> = ({toggleClose, ...props}) => {
             </VariableGroup>}
 
             {node && node.documentation && (
-                <Button color={'skyLight'} onClick={() => openDocs(node?.documentation as string)}>
+                <Button color={'skyLight'} onClick={() => {
+                    setDocumentationType('node');
+                    openDocs(node?.documentation as string);
+                }}>
                     Documentation <InformationCircleIcon/>
                 </Button>
             )}

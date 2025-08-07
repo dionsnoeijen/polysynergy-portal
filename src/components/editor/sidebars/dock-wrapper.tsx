@@ -2,6 +2,7 @@ import React from "react";
 
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
+import useDocumentationStore from "@/stores/documentationStore";
 
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
 import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";
@@ -65,12 +66,14 @@ export const VariableTypeComponents = {
 };
 
 // This is a wrapper version of Dock without absolute positioning for use in tabs
-const DockWrapper: React.FC<Props> = (props) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const openedGroup = useNodesStore((state) => state.openedGroup);
     const nodes = useNodesStore((state) => state.nodes);
     const openDocs = useEditorStore((state) => state.openDocs);
     const setGroupNameOverride = useNodesStore((state) => state.setGroupNameOverride);
+    const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
 
 
     const node: Node | null | undefined = selectedNodes.length === 1 ?
@@ -117,7 +120,7 @@ const DockWrapper: React.FC<Props> = (props) => {
 
     return (
         <div
-            {...props}
+            {...restProps}
             className={`h-full flex flex-col gap-2 mb-2`}
         >
 
@@ -139,7 +142,10 @@ const DockWrapper: React.FC<Props> = (props) => {
             </VariableGroup>}
 
             {node && node.documentation && (
-                <Button color={'skyLight'} onClick={() => openDocs(node?.documentation as string)}>
+                <Button color={'skyLight'} onClick={() => {
+                    setDocumentationType('node');
+                    openDocs(node?.documentation as string);
+                }}>
                     Documentation <InformationCircleIcon/>
                 </Button>
             )}

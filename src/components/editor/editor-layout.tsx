@@ -8,6 +8,7 @@ import ItemManager from "@/components/editor/sidebars/item-manager";
 import DockTabs from "@/components/editor/sidebars/dock-tabs";
 import Form from "@/components/editor/form";
 import Docs from "@/components/editor/docs";
+import EnhancedDocs from "@/components/editor/enhanced-docs";
 import BottomBar from "@/components/editor/bottombars/bottom-bar";
 import ContextMenu from "@/components/editor/context-menu";
 import VersionPublishedMenu from "@/components/editor/editormenus/version-published-menu";
@@ -137,7 +138,7 @@ const EditorLayout = ({
                         {showForm ? (
                             <Form/>
                         ) : showDocs ? (
-                            <Docs/>
+                            <EnhancedDocs/>
                         ) : (
                             projectUuid && (routeUuid || scheduleUuid || blueprintUuid || configUuid) ? (
                                 activeVersionId ? (

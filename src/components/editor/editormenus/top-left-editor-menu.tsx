@@ -4,6 +4,7 @@ import useMockStore from "@/stores/mockStore";
 import {
     AdjustmentsHorizontalIcon,
     ArrowUturnUpIcon,
+    BookOpenIcon,
     CursorArrowRaysIcon,
     PaintBrushIcon,
     PlayIcon,
@@ -17,10 +18,15 @@ import useNodesStore from "@/stores/nodesStore";
 import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
 import Image from "next/image";
 import useChatStore from "@/stores/chatStore";
+import useDocumentationStore from "@/stores/documentationStore";
 
 const TopLeftEditorMenu: React.FC = () => {
     const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
     const openForm = useEditorStore((state) => state.openForm);
+    const openDocs = useEditorStore((state) => state.openDocs);
+    
+    const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
+    const fetchCategories = useDocumentationStore((state) => state.fetchCategories);
 
     const editorMode = useEditorStore((state) => state.editorMode);
     const setEditorMode = useEditorStore((state) => state.setEditorMode);
@@ -30,6 +36,12 @@ const TopLeftEditorMenu: React.FC = () => {
     const hasMockData = useMockStore((state) => state.hasMockData);
     const mainPlayNode = useNodesStore((state) => state.findMainPlayNode());
     const handlePlay = useHandlePlay();
+
+    const handleOpenDocs = async () => {
+        setDocumentationType('general');
+        await fetchCategories();
+        openDocs('# Documentation\n\nLoading documentation...');
+    };
 
     useKeyBindings({
         'ctrl+z': {
@@ -141,6 +153,20 @@ const TopLeftEditorMenu: React.FC = () => {
                         data-tour-id="published-variable-button"
                     >
                         <AdjustmentsHorizontalIcon className="w-4 h-4"/>
+                    </button>
+                </div>
+
+                <Divider className={'mt-1 mb-1'}/>
+
+                <div className="flex flex-col items-start justify-center w-full h-full rounded hover:bg-zinc-600">
+                    <button
+                        type="button"
+                        className={`w-full text-lg font-semibold text-sky-500 hover:text-white dark:text-white rounded p-2 hover:bg-sky-300 dark:hover:bg-zinc-600`}
+                        onMouseDown={handleOpenDocs}
+                        title={'Documentation'}
+                        data-tour-id="documentation-button"
+                    >
+                        <BookOpenIcon className="w-4 h-4"/>
                     </button>
                 </div>
 

@@ -101,7 +101,7 @@ export class UpdateNodeCommand implements Command {
         // Capture only the fields that will change
         this.oldFields = {};
         Object.keys(newFields).forEach(key => {
-            this.oldFields[key as keyof Node] = (node as any)[key];
+            this.oldFields[key as keyof Node] = (node as Record<string, unknown>)[key] as never;
         });
     }
 

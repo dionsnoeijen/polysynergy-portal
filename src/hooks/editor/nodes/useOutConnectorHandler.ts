@@ -17,7 +17,6 @@ export const useOutConnectorHandler = (
     const getConnection = useConnectionsStore((state) => state.getConnection);
     const addConnection = useConnectionsStore((state) => state.addConnection);
     const removeConnectionById = useConnectionsStore((state) => state.removeConnectionById);
-    const updateConnection = useConnectionsStore((state) => state.updateConnection);
     const setIsDrawingConnection = useEditorStore((state) => state.setIsDrawingConnection);
     const openedGroup = useNodesStore((state) => state.openedGroup);
 

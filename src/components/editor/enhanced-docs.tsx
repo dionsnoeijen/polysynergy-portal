@@ -26,7 +26,7 @@ const EnhancedDocs: React.FC = () => {
     const [editorTheme, setEditorTheme] = useState<"vs-dark" | "vs-light">("vs-dark");
     
     // Available nodes for node documentation
-    const { availableNodes, categories: nodeCategories, hasInitialFetched, fetchAvailableNodes } = useAvailableNodeStore();
+    const { availableNodes, hasInitialFetched, fetchAvailableNodes } = useAvailableNodeStore();
     const [selectedNodeDoc, setSelectedNodeDoc] = useState<string | null>(null);
     const [selectedNodeCategory, setSelectedNodeCategory] = useState<string | null>(null);
 
@@ -137,8 +137,7 @@ const EnhancedDocs: React.FC = () => {
                     {/* Back button */}
                     <div className="mb-4">
                         <Button 
-                            color="zinc" 
-                            size="sm"
+                            color="zinc"
                             onClick={() => {
                                 // Clear the docsMarkdown to prevent auto-reselection
                                 useEditorStore.getState().openDocs('');
@@ -418,7 +417,7 @@ const EnhancedDocs: React.FC = () => {
                     <div className="text-center">
                         <ExclamationTriangleIcon className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
                         <p className="text-red-600 dark:text-red-400 mb-2">{error}</p>
-                        <Button onClick={() => { clearError(); fetchCategories(); }} color="sky" size="sm">
+                        <Button onClick={() => { clearError(); fetchCategories(); }} color="sky">
                             Retry
                         </Button>
                     </div>
@@ -432,8 +431,7 @@ const EnhancedDocs: React.FC = () => {
                     {/* Back button */}
                     <div className="mb-4">
                         <Button 
-                            color="zinc" 
-                            size="sm"
+                            color="zinc"
                             onClick={() => { clearCurrentDocument(); }}
                             className="flex items-center gap-2"
                         >
@@ -452,7 +450,7 @@ const EnhancedDocs: React.FC = () => {
                     <div className="mb-4">
                         <h3 className="text-lg font-semibold mb-2">Search Results</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Found {searchResults.length} results for "{searchQuery}"
+                            Found {searchResults.length} results for &quot;{searchQuery}&quot;
                         </p>
                     </div>
                     {searchResults.map((result) => (
@@ -621,7 +619,6 @@ const EnhancedDocs: React.FC = () => {
                         />
                         {searchQuery && (
                             <Button
-                                size="sm"
                                 color="zinc"
                                 onClick={() => { setSearchQuery(''); clearSearch(); }}
                                 className="absolute right-2 top-1/2 -translate-y-1/2"

@@ -28,7 +28,7 @@ export type DocumentationDocument = {
     last_updated: string;
     content: string;
     body: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
 };
 
 export type DocumentationSearchResponse = {

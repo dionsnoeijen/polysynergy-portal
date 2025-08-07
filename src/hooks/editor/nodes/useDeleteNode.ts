@@ -5,9 +5,7 @@ import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import { nodeHistoryActions, connectionHistoryActions } from "@/stores/history";
 
 export const useDeleteNode = () => {
-    const removeNode = useNodesStore((state) => state.removeNode);
     const getNode = useNodesStore((state) => state.getNode);
-    const removeConnections = useConnectionsStore((state) => state.removeConnections);
     const findInConnectionsByNodeId = useConnectionsStore((state) => state.findInConnectionsByNodeId);
     const findOutConnectionsByNodeId = useConnectionsStore((state) => state.findOutConnectionsByNodeId);
     const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);

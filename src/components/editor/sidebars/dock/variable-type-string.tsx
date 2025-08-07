@@ -1,6 +1,5 @@
 import React from "react";
 import { VariableTypeProps } from "@/types/types";
-import useNodesStore from "@/stores/nodesStore";
 import { Input } from "@/components/input";
 import { Field, FieldGroup, Fieldset } from "@/components/fieldset";
 import { Text } from "@/components/text";
@@ -27,7 +26,6 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
     // eslint-disable-next-line
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900'
 }) => {
-    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
         const newValue = e.target.value;

@@ -26,7 +26,6 @@ const TopLeftEditorMenu: React.FC = () => {
     // History store hooks
     const undo = useHistoryStore((state) => state.undo);
     const redo = useHistoryStore((state) => state.redo);
-    const getLastAction = useHistoryStore((state) => state.getLastAction);
     
     // Get state values directly to ensure reactivity
     const undoStack = useHistoryStore((state) => state.undoStack);

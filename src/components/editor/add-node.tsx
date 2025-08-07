@@ -9,7 +9,6 @@ import useNodesStore from "@/stores/nodesStore";
 import { globalToLocal } from "@/utils/positionUtils";
 import { useMousePosition } from "@/hooks/editor/useMousePosition";
 import { v4 as uuidv4 } from "uuid";
-import { FormType } from "@/types/types";
 import { nodeHistoryActions } from "@/stores/history";
 
 const AddNode: React.FC = () => {
@@ -295,7 +294,7 @@ const AddNode: React.FC = () => {
                             
                             {/* All Nodes option */}
                             <div
-                                ref={el => categoryItemRefs.current[0] = el}
+                                ref={el => { categoryItemRefs.current[0] = el; }}
                                 onClick={() => {
                                     handleCategorySelect(null);
                                     setFocusedPanel('nodes');
@@ -321,7 +320,7 @@ const AddNode: React.FC = () => {
                             {categories.map((category, index) => (
                                 <div
                                     key={category.name}
-                                    ref={el => categoryItemRefs.current[index + 1] = el}
+                                    ref={el => { categoryItemRefs.current[index + 1] = el; }}
                                     onClick={() => {
                                         handleCategorySelect(category.name);
                                         setFocusedPanel('nodes');
@@ -368,7 +367,7 @@ const AddNode: React.FC = () => {
                                 filteredAvailableNodes.map((n, index) => (
                                     <div
                                         key={'add-' + n.id}
-                                        ref={el => nodeItemRefs.current[index] = el}
+                                        ref={el => { nodeItemRefs.current[index] = el; }}
                                         onClick={(e) => handleAddNodeAtPosition(n.id, e.clientX, e.clientY)}
                                         className={`cursor-pointer p-2 rounded-md mb-1 transition-colors ${
                                             index === selectedNodeIndex && focusedPanel === 'nodes' && (hasNavigated || searchPhrase)

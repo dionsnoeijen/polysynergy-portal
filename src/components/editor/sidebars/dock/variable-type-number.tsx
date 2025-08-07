@@ -1,5 +1,4 @@
 import React from "react";
-import useNodesStore from "@/stores/nodesStore";
 import {VariableTypeProps} from "@/types/types";
 import {Field, Fieldset} from "@/components/fieldset";
 import {Input} from "@/components/input";
@@ -25,7 +24,6 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
     // eslint-disable-next-line
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900'
 }): React.ReactElement => {
-    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const value =
         typeof variable.value === "number"

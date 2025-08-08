@@ -98,7 +98,7 @@ export const activateClientAccount = async (
     cognitoId: string
 ): Promise<Response> => {
     const idToken = getIdToken();
-    return await fetch(`${config.LOCAL_API_URL}/activate/${cognitoId}/`,
+    return await fetch(`${config.LOCAL_API_URL}/accounts/activate/${cognitoId}/`,
         {
             method: 'POST',
             headers: {

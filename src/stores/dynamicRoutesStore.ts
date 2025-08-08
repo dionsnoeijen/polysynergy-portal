@@ -97,7 +97,8 @@ const useDynamicRoutesStore = create<DynamicRoutesStore>((
 
     deleteDynamicRoute: async (routeId: string) => {
         try {
-            await deleteDynamicRouteAPI(routeId);
+            const { activeProjectId } = useEditorStore.getState();
+            await deleteDynamicRouteAPI(routeId, activeProjectId);
             set((state) => {
                 const newRoutes = state.routes.filter((r) => r.id !== routeId);
                 // eslint-disable-next-line

@@ -86,19 +86,3 @@ export const deleteProjectSecretAPI = async (
     return response.json();
 };
 
-export const fetchProjectSecretDetailAPI = async (
-    projectId: string,
-    secretId: string
-) => {
-    const idToken = getIdToken();
-    const response = await fetch(
-        `${config.LOCAL_API_URL}/secrets/${secretId}/?project_id=${projectId}`,
-        {
-            headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${idToken}`,
-            },
-        }
-    );
-    return response.json();
-};

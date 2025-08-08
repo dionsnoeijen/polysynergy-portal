@@ -81,11 +81,13 @@ export const updateDynamicRoute = async (
     return response.json();
 };
 
-export const deleteDynamicRoute = async (routeId: string) => {
+export const deleteDynamicRoute = async (
+    routeId: string,
+    projectId: string
+) => {
     const idToken = getIdToken();
     return await fetch(
-        // `${config.API_URL}/dynamic-routes/${routeId}/`,
-        `${config.LOCAL_API_URL}/routes/${routeId}/`,
+        `${config.LOCAL_API_URL}/routes/${routeId}/?project_id=${projectId}`,
         {
             method: 'DELETE',
             headers: {

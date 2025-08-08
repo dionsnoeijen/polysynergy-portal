@@ -9,7 +9,7 @@ export const createStageAPI = async (
 ): Promise<Stage> => {
     const idToken = getIdToken();
 
-    const response = await fetch(`${config.LOCAL_API_URL}/stages/`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/stages/?project_id=${projectId}`, {
         method: "POST",
         headers: {
             Accept: "application/json",
@@ -17,7 +17,6 @@ export const createStageAPI = async (
             Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({
-            project_id: projectId,
             name,
             is_production: isProduction,
         }),

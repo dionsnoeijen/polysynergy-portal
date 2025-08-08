@@ -9,7 +9,7 @@ import {XMarkIcon} from "@heroicons/react/24/outline";
 import {
     createProjectSecretAPI,
     updateProjectSecretAPI,
-    fetchProjectSecretDetailAPI,
+    fetchProjectSecretsAPI,
     deleteProjectSecretAPI
 } from "@/api/secretsApi";
 import {Text} from "@/components/text";
@@ -32,16 +32,19 @@ const ProjectSecretsForm: React.FC = () => {
     const [key, setKey] = useState("");
     const [values, setValues] = useState<Record<string, string>>({});
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [stagesWithValue, setStagesWithValue] = useState<string[]>([]);
+    const [savingStages, setSavingStages] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         if (formType === FormType.EditProjectSecret && formEditRecordId && activeProjectId) {
-            fetchProjectSecretDetailAPI(activeProjectId, formEditRecordId as string)
-                .then((data: Secret) => {
-                    if (data?.key) {
-                        setKey(data.key);
-                        setStagesWithValue(data.stages || []);
+            fetchProjectSecretsAPI(activeProjectId)
+                .then((secrets: Secret[]) => {
+                    const secret = secrets.find(s => s.key === formEditRecordId);
+                    if (secret) {
+                        setKey(secret.key);
+                        setStagesWithValue(secret.stages || []);
                     }
                 })
                 .catch(() => {
@@ -53,18 +56,39 @@ const ProjectSecretsForm: React.FC = () => {
     const handleSave = async (stage: string) => {
         if (!values[stage]?.trim()) {
             setError(`Missing value for ${stage}`);
+            setSuccess(null);
             return;
         }
+        
+        setSavingStages(prev => ({ ...prev, [stage]: true }));
+        setError(null);
+        setSuccess(null);
+        
         try {
-            if (formType === FormType.EditProjectSecret && activeProjectId) {
-                await updateProjectSecretAPI(activeProjectId, key, values[stage], stage);
-            } else if (activeProjectId) {
-                await createProjectSecretAPI(activeProjectId, key, values[stage], stage);
+            if (activeProjectId) {
+                // Use PUT if this stage already has a value, POST if it's new
+                if (stagesWithValue.includes(stage)) {
+                    await updateProjectSecretAPI(activeProjectId, key, values[stage], stage);
+                } else {
+                    await createProjectSecretAPI(activeProjectId, key, values[stage], stage);
+                }
             }
             await fetchSecretsWithRetry(fetchSecrets);
+            setSuccess(`Secret saved successfully for ${stage}`);
+            setValues(prev => ({ ...prev, [stage]: "" }));
+            
+            // Update stagesWithValue to reflect the new saved value
+            if (!stagesWithValue.includes(stage)) {
+                setStagesWithValue(prev => [...prev, stage]);
+            }
+            
+            // Auto-clear success message after 3 seconds
+            setTimeout(() => setSuccess(null), 3000);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             setError(err.message || "An error occurred.");
+        } finally {
+            setSavingStages(prev => ({ ...prev, [stage]: false }));
         }
     };
 
@@ -95,6 +119,7 @@ const ProjectSecretsForm: React.FC = () => {
             <Divider className="my-10" soft bleed/>
 
             {error && <p className="text-red-500 mb-4">{error}</p>}
+            {success && <p className="text-green-500 mb-4">{success}</p>}
 
             <div className="mb-6">
                 <label className="block mb-1 font-medium">Key</label>
@@ -130,7 +155,13 @@ const ProjectSecretsForm: React.FC = () => {
                             }
                             placeholder={stagesWithValue.includes(stage.name) ? "********" : "Enter secret value"}
                         />
-                        <Button color={"sky"} onClick={() => handleSave(stage.name)}>Save</Button>
+                        <Button 
+                            color={"sky"} 
+                            onClick={() => handleSave(stage.name)}
+                            disabled={savingStages[stage.name] || !key.trim()}
+                        >
+                            {savingStages[stage.name] ? "Saving..." : "Save"}
+                        </Button>
                     </div>
                 </div>
             ))}

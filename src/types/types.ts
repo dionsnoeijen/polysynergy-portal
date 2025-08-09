@@ -504,3 +504,52 @@ export type ApiKey = {
     label: string;
     key: string;
 };
+
+// File Manager Types
+export enum FileViewMode {
+    Grid = 'grid',
+    List = 'list',
+}
+
+export enum FileSortBy {
+    Name = 'name',
+    Size = 'size',
+    Modified = 'modified',
+}
+
+export enum FileSortOrder {
+    Asc = 'asc',
+    Desc = 'desc',
+}
+
+
+export type FileManagerState = {
+    currentPath: string;
+    selectedFiles: string[];
+    selectedDirectories: string[];
+    viewMode: FileViewMode;
+    sortBy: FileSortBy;
+    sortOrder: FileSortOrder;
+    isUploading: boolean;
+    uploadProgress: Record<string, number>;
+    contextMenuVisible: boolean;
+    contextMenuPosition: { x: number; y: number };
+    contextMenuItems: ContextMenuItem[];
+    dragOver: boolean;
+    isPublicMode: boolean;
+};
+
+export type ContextMenuItem = {
+    label?: string;
+    icon?: React.ReactNode;
+    action?: () => void;
+    disabled?: boolean;
+    divider?: boolean;
+};
+
+export type UploadProgress = {
+    fileName: string;
+    progress: number;
+    status: 'uploading' | 'completed' | 'error';
+    error?: string;
+};

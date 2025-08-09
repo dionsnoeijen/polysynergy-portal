@@ -1,6 +1,7 @@
 import {useMemo} from 'react';
 import {NodeVariable} from '@/types/types';
 import useConnectionsStore from '@/stores/connectionsStore';
+import { sanitizeValueToDisplayString } from '@/utils/dataSanitization';
 
 export interface SimpleVariableLogicProps {
     variable: NodeVariable;
@@ -80,7 +81,7 @@ export const useSimpleVariableLogic = ({
             containerClassName,
             
             // Simple variable properties
-            valueText: variable.value as string,
+            valueText: sanitizeValueToDisplayString(variable.value),
             categorySubTextColor,
             
             // Connector configuration

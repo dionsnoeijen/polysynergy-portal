@@ -1,6 +1,8 @@
 import { runMockApi } from "@/api/runApi";
 import useEditorStore from "@/stores/editorStore";
 import useMockStore from "@/stores/mockStore";
+import useNodesStore from "@/stores/nodesStore";
+import { NodeVariable } from "@/types/types";
 import React from "react";
 import {getNodeExecutionDetails} from "@/api/executionApi";
 import useListenerStore from "@/stores/listenerStore";
@@ -11,6 +13,7 @@ export const useHandlePlay = () => {
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
+    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     return async (e: React.MouseEvent, nodeId: string, subStage: string = 'mock') => {
         e.preventDefault();

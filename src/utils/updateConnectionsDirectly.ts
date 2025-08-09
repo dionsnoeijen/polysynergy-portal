@@ -15,6 +15,10 @@ export const updateConnectionsDirectly = (
         const pathElement = document.querySelector(
             `path[data-connection-id="${connection.id}"]`
         ) as SVGPathElement;
+        
+        const clickablePathElement = document.querySelector(
+            `path[data-connection-clickable-id="${connection.id}"]`
+        ) as SVGPathElement;
 
         const startDotElement = document.querySelector(
             `div[data-connection-start-id="${connection.id}"]`
@@ -47,13 +51,17 @@ export const updateConnectionsDirectly = (
             if (endPosition.x === 0 && endPosition.y === 0) return;
 
             const controlPointX = (startPosition.x + endPosition.x) / 2;
-            pathElement.setAttribute(
-                "d",
-                `M ${startPosition.x},${startPosition.y}
+            const pathData = `M ${startPosition.x},${startPosition.y}
                    C ${controlPointX},${startPosition.y}
                      ${controlPointX},${endPosition.y}
-                     ${endPosition.x},${endPosition.y}`
-            );
+                     ${endPosition.x},${endPosition.y}`;
+            
+            pathElement.setAttribute("d", pathData);
+            
+            // Also update the clickable path
+            if (clickablePathElement) {
+                clickablePathElement.setAttribute("d", pathData);
+            }
 
             // Update start dot position
             if (startDotElement) {

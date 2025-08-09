@@ -19,6 +19,7 @@ import DependencyVariable from "@/components/editor/nodes/rows/dependency-variab
 import NodeVariablePlaceholder from "@/components/editor/nodes/rows/node-variable";
 import TemplateVariable from "@/components/editor/nodes/rows/template-variable";
 import AvatarVariable from "@/components/editor/nodes/rows/avatar-variable";
+import ImageVariable from "@/components/editor/nodes/rows/image-variable";
 
 type Props = {
     node: Node;
@@ -156,6 +157,8 @@ const getVariableComponent = (
             return <NodeVariablePlaceholder key={key} {...commonProps} />;
         case NodeVariableType.Avatar:
             return <AvatarVariable key={key} {...commonProps} />;
+        case NodeVariableType.Image:
+            return <ImageVariable key={key} {...commonProps} />;
         case NodeVariableType.Boolean:
         case NodeVariableType.TruePath:
         case NodeVariableType.FalsePath:

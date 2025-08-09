@@ -14,6 +14,14 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         types.splice(types.indexOf('None'), 1);
     }
 
+    // Check for Image objects in the variable value first (runtime detection)
+    if (variable.value && typeof variable.value === 'object' && !Array.isArray(variable.value)) {
+        const valueObj = variable.value as Record<string, unknown>;
+        if (isImageLikeObject(valueObj)) {
+            return { baseType: NodeVariableType.Image, validationType: [...types, NodeVariableType.Image].join(','), containsNone };
+        }
+    }
+
     if ((variable.metadata as { custom?: string })?.custom === 'openai_avatar') {
         return { baseType: NodeVariableType.Avatar, validationType: NodeVariableType.Avatar, containsNone };
     }
@@ -50,7 +58,12 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         return { baseType: NodeVariableType.Number, validationType: types.join(','), containsNone };
     } else if (types.includes('bytes')) {
         return { baseType: NodeVariableType.Bytes, validationType: types.join(','), containsNone };
+    } else if (types.some(type => type.toLowerCase() === 'image')) {
+        return { baseType: NodeVariableType.Image, validationType: types.join(','), containsNone };
     } else if (types.includes('dict')) {
+        if (variable?.dock && variable?.dock?.image) {
+            return { baseType: NodeVariableType.Image, validationType: [...types, NodeVariableType.Image].join(','), containsNone }
+        }
         return { baseType: NodeVariableType.Dict, validationType: types.join(','), containsNone };
     } else if (types.includes('list')) {
         if (variable?.dock && variable?.dock?.files_editor) {
@@ -66,4 +79,32 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
     }
 
     return { baseType: NodeVariableType.Unknown, validationType: types.join(','), containsNone };
+}
+
+/**
+ * Checks if an object has the structure of an Image object commonly produced by execution results
+ * This helps with runtime type detection when variables contain Image objects
+ */
+function isImageLikeObject(obj: Record<string, unknown>): boolean {
+    // Check for the specific pattern mentioned in the error: {url, mime_type, width, height, size, metadata}
+    const hasImageStructure = (
+        'url' in obj ||
+        'src' in obj ||
+        'data' in obj ||
+        'base64' in obj
+    ) && (
+        'mime_type' in obj ||
+        'mimetype' in obj ||
+        'width' in obj ||
+        'height' in obj ||
+        'size' in obj
+    );
+    
+    // Also check for common image property combinations
+    const hasImageProperties = (
+        ('url' in obj || 'src' in obj) &&
+        ('width' in obj || 'height' in obj)
+    );
+    
+    return hasImageStructure || hasImageProperties;
 }

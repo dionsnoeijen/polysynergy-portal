@@ -27,9 +27,9 @@ const BooleanContent: React.FC<BooleanContentProps> = ({ logic }) => {
             ) : (
                 <XCircleIcon className={`w-4 h-4 ml-1 ${logic.iconColor}`} />
             )}
-            {logic.hasValue && (
+            {logic.hasValue && logic.valueText && (
                 <span className={`ml-1 ${logic.categorySubTextColor}`}>
-                    {logic.valueText}
+                    {typeof logic.valueText === 'string' ? logic.valueText : String(logic.valueText)}
                 </span>
             )}
             {logic.isValueConnected && (

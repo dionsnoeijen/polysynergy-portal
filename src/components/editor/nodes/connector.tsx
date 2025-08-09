@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {ChevronRightIcon} from "@heroicons/react/16/solid";
 import {InOut, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
 import {useConnectorHandlers} from "@/hooks/editor/nodes/useConnectorHandlers";
@@ -31,6 +31,7 @@ const Connector: React.FC<ConnectorProps> = ({
                                                  nodeVariableType
                                              }): React.ReactElement => {
     const {handleMouseDown} = useConnectorHandlers(isIn, isOut, nodeId, false, disabled);
+    const [showTooltip, setShowTooltip] = useState(false);
 
     let backgroundClasses;
     let iconColorClasses;
@@ -58,24 +59,43 @@ const Connector: React.FC<ConnectorProps> = ({
 
     const isInteractive = handle !== NodeCollapsedConnector.Collapsed;
 
+    // Format variable types for tooltip display
+    const formatVariableTypes = (types: string[]) => {
+        return types.map(type => {
+            // Convert enum values to readable names
+            switch (type) {
+                case NodeVariableType.TruePath:
+                    return "True Path";
+                case NodeVariableType.FalsePath:
+                    return "False Path";
+                case NodeVariableType.Dependency:
+                    return "Dependency";
+                default:
+                    return type;
+            }
+        }).join(", ");
+    };
+
     return (
         <div
-            onMouseDown={isInteractive ? handleMouseDown : undefined}
-            data-type={isIn ? InOut.In : InOut.Out}
-            data-node-id={nodeId}
-            data-variable-type={nodeVariableType}
-            data-group-id={groupId}
-            data-handle={parentHandle ? parentHandle + '.' + handle : handle}
-            data-enabled={!disabled}
             className={clsx(
-                "w-4 h-4 absolute top-1/2 -translate-y-1/2 rounded-full", // laat positie met rust
+                "w-4 h-4 absolute top-1/2 -translate-y-1/2 rounded-full", // Keep original positioning
                 positionClasses, // left-0 / right-0 + x-vertaling
                 className
             )}
         >
             <div
+                onMouseDown={isInteractive ? handleMouseDown : undefined}
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+                data-type={isIn ? InOut.In : InOut.Out}
+                data-node-id={nodeId}
+                data-variable-type={nodeVariableType}
+                data-group-id={groupId}
+                data-handle={parentHandle ? parentHandle + '.' + handle : handle}
+                data-enabled={!disabled}
                 className={clsx(
-                    "w-full h-full rounded-full ring-1 origin-center",
+                    "w-full h-full rounded-full ring-1 origin-center relative",
                     backgroundClasses,
                     "connector-animatable" // om te targeten
                 )}
@@ -88,6 +108,32 @@ const Connector: React.FC<ConnectorProps> = ({
                             iconClassName
                         )}
                     />
+                )}
+                
+                {/* Simple tooltip positioned relative to the inner connector div */}
+                {showTooltip && types.length > 0 && (
+                    <div
+                        className={clsx(
+                            "absolute z-50 px-2 py-1 text-xs text-white bg-gray-900 rounded shadow-lg whitespace-nowrap pointer-events-none",
+                            "top-1/2 -translate-y-1/2",
+                            isIn 
+                                ? "left-full ml-2" // Position to the right of input connectors
+                                : "right-full mr-2" // Position to the left of output connectors
+                        )}
+                    >
+                        <div className="font-medium">{isIn ? "Accepts:" : "Output:"}</div>
+                        <div>{formatVariableTypes(types)}</div>
+                        
+                        {/* Arrow pointing to connector */}
+                        <div
+                            className={clsx(
+                                "absolute top-1/2 -translate-y-1/2 w-0 h-0",
+                                isIn 
+                                    ? "left-0 -translate-x-full border-t-2 border-b-2 border-r-4 border-transparent border-r-gray-900"
+                                    : "right-0 translate-x-full border-t-2 border-b-2 border-l-4 border-transparent border-l-gray-900"
+                            )}
+                        />
+                    </div>
                 )}
             </div>
         </div>

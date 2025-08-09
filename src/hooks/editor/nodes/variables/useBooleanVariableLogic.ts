@@ -2,6 +2,7 @@ import {useMemo} from 'react';
 import {NodeVariable} from '@/types/types';
 import useConnectionsStore from '@/stores/connectionsStore';
 import interpretNodeVariableType from '@/utils/interpretNodeVariableType';
+import { sanitizeValueToDisplayString } from '@/utils/dataSanitization';
 
 export interface BooleanVariableLogicProps {
     variable: NodeVariable;
@@ -86,7 +87,7 @@ export const useBooleanVariableLogic = ({
             // Boolean-specific properties
             booleanValue: Boolean(variable.value),
             hasValue: Boolean(variable.value),
-            valueText: variable.value as string,
+            valueText: sanitizeValueToDisplayString(variable.value),
             categorySubTextColor,
             
             // Connector configuration

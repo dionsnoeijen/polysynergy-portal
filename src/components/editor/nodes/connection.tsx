@@ -85,6 +85,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     transition: "opacity 0.2s ease-out 0.2s"
                 }}
             >
+                {/* Invisible wider path for easier clicking */}
                 <path
                     ref={pathRef}
                     data-connection-id={connection.id}

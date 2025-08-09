@@ -2,6 +2,7 @@ import {useMemo} from 'react';
 import {NodeVariable} from '@/types/types';
 import useConnectionsStore from '@/stores/connectionsStore';
 import interpretNodeVariableType from '@/utils/interpretNodeVariableType';
+import { sanitizeValueToDisplayString } from '@/utils/dataSanitization';
 
 export interface DependencyVariableLogicProps {
     variable: NodeVariable;
@@ -84,7 +85,7 @@ export const useDependencyVariableLogic = ({
             containerClassName,
             
             // Dependency-specific properties
-            valueText: variable.value as string,
+            valueText: sanitizeValueToDisplayString(variable.value),
             categorySubTextColor,
             
             // Connector configuration

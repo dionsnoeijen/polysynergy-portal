@@ -112,6 +112,7 @@ export enum NodeVariableType {
     Int = 'int',
     Float = 'float',
     Avatar = 'avatar',
+    Image = 'image',
 }
 
 export enum NodeType {
@@ -172,6 +173,7 @@ export type Dock = {
     key_field?: boolean;
     value_field?: boolean;
     template_editor?: boolean;
+    image?: boolean;
 };
 
 export type NodeVariable = {

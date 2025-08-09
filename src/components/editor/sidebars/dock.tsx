@@ -22,6 +22,7 @@ import VariableTypeCode from "@/components/editor/sidebars/dock/variable-type-co
 import NodeHandle from "@/components/editor/sidebars/dock/node-handle";
 import VariableTypeJson from "@/components/editor/sidebars/dock/variable-type-json";
 import VariableTypeFiles from "@/components/editor/sidebars/dock/variable-type-files";
+import VariableTypeImage from "@/components/editor/sidebars/dock/variable-type-image";
 
 import {Node, NodeVariable, NodeVariableType} from "@/types/types";
 import {Button} from "@/components/button";
@@ -63,6 +64,7 @@ export const VariableTypeComponents = {
     [NodeVariableType.Files]: VariableTypeFiles,
     [NodeVariableType.Template]: VariableTypeTemplate,
     [NodeVariableType.Avatar]: VariableTypeAvatar,
+    [NodeVariableType.Image]: VariableTypeImage,
     [NodeVariableType.Node]: null,
 };
 

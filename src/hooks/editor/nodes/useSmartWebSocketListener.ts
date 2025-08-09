@@ -1,11 +1,13 @@
 import {useEffect} from 'react';
 import useNodesStore from "@/stores/nodesStore";
 import useMockStore, {MockNode} from '@/stores/mockStore';
-import {getConnectionExecutionDetails} from "@/api/executionApi";
+import {getConnectionExecutionDetails, getNodeExecutionDetails} from "@/api/executionApi";
 import useEditorStore from "@/stores/editorStore";
 import useChatStore from '@/stores/chatStore';
+import { NodeVariable } from "@/types/types";
 import config from "@/config";
 import { useSmartWebSocket } from '@/hooks/editor/useSmartWebSocket';
+import { shouldUpdateVariableFromExecution, getUpdatableVariableHandles } from '@/utils/imageNodeUtils';
 
 type ExecutionMessage = {
     node_id?: string;
@@ -21,9 +23,11 @@ const nodeExecutionState = new Map<string, { started: boolean; ended: boolean; s
 
 export function useSmartWebSocketListener(flowId: string) {
     const getNode = useNodesStore((state) => state.getNode);
+    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
     const addOrUpdateMockNode = useMockStore((state) => state.addOrUpdateMockNode);
     const setMockConnections = useMockStore((state) => state.setMockConnections);
     const setHasMockData = useMockStore((state) => state.setHasMockData);
+    const setMockResultForNode = useMockStore((state) => state.setMockResultForNode);
     const startAgentMessage = useChatStore((state) => state.startAgentMessage);
     const appendToAgentMessage = useChatStore((state) => state.appendToAgentMessage);
 
@@ -189,6 +193,54 @@ export function useSmartWebSocketListener(flowId: string) {
                     el.classList.add(`executed-${state.status}`);
                     nodeExecutionState.delete(node_id);
                 }
+                
+                // Fetch and sync execution results for this node
+                if (message.status === 'success' && message.run_id) {
+                    const activeVersionId = useEditorStore.getState().activeVersionId;
+                    if (activeVersionId) {
+                        getNodeExecutionDetails(
+                            activeVersionId,
+                            message.run_id,
+                            node_id,
+                            message.order || 0,
+                            'mock',
+                            'mock'
+                        ).then(executeResult => {
+                            setMockResultForNode(node_id, executeResult);
+                            
+                            // Selective sync: only sync execution results for image nodes and image-type variables
+                            // This prevents type errors like "Can't configure: 'values' existing type is: str, not a dict!"
+                            if (executeResult?.variables) {
+                                const currentNode = getNode(node_id);
+                                if (currentNode) {
+                                    // Get list of variable handles that should be updated (only image variables in image nodes)
+                                    const updatableHandles = getUpdatableVariableHandles(currentNode, executeResult.variables);
+                                    
+                                    if (updatableHandles.length > 0) {
+                                        console.log(`Found ${updatableHandles.length} image variable(s) to update for image node ${node_id}:`, updatableHandles);
+                                        
+                                        // Only update variables that are meant to hold image data
+                                        updatableHandles.forEach(variableHandle => {
+                                            const value = executeResult.variables[variableHandle];
+                                            const variable = currentNode.variables.find(v => v.handle === variableHandle);
+                                            
+                                            if (variable && shouldUpdateVariableFromExecution(currentNode, variable, value)) {
+                                                console.log(`Updating image variable '${variableHandle}' with image data for node ${node_id}`);
+                                                updateNodeVariable(node_id, variableHandle, value as string | number | boolean | string[] | NodeVariable[] | null);
+                                            }
+                                        });
+                                    } else {
+                                        console.log(`No image variables to update for node ${node_id} (${currentNode.path || currentNode.category || 'unknown'})`);
+                                    }
+                                } else {
+                                    console.warn(`Node ${node_id} not found when trying to update variables from execution results`);
+                                }
+                            }
+                        }).catch(err => {
+                            console.error(`Failed to fetch execution details for node ${node_id}:`, err);
+                        });
+                    }
+                }
             }
         });
 
@@ -198,7 +250,7 @@ export function useSmartWebSocketListener(flowId: string) {
             nodeExecutionState.clear();
             cleanupExecutionGlow();
         };
-    }, [flowId, onMessage, getNode, addOrUpdateMockNode, setMockConnections, setHasMockData, startAgentMessage, appendToAgentMessage]);
+    }, [flowId, onMessage, getNode, updateNodeVariable, addOrUpdateMockNode, setMockConnections, setHasMockData, setMockResultForNode, startAgentMessage, appendToAgentMessage]);
 
     function cleanupExecutionGlow() {
         const elements = document.querySelectorAll('[data-node-id]');

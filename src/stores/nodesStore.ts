@@ -4,6 +4,7 @@ import {FlowState, Group, Node, NodeType, NodeVariable, NodeVariableType} from "
 import {adjectives, animals, colors, uniqueNamesGenerator} from 'unique-names-generator';
 import useConnectionsStore from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
+import { sanitizeExecutionValue } from "@/utils/dataSanitization";
 
 export type NodesStore = {
     nodes: Node[];
@@ -573,6 +574,9 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     ) => {
         nodesByIdsCache.clear();
 
+        // Sanitize the value to ensure it's React-safe
+        const sanitizedValue = sanitizeExecutionValue(newValue);
+
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
@@ -582,7 +586,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                             variable.handle === variableHandle
                                 ? {
                                     ...variable,
-                                    value: newValue as null | string | number | boolean | string[] | NodeVariable[],
+                                    value: sanitizedValue,
                                 }
                                 : variable
                         ),

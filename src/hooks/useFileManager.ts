@@ -49,8 +49,10 @@ export const useFileManager = () => {
     const loadDirectory = useCallback(async (path?: string) => {
         if (!api) return;
 
-        const targetPath = path || state.currentPath;
+        const targetPath = path !== undefined ? path : state.currentPath;
         const isNavigating = path !== undefined && path !== state.currentPath;
+        
+        console.log('loadDirectory called with:', path, '-> targetPath:', targetPath, 'isNavigating:', isNavigating);
 
         setLoading(true);
         setError(null);
@@ -79,9 +81,9 @@ export const useFileManager = () => {
 
     // Navigate to directory
     const navigateToDirectory = useCallback(async (path: string) => {
-        console.log('Navigating to directory:', path); // Debug log
+        console.log('Navigating to directory:', path, '(current:', state.currentPath, ')'); // Debug log
         await loadDirectory(path);
-    }, [loadDirectory]);
+    }, [loadDirectory, state.currentPath]);
 
     // Go up one directory level
     const navigateUp = useCallback(async () => {

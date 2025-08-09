@@ -196,10 +196,11 @@ const FileGrid: React.FC<FileGridProps> = ({
 
     if (allItems.length === 0) {
         return (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center p-8">
                 <div className="text-center text-zinc-500 dark:text-zinc-400">
-                    <FolderIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>This folder is empty</p>
+                    <FolderIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium">This folder is empty</p>
+                    <p className="text-sm mt-2">Upload files or create new folders to get started</p>
                 </div>
             </div>
         );

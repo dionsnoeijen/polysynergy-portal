@@ -19,6 +19,7 @@ import FileList from './FileList';
 import ContextMenu from './ContextMenu';
 import FileManagerToolbar from './FileManagerToolbar';
 import FilePreviewPanel from './FilePreviewPanel';
+import CreateFolderModal from './CreateFolderModal';
 
 type FileManagerProps = {
     className?: string;
@@ -27,6 +28,7 @@ type FileManagerProps = {
 const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
     const [showPreviewPanel, setShowPreviewPanel] = useState(false);
     const [selectedPreviewItem, setSelectedPreviewItem] = useState<FileInfo | DirectoryInfo | null>(null);
+    const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
 
     const {
         state,
@@ -69,10 +71,11 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
 
     // Create folder handler
     const handleCreateFolder = useCallback(() => {
-        const folderName = prompt('Enter folder name:');
-        if (folderName) {
-            createDirectory(folderName);
-        }
+        setShowCreateFolderModal(true);
+    }, []);
+
+    const handleCreateFolderSubmit = useCallback(async (folderName: string) => {
+        await createDirectory(folderName);
     }, [createDirectory]);
 
     // Upload handler
@@ -285,7 +288,7 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
             <div className="flex-1 flex overflow-hidden">
                 {/* Main File Browser */}
                 <div 
-                    className={`${showPreviewPanel ? 'flex-1' : 'w-full'} overflow-hidden relative transition-all duration-200`}
+                    className={`${showPreviewPanel ? 'flex-1' : 'w-full'} overflow-hidden relative transition-none`}
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
@@ -371,6 +374,14 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                 position={state.contextMenuPosition}
                 items={state.contextMenuItems}
                 onClose={hideContextMenu}
+            />
+
+            {/* Create Folder Modal */}
+            <CreateFolderModal
+                isOpen={showCreateFolderModal}
+                onClose={() => setShowCreateFolderModal(false)}
+                onCreateFolder={handleCreateFolderSubmit}
+                currentPath={state.currentPath}
             />
         </div>
     );

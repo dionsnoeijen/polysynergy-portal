@@ -9,6 +9,7 @@ const IMAGE_NODE_PATHS = [
     'polysynergy_nodes.image.crop_image.CropImage', 
     'polysynergy_nodes.image.resize_image.ResizeImage',
     'polysynergy_nodes.image.image_effects.ImageEffects',
+    'polysynergy_nodes.qr.generate_qr_code.GenerateQRCode',
     // Add any future image nodes here
 ] as const;
 
@@ -17,6 +18,7 @@ const IMAGE_NODE_PATHS = [
  */
 const IMAGE_NODE_CATEGORIES = [
     'image',
+    'media',  // QR codes and other media that produce image outputs
 ] as const;
 
 /**

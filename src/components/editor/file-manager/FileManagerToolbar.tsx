@@ -8,7 +8,8 @@ import {
     EyeSlashIcon,
     TrashIcon,
     DocumentTextIcon,
-    ArrowPathIcon
+    ArrowPathIcon,
+    PlusIcon
 } from '@heroicons/react/24/outline';
 import { FileViewMode } from '@/types/types';
 
@@ -17,6 +18,8 @@ type FileManagerToolbarProps = {
     isPublicMode: boolean;
     selectedCount: number;
     showPreviewPanel: boolean;
+    showAssignmentPanel?: boolean;
+    canAssignFiles?: boolean;
     onViewModeChange: (mode: FileViewMode) => void;
     onPublicModeChange: (isPublic: boolean) => void;
     onPreviewToggle: (show: boolean) => void;
@@ -24,6 +27,7 @@ type FileManagerToolbarProps = {
     onUpload: () => void;
     onDeleteSelected: () => void;
     onReload: () => void;
+    onAssignSelectedFiles?: () => void;
 };
 
 const FileManagerToolbar: React.FC<FileManagerToolbarProps> = ({
@@ -31,13 +35,16 @@ const FileManagerToolbar: React.FC<FileManagerToolbarProps> = ({
     isPublicMode,
     selectedCount,
     showPreviewPanel,
+    showAssignmentPanel = false,
+    canAssignFiles = false,
     onViewModeChange,
     onPublicModeChange,
     onPreviewToggle,
     onCreateFolder,
     onUpload,
     onDeleteSelected,
-    onReload
+    onReload,
+    onAssignSelectedFiles
 }) => {
     return (
         <div className="flex items-center justify-between px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
@@ -69,6 +76,17 @@ const FileManagerToolbar: React.FC<FileManagerToolbarProps> = ({
                     <ArrowPathIcon className="w-4 h-4" />
                     <span>Refresh</span>
                 </button>
+                
+                {canAssignFiles && selectedCount > 0 && onAssignSelectedFiles && (
+                    <button
+                        onClick={onAssignSelectedFiles}
+                        className="flex items-center space-x-1 px-2 py-1 text-sm rounded hover:bg-sky-100 dark:hover:bg-sky-900/20 text-sky-600 dark:text-sky-400 transition-colors"
+                        title={`Assign ${selectedCount} selected files to node`}
+                    >
+                        <PlusIcon className="w-4 h-4" />
+                        <span>Assign ({selectedCount})</span>
+                    </button>
+                )}
                 
                 {selectedCount > 0 && (
                     <button

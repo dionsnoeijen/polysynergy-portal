@@ -8,7 +8,8 @@ import {
     CodeBracketIcon,
     FolderIcon,
     ChevronUpIcon,
-    ChevronDownIcon
+    ChevronDownIcon,
+    CheckIcon
 } from '@heroicons/react/24/outline';
 import { FileInfo, DirectoryInfo } from '@/api/fileManagerApi';
 import { FileSortBy, FileSortOrder } from '@/types/types';
@@ -18,6 +19,7 @@ type FileListProps = {
     directories: DirectoryInfo[];
     selectedFiles: string[];
     selectedDirectories: string[];
+    assignedFiles?: string[];
     sortBy: FileSortBy;
     sortOrder: FileSortOrder;
     onFileSelect: (path: string, multiSelect?: boolean) => void;
@@ -102,6 +104,7 @@ SortHeader.displayName = 'SortHeader';
 type ListRowProps = {
     item: FileInfo | DirectoryInfo;
     isSelected: boolean;
+    isAssigned?: boolean;
     onSelect: (path: string, multiSelect?: boolean) => void;
     onDoubleClick: (item: FileInfo | DirectoryInfo) => void;
     onContextMenu: (e: React.MouseEvent, item: FileInfo | DirectoryInfo) => void;
@@ -110,6 +113,7 @@ type ListRowProps = {
 const ListRow: React.FC<ListRowProps> = memo(({
     item,
     isSelected,
+    isAssigned = false,
     onSelect,
     onDoubleClick,
     onContextMenu
@@ -137,6 +141,8 @@ const ListRow: React.FC<ListRowProps> = memo(({
                 grid grid-cols-12 gap-4 px-4 py-2 cursor-pointer transition-colors duration-150 border-l-2
                 ${isSelected 
                     ? 'bg-sky-500/20 border-sky-500 dark:bg-sky-500/20' 
+                    : isAssigned
+                    ? 'bg-green-50 dark:bg-green-900/10 border-green-500 hover:bg-green-100 dark:hover:bg-green-900/20'
                     : 'border-transparent hover:bg-zinc-100 dark:hover:bg-zinc-700'
                 }
             `}
@@ -157,6 +163,11 @@ const ListRow: React.FC<ListRowProps> = memo(({
                 >
                     {item.name}
                 </span>
+                {isAssigned && !isDirectory && (
+                    <div className="flex-shrink-0 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
+                        <CheckIcon className="w-2 h-2 text-white" />
+                    </div>
+                )}
             </div>
             
             {/* Size */}
@@ -198,6 +209,7 @@ const FileList: React.FC<FileListProps> = ({
     directories,
     selectedFiles,
     selectedDirectories,
+    assignedFiles = [],
     sortBy,
     sortOrder,
     onFileSelect,
@@ -283,12 +295,14 @@ const FileList: React.FC<FileListProps> = ({
                     const isSelected = isDirectory
                         ? selectedDirectories.includes(item.path)
                         : selectedFiles.includes(item.path);
+                    const isAssigned = !isDirectory && assignedFiles.includes(item.path);
 
                     return (
                         <ListRow
                             key={item.path}
                             item={item}
                             isSelected={isSelected}
+                            isAssigned={isAssigned}
                             onSelect={isDirectory ? onDirectorySelect : onFileSelect}
                             onDoubleClick={(item) => {
                                 if (isDirectory) {

@@ -6,7 +6,8 @@ import {
     SpeakerWaveIcon, 
     ArchiveBoxIcon,
     CodeBracketIcon,
-    FolderIcon
+    FolderIcon,
+    CheckIcon
 } from '@heroicons/react/24/outline';
 import { FileInfo, DirectoryInfo } from '@/api/fileManagerApi';
 
@@ -15,8 +16,9 @@ type FileGridProps = {
     directories: DirectoryInfo[];
     selectedFiles: string[];
     selectedDirectories: string[];
-    onFileSelect: (path: string, multiSelect?: boolean) => void;
-    onDirectorySelect: (path: string, multiSelect?: boolean) => void;
+    assignedFiles?: string[];
+    onFileSelect: (path: string, multiSelect?: boolean, rangeSelect?: boolean) => void;
+    onDirectorySelect: (path: string, multiSelect?: boolean, rangeSelect?: boolean) => void;
     onFileDoubleClick: (file: FileInfo) => void;
     onDirectoryDoubleClick: (directory: DirectoryInfo) => void;
     onContextMenu: (e: React.MouseEvent, item: FileInfo | DirectoryInfo) => void;
@@ -57,7 +59,8 @@ const formatFileSize = (bytes: number): string => {
 type GridItemProps = {
     item: FileInfo | DirectoryInfo;
     isSelected: boolean;
-    onSelect: (path: string, multiSelect?: boolean) => void;
+    isAssigned?: boolean;
+    onSelect: (path: string, multiSelect?: boolean, rangeSelect?: boolean) => void;
     onDoubleClick: (item: FileInfo | DirectoryInfo) => void;
     onContextMenu: (e: React.MouseEvent, item: FileInfo | DirectoryInfo) => void;
 };
@@ -65,13 +68,15 @@ type GridItemProps = {
 const GridItem: React.FC<GridItemProps> = memo(({
     item,
     isSelected,
+    isAssigned = false,
     onSelect,
     onDoubleClick,
     onContextMenu
 }) => {
     const handleClick = (e: React.MouseEvent) => {
         const isMultiSelect = e.ctrlKey || e.metaKey;
-        onSelect(item.path, isMultiSelect);
+        const isRangeSelect = e.shiftKey;
+        onSelect(item.path, isMultiSelect, isRangeSelect);
     };
 
     const handleDoubleClick = () => {
@@ -93,12 +98,22 @@ const GridItem: React.FC<GridItemProps> = memo(({
                 border border-transparent
                 ${isSelected 
                     ? 'bg-sky-500/20 border-sky-500/50 dark:bg-sky-500/20 dark:border-sky-400/50' 
+                    : isAssigned
+                    ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/50 hover:bg-green-100 dark:hover:bg-green-900/20'
                     : 'hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:border-zinc-200 dark:hover:border-zinc-600'
                 }
             `}
             onClick={handleClick}
             onDoubleClick={handleDoubleClick}
             onContextMenu={handleContextMenu}
+            draggable={!isDirectory}
+            onDragStart={(e) => {
+                if (!isDirectory) {
+                    e.dataTransfer.setData('application/json', JSON.stringify({
+                        filePaths: [item.path]
+                    }));
+                }
+            }}
         >
             <div className="flex flex-col items-center space-y-2">
                 {/* Icon */}
@@ -126,6 +141,12 @@ const GridItem: React.FC<GridItemProps> = memo(({
                             )}
                         </div>
                     )}
+                    {/* Assignment indicator */}
+                    {isAssigned && !isDirectory && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                            <CheckIcon className="w-2.5 h-2.5 text-white" />
+                        </div>
+                    )}
                 </div>
                 
                 {/* File name */}
@@ -149,12 +170,6 @@ const GridItem: React.FC<GridItemProps> = memo(({
                 </div>
             </div>
             
-            {/* Selection indicator */}
-            {isSelected && (
-                <div className="absolute top-2 right-2 w-5 h-5 bg-sky-500 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full" />
-                </div>
-            )}
         </div>
     );
 });
@@ -166,6 +181,7 @@ const FileGrid: React.FC<FileGridProps> = ({
     directories,
     selectedFiles,
     selectedDirectories,
+    assignedFiles = [],
     onFileSelect,
     onDirectorySelect,
     onFileDoubleClick,
@@ -212,12 +228,14 @@ const FileGrid: React.FC<FileGridProps> = ({
                 const isSelected = isDirectory
                     ? selectedDirectories.includes(item.path)
                     : selectedFiles.includes(item.path);
+                const isAssigned = !isDirectory && assignedFiles.includes(item.path);
 
                 return (
                     <GridItem
                         key={item.path}
                         item={item}
                         isSelected={isSelected}
+                        isAssigned={isAssigned}
                         onSelect={isDirectory ? onDirectorySelect : onFileSelect}
                         onDoubleClick={(item) => {
                             if (isDirectory) {

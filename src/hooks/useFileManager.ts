@@ -34,6 +34,7 @@ export const useFileManager = () => {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [lastClickedFile, setLastClickedFile] = useState<string | null>(null);
 
     // Create API instance
     const api = useMemo(() => {
@@ -94,8 +95,23 @@ export const useFileManager = () => {
     }, [state.currentPath, navigateToDirectory]);
 
     // File selection
-    const selectFile = useCallback((path: string, multiSelect = false) => {
-        if (multiSelect) {
+    const selectFile = useCallback((path: string, multiSelect = false, rangeSelect = false) => {
+        if (rangeSelect && lastClickedFile) {
+            // Shift + click: range selection
+            const allFiles = directoryContents.files.map(f => f.path);
+            const startIndex = allFiles.indexOf(lastClickedFile);
+            const endIndex = allFiles.indexOf(path);
+            
+            if (startIndex !== -1 && endIndex !== -1) {
+                const [min, max] = [Math.min(startIndex, endIndex), Math.max(startIndex, endIndex)];
+                const rangeFiles = allFiles.slice(min, max + 1);
+                const newSelection = [...new Set([...state.selectedFiles, ...rangeFiles])];
+                updateState({ selectedFiles: newSelection });
+            } else {
+                // Fallback to regular selection
+                updateState({ selectedFiles: [path] });
+            }
+        } else if (multiSelect) {
             const isSelected = state.selectedFiles.includes(path);
             const newSelection = isSelected
                 ? state.selectedFiles.filter(p => p !== path)
@@ -103,8 +119,9 @@ export const useFileManager = () => {
             updateState({ selectedFiles: newSelection });
         } else {
             updateState({ selectedFiles: [path] });
+            setLastClickedFile(path);
         }
-    }, [state.selectedFiles, updateState]);
+    }, [state.selectedFiles, updateState, lastClickedFile, directoryContents.files]);
 
     // Directory selection
     const selectDirectory = useCallback((path: string, multiSelect = false) => {

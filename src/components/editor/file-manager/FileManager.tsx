@@ -20,6 +20,9 @@ import ContextMenu from './ContextMenu';
 import FileManagerToolbar from './FileManagerToolbar';
 import FilePreviewPanel from './FilePreviewPanel';
 import CreateFolderModal from './CreateFolderModal';
+import FileAssignmentPanel from './FileAssignmentPanel';
+import useEditorStore from '@/stores/editorStore';
+import useNodesStore from '@/stores/nodesStore';
 
 type FileManagerProps = {
     className?: string;
@@ -29,6 +32,29 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
     const [showPreviewPanel, setShowPreviewPanel] = useState(false);
     const [selectedPreviewItem, setSelectedPreviewItem] = useState<FileInfo | DirectoryInfo | null>(null);
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
+    
+    // Editor store integration for file_selection nodes
+    const selectedNodes = useEditorStore(state => state.selectedNodes);
+    const getNode = useNodesStore(state => state.getNode);
+    const updateNodeVariable = useNodesStore(state => state.updateNodeVariable);
+    // Get the nodes array to detect any changes
+    const nodes = useNodesStore(state => state.nodes);
+    
+    // Check if a file_selection node is selected
+    const selectedFileSelectionNode = React.useMemo(() => {
+        const selectedNode = selectedNodes.length === 1 ? getNode(selectedNodes[0]) : null;
+        return selectedNode?.path === 'polysynergy_nodes.file.file_selection.FileSelection' ? selectedNode : null;
+    }, [selectedNodes, getNode, nodes]);
+
+    // Get assigned files for visual indication - will update when nodes array changes
+    const assignedFiles = React.useMemo(() => {
+        if (!selectedFileSelectionNode) return [];
+        const selectedFilesVar = selectedFileSelectionNode.variables.find(v => v.handle === 'selected_files');
+        return Array.isArray(selectedFilesVar?.value) ? selectedFilesVar.value as string[] : [];
+    }, [selectedFileSelectionNode, nodes]);
+    
+    // Show assignment panel when file_selection node is selected
+    const showAssignmentPanel = !!selectedFileSelectionNode;
 
     const {
         state,
@@ -77,6 +103,26 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
     const handleCreateFolderSubmit = useCallback(async (folderName: string) => {
         await createDirectory(folderName);
     }, [createDirectory]);
+
+    // Handle assigning selected files to the file_selection node
+    const handleAssignSelectedFiles = useCallback(() => {
+        if (!selectedFileSelectionNode || state.selectedFiles.length === 0) return;
+        
+        // Get fresh data from the store to avoid stale closure
+        const currentNode = getNode(selectedFileSelectionNode.id);
+        if (!currentNode) return;
+        
+        const selectedFilesVar = currentNode.variables.find(v => v.handle === 'selected_files');
+        const currentFiles = Array.isArray(selectedFilesVar?.value) ? selectedFilesVar.value as string[] : [];
+        
+        // Add new files to existing ones (avoid duplicates)
+        const uniqueFiles = [...new Set([...currentFiles, ...state.selectedFiles])];
+        
+        updateNodeVariable(selectedFileSelectionNode.id, 'selected_files', uniqueFiles);
+        
+        // Clear file selection after assignment
+        clearSelection();
+    }, [selectedFileSelectionNode?.id, state.selectedFiles, getNode, updateNodeVariable, clearSelection]);
 
     // Upload handler
     const handleUpload = useCallback((files: File[]) => {
@@ -201,8 +247,12 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
     }, [clearSelection]);
 
     // Standard file browser selection behavior
-    const handleFileSelect = useCallback((path: string, isMultiSelect?: boolean) => {
-        if (isMultiSelect) {
+    const handleFileSelect = useCallback((path: string, isMultiSelect?: boolean, isRangeSelect?: boolean) => {
+        if (isRangeSelect) {
+            // Shift + click: range selection
+            selectFile(path, false, true);
+            // Don't change preview for range-select
+        } else if (isMultiSelect) {
             // Ctrl/Cmd + click: toggle selection
             selectFile(path, true);
             // Don't change preview for multi-select
@@ -222,8 +272,12 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
         }
     }, [selectFile, clearSelection, directoryContents.files, showPreviewPanel]);
 
-    const handleDirectorySelect = useCallback((path: string, isMultiSelect?: boolean) => {
-        if (isMultiSelect) {
+    const handleDirectorySelect = useCallback((path: string, isMultiSelect?: boolean, isRangeSelect?: boolean) => {
+        if (isRangeSelect) {
+            // Shift + click: range selection (for now, just select single directory)
+            selectDirectory(path, true);
+            // Don't change preview for range-select
+        } else if (isMultiSelect) {
             // Ctrl/Cmd + click: toggle selection
             selectDirectory(path, true);
             // Don't change preview for multi-select
@@ -268,12 +322,15 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                 isPublicMode={state.isPublicMode}
                 selectedCount={state.selectedFiles.length + state.selectedDirectories.length}
                 showPreviewPanel={showPreviewPanel}
+                showAssignmentPanel={showAssignmentPanel}
+                canAssignFiles={showAssignmentPanel && state.selectedFiles.length > 0}
                 onViewModeChange={setViewMode}
                 onPublicModeChange={setPublicMode}
                 onPreviewToggle={setShowPreviewPanel}
                 onCreateFolder={handleCreateFolder}
                 onUpload={handleUploadClick}
                 onReload={refresh}
+                onAssignSelectedFiles={handleAssignSelectedFiles}
                 onDeleteSelected={() => {
                     const selectedCount = state.selectedFiles.length + state.selectedDirectories.length;
                     if (selectedCount > 0) {
@@ -288,7 +345,7 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
             <div className="flex-1 flex overflow-hidden">
                 {/* Main File Browser */}
                 <div 
-                    className={`${showPreviewPanel ? 'flex-1' : 'w-full'} overflow-hidden relative transition-none`}
+                    className={`${showAssignmentPanel || showPreviewPanel ? 'flex-1' : 'w-full'} overflow-hidden relative transition-none`}
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
@@ -320,6 +377,7 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                                 directories={directoryContents.directories}
                                 selectedFiles={state.selectedFiles}
                                 selectedDirectories={state.selectedDirectories}
+                                assignedFiles={assignedFiles}
                                 onFileSelect={handleFileSelect}
                                 onDirectorySelect={handleDirectorySelect}
                                 onFileDoubleClick={handleFileDoubleClick}
@@ -332,6 +390,7 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                                 directories={directoryContents.directories}
                                 selectedFiles={state.selectedFiles}
                                 selectedDirectories={state.selectedDirectories}
+                                assignedFiles={assignedFiles}
                                 sortBy={state.sortBy}
                                 sortOrder={state.sortOrder}
                                 onFileSelect={handleFileSelect}
@@ -358,14 +417,20 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                     )}
                 </div>
 
-                {/* Preview Panel */}
-                {showPreviewPanel && (
+                {/* Preview Panel or Assignment Panel */}
+                {showAssignmentPanel ? (
+                    <FileAssignmentPanel
+                        onClose={() => {}}
+                        className="w-80 flex-shrink-0"
+                        onAssignSelectedFiles={handleAssignSelectedFiles}
+                    />
+                ) : showPreviewPanel ? (
                     <FilePreviewPanel
                         selectedItem={selectedPreviewItem}
                         onClose={() => setShowPreviewPanel(false)}
                         className="w-80 flex-shrink-0"
                     />
-                )}
+                ) : null}
             </div>
 
             {/* Context Menu */}

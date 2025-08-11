@@ -1,4 +1,6 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState, useCallback } from 'react';
+import { createFileManagerApi } from '@/api/fileManagerApi';
+import { useParams } from 'next/navigation';
 import { 
     DocumentIcon, 
     PhotoIcon, 
@@ -73,6 +75,11 @@ const GridItem: React.FC<GridItemProps> = memo(({
     onDoubleClick,
     onContextMenu
 }) => {
+    const [refreshedUrl, setRefreshedUrl] = useState<string | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [imageError, setImageError] = useState(false);
+    const params = useParams();
+    const projectId = params?.projectId as string;
     const handleClick = (e: React.MouseEvent) => {
         const isMultiSelect = e.ctrlKey || e.metaKey;
         const isRangeSelect = e.shiftKey;
@@ -90,6 +97,49 @@ const GridItem: React.FC<GridItemProps> = memo(({
 
     const isDirectory = item.is_directory;
     const fileInfo = item as FileInfo;
+    
+    // Extract S3 path from URL
+    const extractS3Path = useCallback((url: string): string | null => {
+        try {
+            const urlObj = new URL(url);
+            const pathMatch = urlObj.pathname.match(/^\/([^?]+)/);
+            if (pathMatch) {
+                return decodeURIComponent(pathMatch[1]);
+            }
+        } catch (e) {
+            console.error('Failed to parse URL:', e);
+        }
+        return null;
+    }, []);
+
+    // Refresh expired URL
+    const refreshImageUrl = useCallback(async () => {
+        if (!fileInfo.url || !projectId || isRefreshing || isDirectory) return;
+        
+        const s3Path = extractS3Path(fileInfo.url);
+        if (!s3Path) {
+            console.error('Could not extract S3 path from URL');
+            return;
+        }
+
+        setIsRefreshing(true);
+        try {
+            const fileApi = createFileManagerApi(projectId);
+            const metadata = await fileApi.getFileMetadata(s3Path);
+            
+            if (metadata.url) {
+                setRefreshedUrl(metadata.url);
+                setImageError(false);
+            }
+        } catch (error) {
+            console.error('Failed to refresh image URL:', error);
+            setImageError(true);
+        } finally {
+            setIsRefreshing(false);
+        }
+    }, [fileInfo.url, projectId, extractS3Path, isRefreshing, isDirectory]);
+    
+    const imageUrl = refreshedUrl || fileInfo.url;
 
     return (
         <div
@@ -124,17 +174,28 @@ const GridItem: React.FC<GridItemProps> = memo(({
                         <div className="relative">
                             {getFileIcon(fileInfo.content_type, fileInfo.name)}
                             {/* Image preview for images */}
-                            {fileInfo.content_type.startsWith('image/') && fileInfo.url && (
+                            {fileInfo.content_type.startsWith('image/') && imageUrl && !imageError && (
                                 <div className="absolute inset-0 rounded overflow-hidden">
+                                    {isRefreshing && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        </div>
+                                    )}
                                     <img
-                                        src={fileInfo.url}
+                                        src={imageUrl}
                                         alt={fileInfo.name}
                                         className="w-full h-full object-cover"
                                         loading="lazy"
+                                        crossOrigin="anonymous"
                                         onError={(e) => {
-                                            // Hide image on error, show default icon
-                                            const target = e.target as HTMLElement;
-                                            target.style.display = 'none';
+                                            if (!refreshedUrl && !isRefreshing) {
+                                                refreshImageUrl();
+                                            } else {
+                                                // Hide image on error, show default icon
+                                                const target = e.target as HTMLElement;
+                                                target.style.display = 'none';
+                                                setImageError(true);
+                                            }
                                         }}
                                     />
                                 </div>

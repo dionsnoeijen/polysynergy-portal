@@ -1,4 +1,6 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useState, useCallback } from 'react';
+import { createFileManagerApi } from '@/api/fileManagerApi';
+import { useParams } from 'next/navigation';
 import { 
     DocumentIcon, 
     PhotoIcon, 
@@ -65,25 +67,79 @@ const getFileIcon = (contentType: string, fileName: string, size: 'small' | 'lar
 const FilePreview: React.FC<{ file: FileInfo }> = memo(({ file }) => {
     const [imageError, setImageError] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [refreshedUrl, setRefreshedUrl] = useState<string | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const params = useParams();
+    const projectId = params?.projectId as string;
+
+    // Extract S3 path from URL
+    const extractS3Path = useCallback((url: string): string | null => {
+        try {
+            const urlObj = new URL(url);
+            const pathMatch = urlObj.pathname.match(/^\/([^?]+)/);
+            if (pathMatch) {
+                return decodeURIComponent(pathMatch[1]);
+            }
+        } catch (e) {
+            console.error('Failed to parse URL:', e);
+        }
+        return null;
+    }, []);
+
+    // Refresh expired URL
+    const refreshImageUrl = useCallback(async () => {
+        if (!file.url || !projectId || isRefreshing) return;
+        
+        const s3Path = extractS3Path(file.url);
+        if (!s3Path) {
+            console.error('Could not extract S3 path from URL');
+            return;
+        }
+
+        setIsRefreshing(true);
+        try {
+            const fileApi = createFileManagerApi(projectId);
+            const metadata = await fileApi.getFileMetadata(s3Path);
+            
+            if (metadata.url) {
+                setRefreshedUrl(metadata.url);
+                setImageError(false);
+            }
+        } catch (error) {
+            console.error('Failed to refresh image URL:', error);
+            setImageError(true);
+        } finally {
+            setIsRefreshing(false);
+        }
+    }, [file.url, projectId, extractS3Path, isRefreshing]);
+
+    const imageUrl = refreshedUrl || file.url;
 
     // Image preview
-    if (file.content_type.startsWith('image/') && file.url && !imageError) {
+    if (file.content_type.startsWith('image/') && imageUrl && !imageError) {
         return (
             <div className="relative">
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 mb-4 min-h-[200px] flex items-center justify-center">
-                    {!imageLoaded && (
+                    {(!imageLoaded || isRefreshing) && (
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
                         </div>
                     )}
                     <img
-                        src={file.url}
+                        src={imageUrl}
                         alt={file.name}
                         className={`max-w-full max-h-[300px] object-contain rounded transition-opacity duration-200 ${
-                            imageLoaded ? 'opacity-100' : 'opacity-0'
+                            imageLoaded && !isRefreshing ? 'opacity-100' : 'opacity-0'
                         }`}
+                        crossOrigin="anonymous"
                         onLoad={() => setImageLoaded(true)}
-                        onError={() => setImageError(true)}
+                        onError={() => {
+                            if (!refreshedUrl && !isRefreshing) {
+                                refreshImageUrl();
+                            } else {
+                                setImageError(true);
+                            }
+                        }}
                     />
                 </div>
             </div>
@@ -91,7 +147,7 @@ const FilePreview: React.FC<{ file: FileInfo }> = memo(({ file }) => {
     }
 
     // Video preview
-    if (file.content_type.startsWith('video/') && file.url) {
+    if (file.content_type.startsWith('video/') && imageUrl) {
         return (
             <div className="mb-4">
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4">
@@ -100,7 +156,7 @@ const FilePreview: React.FC<{ file: FileInfo }> = memo(({ file }) => {
                         controls
                         preload="metadata"
                     >
-                        <source src={file.url} type={file.content_type} />
+                        <source src={imageUrl} type={file.content_type} />
                         Your browser does not support the video tag.
                     </video>
                 </div>
@@ -109,7 +165,7 @@ const FilePreview: React.FC<{ file: FileInfo }> = memo(({ file }) => {
     }
 
     // Audio preview
-    if (file.content_type.startsWith('audio/') && file.url) {
+    if (file.content_type.startsWith('audio/') && imageUrl) {
         return (
             <div className="mb-4">
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4">
@@ -121,7 +177,7 @@ const FilePreview: React.FC<{ file: FileInfo }> = memo(({ file }) => {
                         controls
                         preload="metadata"
                     >
-                        <source src={file.url} type={file.content_type} />
+                        <source src={imageUrl} type={file.content_type} />
                         Your browser does not support the audio tag.
                     </audio>
                 </div>

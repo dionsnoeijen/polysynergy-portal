@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { createFileManagerApi } from '@/api/fileManagerApi';
+import { useParams } from 'next/navigation';
 
 type Logic = {
     getImageData: () => string | null;
@@ -17,11 +19,62 @@ type Props = {
 
 const ImagePreview: React.FC<Props> = ({ logic }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [refreshedUrl, setRefreshedUrl] = useState<string | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const params = useParams();
+    const projectId = params?.projectId as string;
+    
     const { getImageData, isValidImage, getImageMetadata } = logic;
     
-    const imageData = getImageData();
+    const originalImageData = getImageData();
+    const imageData = refreshedUrl || originalImageData;
     const hasValidImage = isValidImage();
     const metadata = getImageMetadata();
+
+    // Extract S3 path from URL
+    const extractS3Path = useCallback((url: string): string | null => {
+        try {
+            // Parse URL to get the path
+            const urlObj = new URL(url);
+            const pathMatch = urlObj.pathname.match(/^\/([^?]+)/);
+            if (pathMatch) {
+                return decodeURIComponent(pathMatch[1]);
+            }
+        } catch (e) {
+            console.error('Failed to parse URL:', e);
+        }
+        return null;
+    }, []);
+
+    // Refresh expired URL
+    const refreshImageUrl = useCallback(async () => {
+        if (!originalImageData || !projectId || isRefreshing) return;
+        
+        const s3Path = extractS3Path(originalImageData);
+        if (!s3Path) {
+            console.error('Could not extract S3 path from URL');
+            return;
+        }
+
+        setIsRefreshing(true);
+        try {
+            const fileApi = createFileManagerApi(projectId);
+            const metadata = await fileApi.getFileMetadata(s3Path);
+            
+            if (metadata.url) {
+                setRefreshedUrl(metadata.url);
+            }
+        } catch (error) {
+            console.error('Failed to refresh image URL:', error);
+        } finally {
+            setIsRefreshing(false);
+        }
+    }, [originalImageData, projectId, extractS3Path, isRefreshing]);
+
+    // Reset refreshed URL when original changes
+    useEffect(() => {
+        setRefreshedUrl(null);
+    }, [originalImageData]);
 
     if (!hasValidImage || !imageData) {
         return (
@@ -62,7 +115,12 @@ const ImagePreview: React.FC<Props> = ({ logic }) => {
                 </div>
 
                 {/* Image preview - full width like avatar component */}
-                <div className="w-full flex justify-center items-center bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden">
+                <div className="w-full flex justify-center items-center bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden relative">
+                    {isRefreshing && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/10 z-10">
+                            <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    )}
                     <img
                         src={imageData}
                         alt="Image preview"
@@ -70,10 +128,17 @@ const ImagePreview: React.FC<Props> = ({ logic }) => {
                             cursor-pointer transition-all
                             ${isExpanded ? 'max-w-full max-h-screen w-auto object-contain' : 'max-h-48 w-auto object-contain'}
                         `}
+                        crossOrigin="anonymous"
                         onClick={() => setIsExpanded(!isExpanded)}
                         onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            // If we haven't tried refreshing yet, try to refresh the URL
+                            if (!refreshedUrl && !isRefreshing) {
+                                refreshImageUrl();
+                            } else {
+                                // If refresh failed or we already tried, show error state
+                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                            }
                         }}
                     />
                     

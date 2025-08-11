@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import {ChevronLeftIcon} from "@heroicons/react/24/outline";
 import {getNodeExecutionDetails} from "@/api/executionApi";
 import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
@@ -11,6 +11,19 @@ const NodeOutput: React.FC = (): React.ReactElement => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [expandedNodes, setExpandedNodes] = useState<Record<string, any>>({});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [nodeDataCache, setNodeDataCache] = useState<Record<string, any>>({});
+    const previousMockNodesLength = useRef(mockNodes.length);
+    
+    // Reset expanded state when a new execution starts (mockNodes get cleared and repopulated)
+    useEffect(() => {
+        // Detect new execution: mockNodes length goes from >0 to 0 (cleared), then starts growing again
+        if (previousMockNodesLength.current > 0 && mockNodes.length === 0) {
+            setExpandedNodes({});
+            setNodeDataCache({});
+        }
+        previousMockNodesLength.current = mockNodes.length;
+    }, [mockNodes.length]);
 
     const reversedNodes = [...mockNodes]
         .sort((a, b) => a.order - b.order)
@@ -19,7 +32,9 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const toggleNode = async (node: any) => {
         const nodeKey = `${node.id}-${node.order}`;
+        
         if (expandedNodes[nodeKey]) {
+            // Close the node
             setExpandedNodes((prev) => {
                 const newState = {...prev};
                 delete newState[nodeKey];
@@ -28,19 +43,41 @@ const NodeOutput: React.FC = (): React.ReactElement => {
             return;
         }
 
-        const data = await getNodeExecutionDetails(
-            activeVersionId as string,
-            node.runId,
-            node.id,
-            node.order,
-            'mock',
-            'mock'
-        );
+        // Check if we already have cached data for this node
+        if (nodeDataCache[nodeKey]) {
+            // Use cached data
+            setExpandedNodes((prev) => ({
+                ...prev,
+                [nodeKey]: nodeDataCache[nodeKey],
+            }));
+            return;
+        }
 
-        setExpandedNodes((prev) => ({
-            ...prev,
-            [nodeKey]: data,
-        }));
+        // Fetch new data and cache it
+        try {
+            const data = await getNodeExecutionDetails(
+                activeVersionId as string,
+                node.runId,
+                node.id,
+                node.order,
+                'mock',
+                'mock'
+            );
+
+            // Cache the fetched data
+            setNodeDataCache((prev) => ({
+                ...prev,
+                [nodeKey]: data,
+            }));
+
+            // Expand the node with cached data
+            setExpandedNodes((prev) => ({
+                ...prev,
+                [nodeKey]: data,
+            }));
+        } catch (error) {
+            console.error('Failed to fetch node execution details:', error);
+        }
     };
 
     return (

@@ -13,6 +13,7 @@ export const useHandlePlay = () => {
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
+    const isSaving = useEditorStore((state) => state.isSaving);
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     return async (e: React.MouseEvent, nodeId: string, subStage: string = 'mock') => {
@@ -22,6 +23,24 @@ export const useHandlePlay = () => {
         if (!activeVersionId) return;
 
         try {
+            // Wait for any pending saves to complete before starting execution
+            if (isSaving) {
+                setIsExecuting('Saving changes...');
+                
+                // Poll until saving is complete with timeout protection
+                const maxWaitTime = 10000; // 10 seconds max
+                const startTime = Date.now();
+                
+                while (useEditorStore.getState().isSaving && (Date.now() - startTime) < maxWaitTime) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                // If still saving after timeout, log warning but continue
+                if (useEditorStore.getState().isSaving) {
+                    console.warn('Execution started before save completed - potential race condition');
+                }
+            }
+
             clearMockStore();
             setIsExecuting('Running...');
 

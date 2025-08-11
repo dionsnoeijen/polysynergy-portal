@@ -1,6 +1,6 @@
 import React, { memo, useState, useCallback } from 'react';
 import { createFileManagerApi } from '@/api/fileManagerApi';
-import { useParams } from 'next/navigation';
+import useEditorStore from '@/stores/editorStore';
 import { 
     DocumentIcon, 
     PhotoIcon, 
@@ -69,8 +69,8 @@ const FilePreview: React.FC<{ file: FileInfo }> = memo(({ file }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [refreshedUrl, setRefreshedUrl] = useState<string | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const params = useParams();
-    const projectId = params?.projectId as string;
+    const { activeProjectId } = useEditorStore();
+    const projectId = activeProjectId;
 
     // Extract S3 path from URL
     const extractS3Path = useCallback((url: string): string | null => {

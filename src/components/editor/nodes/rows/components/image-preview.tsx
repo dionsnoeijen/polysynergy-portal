@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { createFileManagerApi } from '@/api/fileManagerApi';
-import { useParams } from 'next/navigation';
+import useEditorStore from '@/stores/editorStore';
 
 type Logic = {
     getImageData: () => string | null;
@@ -21,8 +21,8 @@ const ImagePreview: React.FC<Props> = ({ logic }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [refreshedUrl, setRefreshedUrl] = useState<string | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const params = useParams();
-    const projectId = params?.projectId as string;
+    const { activeProjectId } = useEditorStore();
+    const projectId = activeProjectId;
     
     const { getImageData, isValidImage, getImageMetadata } = logic;
     

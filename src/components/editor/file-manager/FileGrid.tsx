@@ -1,6 +1,6 @@
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import { createFileManagerApi } from '@/api/fileManagerApi';
-import { useParams } from 'next/navigation';
+import useEditorStore from '@/stores/editorStore';
 import { 
     DocumentIcon, 
     PhotoIcon, 
@@ -78,8 +78,8 @@ const GridItem: React.FC<GridItemProps> = memo(({
     const [refreshedUrl, setRefreshedUrl] = useState<string | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [imageError, setImageError] = useState(false);
-    const params = useParams();
-    const projectId = params?.projectId as string;
+    const { activeProjectId } = useEditorStore();
+    const projectId = activeProjectId;
     const handleClick = (e: React.MouseEvent) => {
         const isMultiSelect = e.ctrlKey || e.metaKey;
         const isRangeSelect = e.shiftKey;

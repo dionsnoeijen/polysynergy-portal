@@ -1,12 +1,10 @@
-import React, { memo, useCallback, useState, useMemo } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { 
     FolderPlusIcon, 
     TrashIcon, 
     PencilIcon,
     DocumentPlusIcon,
     ArrowUpTrayIcon,
-    EyeIcon,
-    EyeSlashIcon
 } from '@heroicons/react/24/outline';
 
 import { useFileManager } from '@/hooks/useFileManager';

@@ -1,8 +1,7 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
-import { FileInfo, DirectoryInfo } from '@/api/fileManagerApi';
 
 type FileAssignmentPanelProps = {
     onClose: () => void;
@@ -49,13 +48,7 @@ const FileAssignmentPanel: React.FC<FileAssignmentPanelProps> = ({
         updateNodeVariable(fileSelectionNode.id, 'selected_files', newFiles);
     }, [fileSelectionNode?.id, assignedFiles, updateNodeVariable]);
 
-    const handleAssignSelectedFiles = useCallback((selectedFilePaths: string[]) => {
-        if (!fileSelectionNode || selectedFilePaths.length === 0) return;
-        
-        // Add new files to existing ones (avoid duplicates)
-        const uniqueFiles = [...new Set([...assignedFiles, ...selectedFilePaths])];
-        updateNodeVariable(fileSelectionNode.id, 'selected_files', uniqueFiles);
-    }, [fileSelectionNode?.id, assignedFiles, updateNodeVariable]);
+    // This function is handled by the parent FileManager component
 
     // Drag and drop handlers
     const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -129,7 +122,7 @@ const FileAssignmentPanel: React.FC<FileAssignmentPanelProps> = ({
                                 <PlusIcon className="w-6 h-6" />
                             </div>
                             <p className="text-sm">No files assigned</p>
-                            <p className="text-xs mt-1">Select files and click "Assign Selected" or drag files here</p>
+                            <p className="text-xs mt-1">Select files and click &quot;Assign Selected&quot; or drag files here</p>
                         </div>
                     ) : (
                         assignedFiles.map((filePath, index) => (

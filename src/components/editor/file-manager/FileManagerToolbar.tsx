@@ -35,7 +35,7 @@ const FileManagerToolbar: React.FC<FileManagerToolbarProps> = ({
     isPublicMode,
     selectedCount,
     showPreviewPanel,
-    showAssignmentPanel = false,
+    // showAssignmentPanel = false,
     canAssignFiles = false,
     onViewModeChange,
     onPublicModeChange,

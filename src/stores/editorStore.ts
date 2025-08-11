@@ -103,6 +103,8 @@ export type EditorState = {
 
     isSaving: boolean;
     setIsSaving: (isSaving: boolean) => void;
+    forceSave: (() => Promise<void>) | null;
+    setForceSave: (forceSave: (() => Promise<void>) | null) => void;
 
     isDraft: boolean;
     setIsDraft: (isDraft: boolean) => void;
@@ -240,6 +242,8 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
     isSaving: false,
     setIsSaving: (isSaving) => set({isSaving: isSaving}),
+    forceSave: null,
+    setForceSave: (forceSave) => set({forceSave}),
 
     isDraft: false,
     setIsDraft: (isDraft) => set({isDraft: isDraft}),

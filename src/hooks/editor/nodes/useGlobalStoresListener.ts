@@ -16,6 +16,7 @@ export default function useGlobalStoreListenersWithImmediateSave() {
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const setIsSaving = useEditorStore((state) => state.setIsSaving);
+    const setForceSave = useEditorStore((state) => state.setForceSave);
 
     const debounceInterval = 1000;
     const lastSaveTimeRef = useRef<number>(Date.now());
@@ -60,6 +61,29 @@ export default function useGlobalStoreListenersWithImmediateSave() {
         }
     // eslint-disable-next-line
     }, [activeVersionId, activeProjectId, activeRouteId, activeScheduleId, activeBlueprintId, activeConfigId, setIsSaving]);
+    
+    // Create force save function that cancels debounce and saves immediately
+    const forceImmediateSave = useCallback(async () => {
+        // Cancel any pending debounced save
+        if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = null;
+        }
+        
+        // Wait for any ongoing save to complete, then force immediate save
+        while (savingInProgress) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+        
+        // Force immediate save
+        await doSave();
+    }, [doSave]);
+    
+    // Register the force save function in the store
+    useEffect(() => {
+        setForceSave(forceImmediateSave);
+        return () => setForceSave(null);
+    }, [forceImmediateSave, setForceSave]);
 
     const saveNodeSetup = useCallback(() => {
         const now = Date.now();

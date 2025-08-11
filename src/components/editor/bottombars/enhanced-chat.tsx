@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import { ArrowUpIcon } from '@heroicons/react/24/outline';
 import useChatStore from '@/stores/chatStore';
 import useNodesStore from '@/stores/nodesStore';
+import useEditorStore from '@/stores/editorStore';
 import { usePromptNodeDetection } from '@/hooks/editor/usePromptNodeDetection';
 import { useHandlePlay } from '@/hooks/editor/useHandlePlay';
 
@@ -12,6 +13,7 @@ const EnhancedChat: React.FC = () => {
     const messagesByRun = useChatStore((state) => state.messagesByRun);
     const addUserMessage = useChatStore((state) => state.addUserMessage);
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
+    const forceSave = useEditorStore((state) => state.forceSave);
     const handlePlay = useHandlePlay();
 
     const [input, setInput] = useState("");
@@ -48,18 +50,23 @@ const EnhancedChat: React.FC = () => {
         if (!input.trim()) return;
         if (!selectedPromptNodeId) return;
 
-        // Set the prompt value on the selected prompt node
-        updateNodeVariable(selectedPromptNodeId, "prompt", input);
-        
-        // Add to chat history (if we have an active run)
-        if (latestRunId) {
-            addUserMessage(input, latestRunId);
-        }
-        
-        setInput("");
-        
-        // Automatically trigger execution after sending the prompt
         try {
+            // Set the prompt value on the selected prompt node
+            updateNodeVariable(selectedPromptNodeId, "prompt", input);
+            
+            // Add to chat history (if we have an active run)
+            if (latestRunId) {
+                addUserMessage(input, latestRunId);
+            }
+            
+            setInput("");
+            
+            // Force immediate save before execution to ensure prompt is persisted
+            if (forceSave) {
+                await forceSave();
+            }
+            
+            // Automatically trigger execution after saving the prompt
             const syntheticEvent = {
                 preventDefault: () => {},
                 stopPropagation: () => {}
@@ -67,7 +74,7 @@ const EnhancedChat: React.FC = () => {
             
             await handlePlay(syntheticEvent, selectedPromptNodeId, 'mock');
         } catch (error) {
-            console.error('Failed to trigger execution:', error);
+            console.error('Failed to save and execute:', error);
         }
     };
 

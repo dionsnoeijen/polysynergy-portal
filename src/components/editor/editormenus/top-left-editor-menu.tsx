@@ -6,7 +6,8 @@ import {
     PlusIcon,
     StopIcon,
     ArrowUturnLeftIcon,
-    ArrowUturnRightIcon
+    ArrowUturnRightIcon,
+    HandRaisedIcon
 } from "@heroicons/react/24/outline";
 import {Divider} from "@/components/divider";
 import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
@@ -156,11 +157,22 @@ const TopLeftEditorMenu: React.FC = () => {
                 <div className="flex flex-col items-start justify-center w-full h-full">
                     <button
                         type="button"
+                        className={`w-full text-lg font-semibold  text-sky-500 hover:text-white dark:text-white rounded p-2 hover:bg-sky-300 dark:hover:bg-zinc-600 ${editorMode === EditorMode.Pan ? 'bg-sky-500 text-white' : 'bg-transparent'}`}
+                        onMouseDown={() => {
+                            setEditorMode(EditorMode.Pan)
+                        }}
+                        title={'Pan mode - Click and drag to pan canvas (Space)'}
+                        data-tour-id="pan-button"
+                    >
+                        <HandRaisedIcon className="w-4 h-4"/>
+                    </button>
+                    <button
+                        type="button"
                         className={`w-full text-lg font-semibold  text-sky-500 hover:text-white dark:text-white rounded p-2 hover:bg-sky-300 dark:hover:bg-zinc-600 ${editorMode === EditorMode.BoxSelect ? 'bg-sky-500 text-white' : 'bg-transparent'}`}
                         onMouseDown={() => {
                             setEditorMode(EditorMode.BoxSelect)
                         }}
-                        title={'Box select'}
+                        title={'Box select (B)'}
                         data-tour-id="box-select-button"
                     >
                         <StopIcon className="w-4 h-4"/>
@@ -171,7 +183,7 @@ const TopLeftEditorMenu: React.FC = () => {
                         onMouseDown={() => {
                             setEditorMode(EditorMode.Select)
                         }}
-                        title={'Select'}
+                        title={'Select mode - Click nodes to select'}
                         data-tour-id="pointer-select-button"
                     >
                         <CursorArrowRaysIcon className="w-4 h-4"/>

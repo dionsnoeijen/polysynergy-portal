@@ -4,97 +4,72 @@ type ChatMessage = {
     sender: 'user' | 'agent';
     text: string;
     node_id?: string;
-    order?: number;
-    timestamp?: number;
+    timestamp: number;
+    sequence?: number; // Simple incremental sequence per run
 };
 
 type ChatStore = {
     messagesByRun: Record<string, ChatMessage[]>;
-    pendingMessages: Record<string, Record<number, {content: string, nodeId?: string}>>; // runId -> order -> message
+    sequenceCounters: Record<string, number>; // runId -> next sequence number
     addUserMessage: (text: string, runId: string) => void;
-    startAgentMessage: (runId: string, nodeId?: string, order?: number) => void;
-    appendToAgentMessage: (text: string, runId: string, nodeId?: string, order?: number) => void;
+    addAgentMessage: (text: string, runId: string, nodeId?: string) => void;
     clearChatStore: (runId?: string) => void;
     activeRunId: string | null;
     setActiveRunId: (runId: string | null) => void;
-    processPendingMessages: (runId: string) => void;
+    sortMessages: (runId: string) => void;
 };
 
 const useChatStore = create<ChatStore>((set, get) => ({
     messagesByRun: {},
-    pendingMessages: {},
+    sequenceCounters: {},
 
     addUserMessage: (text, runId) =>
         set((state) => {
+            const sequence = (state.sequenceCounters[runId] || 0) + 1;
             const messages = [
                 ...(state.messagesByRun[runId] || []),
-                {sender: 'user', text, timestamp: Date.now()} as const,
+                {sender: 'user', text, timestamp: Date.now(), sequence} as const,
             ];
             return {
                 messagesByRun: {
                     ...state.messagesByRun,
                     [runId]: messages,
                 },
+                sequenceCounters: {
+                    ...state.sequenceCounters,
+                    [runId]: sequence,
+                },
             };
         }),
 
-    startAgentMessage: (runId, nodeId?, order?) =>
+    addAgentMessage: (text, runId, nodeId?) =>
         set((state) => {
-            const messages = [
-                ...(state.messagesByRun[runId] || []),
-                {sender: 'agent', text: '', node_id: nodeId, order, timestamp: Date.now()} as const,
-            ];
+            const sequence = (state.sequenceCounters[runId] || 0) + 1;
+            const messages = [...(state.messagesByRun[runId] || [])];
+            
+            // Find existing agent message from same node or create new one
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage && lastMessage.sender === 'agent' && lastMessage.node_id === nodeId && !lastMessage.text.trim()) {
+                // Append to existing empty message
+                lastMessage.text = text;
+                lastMessage.timestamp = Date.now();
+            } else {
+                // Create new message
+                messages.push({sender: 'agent', text, node_id: nodeId, timestamp: Date.now(), sequence});
+            }
+            
             return {
                 messagesByRun: {
                     ...state.messagesByRun,
                     [runId]: messages,
                 },
+                sequenceCounters: {
+                    ...state.sequenceCounters,
+                    [runId]: sequence,
+                },
             };
         }),
 
-    appendToAgentMessage: (text, runId, nodeId?, order?) => {
-        if (order !== undefined) {
-            // Handle ordered messages
-            set((state) => {
-                const pending = state.pendingMessages[runId] || {};
-                
-                // Store or append to pending message
-                if (pending[order]) {
-                    pending[order].content += text;
-                } else {
-                    pending[order] = {content: text, nodeId};
-                }
-                
-                return {
-                    ...state,
-                    pendingMessages: {
-                        ...state.pendingMessages,
-                        [runId]: pending,
-                    },
-                };
-            });
-            
-            // Process pending messages to maintain order
-            get().processPendingMessages(runId);
-        } else {
-            // Fallback to old behavior for messages without order
-            set((state) => {
-                const messages = [...(state.messagesByRun[runId] || [])];
-                const last = messages[messages.length - 1];
-                if (last && last.sender === 'agent' && last.node_id === nodeId) {
-                    last.text += text;
-                } else {
-                    messages.push({sender: 'agent', text, node_id: nodeId, timestamp: Date.now()});
-                }
-                return {
-                    messagesByRun: {
-                        ...state.messagesByRun,
-                        [runId]: messages,
-                    },
-                };
-            });
-        }
-    },
 
     clearChatStore: (runId) =>
         set((state) => {
@@ -102,10 +77,10 @@ const useChatStore = create<ChatStore>((set, get) => ({
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const {[runId]: _, ...restMessages} = state.messagesByRun;
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const {[runId]: __, ...restPending} = state.pendingMessages;
-                return {messagesByRun: restMessages, pendingMessages: restPending};
+                const {[runId]: __, ...restSequences} = state.sequenceCounters;
+                return {messagesByRun: restMessages, sequenceCounters: restSequences};
             }
-            return {messagesByRun: {}, pendingMessages: {}};
+            return {messagesByRun: {}, sequenceCounters: {}};
         }),
 
     activeRunId: null,
@@ -114,53 +89,27 @@ const useChatStore = create<ChatStore>((set, get) => ({
             activeRunId: runId,
         })),
         
-    processPendingMessages: (runId) => {
-        const state = get();
-        const pending = state.pendingMessages[runId];
-        if (!pending) return;
-        
-        const messages = [...(state.messagesByRun[runId] || [])];
-        const orders = Object.keys(pending).map(Number).sort((a, b) => a - b);
-        
-        // Find the next expected order (last message order + 1)
-        const lastMessage = messages.filter(m => m.sender === 'agent' && m.order !== undefined).pop();
-        let expectedOrder = lastMessage?.order ? lastMessage.order + 1 : 0;
-        
-        // Process consecutive pending messages
-        let processed = false;
-        for (const order of orders) {
-            if (order === expectedOrder) {
-                const pendingMsg = pending[order];
-                messages.push({
-                    sender: 'agent',
-                    text: pendingMsg.content,
-                    node_id: pendingMsg.nodeId,
-                    order,
-                    timestamp: Date.now()
-                });
-                
-                // Remove from pending
-                delete pending[order];
-                expectedOrder++;
-                processed = true;
-            } else {
-                break; // Stop if we hit a gap in ordering
-            }
-        }
-        
-        if (processed) {
-            set({
+    sortMessages: (runId) => 
+        set((state) => {
+            const messages = state.messagesByRun[runId];
+            if (!messages) return state;
+            
+            // Sort by sequence first, then by timestamp as fallback
+            const sortedMessages = [...messages].sort((a, b) => {
+                if (a.sequence && b.sequence) {
+                    return a.sequence - b.sequence;
+                }
+                return a.timestamp - b.timestamp;
+            });
+            
+            return {
+                ...state,
                 messagesByRun: {
                     ...state.messagesByRun,
-                    [runId]: messages,
+                    [runId]: sortedMessages,
                 },
-                pendingMessages: {
-                    ...state.pendingMessages,
-                    [runId]: pending,
-                },
-            });
-        }
-    },
+            };
+        }),
 }));
 
 export default useChatStore;

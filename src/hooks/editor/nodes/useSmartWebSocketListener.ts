@@ -28,8 +28,7 @@ export function useSmartWebSocketListener(flowId: string) {
     const setMockConnections = useMockStore((state) => state.setMockConnections);
     const setHasMockData = useMockStore((state) => state.setHasMockData);
     const setMockResultForNode = useMockStore((state) => state.setMockResultForNode);
-    const startAgentMessage = useChatStore((state) => state.startAgentMessage);
-    const appendToAgentMessage = useChatStore((state) => state.appendToAgentMessage);
+    const addAgentMessage = useChatStore((state) => state.addAgentMessage);
 
     const websocketUrl = flowId ? `${config.WEBSOCKET_URL}/execution/${flowId}` : '';
 
@@ -59,21 +58,16 @@ export function useSmartWebSocketListener(flowId: string) {
             if ((
                 message.event === 'RunResponseContent' ||
                 message.event === 'TeamRunResponseContent') && message.content) {
-                const {run_id, content, order} = message;
+                const {run_id, content} = message;
                 if (!run_id) return;
 
-                // Use message ordering if available
-                if (order !== undefined) {
-                    console.log(`Received chat message with order ${order}:`, content.substring(0, 50) + '...');
-                    appendToAgentMessage(content, run_id, node_id, order);
-                } else {
-                    // Fallback to old behavior for messages without order
-                    const hasMessages = useChatStore.getState().messagesByRun?.[run_id];
-                    if (!hasMessages) {
-                        startAgentMessage(run_id, node_id);
-                    }
-                    appendToAgentMessage(content, run_id, node_id);
-                }
+                console.log(`Received chat message:`, content.substring(0, 50) + '...');
+                
+                // Add the message with timestamp-based ordering
+                addAgentMessage(content, run_id, node_id);
+                
+                // Sort messages to maintain order
+                useChatStore.getState().sortMessages(run_id);
             }
 
             if (message.event === 'TeamToolCallCompleted') {
@@ -257,7 +251,7 @@ export function useSmartWebSocketListener(flowId: string) {
             nodeExecutionState.clear();
             cleanupExecutionGlow();
         };
-    }, [flowId, onMessage, getNode, updateNodeVariable, addOrUpdateMockNode, setMockConnections, setHasMockData, setMockResultForNode, startAgentMessage, appendToAgentMessage]);
+    }, [flowId, onMessage, getNode, updateNodeVariable, addOrUpdateMockNode, setMockConnections, setHasMockData, setMockResultForNode, addAgentMessage]);
 
     function cleanupExecutionGlow() {
         const elements = document.querySelectorAll('[data-node-id]');

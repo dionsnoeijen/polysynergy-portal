@@ -32,6 +32,7 @@ export function useSmartWebSocketListener(flowId: string) {
     const setHasMockData = useMockStore((state) => state.setHasMockData);
     const setMockResultForNode = useMockStore((state) => state.setMockResultForNode);
     const addAgentMessage = useChatStore((state) => state.addAgentMessage);
+    const fireRunCompleted = useChatStore((state) => state.fireRunCompleted);
 
     const websocketUrl = flowId ? `${config.WEBSOCKET_URL}/execution/${flowId}` : '';
 
@@ -84,7 +85,7 @@ export function useSmartWebSocketListener(flowId: string) {
             if (eventType === 'run_start') {
                 cleanupExecutionGlow();
                 useChatStore.getState().setActiveRunId(message.run_id as string);
-                useChatStore.getState().clearChatStore(message.run_id);
+                // Don't clear the chat store - keep existing messages visible
                 return;
             }
 
@@ -106,6 +107,12 @@ export function useSmartWebSocketListener(flowId: string) {
             }
 
             if (eventType === 'run_end') {
+                // Fire run completion event for chat history reload
+                if (message.run_id) {
+                    console.log(`Firing run completion event for run: ${message.run_id}`);
+                    fireRunCompleted(message.run_id);
+                }
+                
                 setTimeout(async () => {
                     const executingEls = document.querySelectorAll('[data-node-id].executing');
                     executingEls.forEach((el) => {
@@ -258,7 +265,7 @@ export function useSmartWebSocketListener(flowId: string) {
             nodeExecutionState.clear();
             cleanupExecutionGlow();
         };
-    }, [flowId, onMessage, getNode, updateNodeVariable, addOrUpdateMockNode, setMockConnections, setHasMockData, setMockResultForNode, addAgentMessage]);
+    }, [flowId, onMessage, getNode, updateNodeVariable, addOrUpdateMockNode, setMockConnections, setHasMockData, setMockResultForNode, addAgentMessage, fireRunCompleted]);
 
     function cleanupExecutionGlow() {
         const elements = document.querySelectorAll('[data-node-id]');

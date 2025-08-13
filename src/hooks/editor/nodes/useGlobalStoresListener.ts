@@ -38,9 +38,15 @@ export default function useGlobalStoreListenersWithImmediateSave() {
         if (!fundamentalId || !type) return;
 
         // ⛔ skip save als type en versie niet matchen met vorige
-        if (last.versionId !== activeVersionId || last.type !== type) {
+        // BUT: Don't skip on first initialization (when last values are null)
+        if ((last.versionId !== activeVersionId || last.type !== type) && last.versionId !== null) {
             lastTypeAndVersionRef.current = {type, versionId: activeVersionId};
             return;
+        }
+        
+        // Initialize tracking for first save
+        if (last.versionId === null) {
+            lastTypeAndVersionRef.current = {type, versionId: activeVersionId};
         }
 
         savingInProgress = true;
@@ -64,19 +70,36 @@ export default function useGlobalStoreListenersWithImmediateSave() {
     
     // Create force save function that cancels debounce and saves immediately
     const forceImmediateSave = useCallback(async () => {
+        console.log('Force save requested...');
+        
         // Cancel any pending debounced save
         if (debounceTimeout) {
             clearTimeout(debounceTimeout);
             debounceTimeout = null;
+            console.log('Cancelled pending debounced save');
         }
         
-        // Wait for any ongoing save to complete, then force immediate save
-        while (savingInProgress) {
+        // Wait for any ongoing save to complete
+        let waitCount = 0;
+        while (savingInProgress && waitCount < 200) { // Max 10 seconds
             await new Promise(resolve => setTimeout(resolve, 50));
+            waitCount++;
         }
+        
+        if (savingInProgress) {
+            console.error('Save still in progress after timeout - forcing anyway');
+        }
+        
+        console.log('Executing immediate save...');
         
         // Force immediate save
-        await doSave();
+        try {
+            await doSave();
+            console.log('Force save completed successfully');
+        } catch (error) {
+            console.error('Force save failed:', error);
+            throw error;
+        }
     }, [doSave]);
     
     // Register the force save function in the store

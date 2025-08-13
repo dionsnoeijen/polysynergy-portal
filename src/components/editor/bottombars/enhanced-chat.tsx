@@ -63,7 +63,11 @@ const EnhancedChat: React.FC = () => {
             
             // Force immediate save before execution to ensure prompt is persisted
             if (forceSave) {
+                console.log('Forcing save before execution...');
                 await forceSave();
+                console.log('Save completed, starting execution...');
+            } else {
+                console.warn('forceSave not available - potential race condition risk');
             }
             
             // Automatically trigger execution after saving the prompt

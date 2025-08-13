@@ -65,9 +65,9 @@ export function useSmartWebSocketListener(flowId: string) {
                 if (!run_id) return;
 
                 if (sequence_id) {
-                    console.log(`Received chat message [${sequence_id}]:`, content.substring(0, 50) + '...');
+                    console.log(`Received chat chunk [${sequence_id}] (${content.length} chars):`, JSON.stringify(content));
                 } else {
-                    console.log(`Received chat message (no sequence):`, content.substring(0, 50) + '...');
+                    console.log(`Received chat chunk (no sequence) (${content.length} chars):`, JSON.stringify(content));
                 }
                 
                 // Add the message with enhanced ordering info

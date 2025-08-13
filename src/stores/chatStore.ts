@@ -47,16 +47,25 @@ const useChatStore = create<ChatStore>((set, get) => ({
         set((state) => {
             const messages = [...(state.messagesByRun[runId] || [])];
             
-            // Find existing agent message from same node or create new one
+            // Find the most recent agent message from the same node to append to
             const lastMessage = messages[messages.length - 1];
-            if (lastMessage && lastMessage.sender === 'agent' && lastMessage.node_id === nodeId && !lastMessage.text.trim()) {
-                // Append to existing empty message
-                lastMessage.text = text;
+            if (lastMessage && 
+                lastMessage.sender === 'agent' && 
+                lastMessage.node_id === nodeId) {
+                
+                // Append to existing message (streaming behavior)
+                lastMessage.text += text;
                 lastMessage.timestamp = Date.now();
-                if (sequence !== undefined) lastMessage.sequence = sequence;
-                if (microtime !== undefined) lastMessage.microtime = microtime;
+                
+                // Keep the original sequence number (first chunk determines order)
+                if (lastMessage.sequence === undefined && sequence !== undefined) {
+                    lastMessage.sequence = sequence;
+                }
+                if (lastMessage.microtime === undefined && microtime !== undefined) {
+                    lastMessage.microtime = microtime;
+                }
             } else {
-                // Create new message with backend ordering info
+                // Create new message (new response starts)
                 messages.push({
                     sender: 'agent', 
                     text, 

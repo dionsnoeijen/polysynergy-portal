@@ -50,6 +50,7 @@ export const useEditorEventHandlers = (contentRef: React.RefObject<HTMLDivElemen
 
     const handleMouseDownDispatch = useCallback((e: React.MouseEvent) => {
         setIsMouseDown(true);
+        
         switch (editorMode) {
             case EditorMode.Pan:
                 handlePanMouseDown(e);

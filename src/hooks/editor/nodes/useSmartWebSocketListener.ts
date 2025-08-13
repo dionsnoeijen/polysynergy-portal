@@ -59,14 +59,21 @@ export function useSmartWebSocketListener(flowId: string) {
             if ((
                 message.event === 'RunResponseContent' ||
                 message.event === 'TeamRunResponseContent') && message.content) {
-                const {run_id, content} = message;
+                const {run_id, content, order} = message;
                 if (!run_id) return;
 
-                const hasMessages = useChatStore.getState().messagesByRun?.[run_id];
-                if (!hasMessages) {
-                    startAgentMessage(run_id, node_id);
+                // Use message ordering if available
+                if (order !== undefined) {
+                    console.log(`Received chat message with order ${order}:`, content.substring(0, 50) + '...');
+                    appendToAgentMessage(content, run_id, node_id, order);
+                } else {
+                    // Fallback to old behavior for messages without order
+                    const hasMessages = useChatStore.getState().messagesByRun?.[run_id];
+                    if (!hasMessages) {
+                        startAgentMessage(run_id, node_id);
+                    }
+                    appendToAgentMessage(content, run_id, node_id);
                 }
-                appendToAgentMessage(content, run_id, node_id);
             }
 
             if (message.event === 'TeamToolCallCompleted') {

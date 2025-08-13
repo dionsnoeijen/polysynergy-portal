@@ -16,6 +16,9 @@ type ExecutionMessage = {
     order?: number;
     run_id?: string;
     content?: string;
+    sequence_id?: number;
+    microtime?: number;
+    message_id?: string;
 };
 
 const groupStates = new Map<string, { count: number, remaining: number }>();
@@ -58,13 +61,17 @@ export function useSmartWebSocketListener(flowId: string) {
             if ((
                 message.event === 'RunResponseContent' ||
                 message.event === 'TeamRunResponseContent') && message.content) {
-                const {run_id, content} = message;
+                const {run_id, content, sequence_id, microtime} = message;
                 if (!run_id) return;
 
-                console.log(`Received chat message:`, content.substring(0, 50) + '...');
+                if (sequence_id) {
+                    console.log(`Received chat message [${sequence_id}]:`, content.substring(0, 50) + '...');
+                } else {
+                    console.log(`Received chat message (no sequence):`, content.substring(0, 50) + '...');
+                }
                 
-                // Add the message with timestamp-based ordering
-                addAgentMessage(content, run_id, node_id);
+                // Add the message with enhanced ordering info
+                addAgentMessage(content, run_id, node_id, sequence_id, microtime);
                 
                 // Sort messages to maintain order
                 useChatStore.getState().sortMessages(run_id);

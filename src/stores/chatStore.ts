@@ -5,14 +5,15 @@ type ChatMessage = {
     text: string;
     node_id?: string;
     timestamp: number;
-    sequence?: number; // Simple incremental sequence per run
+    sequence?: number; // Backend sequence_id for reliable ordering
+    microtime?: number; // Backend precise timestamp
 };
 
 type ChatStore = {
     messagesByRun: Record<string, ChatMessage[]>;
-    sequenceCounters: Record<string, number>; // runId -> next sequence number
+    sequenceCounters: Record<string, number>; // runId -> next sequence number for user messages
     addUserMessage: (text: string, runId: string) => void;
-    addAgentMessage: (text: string, runId: string, nodeId?: string) => void;
+    addAgentMessage: (text: string, runId: string, nodeId?: string, sequence?: number, microtime?: number) => void;
     clearChatStore: (runId?: string) => void;
     activeRunId: string | null;
     setActiveRunId: (runId: string | null) => void;
@@ -42,9 +43,8 @@ const useChatStore = create<ChatStore>((set, get) => ({
             };
         }),
 
-    addAgentMessage: (text, runId, nodeId?) =>
+    addAgentMessage: (text, runId, nodeId?, sequence?, microtime?) =>
         set((state) => {
-            const sequence = (state.sequenceCounters[runId] || 0) + 1;
             const messages = [...(state.messagesByRun[runId] || [])];
             
             // Find existing agent message from same node or create new one
@@ -53,19 +53,24 @@ const useChatStore = create<ChatStore>((set, get) => ({
                 // Append to existing empty message
                 lastMessage.text = text;
                 lastMessage.timestamp = Date.now();
+                if (sequence !== undefined) lastMessage.sequence = sequence;
+                if (microtime !== undefined) lastMessage.microtime = microtime;
             } else {
-                // Create new message
-                messages.push({sender: 'agent', text, node_id: nodeId, timestamp: Date.now(), sequence});
+                // Create new message with backend ordering info
+                messages.push({
+                    sender: 'agent', 
+                    text, 
+                    node_id: nodeId, 
+                    timestamp: Date.now(),
+                    sequence,
+                    microtime
+                });
             }
             
             return {
                 messagesByRun: {
                     ...state.messagesByRun,
                     [runId]: messages,
-                },
-                sequenceCounters: {
-                    ...state.sequenceCounters,
-                    [runId]: sequence,
                 },
             };
         }),
@@ -94,11 +99,17 @@ const useChatStore = create<ChatStore>((set, get) => ({
             const messages = state.messagesByRun[runId];
             if (!messages) return state;
             
-            // Sort by sequence first, then by timestamp as fallback
+            // Sort by backend sequence first, then microtime, then timestamp as fallback
             const sortedMessages = [...messages].sort((a, b) => {
-                if (a.sequence && b.sequence) {
+                // Both have backend sequence - use that
+                if (a.sequence !== undefined && b.sequence !== undefined) {
                     return a.sequence - b.sequence;
                 }
+                // Both have microtime - use that
+                if (a.microtime !== undefined && b.microtime !== undefined) {
+                    return a.microtime - b.microtime;
+                }
+                // Fallback to local timestamp
                 return a.timestamp - b.timestamp;
             });
             

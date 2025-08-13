@@ -55,7 +55,8 @@ The application uses Zustand stores for different domains:
 
 #### API Layer (`src/api/`)
 - RESTful API calls to backend services
-- Uses bearer token authentication
+- Uses bearer token authentication with `getIdToken()` from `@/api/auth/authToken`
+- Base URL: `config.LOCAL_API_URL` (not `config.API_BASE_URL`)
 - Organized by domain (projects, nodes, blueprints, etc.)
 
 ## Key File Locations
@@ -83,6 +84,62 @@ Required environment variables (see `next.config.ts`):
 - `NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL`
 - `NEXT_PUBLIC_POLYSYNERGY_API`
 - `NEXT_PUBLIC_POLYSYNERGY_WEBSOCKET_URL`
+
+## API Development Patterns
+
+### Authentication
+Always use the `getIdToken()` function for API authentication:
+
+```typescript
+import { getIdToken } from '@/api/auth/authToken';
+
+const response = await fetch(`${config.LOCAL_API_URL}/endpoint?project_id=${projectId}`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${getIdToken()}`,
+  },
+  body: JSON.stringify(data)
+});
+```
+
+**Common API Mistakes to Avoid:**
+- ❌ `authToken.getToken()` - authToken object doesn't exist
+- ❌ `config.API_BASE_URL` - use `config.LOCAL_API_URL` instead
+- ❌ `'X-Project-ID': projectId` - use query parameter instead
+- ✅ `getIdToken()` - correct function to use
+- ✅ `config.LOCAL_API_URL` - correct base URL
+- ✅ `?project_id=${projectId}` - project ID as query parameter
+
+### API Client Pattern
+Follow this pattern for API clients:
+
+```typescript
+export function createSomeApi(projectId: string) {
+  const baseUrl = `${config.LOCAL_API_URL}/some-endpoint`;
+  
+  return {
+    async getResource(id: string) {
+      const response = await fetch(`${baseUrl}/${id}?project_id=${projectId}`, {
+        headers: {
+          'Authorization': `Bearer ${getIdToken()}`,
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch resource: ${response.statusText}`);
+      }
+      
+      return response.json();
+    }
+  };
+}
+```
+
+### Error Handling
+- Always check `response.ok` before parsing JSON
+- Provide meaningful error messages
+- Use try/catch in components when calling APIs
 
 ## Code Patterns
 

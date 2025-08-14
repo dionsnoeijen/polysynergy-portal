@@ -65,11 +65,7 @@ export function useSmartWebSocketListener(flowId: string) {
                 const {run_id, content, sequence_id, microtime} = message;
                 if (!run_id) return;
 
-                if (sequence_id) {
-                    console.log(`Received chat chunk [${sequence_id}] (${content.length} chars):`, JSON.stringify(content));
-                } else {
-                    console.log(`Received chat chunk (no sequence) (${content.length} chars):`, JSON.stringify(content));
-                }
+                // Removed excessive chunk logging - was causing console spam
                 
                 // Add the message with enhanced ordering info
                 addAgentMessage(content, run_id, node_id, sequence_id, microtime);

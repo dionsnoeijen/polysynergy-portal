@@ -87,7 +87,7 @@ const EditDictVariable: React.FC<Props> = ({
                 </div>
             )}
             <div>
-                <Table dense bleed grid>
+                <Table dense bleed>
                     <TableHead>
                         <TableRow>
                             {!(dock && dock.in_switch === false) && <TableHeader>In</TableHeader>}

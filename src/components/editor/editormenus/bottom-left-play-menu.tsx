@@ -58,6 +58,7 @@ export default function BottomLeftPlayMenu() {
     };
 
     const getNodeDisplayName = (node: any) => {
+        if (!node) return 'Play';
         const title = getNodeVariable(node.id, "title")?.value as string;
         return title?.trim() || `Play ${node.handle}`;
     };
@@ -76,7 +77,7 @@ export default function BottomLeftPlayMenu() {
                         <button 
                             disabled={!selectedPlayNode && !mainPlayNode}
                             className="hover:bg-sky-200 p-1 rounded-l-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed" 
-                            title={`Play ${getNodeDisplayName(selectedPlayNode || mainPlayNode)}`}
+                            title={selectedPlayNode || mainPlayNode ? `Play ${getNodeDisplayName(selectedPlayNode || mainPlayNode)}` : 'Play'}
                             onClick={handlePlayClick}
                         >
                             <PlayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
@@ -127,7 +128,7 @@ export default function BottomLeftPlayMenu() {
                     <button 
                         disabled={!mainPlayNode}
                         className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed" 
-                        title={`Play ${getNodeDisplayName(mainPlayNode)}`}
+                        title={mainPlayNode ? `Play ${getNodeDisplayName(mainPlayNode)}` : 'Play'}
                         onClick={handlePlayClick}
                     >
                         <PlayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>

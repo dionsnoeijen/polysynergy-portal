@@ -74,6 +74,7 @@ export const useEditorState = (isMouseDown?: boolean) => {
         isDraft,
         editorMode,
         activeVersionId,
+        isExecuting,
         
         // Derived state
         nodesToRender,

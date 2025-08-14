@@ -63,7 +63,7 @@ const VariableTypeAvatar: React.FC<Props> = ({
                 <Label>{variable.handle}</Label>
                 <Field>
                     <button
-                        className={`${categoryBackgroundColor} w-full pb-1 ring-1 rounded-md dark:text-white/50 ${categoryBorder} ${isGenerating && "opacity-60 cursor-wait"}`}
+                        className={`w-full pb-1 ring-1 rounded-md dark:text-white/50 bg-transparent dark:bg-white/5 border border-zinc-950/20 dark:border-white/10 relative before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.md)-1px)] before:bg-zinc-50 before:shadow dark:before:hidden ${isGenerating && "opacity-60 cursor-wait"}`}
                         onClick={() => onEdit(nodeId)}
                         disabled={isGenerating}
                     >

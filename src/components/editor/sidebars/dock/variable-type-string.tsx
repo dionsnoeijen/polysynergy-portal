@@ -60,7 +60,7 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
                                 disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
                                 onChange={handleChange}
                                 defaultValue={variable.value as string}
-                                className={`${categoryBackgroundColor} rounded-md dark:text-white ${categoryBorder}`}
+                                className="dark:text-white"
                             >
                                 {Object.entries(variable.dock.select_values).map(([key, v]) => (
                                 <option key={key} value={key}>{v}</option>
@@ -74,7 +74,7 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
                                 onChange={handleChange}
                                 placeholder={variable.handle}
                                 aria-label={variable.handle}
-                                className={`${categoryBackgroundColor} rounded-md dark:text-white ${categoryBorder}`}
+                                className="dark:text-white"
                             />
                         )}
                         </FieldGroup>

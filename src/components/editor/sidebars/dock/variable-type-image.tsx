@@ -59,7 +59,7 @@ const VariableTypeImage: React.FC<VariableTypeProps> = ({
     }, [variable, onChange]);
 
     return (
-        <div className={`rounded p-6 relative ${categoryBorder} ${categoryBackgroundColor}`}>
+        <div className={`rounded p-6 relative ${categoryBorder} bg-white dark:bg-zinc-800`}>
             <Fieldset>
                 <FieldGroup>
                     <Field>

@@ -43,7 +43,7 @@ const NodeHandle: React.FC<Props> = ({
                     value={node.handle as string || ""}
                     onChange={handleChange}
                     placeholder={'handle'}
-                    className={`${categoryBackgroundColor} rounded-md dark:text-white ${categoryBorder}`}
+                    className="dark:text-white"
                 />
             </Field>
         </Fieldset>

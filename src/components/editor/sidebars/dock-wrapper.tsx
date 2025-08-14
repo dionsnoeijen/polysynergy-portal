@@ -85,11 +85,15 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
     const isNodeInService = useNodesStore((state) => state.isNodeInService([node?.id ?? ""]));
     const isService = !!node?.service?.id || isNodeInService;
 
-    const categoryBorder = getCategoryBorderColor(category, isService ? NodeSubType.Service : undefined);
-    const categoryBackground = getCategoryPlaneBackgroundColor(category, false, isService ? NodeSubType.Service : undefined);
+    // Use neutral styling for individual dock variable types
+    const categoryBorder = 'border border-zinc-950/20 dark:border-white/10';
+    const categoryBackground = 'bg-white dark:bg-zinc-800 shadow-sm';
     const categoryGradientBackground = getCategoryGradientBackgroundColor(category, isService ? NodeSubType.Service : undefined);
     const categoryMainTextColor = getCategoryTextColor('main', category, isService ? NodeSubType.Service : undefined);
     const categorySubTextColor = getCategoryTextColor('sub', category, isService ? NodeSubType.Service : undefined);
+    
+    // Keep colored borders for container boxes (VariableGroup)
+    const categoryContainerBorder = getCategoryBorderColor(category, isService ? NodeSubType.Service : undefined);
 
     const {group, variablesForGroup} = useVariablesForGroup(
         openedGroup || (node?.id ?? null),
@@ -134,7 +138,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
 
             {node && <VariableGroup
                 title={'Handle'}
-                categoryBorderColor={categoryBorder}
+                categoryBorderColor={categoryContainerBorder}
                 categoryMainTextColor={categoryMainTextColor}
                 categorySubTextColor={categorySubTextColor}
                 categoryBackgroundColor={categoryBackground}
@@ -165,7 +169,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
                     <VariableGroup
                         title={node.name}
                         version={node.version || 0.0}
-                        categoryBorderColor={categoryBorder}
+                        categoryBorderColor={categoryContainerBorder}
                         categoryMainTextColor={categoryMainTextColor}
                         categorySubTextColor={categorySubTextColor}
                         categoryBackgroundColor={categoryBackground}
@@ -200,7 +204,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
                 <>
                     <VariableGroup
                         title={group.name}
-                        categoryBorderColor={categoryBorder}
+                        categoryBorderColor={categoryContainerBorder}
                         categoryMainTextColor={categoryMainTextColor}
                         categorySubTextColor={categorySubTextColor}
                         categoryBackgroundColor={categoryBackground}
@@ -212,7 +216,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
                         {variablesForGroup?.inVariables && variablesForGroup?.inVariables.length > 0 && (
                             <VariableGroup
                                 title="In Variables"
-                                categoryBorderColor={categoryBorder}
+                                categoryBorderColor={categoryContainerBorder}
                                 categoryMainTextColor={categoryMainTextColor}
                                 categorySubTextColor={categorySubTextColor}
                                 categoryBackgroundColor={categoryBackground}
@@ -265,7 +269,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
                         {variablesForGroup?.outVariables && variablesForGroup?.outVariables.length > 0 && (
                             <VariableGroup
                                 title="Out Variables"
-                                categoryBorderColor={categoryBorder}
+                                categoryBorderColor={categoryContainerBorder}
                                 categoryMainTextColor={categoryMainTextColor}
                                 categorySubTextColor={categorySubTextColor}
                                 categoryBackgroundColor={categoryBackground}

@@ -45,7 +45,7 @@ const VariableTypeJson: React.FC<VariableTypeProps> = ({
                     {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
                     <Field>
                         <button
-                            className={`${categoryBackgroundColor} w-full pb-1 ring-1 rounded-md dark:text-white ${categoryBorder}`}
+                            className="w-full pb-1 ring-1 rounded-md dark:text-white bg-transparent dark:bg-white/5 border border-zinc-950/20 dark:border-white/10 relative before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.md)-1px)] before:bg-zinc-50 before:shadow dark:before:hidden"
                             onClick={() => onEdit(nodeId)}
                         >
                             <PencilIcon className="w-4 h-4 inline text-sky-700/50 dark:text-white/50"/>

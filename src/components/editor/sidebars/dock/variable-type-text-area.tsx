@@ -45,7 +45,7 @@ const VariableTypeTextArea: React.FC<VariableTypeProps> = ({
                                 placeholder={variable.handle}
                                 aria-label={variable.handle}
                                 defaultValue={variable.value as string || ""}
-                                className={`${categoryBorder} ${categoryBackgroundColor} rounded-[.5rem]`}
+                                className="dark:text-white"
                             />
                         </Field>
                     </Fieldset>

@@ -47,6 +47,7 @@ export default function Editor() {
         activeVersionId,
         nodesToRender,
         openGroups,
+        isExecuting,
         connections,
         connectionStatus,
         containerClass
@@ -70,21 +71,14 @@ export default function Editor() {
             ref={contentRef}
         >
             <EditorIntroTour/>
-            {!isDraft && (
+            
+            {/* Execution Glow - Pulserende Rand */}
+            {isExecuting && (
                 <div
-                    className={`absolute top-0 left-0 w-full h-full z-20 pointer-events-auto 
-                        shadow-[inset_0_0_15px_5px_rgba(34,197,94,0.7)]
-                        ${isInteracted ? "bg-transparent" : "bg-green-500/40"}`}
-                    onClick={() => setIsInteracted(true)}
-                >
-                    {!isInteracted && (
-                        <div className="absolute inset-0 flex items-center justify-center z-50 text-white text-lg font-semibold text-center px-4
-                            shadow-lg shadow-black/50"
-                        >
-                            This version is live and cannot be edited. Create a new draft to make changes.
-                        </div>
-                    )}
-                </div>
+                    className="absolute top-0 left-0 w-full h-full z-20 pointer-events-none
+                               bg-transparent
+                               draft-executing"
+                />
             )}
 
             <IsExecuting connectionStatus={connectionStatus} />

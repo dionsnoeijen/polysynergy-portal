@@ -47,7 +47,7 @@ const VariableTypeBytes: React.FC<VariableTypeProps> = ({
                             placeholder={variable.handle}
                             aria-label={variable.handle}
                             defaultValue={variable.value as string || ""}
-                            className={`${categoryBorder}`}
+                            className=""
                         />
                     </Field>
                 </Fieldset>

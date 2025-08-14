@@ -55,7 +55,7 @@ const VariableTypeBoolean: React.FC<VariableTypeProps> = ({
                                 name={variable.handle}
                                 checked={!!displayValue}
                                 onChange={handleChange}
-                                className={`${categoryBorder}`}
+                                className=""
                             />
                         </CheckboxField>
                     </Field>

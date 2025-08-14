@@ -14,6 +14,7 @@ import VersionPublishedMenu from "@/components/editor/editormenus/version-publis
 import TopLeftEditorMenu from "@/components/editor/editormenus/top-left-editor-menu";
 import TopRightEditorListener from "@/components/editor/editormenus/top-right-editor-listener";
 import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
+import BottomLeftPlayMenu from "@/components/editor/editormenus/bottom-left-play-menu";
 import ItemManagerIntroTour from "@/components/guidedtour/item-manager-intro-tour";
 
 import { useLayoutPanels } from "@/hooks/editor/useLayoutPanels";
@@ -148,6 +149,7 @@ const EditorLayout = ({
                                         <TopRightEditorListener/>
                                         <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
                                         <VersionPublishedMenu/>
+                                        <BottomLeftPlayMenu/>
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">

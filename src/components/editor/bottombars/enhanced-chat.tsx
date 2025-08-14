@@ -410,12 +410,12 @@ const EnhancedChat: React.FC = () => {
                     </div>
                 )}
                 
-                {messages.map((msg, i) => (
+                {messages.filter(msg => msg.text.trim()).map((msg, i) => (
                     <div
                         key={i}
                         className={msg.sender === "user" ? "flex justify-end" : "flex justify-start items-start space-x-2"}
                     >
-                        {/* Agent avatar */}
+                        {/* Agent avatar - only show if message has actual content */}
                         {msg.sender === "agent" && agentInfo?.avatar && (
                             <div className="flex-shrink-0 mt-1">
                                 <img 

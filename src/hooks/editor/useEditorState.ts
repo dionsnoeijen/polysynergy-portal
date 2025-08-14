@@ -29,7 +29,7 @@ export const useEditorState = (isMouseDown?: boolean) => {
 
     // Derived state
     const nodesToRender = useMemo(() => getNodesToRender(), [getNodesToRender, nodes]);
-    const openGroups = useMemo(() => getOpenGroups(), [getOpenGroups]);
+    const openGroups = useMemo(() => getOpenGroups(), [getOpenGroups, nodes]);
 
     // WebSocket connection
     const { connectionStatus, isConnected } = useSmartWebSocketListener(activeVersionId as string);

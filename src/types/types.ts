@@ -61,6 +61,7 @@ export enum FormType {
     AddProjectEnvVar = 'addProjectEnvVar',
     EditProjectEnvVar = 'editProjectEnvVar',
     ExportSharing = 'exportSharing',
+    PlayButtonsForm = 'playButtonsForm',
 }
 
 export enum InOut {

@@ -3,11 +3,9 @@
 import React from 'react';
 import useEditorStore from '@/stores/editorStore';
 import useDocumentationStore from '@/stores/documentationStore';
-import useNodesStore from '@/stores/nodesStore';
 import useMockStore from '@/stores/mockStore';
 import SavingIndicator from '@/components/saving-indicator';
 import {FormType} from '@/types/types';
-import {useHandlePlay} from '@/hooks/editor/useHandlePlay';
 
 import {
     Bars3Icon, 
@@ -15,7 +13,8 @@ import {
     PlayIcon,
     ArrowUturnUpIcon,
     AdjustmentsHorizontalIcon,
-    BookOpenIcon
+    BookOpenIcon,
+    RocketLaunchIcon
 } from '@heroicons/react/24/outline';
 
 export default function VersionPublishedMenu() {
@@ -26,9 +25,6 @@ export default function VersionPublishedMenu() {
     
     const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
     const fetchCategories = useDocumentationStore((state) => state.fetchCategories);
-    
-    const mainPlayNode = useNodesStore((state) => state.findMainPlayNode());
-    const handlePlay = useHandlePlay();
     
     const hasMockData = useMockStore((state) => state.hasMockData);
     const clearMockStore = useMockStore((state) => state.clearMockStore);
@@ -42,17 +38,6 @@ export default function VersionPublishedMenu() {
     return (
         <div
             className="absolute bottom-5 right-5 flex items-center gap-2 p-2 bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-xl z-20">
-            
-            {/* Play Button */}
-            <button 
-                disabled={!mainPlayNode}
-                className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed" 
-                title="Play" 
-                onClick={(e) => mainPlayNode && handlePlay(e, mainPlayNode.id)}
-                data-tour-id="main-play-button"
-            >
-                <PlayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
-            </button>
             
             {/* Clear Mock Data Button */}
             <button 
@@ -79,6 +64,16 @@ export default function VersionPublishedMenu() {
                 <AdjustmentsHorizontalIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
             </button>
             
+            {/* Play Buttons Button */}
+            <button 
+                className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" 
+                title="Play buttons" 
+                onClick={() => openForm(FormType.PlayButtonsForm)}
+                data-tour-id="play-buttons-button"
+            >
+                <PlayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+            </button>
+            
             {/* Documentation Button */}
             <button 
                 className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" 
@@ -98,8 +93,8 @@ export default function VersionPublishedMenu() {
             </button>
             
             {/* Publish Button */}
-            <button className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" title="Show the publish overview" onClick={() => openForm(FormType.ProjectPublish)}>
-                <Bars3Icon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+            <button className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" title="Publish" onClick={() => openForm(FormType.ProjectPublish)}>
+                <RocketLaunchIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
             </button>
             
             <SavingIndicator isSaving={isSaving}/>

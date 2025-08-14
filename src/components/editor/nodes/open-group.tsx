@@ -47,9 +47,13 @@ const OpenGroup: React.FC<GroupProps> = ({node}): null | React.ReactElement => {
             if (!node.group || !node.group.nodes) return;
             const {minX, minY, maxX, maxY, foundAny} = getNodeBoundsFromDOM(node.group.nodes);
             if (!foundAny) {
-                requestAnimationFrame(() => {
-                    setTick((t) => t + 1);
-                });
+                // Retry up to 10 times with increasing delays
+                const retryCount = (tick % 100) || 0;
+                if (retryCount < 10) {
+                    setTimeout(() => {
+                        setTick((t) => t + 1);
+                    }, Math.min(50 * (retryCount + 1), 500));
+                }
             } else {
                 setBounds({minX, minY, maxX, maxY});
             }

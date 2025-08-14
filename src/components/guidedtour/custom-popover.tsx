@@ -37,32 +37,32 @@ export default function CustomPopover({
     };
 
     return (
-        <div className="bg-zinc-900 text-white border border-white/10 rounded-sm shadow-xl max-w-xs p-4 relative">
+        <div className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white border-2 border-zinc-300 dark:border-zinc-600 rounded-lg shadow-2xl backdrop-blur-sm max-w-xs p-4 relative">
             <button
                 onClick={handleClose}
-                className="absolute top-2 right-2 text-zinc-400 hover:text-zinc-100"
+                className="absolute top-2 right-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-100"
             >
                 <XMarkIcon className="w-5 h-5"/>
             </button>
 
-            <div className="text-sm mb-4">
+            <div className="text-sm mb-4 font-medium">
                 {content ?? null}
             </div>
 
-            <div className="flex justify-between items-center border-t border-zinc-800 pt-3 text-xs">
+            <div className="flex justify-between items-center border-t border-zinc-200 dark:border-zinc-700 pt-3 text-xs">
                 <button
                     onClick={handleBack}
                     disabled={isFirstStep}
-                    className="text-blue-400 hover:text-blue-300 disabled:opacity-30"
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 disabled:opacity-30 font-semibold"
                 >
                     Back
                 </button>
-                <span className="text-zinc-400">
+                <span className="text-zinc-600 dark:text-zinc-400 font-medium">
                     {currentStep + 1} / {steps.length}
                 </span>
                 <button
                     onClick={handleNext}
-                    className="text-blue-400 hover:text-blue-300"
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold"
                 >
                     {isLastStep ? 'Close' : 'Next'}
                 </button>

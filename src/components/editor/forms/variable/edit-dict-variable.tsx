@@ -5,7 +5,7 @@ import {Switch} from "@/components/switch";
 import {Input} from "@/components/input";
 import {Select} from "@/components/select";
 import {Button} from "@/components/button";
-import {PlusIcon, TrashIcon, BoltIcon} from "@heroicons/react/24/outline";
+import {PlusIcon, TrashIcon, BoltIcon, ArrowRightCircleIcon} from "@heroicons/react/24/outline";
 import {Node, Dock, FormType, NodeVariable, NodeVariableType} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import useConnectionsStore from "@/stores/connectionsStore";
@@ -71,6 +71,12 @@ const EditDictVariable: React.FC<Props> = ({
 
     const removeVariable = (index: number) => {
         onChange(variables.filter((_, i) => i !== index), handle); // Stuur handle mee
+    };
+
+    const togglePublish = (index: number) => {
+        const updatedVariables = [...variables];
+        updatedVariables[index] = {...updatedVariables[index], published: !updatedVariables[index].published};
+        onChange(updatedVariables, handle);
     };
 
     return (
@@ -162,12 +168,21 @@ const EditDictVariable: React.FC<Props> = ({
                                     </TableCell>}
                                     <TableCell>
                                         {formType !== FormType.PublishedVariableForm && (
-                                            <>
+                                            <div className="flex gap-1">
+                                                <Button 
+                                                    plain 
+                                                    onClick={() => togglePublish(index)}
+                                                    disabled={rowDisabled}
+                                                    title={variable.published ? "Unpublish variable" : "Publish variable"}
+                                                    className={variable.published ? 'text-sky-600 hover:text-sky-700' : ''}
+                                                >
+                                                    <ArrowRightCircleIcon className="w-4 h-4"/>
+                                                </Button>
                                                 <Button plain onClick={() => removeVariable(index)}
                                                         disabled={rowDisabled}>
                                                     <TrashIcon className="w-4 h-4"/>
                                                 </Button>
-                                            </>
+                                            </div>
                                         )}
                                     </TableCell>
                                 </TableRow>

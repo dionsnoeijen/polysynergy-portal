@@ -13,14 +13,7 @@ type Props = React.ComponentPropsWithoutRef<"div"> & {
 
 const DockTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
     const isExecuting = useEditorStore((state) => state.isExecuting);
-    const [selectedIndex, setSelectedIndex] = useState(0);
-
-    // Auto-switch to Output tab when execution starts
-    useEffect(() => {
-        if (isExecuting && typeof isExecuting === 'string') {
-            setSelectedIndex(1); // Switch to Output tab (index 1)
-        }
-    }, [isExecuting]);
+    const [selectedIndex, setSelectedIndex] = useState(0); // Always default to Variables tab (index 0)
 
     const tabs = [
         {

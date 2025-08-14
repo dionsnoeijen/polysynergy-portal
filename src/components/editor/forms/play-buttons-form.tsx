@@ -1,5 +1,5 @@
 import {Node, NodeVariable, NodeVariableType} from "@/types/types";
-import React, {useEffect, useMemo, useState, useRef} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
 import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
@@ -9,8 +9,9 @@ import {Subheading} from "@/components/heading";
 import {Text} from "@/components/text";
 import {Button} from "@/components/button";
 import {Divider} from "@/components/divider";
-import {LinkIcon} from "@heroicons/react/24/outline";
+import {PlayIcon, XMarkIcon, ArrowLeftIcon} from "@heroicons/react/24/outline";
 import {Input} from "@/components/input";
+import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
 
 import {VariableTypeComponents} from "@/components/editor/sidebars/dock";
 
@@ -22,8 +23,10 @@ import useEditorStore from "@/stores/editorStore";
 
 import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
 import {createProjectSecretAPI, updateProjectSecretAPI} from "@/api/secretsApi";
+import {Select} from "@/components/select";
 import useEnvVarsStore from "@/stores/envVarsStore";
 import IsExecuting from "@/components/editor/is-executing";
+import {Heading} from "@/components/heading";
 
 type VariableIdentifier = {
     variable: NodeVariable;
@@ -32,61 +35,53 @@ type VariableIdentifier = {
     nodeServiceVariant?: number;
 }
 
-type Props = { nodes: Node[]; };
-
-type GroupedPublishedVariable = {
-    playConfigNode?: Node;
-    variables: VariableIdentifier[];
-};
-
-type TabItem = {
-    key: string;
-    title: string;
-    info: string;
-    group: GroupedPublishedVariable;
-};
-
 const SECRET_IDENTIFIER = 'secret::internal';
 const ENV_IDENTIFIER = 'env::internal';
 const SECRET_EXISTS = 0;
 const SECRET_MUST_BE_CREATED = 1;
 
-const PublishedVariables: React.FC<Props> = ({
-                                                 nodes,
-                                             }) => {
-    const leadsToPlayConfig = useNodesStore((state) => state.leadsToPlayConfig);
-    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
-
+const PlayButtonsForm: React.FC = () => {
+    const closeForm = useEditorStore((state) => state.closeForm);
+    const getNodes = useNodesStore((state) => state.getNodes);
     const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
     const getSecretNodes = useNodesStore((state) => state.getSecretNodes);
     const getEnvironmentVariableNodes = useNodesStore((state) => state.getEnvironmentVariableNodes);
+    const leadsToPlayConfig = useNodesStore((state) => state.leadsToPlayConfig);
+    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
     const secrets = useProjectSecretsStore((state) => state.secrets);
+    const getMockResultForNode = useMockStore((state) => state.getMockResultForNode);
+    const handlePlay = useHandlePlay();
 
     const stages = useStagesStore((state) => state.stages);
-
     const fetchSecrets = useProjectSecretsStore((state) => state.fetchSecrets);
     const envVars = useEnvVarsStore((state) => state.envVars);
     const fetchEnvVars = useEnvVarsStore((state) => state.fetchEnvVars);
-
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
 
+    const [selectedPlayButton, setSelectedPlayButton] = useState<Node | null>(null);
+    const [selectedStage, setSelectedStage] = useState("mock");
+    const [playButtons, setPlayButtons] = useState<Node[]>([]);
     const [publishedVariables, setPublishedVariables] = useState<VariableIdentifier[]>([]);
     const [dictVariables, setDictVariables] = useState<{ [nodeId: string]: { [handle: string]: NodeVariable[] } }>({});
     const [simpleVariables, setSimpleVariables] = useState<{ [nodeId: string]: { [handle: string]: string } }>({});
     const [secretVariables, setSecretVariables] = useState<{ key: string, value: string }[]>([]);
-    // eslint-disable-next-line
     const [envVariables, setEnvVariables] = useState<{ key: string; value: string }[]>([]);
-
-    const hasInitializedTabs = useRef(false);
 
     useEffect(() => {
         fetchSecretsWithRetry(fetchSecrets);
         fetchEnvVars();
     }, [fetchSecrets, fetchEnvVars]);
 
-    const [tabs, setTabs] = useState<TabItem[]>([]);
-    const [activeTabKey, setActiveTabKey] = useState<string>("default");
+    // Get play button nodes
+    useEffect(() => {
+        const nodes = getNodes();
+        const playButtonNodes = nodes.filter((node) => 
+            node.path === 'polysynergy_nodes.play.config.PlayConfig' || 
+            node.path === 'polysynergy_nodes.play.play.Play'
+        );
+        setPlayButtons(playButtonNodes);
+    }, [getNodes]);
 
     const syncMap = useMemo(() => {
         const map = new Map<string, { nodeId: string; handle: string }[]>();
@@ -117,7 +112,7 @@ const PublishedVariables: React.FC<Props> = ({
         const synced = key ? syncMap.get(key) || [{nodeId, handle}] : [{nodeId, handle}];
 
         for (const {nodeId, handle} of synced) {
-            updateNodeVariable(nodeId, handle, updatedVariables); // realtime update
+            updateNodeVariable(nodeId, handle, updatedVariables);
         }
 
         setDictVariables((prev) => {
@@ -194,12 +189,22 @@ const PublishedVariables: React.FC<Props> = ({
         }
     };
 
-    useEffect(() => {
+    const handlePlayButtonClick = (playButtonNode: Node) => {
+        setSelectedPlayButton(playButtonNode);
+        
+        // Load variables for this specific play button
+        const nodes = getNodes();
         const initialDictVariables: { [nodeId: string]: { [handle: string]: NodeVariable[] } } = {};
         const initialSimpleVariables: { [nodeId: string]: { [handle: string]: string } } = {};
         const pubVariables: VariableIdentifier[] = [];
 
+        // Find all published variables that lead to this specific play button
         nodes.forEach((node) => {
+            // Check if this node's variables lead to our play button
+            const leadsToNode = leadsToPlayConfig(node.id);
+            const leadsToOurPlayButton = leadsToNode?.id === playButtonNode.id;
+            if (!leadsToOurPlayButton) return;
+
             const dictVariables = node.variables.filter(
                 (variable) => variable.type === NodeVariableType.Dict
             );
@@ -256,40 +261,13 @@ const PublishedVariables: React.FC<Props> = ({
             }
         });
 
-        setDictVariables(initialDictVariables);
-        setSimpleVariables(initialSimpleVariables);
-        setPublishedVariables(pubVariables);
-
-        const tabItems: TabItem[] = [];
-
-        const configTab: TabItem = {
-            key: "config",
-            title: "Configuration",
-            info: "",
-            group: {
-                playConfigNode: undefined,
-                variables: []
-            }
-        };
-
-        const secretsTab: TabItem = {
-            key: "secrets",
-            title: "Secrets",
-            info: "Sensitive data, such as passwords or API keys, are created as a secret.",
-            group: {
-                playConfigNode: undefined,
-                variables: []
-            }
-        };
-
-        // Put ALL published variables in the configuration tab
-        for (const pv of pubVariables) {
-            configTab.group.variables.push(pv);
-        }
-
-        // Put ALL secrets in the secrets tab
+        // Also include secrets that might be used by this play button
         const secretNodes = getSecretNodes();
         secretNodes.forEach((node) => {
+            const leadsToNode = leadsToPlayConfig(node.id);
+            const leadsToOurPlayButton = leadsToNode?.id === playButtonNode.id;
+            if (!leadsToOurPlayButton) return;
+
             node.variables.forEach((variable: NodeVariable) => {
                 const exists = secrets.find((s) => s.key === variable.value);
                 const secretVar = {
@@ -298,13 +276,17 @@ const PublishedVariables: React.FC<Props> = ({
                     nodeServiceHandle: SECRET_IDENTIFIER,
                     nodeServiceVariant: exists ? SECRET_EXISTS : SECRET_MUST_BE_CREATED,
                 };
-                secretsTab.group.variables.push(secretVar);
+                pubVariables.push(secretVar);
             });
         });
 
-        // Put ALL environment variables in the configuration tab
+        // Include environment variables
         const environmentVariableNodes = getEnvironmentVariableNodes();
         environmentVariableNodes.forEach((node) => {
+            const leadsToNode = leadsToPlayConfig(node.id);
+            const leadsToOurPlayButton = leadsToNode?.id === playButtonNode.id;
+            if (!leadsToOurPlayButton) return;
+
             node.variables.forEach((variable: NodeVariable) => {
                 const matching = envVars.find((v) => v.key === variable.value);
 
@@ -316,75 +298,115 @@ const PublishedVariables: React.FC<Props> = ({
                     nodeServiceHandle: ENV_IDENTIFIER,
                     nodeServiceVariant: 0,
                 };
-                configTab.group.variables.push(envVarItem);
+                pubVariables.push(envVarItem);
             });
         });
 
-        tabItems.push(configTab);
-        tabItems.push(secretsTab);
+        setDictVariables(initialDictVariables);
+        setSimpleVariables(initialSimpleVariables);
+        setPublishedVariables(pubVariables);
+    };
 
-        setTabs(tabItems);
+    const handleBackToGrid = () => {
+        setSelectedPlayButton(null);
+        setPublishedVariables([]);
+        setDictVariables({});
+        setSimpleVariables({});
+    };
 
-        if (!hasInitializedTabs.current) {
-            setActiveTabKey(tabItems[0]?.key ?? "default");
-            hasInitializedTabs.current = true;
-        }
-        // eslint-disable-next-line
-    }, [
-        getNodeVariable,
-        getSecretNodes,
-        leadsToPlayConfig,
-        nodes,
-        secrets,
-        setPublishedVariables,
-        setSimpleVariables,
-        setDictVariables
-    ]);
+    // If no play button is selected, show the grid
+    if (!selectedPlayButton) {
+        return (
+            <div className="flex flex-col gap-4 relative p-10">
+                <IsExecuting/>
 
-    const activeTab = tabs.find((tab) => tab.key === activeTabKey);
+                {/* Header */}
+                <div className="flex items-center justify-between gap-4 mb-6">
+                    <Heading>Play Buttons</Heading>
+                    <Button type="button" onClick={() => closeForm()} color="sky">
+                        <XMarkIcon className="w-5 h-5" />
+                    </Button>
+                </div>
+
+                <Divider className="my-4" soft bleed />
+
+                {/* Play Buttons Grid */}
+                {playButtons.length === 0 ? (
+                    <div className="rounded-md border border-sky-500/50 dark:border-white/10 p-4 text-sky-500 dark:text-white/60 text-sm italic">
+                        No play buttons found in this workflow
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {playButtons.map((node) => {
+                            const title = getNodeVariable(node.id, "title")?.value as string;
+                            const fallbackTitle = `Play ${node.handle}`;
+                            
+                            return (
+                                <div
+                                    key={node.id}
+                                    className="border border-sky-500/50 dark:border-white/10 rounded-lg p-4 bg-sky-50 dark:bg-white/5 hover:bg-sky-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                                    onClick={() => handlePlayButtonClick(node)}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-shrink-0 w-10 h-10 bg-sky-500 dark:bg-white/20 rounded-full flex items-center justify-center">
+                                            <PlayIcon className="w-5 h-5 text-white dark:text-white" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-medium text-sky-700 dark:text-white truncate">
+                                                {title?.trim() || fallbackTitle}
+                                            </div>
+                                            <div className="text-xs text-sky-500 dark:text-white/70 truncate">
+                                                {node.handle}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // If a play button is selected, show its variables
+    const title = getNodeVariable(selectedPlayButton.id, "title")?.value as string;
+    const fallbackTitle = `Play ${selectedPlayButton.handle}`;
+    const displayTitle = title?.trim() || fallbackTitle;
+    const result = getMockResultForNode?.(selectedPlayButton.id);
 
     return (
-        <div className="flex flex-col gap-4 relative">
+        <div className="flex flex-col gap-4 relative p-10">
             <IsExecuting/>
 
-            <div className="mb-4 flex gap-2 border-b border-sky-500/50 dark:border-white/10">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab.key}
-                        type="button"
-                        className={`px-4 py-2 text-sm font-medium transition ${
-                            activeTabKey === tab.key
-                                ? "border-b-2 border-sky-500 dark:border-white text-sky-600 dark:text-white"
-                                : "border-b border-sky-500/50 dark:text-white/60 dark:hover:text-white text-sky-500"
-                        }`}
-                        onClick={() => setActiveTabKey(tab.key)}
+            {/* Header */}
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                    <button 
+                        type="button" 
+                        onClick={handleBackToGrid}
+                        className="p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800 transition-colors"
                     >
-                        {tab.title}
+                        <ArrowLeftIcon className="w-4 h-4" />
                     </button>
-                ))}
+                    <Heading>{displayTitle}</Heading>
+                </div>
+                <Button type="button" onClick={() => closeForm()} color="sky">
+                    <XMarkIcon className="w-5 h-5" />
+                </Button>
             </div>
 
-            {activeTab?.info && (
-                <div className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4">
-                    <Text dangerouslySetInnerHTML={{__html: activeTab.info}}/>
-                </div>
-            )}
+            <Divider className="my-4" soft bleed />
 
-            {!activeTab || activeTab?.group.variables.length === 0 ? (
-                <div
-                    className="rounded-md border border-sky-500/50 dark:border-white/10 p-4 text-sky-500 dark:text-white/60 text-sm italic">
-                    No published variables
+            {/* Variables */}
+            {publishedVariables.length === 0 ? (
+                <div className="rounded-md border border-sky-500/50 dark:border-white/10 p-4 text-sky-500 dark:text-white/60 text-sm italic">
+                    No published variables connected to this play button
                 </div>
             ) : (
-                activeTab?.group.variables.map(({variable, nodeId, nodeServiceHandle, nodeServiceVariant}) => {
+                publishedVariables.map(({variable, nodeId, nodeServiceHandle, nodeServiceVariant}) => {
                     if (variable.parentHandle) return null;
                     const {baseType} = interpretNodeVariableType(variable);
-                    const syncKey = `${nodeServiceHandle}::${nodeServiceVariant ?? 1}::${variable.handle}`;
-                    let isSynced = false;
-                    if (syncMap.has(syncKey)) {
-                        const synced = syncMap.get(syncKey);
-                        isSynced = synced?.some(({nodeId: id}) => id === nodeId) ?? false;
-                    }
 
                     if (nodeServiceHandle === SECRET_IDENTIFIER) {
                         return (
@@ -468,7 +490,6 @@ const PublishedVariables: React.FC<Props> = ({
                                                 (v) => v.key === variable.value && v.values[stage.name]
                                             );
                                             const localKey = `${stage.name}@${variable.value}`;
-                                            // const local = envVariables.find((v) => v.key === localKey);
 
                                             const value = existing?.values[stage.name]?.value ?? "";
 
@@ -510,10 +531,6 @@ const PublishedVariables: React.FC<Props> = ({
                                 <Subheading>
                                     <span className="inline-flex items-center gap-2">
                                     {variable.published_title}
-                                        {isSynced && <LinkIcon
-                                            className="w-4 h-4"
-                                            title={`Synced with ${nodeServiceHandle} ${nodeServiceVariant ?? 1}`}
-                                        />}
                                     </span>
                                 </Subheading>
                                 {variable.published_description && (
@@ -541,10 +558,6 @@ const PublishedVariables: React.FC<Props> = ({
                                 <Subheading>
                                     <span className="inline-flex items-center gap-2">
                                     {variable.published_title}
-                                        {isSynced && <LinkIcon
-                                            className="w-4 h-4 text-sky-500/60 dark:text-white/60"
-                                            title={`Synced with ${nodeServiceHandle} ${nodeServiceVariant ?? 1}`}
-                                        />}
                                     </span>
                                 </Subheading>
                                 {variable.published_description && (
@@ -567,8 +580,46 @@ const PublishedVariables: React.FC<Props> = ({
                     }
                 })
             )}
+
+            {/* Stage Selector and Play Button */}
+            <Divider className="my-8" soft bleed />
+            <div className="mb-6 flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <Text className="text-sm text-sky-500 dark:text-white/70">Stage:</Text>
+                    <Select
+                        value={selectedStage}
+                        onChange={(e) => setSelectedStage(e.target.value)}
+                        className="w-32"
+                    >
+                        {stages.map((stage) => (
+                            <option key={stage.name} value={stage.name}>
+                                {stage.name}
+                            </option>
+                        ))}
+                    </Select>
+                </div>
+
+                <Button
+                    color="sky"
+                    onClick={(e: React.MouseEvent) => handlePlay(e, selectedPlayButton.id, selectedStage)}
+                    className="flex items-center gap-2"
+                >
+                    <PlayIcon className="w-4 h-4" />
+                    Play
+                </Button>
+            </div>
+
+            {/* Show results for executed play button */}
+            {result?.variables && (
+                <div className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4 bg-sky-50 dark:bg-white/5">
+                    <div className="mb-2 text-sky-500 dark:text-white font-semibold text-sm">
+                        Result from {displayTitle}
+                    </div>
+                    <FormattedNodeOutput variables={result.variables}/>
+                </div>
+            )}
         </div>
     );
 };
 
-export default PublishedVariables;
+export default PlayButtonsForm;

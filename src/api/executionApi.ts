@@ -43,3 +43,87 @@ export const getConnectionExecutionDetails = async (
 
     return response.json();
 }
+
+export const getAvailableRuns = async (
+    flowId: string,
+    projectId: string,
+) => {
+    const idToken = getIdToken();
+    const response = await fetch(`${config.LOCAL_API_URL}/execution/runs/${flowId}?project_id=${projectId}`, {
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch available runs: ${response.statusText}`);
+    }
+
+    return response.json();
+}
+
+export const getAllNodesForRun = async (
+    flowId: string,
+    runId: string,
+    projectId: string,
+    stage: string = 'mock',
+    subStage: string = 'mock'
+) => {
+    const idToken = getIdToken();
+    const response = await fetch(
+        `${config.LOCAL_API_URL}/execution/${flowId}/${runId}/nodes/?project_id=${projectId}&stage=${stage}&sub_stage=${subStage}`,
+        {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch nodes for run: ${response.statusText}`);
+    }
+
+    return response.json();
+}
+
+export const clearAllRuns = async (
+    flowId: string,
+    projectId: string,
+) => {
+    const idToken = getIdToken();
+    const response = await fetch(`${config.LOCAL_API_URL}/execution/runs/${flowId}?project_id=${projectId}`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to clear runs: ${response.statusText}`);
+    }
+
+    return response.json();
+}
+
+export const getMockNodesForRun = async (
+    flowId: string,
+    runId: string,
+    projectId: string,
+) => {
+    const idToken = getIdToken();
+    const response = await fetch(`${config.LOCAL_API_URL}/execution/${flowId}/${runId}/mock-nodes/?project_id=${projectId}`, {
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch mock nodes for run: ${response.statusText}`);
+    }
+
+    return response.json();
+}

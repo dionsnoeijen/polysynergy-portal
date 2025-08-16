@@ -2,7 +2,7 @@ import React from "react";
 import { VariableTypeProps } from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 import { Field, Fieldset } from "@/components/fieldset";
-import { Textarea } from "@/components/textarea";
+import { TemplateTextarea } from "@/components/template-textarea";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 import useConnectionsStore from "@/stores/connectionsStore";
 import ValueConnected from "@/components/editor/sidebars/dock/value-connected";
@@ -23,8 +23,7 @@ const VariableTypeTextArea: React.FC<VariableTypeProps> = ({
 }) => {
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const newValue = e.target.value;
+    const handleChange = (newValue: string) => {
         updateNodeVariable(nodeId, variable.handle, newValue);
     };
 
@@ -39,12 +38,11 @@ const VariableTypeTextArea: React.FC<VariableTypeProps> = ({
                     <Fieldset>
                         {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
                         <Field>
-                            <Textarea
+                            <TemplateTextarea
                                 disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
                                 onChange={handleChange}
                                 placeholder={variable.handle}
-                                aria-label={variable.handle}
-                                defaultValue={variable.value as string || ""}
+                                value={variable.value as string || ""}
                                 className="dark:text-white"
                             />
                         </Field>

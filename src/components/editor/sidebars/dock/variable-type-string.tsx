@@ -1,6 +1,6 @@
 import React from "react";
 import { VariableTypeProps } from "@/types/types";
-import { Input } from "@/components/input";
+import { TemplateInput } from "@/components/template-input";
 import { Field, FieldGroup, Fieldset } from "@/components/fieldset";
 import { Text } from "@/components/text";
 import { Select } from "@/components/select";
@@ -29,6 +29,15 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
         const newValue = e.target.value;
+        if (onChange) {
+            onChange(newValue);
+        } else {
+            // Use history-enabled variable update
+            nodeHistoryActions.updateNodeVariableWithHistory(nodeId, variable.handle, newValue);
+        }
+    };
+
+    const handleTemplateChange = (newValue: string) => {
         if (onChange) {
             onChange(newValue);
         } else {
@@ -67,13 +76,12 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
                                 ))}
                             </Select>
                         ) : (
-                            <Input
+                            <TemplateInput
                                 disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
                                 type="text"
                                 value={variable.value as string || ""}
-                                onChange={handleChange}
+                                onChange={handleTemplateChange}
                                 placeholder={variable.handle}
-                                aria-label={variable.handle}
                                 className="dark:text-white"
                             />
                         )}

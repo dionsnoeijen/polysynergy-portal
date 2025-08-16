@@ -53,6 +53,7 @@ const EditorLayout = ({
         toggleCloseItemManager,
         toggleCloseDock,
         toggleCloseOutput,
+        toggleFullscreen,
         setWindowDimensions,
         setWidth,
         setHeight
@@ -85,6 +86,36 @@ const EditorLayout = ({
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, [fetchAvailableNodes, setWindowDimensions]);
+
+    // Add 'F' key binding for fullscreen mode
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            // Don't trigger if user is typing in an input
+            const activeElement = document.activeElement;
+            if (
+                activeElement &&
+                activeElement instanceof HTMLElement &&
+                (activeElement.tagName === "INPUT" ||
+                    activeElement.tagName === "TEXTAREA" ||
+                    activeElement.isContentEditable)
+            ) {
+                return;
+            }
+
+            // Check for 'f' key (case insensitive)
+            if (event.key.toLowerCase() === 'f' && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+                event.preventDefault();
+                toggleFullscreen();
+                // Update editor position after toggle
+                setTimeout(() => {
+                    updateEditorPosition();
+                }, 200);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [toggleFullscreen, updateEditorPosition]);
 
     // Enhanced toggle functions with editor position updates
     const handleToggleItemManager = () => {
@@ -125,7 +156,7 @@ const EditorLayout = ({
                 {itemManagerClosed && (<button
                     type="button"
                     onClick={handleToggleItemManager}
-                    className="absolute z-10 top-[10px] left-0 p-3 radius-tl-0"
+                    className="absolute z-10 top-1/2 -translate-y-1/2 left-0 p-3 radius-tl-0"
                 ><ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/></button>)}
 
                 <main className="absolute top-0 bottom-0" data-panel="main" style={{
@@ -187,7 +218,7 @@ const EditorLayout = ({
                     <button
                         type="button"
                         onClick={toggleCloseDock}
-                        className="absolute z-10 top-[10px] right-0 p-3 radius-tr-0"
+                        className="absolute z-10 top-1/2 -translate-y-1/2 right-0 p-3 radius-tr-0"
                     >
                         <ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/>
                     </button>
@@ -220,7 +251,7 @@ const EditorLayout = ({
                 <button
                     type="button"
                     onClick={toggleCloseOutput}
-                    className="absolute z-10 bottom-[10px] right-[10px] p-3 radius-bl-0"
+                    className="absolute z-10 bottom-[10px] left-1/2 -translate-x-1/2 p-3 radius-bl-0"
                 >
                     <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/>
                 </button>

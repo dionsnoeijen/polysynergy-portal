@@ -124,18 +124,24 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
         }
     }
 
+    // When no node is selected, return a centered message
+    if (!node && !group) {
+        return (
+            <div {...restProps} className="h-full flex flex-col items-center pt-[150px]">
+                <div className="bg-sky-50 dark:bg-zinc-800 border border-sky-200 dark:border-zinc-700 rounded-lg px-8 py-6 shadow-sm">
+                    <div className="text-center text-zinc-600 dark:text-zinc-400 text-lg font-medium">
+                        Select node for node fields
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div
             {...restProps}
-            className={`h-full flex flex-col gap-2 mb-2`}
+            className="h-full flex flex-col gap-2 mb-2"
         >
-
-            {!node && !group && (
-                <div className="flex flex-1 items-center justify-center text-sky-500 dark:text-gray-400 text-lg">
-                    Select node for node fields
-                </div>
-            )}
-
             {node && <VariableGroup
                 title={'Handle'}
                 categoryBorderColor={categoryContainerBorder}

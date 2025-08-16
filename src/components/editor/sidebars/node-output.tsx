@@ -82,7 +82,16 @@ const NodeOutput: React.FC = (): React.ReactElement => {
 
     return (
         <div className="h-full overflow-auto">
-                {reversedNodes.map((node, index) => {
+            {reversedNodes.length === 0 ? (
+                <div className="h-full flex flex-col items-center pt-[150px]">
+                    <div className="bg-sky-50 dark:bg-zinc-800 border border-sky-200 dark:border-zinc-700 rounded-lg px-8 py-6 shadow-sm">
+                        <div className="text-center text-zinc-600 dark:text-zinc-400 text-lg font-medium">
+                            Run flow for output
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                reversedNodes.map((node, index) => {
                     const nodeKey = `${node.id}-${node.order}`;
                     const isOpen = !!expandedNodes[nodeKey];
                     return (
@@ -109,7 +118,8 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                             )}
                         </div>
                     );
-                })}
+                })
+            )}
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 
 export const useLayoutPanels = () => {
-    const [width, setWidth] = useState({ itemManager: 256, dock: 256 });
+    const [width, setWidth] = useState({ itemManager: 256, dock: 512 });
     const [height, setHeight] = useState({ horizontalEditorLayout: 0 });
     const [windowHeight, setWindowHeight] = useState(0);
 
@@ -21,6 +21,20 @@ export const useLayoutPanels = () => {
     const toggleCloseOutput = useCallback(() => {
         setOutputClosed(prev => !prev);
     }, []);
+
+    const toggleFullscreen = useCallback(() => {
+        // If any panel is open, close all
+        if (!itemManagerClosed || !dockClosed || !outputClosed) {
+            setItemManagerClosed(true);
+            setDockClosed(true);
+            setOutputClosed(true);
+        } else {
+            // If all panels are closed, open them
+            setItemManagerClosed(false);
+            setDockClosed(false);
+            setOutputClosed(false);
+        }
+    }, [itemManagerClosed, dockClosed, outputClosed]);
 
     const updatePanelDimensions = useCallback((newWidth?: Partial<typeof width>, newHeight?: Partial<typeof height>) => {
         if (newWidth) {
@@ -51,6 +65,7 @@ export const useLayoutPanels = () => {
         toggleCloseItemManager,
         toggleCloseDock,
         toggleCloseOutput,
+        toggleFullscreen,
         updatePanelDimensions,
         setWindowDimensions,
         

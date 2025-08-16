@@ -155,13 +155,28 @@ const useNodeColor = (
         const isService = node.service?.id || isNodeInService ? NodeSubType.Service : undefined;
 
         const baseBg = getCategoryPlaneBackgroundColor(node.category, false, isService);
+        
+        // Handle execution states with enhanced selection styling
         if (mockNode?.status === 'success') {
-            classList += ` ring-green-500 ring-4 ${baseBg}`;
+            if (isSelected) {
+                classList += ` ring-green-500 ring-8 shadow-2xl ${baseBg}`;
+            } else {
+                classList += ` ring-green-500 ring-4 ${baseBg}`;
+            }
         } else if (mockNode?.status === 'error' || mockNode?.status === 'killed') {
-            classList += ` ring-red-500 ring-4 ${baseBg}`;
+            if (isSelected) {
+                classList += ` ring-red-500 ring-8 shadow-2xl ${baseBg}`;
+            } else {
+                classList += ` ring-red-500 ring-4 ${baseBg}`;
+            }
         } else if (hasMockData) {
-            classList += ` ring-yellow-500 ring-2 ${baseBg}`;
+            if (isSelected) {
+                classList += ` ring-yellow-500 ring-8 shadow-2xl ${baseBg}`;
+            } else {
+                classList += ` ring-yellow-500 ring-2 ${baseBg}`;
+            }
         } else {
+            // Normal states (no execution)
             if (isSelected) {
                 classList += ` ${baseBg} ring-8 shadow-2xl`;
             } else {

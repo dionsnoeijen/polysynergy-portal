@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon } from "@heroicons/react/24/outline";
 import dynamic from 'next/dynamic';
 
-import ItemManager from "@/components/editor/sidebars/item-manager";
+import ItemManagerTabs from "@/components/editor/sidebars/item-manager-tabs";
 import DockTabs from "@/components/editor/sidebars/dock-tabs";
 import Form from "@/components/editor/form";
 import EnhancedDocs from "@/components/editor/enhanced-docs";
@@ -143,7 +143,7 @@ const EditorLayout = ({
                 {!itemManagerClosed && (
                     <div style={{width: width.itemManager}} className="absolute top-0 left-0 bottom-0" data-panel="item-manager">
                         <div className="absolute inset-[10px]">
-                            <ItemManager toggleClose={handleToggleItemManager}/>
+                            <ItemManagerTabs toggleClose={handleToggleItemManager}/>
                         </div>
                         <button
                             onMouseDown={() => startResizing(ResizeWhat.ItemManager)}

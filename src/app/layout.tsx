@@ -19,7 +19,12 @@ export default function RootLayout({children}: { children: ReactNode }) {
                       const saved = localStorage.getItem('theme');
                       const useDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                       const theme = saved || (useDark ? 'dark' : 'light');
-                      document.documentElement.setAttribute('data-theme', theme);
+                      document.documentElement.classList.add(theme);
+                      if (theme === 'dark') {
+                        document.documentElement.classList.remove('light');
+                      } else {
+                        document.documentElement.classList.remove('dark');
+                      }
                     })();`
                 }}
             />
@@ -27,8 +32,8 @@ export default function RootLayout({children}: { children: ReactNode }) {
                 dangerouslySetInnerHTML={{
                     __html: `
                       html, body { margin:0; padding:0; height:100%; }
-                      html[data-theme="light"] { background: #ffffff !important; }
-                      html[data-theme="dark"]  { background: #0a0a0a !important; }
+                      html.light { background: #ffffff !important; }
+                      html.dark  { background: #0a0a0a !important; }
                       body { background: transparent !important; }
                     `
                 }}

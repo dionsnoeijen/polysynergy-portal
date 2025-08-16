@@ -134,7 +134,8 @@ html {
 .executing::after,
 .executing-tool::after,
 .executed-success::after,
-.executed-killed::after {
+.executed-killed::after,
+.executed-error::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -161,7 +162,8 @@ html {
 }
 
 .executed-success,
-.executed-killed {
+.executed-killed,
+.executed-error {
     transition: box-shadow 0.3s ease-in;
 }
 
@@ -171,6 +173,10 @@ html {
 
 .executed-killed {
     box-shadow: 0 0 0 2px oklch(63.7% 0.237 25.331);
+}
+
+.executed-error {
+    box-shadow: 0 0 0 2px oklch(65.8% 0.296 29.234);
 }
 
 .executed-success::after {
@@ -183,6 +189,12 @@ html {
     animation: none;
     transition: box-shadow 0.4s ease-in-out, background 0.4s ease-in-out;
     box-shadow: 0 0 15px oklch(63.7% 0.237 25.331);
+}
+
+.executed-error::after {
+    animation: none;
+    transition: box-shadow 0.4s ease-in-out, background 0.4s ease-in-out;
+    box-shadow: 0 0 15px oklch(65.8% 0.296 29.234);
 }
 
 @keyframes draft-glow {

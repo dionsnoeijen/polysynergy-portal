@@ -36,6 +36,13 @@ export const useHandlePlay = () => {
                 useListenerStore.getState().setListenerState;
             setListenerActive(activeVersionId, true);
             const data = await response.json();
+            
+            // Handle error responses where result might be undefined
+            if (!data.result) {
+                console.error('Execution failed:', data);
+                return;
+            }
+            
             const result = data.result.body ? JSON.parse(data.result.body) : data.result;
 
             const lastNode = result.nodes_order[result.nodes_order.length - 1];

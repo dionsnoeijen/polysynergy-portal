@@ -43,12 +43,7 @@ const Output: React.FC = (): React.ReactElement => {
                 className="border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col"
                 style={{ width: `${logsRatio}%` }}
             >
-                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
-                    <h3 className="text-sky-500 dark:text-white/80">Logs</h3>
-                </div>
-                <div className="flex-1 overflow-auto text-sm text-white/80">
-                    <Logs />
-                </div>
+                <Logs />
             </div>
 
             {/* Resizable divider */}

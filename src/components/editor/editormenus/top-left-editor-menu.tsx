@@ -22,7 +22,7 @@ const TopLeftEditorMenu: React.FC = () => {
     const editorMode = useEditorStore((state) => state.editorMode);
     const setEditorMode = useEditorStore((state) => state.setEditorMode);
     const clearChatStore = useChatStore((state) => state.clearChatStore);
-    const clearMockStore = useMockStore((state) => state.clearMockStore);
+    const clearAccordionAndMockData = useEditorStore((state) => state.clearAccordionAndMockData);
     
     // History store hooks
     const undo = useHistoryStore((state) => state.undo);
@@ -60,7 +60,7 @@ const TopLeftEditorMenu: React.FC = () => {
         },
         'c': {
             handler: () => {
-                clearMockStore();
+                clearAccordionAndMockData();
                 clearChatStore();
             },
         },

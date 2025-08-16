@@ -3,6 +3,8 @@ import {Connection, EditorMode, FormType, Fundamental, Node, NodeVariable, Packa
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import {gatherAllIds, replaceIdsInJsonString, unpackNode} from "@/utils/packageGroupNode";
+import { getConnectionExecutionDetails } from "@/api/executionApi";
+import useMockStore from "@/stores/mockStore";
 
 export enum BottomBarView {
     Output = 'Output',
@@ -93,6 +95,17 @@ export type EditorState = {
     setActiveBlueprintId: (blueprintId: string) => void;
     activeVersionId?: string;
     setActiveVersionId: (versionId: string) => void;
+    
+    // Historical run navigation
+    selectedRunId?: string;
+    isViewingHistoricalRun: boolean;
+    setSelectedRunId: (runId: string) => void;
+    clearSelectedRunId: () => void;
+    loadHistoricalRunData: (runId: string) => Promise<void>;
+    
+    // Simple accordion clear for 'c' key
+    clearAccordionAndMockData: () => void;
+    
     activeProjectVariableId?: string;
     setActiveProjectVariableId: (projectVariableId: string) => void;
 
@@ -222,6 +235,67 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
     activeVersionId: '',
     setActiveVersionId: (versionId: string) => set({activeVersionId: versionId}),
+    
+    // Historical run navigation
+    selectedRunId: undefined,
+    isViewingHistoricalRun: false,
+    setSelectedRunId: (runId: string) => set({selectedRunId: runId, isViewingHistoricalRun: true}),
+    clearSelectedRunId: () => {
+        // Clear historical run state
+        set({selectedRunId: undefined, isViewingHistoricalRun: false});
+        
+        // Clear mock data when returning to live mode
+        useMockStore.getState().setHasMockData(false);
+        useMockStore.getState().setMockConnections([]);
+        
+        // Clear execution state from nodes
+        const elements = document.querySelectorAll('[data-node-id]');
+        elements.forEach((el) => {
+            el.classList.remove('executing', 'executed-success', 'executed-killed', 'executed-error');
+        });
+    },
+    loadHistoricalRunData: async (runId: string) => {
+        const { activeVersionId } = get();
+        if (!activeVersionId) return;
+
+        try {
+            // Load connection data for the historical run
+            const connectionData = await getConnectionExecutionDetails(activeVersionId, runId);
+            
+            // Update mock store with historical connection data
+            useMockStore.getState().setMockConnections(connectionData);
+            useMockStore.getState().setHasMockData(true);
+            
+            // Clear any execution CSS classes - historical runs rely only on React component visual states
+            const elements = document.querySelectorAll('[data-node-id]');
+            elements.forEach((el) => {
+                el.classList.remove('executing', 'executed-success', 'executed-killed', 'executed-error');
+            });
+            // All visual feedback for historical runs comes from useNodeColor hook via React components
+
+        } catch (error) {
+            console.error('Failed to load historical run data:', error);
+        }
+    },
+    
+    // Simple clear function for 'c' key
+    clearAccordionAndMockData: () => {
+        // Clear selection state so accordion closes
+        set({selectedRunId: undefined, isViewingHistoricalRun: false});
+        
+        // Clear mock data and visual states
+        useMockStore.getState().clearMockStore();
+        
+        // Clear visual states from nodes
+        const elements = document.querySelectorAll('[data-node-id]');
+        elements.forEach((el) => {
+            el.classList.remove('executing', 'executed-success', 'executed-killed', 'executed-error');
+        });
+        
+        // Close accordion and reset execution state
+        window.dispatchEvent(new CustomEvent('close-accordion-and-reset'));
+    },
+    
     activeProjectVariableId: '',
     setActiveProjectVariableId: (projectVariableId: string) => set({activeProjectVariableId: projectVariableId}),
 

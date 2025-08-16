@@ -96,7 +96,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     return (
         <div
-            className={`relative border ${categoryBorder} ${categoryBackgroundColor} p-3 min-h-52 rounded-md`}>
+            className={`relative border ${categoryBorder} bg-transparent dark:bg-white/5 p-3 min-h-52 rounded-md`}>
             {disabled && (
                 <div className="absolute inset-0 bg-white/40 dark:bg-black/40 rounded-md z-10 pointer-events-none"/>
             )}

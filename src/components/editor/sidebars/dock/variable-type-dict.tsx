@@ -57,7 +57,7 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
                     )}
                     <div
                         className={`border ${categoryBorder} rounded-md relative z-0 ${isVariableDisabled(variable, inDock) ? 'opacity-40 pointer-events-none' : ''}`}>
-                        <Table dense className="bg-white dark:bg-zinc-800 rounded-t-md">
+                        <Table dense className="bg-transparent dark:bg-white/5 rounded-t-md">
                             <TableHead>
                                 <TableRow>
                                     {!(variable.dock && variable.dock.in_switch === false) &&
@@ -132,7 +132,7 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
                             </TableBody>
                         </Table>
                         <button
-                            className="group w-full bg-white dark:bg-zinc-800 rounded-br-md rounded-bl-md hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-1 pt-0"
+                            className="group w-full bg-transparent dark:bg-white/5 rounded-br-md rounded-bl-md hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-1 pt-0"
                             onClick={() => onEdit(nodeId)}
                         >
                             <PencilIcon

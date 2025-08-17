@@ -3,7 +3,7 @@ import {ChevronLeftIcon, ChevronDownIcon, ChevronRightIcon, ClockIcon, CheckCirc
 import {getNodeExecutionDetails, getAvailableRuns, getAllNodesForRun, clearAllRuns, getMockNodesForRun} from "@/api/executionApi";
 import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
 import useMockStore, {MockNode} from "@/stores/mockStore";
-import useEditorStore, { BottomBarView } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import { Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle } from "@/components/dialog";
 import { Button } from "@/components/button";
@@ -22,7 +22,6 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     const setSelectedRunId = useEditorStore((state) => state.setSelectedRunId);
     const loadHistoricalRunData = useEditorStore((state) => state.loadHistoricalRunData);
     const globalIsExecuting = useEditorStore((state) => state.isExecuting);
-    const setBottomBarView = useEditorStore((state) => state.setBottomBarView);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [expandedNodes, setExpandedNodes] = useState<Record<string, any>>({});
@@ -102,8 +101,6 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                 setIsExecuting(true); // Execution is active
                 // Auto-expand only the current run (single-select)
                 setExpandedRuns(new Set([firstNode.runId]));
-                // Switch to Output tab to show the execution
-                setBottomBarView(BottomBarView.Output);
                 // Fetch updated runs list to include the new run
                 setTimeout(fetchRuns, 500);
             }
@@ -409,8 +406,8 @@ const NodeOutput: React.FC = (): React.ReactElement => {
             <div className="flex-1 overflow-auto">
                 {allRuns.length === 0 ? (
                 <div className="h-full flex flex-col items-center pt-[150px]">
-                    <div className="bg-sky-50 dark:bg-zinc-800 border border-sky-200 dark:border-zinc-700 rounded-lg px-8 py-6 shadow-sm">
-                        <div className="text-center text-zinc-600 dark:text-zinc-400 text-lg font-medium">
+                    <div className="bg-sky-50/50 dark:bg-zinc-800/50 rounded-lg px-4 py-3">
+                        <div className="text-center text-zinc-500 dark:text-zinc-500 text-sm">
                             Run flow for output
                         </div>
                     </div>

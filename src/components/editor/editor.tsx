@@ -21,7 +21,9 @@ import { useAutoUpdateScheduleNodes } from "@/hooks/editor/useAutoUpdateSchedule
 import { useAutoUpdateRouteNodes } from "@/hooks/editor/useAutoUpdateRouteNodes";
 import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import { useAutoFitNodes } from "@/hooks/editor/nodes/useAutoFitNodes";
+import { useExecutionTabSwitcher } from "@/hooks/editor/useExecutionTabSwitcher";
 import { EditorMode } from "@/types/types";
+import Minimap from "@/components/editor/minimap";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -58,6 +60,7 @@ export default function Editor() {
     useAutoUpdateRouteNodes();
     useAutoUpdateScheduleNodes();
     useAutoFitNodes(contentRef, nodesToRender, 40, activeVersionId);
+    useExecutionTabSwitcher();
 
     return (
         <div
@@ -124,6 +127,9 @@ export default function Editor() {
                 onCancel={handleCancelDelete}
                 selectedNodes={selectedNodes}
             />
+            
+            {/* Minimap in top-right corner */}
+            <Minimap />
         </div>
     );
 }

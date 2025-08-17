@@ -16,6 +16,17 @@ const DockTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
     const isExecuting = useEditorStore((state) => state.isExecuting);
     const [selectedIndex, setSelectedIndex] = useState(0); // Always default to Variables tab (index 0)
 
+    // Listen for execution start event to switch to Output tab
+    useEffect(() => {
+        const handleSwitchToOutput = () => {
+            console.log("🎯 DockTabs: Switching to Output tab (index 1)");
+            setSelectedIndex(1);
+        };
+
+        window.addEventListener('switch-to-output-tab', handleSwitchToOutput);
+        return () => window.removeEventListener('switch-to-output-tab', handleSwitchToOutput);
+    }, []);
+
     const tabs = [
         {
             name: "Variables",

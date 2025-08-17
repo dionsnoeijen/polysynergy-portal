@@ -257,7 +257,12 @@ const AddNode: React.FC = () => {
                 <div
                     ref={modalRef}
                     onWheel={(e) => e.stopPropagation()}
-                    className="fixed p-4 bg-sky-100 dark:bg-black/90 dark:border-white/10 border-sky-500/50 rounded-lg shadow-lg w-[800px] h-[480px] left-[50%] top-[50%] transform -translate-x-1/2 -translate-y-2/3 z-30"
+                    className="absolute p-4 bg-sky-100 dark:bg-black/90 dark:border-white/10 border-sky-500/50 rounded-lg shadow-lg w-[800px] h-[480px] z-30"
+                    style={{
+                        left: '50%',
+                        top: 'clamp(20px, 50%, calc(100vh - 500px))',
+                        transform: 'translateX(-50%) translateY(-50%)'
+                    }}
                 >
                     <InputGroup className="mb-4">
                         <MagnifyingGlassIcon data-slot="icon" className="h-5 w-5 text-zinc-500" />

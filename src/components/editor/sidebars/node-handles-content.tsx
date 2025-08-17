@@ -39,11 +39,11 @@ const NodeHandlesContent: React.FC = () => {
     if (!selectedNode) {
         return (
             <div className="h-full flex flex-col items-center pt-[150px]">
-                <div className="bg-sky-50 dark:bg-zinc-800 border border-sky-200 dark:border-zinc-700 rounded-lg px-8 py-6 shadow-sm">
-                    <div className="text-center text-zinc-600 dark:text-zinc-400 text-lg font-medium">
+                <div className="bg-sky-50/50 dark:bg-zinc-800/50 rounded-lg px-4 py-3">
+                    <div className="text-center text-zinc-500 dark:text-zinc-500 text-sm">
                         Select a node to view handles
                     </div>
-                    <div className="text-center text-zinc-500 dark:text-zinc-500 text-sm mt-2">
+                    <div className="text-center text-zinc-400 dark:text-zinc-400 text-xs mt-1">
                         Choose a node to see its available variables and predecessor handles
                     </div>
                 </div>

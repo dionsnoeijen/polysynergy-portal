@@ -56,6 +56,10 @@ export default function Logs() {
     useEffect(() => {
         if (paused || !activeVersionId) return;
 
+        // Fetch logs immediately when activeVersionId changes or component mounts
+        fetchLogs();
+
+        // Then set up the interval for subsequent fetches
         intervalRef.current = setInterval(() => {
             fetchLogs();
         }, 5000);
@@ -107,15 +111,6 @@ export default function Logs() {
 
                                 return (
                                     <React.Fragment key={index}>
-                                        {shouldShowSeparator && (
-                                            <div className="my-4 flex items-center">
-                                                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
-                                                <div className="px-4 text-xs text-sky-400 font-medium">
-                                                    NEW RUN
-                                                </div>
-                                                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
-                                            </div>
-                                        )}
                                         <div className="whitespace-normal break-all">
                                             <span className="text-zinc-500 mr-2">
                                                 [{new Date(log.timestamp).toLocaleTimeString()}]
@@ -127,6 +122,15 @@ export default function Logs() {
                                                 {log.message}
                                             </span>
                                         </div>
+                                        {shouldShowSeparator && (
+                                            <div className="my-4 flex items-center">
+                                                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
+                                                <div className="px-4 text-xs text-sky-400 font-medium">
+                                                    NEW RUN
+                                                </div>
+                                                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
+                                            </div>
+                                        )}
                                     </React.Fragment>
                                 );
                             })}

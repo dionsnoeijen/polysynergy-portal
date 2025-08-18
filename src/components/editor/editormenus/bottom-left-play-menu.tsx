@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import useNodesStore from '@/stores/nodesStore';
 import {useHandlePlay} from '@/hooks/editor/useHandlePlay';
 import {PlayIcon, ChevronDownIcon} from '@heroicons/react/24/outline';
+import type { Node } from '@/types/types';
 
 export default function BottomLeftPlayMenu() {
     const [showDropdown, setShowDropdown] = useState(false);
@@ -27,7 +28,7 @@ export default function BottomLeftPlayMenu() {
     const mainPlayNode = findMainPlayNode();
     
     // Create combined list of all playable nodes
-    const allPlayableNodes = [];
+    const allPlayableNodes: Node[] = [];
     if (mainPlayNode && !playButtonNodes.some(n => n.id === mainPlayNode.id)) {
         allPlayableNodes.push(mainPlayNode);
     }

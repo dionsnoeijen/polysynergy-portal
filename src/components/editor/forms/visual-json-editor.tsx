@@ -10,8 +10,8 @@ import {
 import { Checkbox } from '@/components/checkbox';
 
 interface VisualJsonEditorProps {
-    value: any;
-    onChange: (value: any) => void;
+    value: unknown;
+    onChange: (value: unknown) => void;
 }
 
 interface FocusCallbacks {
@@ -67,8 +67,8 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
         setExpandedPaths(newExpanded);
     };
 
-    const updateValue = (path: string[], newVal: any) => {
-        const updateNestedValue = (obj: any, pathArray: string[], value: any): any => {
+    const updateValue = (path: string[], newVal: unknown) => {
+        const updateNestedValue = (obj: unknown, pathArray: string[], value: unknown): unknown => {
             if (pathArray.length === 0) return value;
             
             const [key, ...rest] = pathArray;
@@ -97,7 +97,7 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
             return;
         }
 
-        const deletePath = (obj: any, pathArray: string[]): any => {
+        const deletePath = (obj: unknown, pathArray: string[]): unknown => {
             if (pathArray.length === 1) {
                 const [key] = pathArray;
                 if (Array.isArray(obj)) {
@@ -143,7 +143,7 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
             }
         };
 
-        const addToPath = (obj: any, pathArray: string[], key: string, value: any): any => {
+        const addToPath = (obj: unknown, pathArray: string[], key: string, value: unknown): unknown => {
             if (pathArray.length === 0) {
                 if (Array.isArray(obj)) {
                     return [...obj, value];
@@ -180,7 +180,7 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
         }
     };
 
-    const renderValue = (val: any, path: string[] = [], parentKey?: string): React.ReactNode => {
+    const renderValue = (val: unknown, path: string[] = [], parentKey?: string): React.ReactNode => {
         const pathString = path.join('.');
         const isExpanded = expandedPaths.has(pathString);
 
@@ -222,7 +222,7 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
                         type={typeof val === 'number' ? 'number' : 'text'}
                         value={val}
                         onChange={(e) => {
-                            let newValue: any;
+                            let newValue: unknown;
                             if (typeof val === 'number') {
                                 newValue = parseFloat(e.target.value) || 0;
                             } else {
@@ -646,13 +646,13 @@ const AddItemButton: React.FC<{ onAdd: (type: JsonValueType, shouldFocus?: boole
 
 const PropertyRow: React.FC<{
     originalKey: string;
-    value: any;
+    value: unknown;
     path: string[];
     onKeyChange: (oldKey: string, newKey: string) => void;
-    onValueChange: (newValue: any) => void;
+    onValueChange: (newValue: unknown) => void;
     onDelete: () => void;
     onValueConfirmed: (path: string[]) => void;
-    renderValue: (val: any, path: string[]) => React.ReactNode;
+    renderValue: (val: unknown, path: string[]) => React.ReactNode;
     registerInputRef: (path: string, ref: HTMLInputElement | null) => void;
 }> = ({ originalKey, value, path, onKeyChange, onValueChange, onDelete, onValueConfirmed, renderValue, registerInputRef }) => {
     const [editingKey, setEditingKey] = useState(originalKey);
@@ -682,7 +682,7 @@ const PropertyRow: React.FC<{
     };
 
     // Custom render that can attach ref to primitive inputs
-    const renderValueWithRef = (val: any, currentPath: string[]) => {
+    const renderValueWithRef = (val: unknown, currentPath: string[]) => {
         if (typeof val === 'string' || typeof val === 'number') {
             return (
                 <input
@@ -694,7 +694,7 @@ const PropertyRow: React.FC<{
                     type={typeof val === 'number' ? 'number' : 'text'}
                     value={val}
                     onChange={(e) => {
-                        let newValue: any;
+                        let newValue: unknown;
                         if (typeof val === 'number') {
                             newValue = parseFloat(e.target.value) || 0;
                         } else {

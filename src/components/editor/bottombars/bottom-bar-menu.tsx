@@ -13,7 +13,7 @@ const BottomBarMenu: React.FC = (): React.ReactElement => {
     const debugBarAvailable = useEditorStore((state) => state.debugBarAvailable);
 
     return (
-        <div className="absolute left-0 top-0 bottom-0 flex flex-col items-center justify-center border border-sky-500/50 rounded-l-md bg-sky-100 dark:bg-zinc-800 dark:border-r dark:border-white/20 p-2">
+        <div className="absolute left-0 top-0 bottom-0 flex flex-col items-center justify-center border-t border-sky-500/50 dark:border-white/20 bg-sky-100 dark:bg-zinc-800 p-2">
             <div className="flex flex-col items-start justify-center w-full h-full">
                 {debugBarAvailable && <button
                     type={"button"}

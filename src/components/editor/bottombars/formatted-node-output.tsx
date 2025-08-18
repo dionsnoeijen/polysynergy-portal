@@ -10,7 +10,7 @@ interface FormattedNodeOutputProps {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const RenderValue = ({label, value}: { label: string; value: any }) => {
+const RenderValue = ({label, value}: { label: string; value: unknown }) => {
     const {theme} = useTheme();
 
     const isProbablyHtml = (value: string) => {

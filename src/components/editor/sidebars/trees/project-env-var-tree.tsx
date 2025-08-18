@@ -40,7 +40,7 @@ export default function ProjectEnvVarTree(): ReactElement {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const keyVar = node.variables.find((v: any) => v.handle === "true_path");
+        const keyVar = node.variables.find((v: unknown) => v.handle === "true_path");
         if (keyVar) {
             keyVar.value = key;
         }

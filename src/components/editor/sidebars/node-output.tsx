@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useRef, useCallback} from "react";
 import {ChevronLeftIcon, ChevronDownIcon, ChevronRightIcon, ClockIcon, CheckCircleIcon, XCircleIcon, TrashIcon} from "@heroicons/react/24/outline";
 import {getNodeExecutionDetails, getAvailableRuns, getAllNodesForRun, clearAllRuns, getMockNodesForRun} from "@/api/executionApi";
-import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
-import useMockStore, {MockNode} from "@/stores/mockStore";
+
+
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import { Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle } from "@/components/dialog";
@@ -15,7 +15,7 @@ interface Run {
 }
 
 const NodeOutput: React.FC = (): React.ReactElement => {
-    const mockNodes = useMockStore((state) => state.mockNodes);
+    
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const selectedRunId = useEditorStore((state) => state.selectedRunId);
@@ -310,7 +310,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const toggleNode = async (node: any, runId: string) => {
+    const toggleNode = async (node: unknown, runId: string) => {
         // Create a unique key for this node in this run
         const nodeKey = `${node.id}-${runId}`;
         

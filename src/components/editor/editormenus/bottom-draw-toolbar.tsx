@@ -88,7 +88,7 @@ const BottomDrawToolbar: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 26 }}
-          className="absolute bottom-4 left-1/2 z-40 px-4 py-2 bg-zinc-800/90 border border-white/25 rounded-xl shadow-lg flex items-center space-x-4"
+          className="absolute bottom-2 left-1/2 z-40 px-4 py-2 bg-zinc-800/90 border border-white/25 rounded-lg shadow-lg flex items-center space-x-4"
           style={{ translateX: "-50%" }}
         >
           <button

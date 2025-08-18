@@ -14,7 +14,7 @@ import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 import {EditorMode} from "@/types/types";
 import Image from "next/image";
 import useChatStore from "@/stores/chatStore";
-import useMockStore from "@/stores/mockStore";
+// 
 import { useHistoryStore } from "@/stores/historyStore";
 
 const TopLeftEditorMenu: React.FC = () => {
@@ -81,9 +81,9 @@ const TopLeftEditorMenu: React.FC = () => {
     });
 
     return (
-        <div className={`absolute z-auto left-5 top-5`}>
+        <div className={`absolute z-auto left-2 top-2`}>
             <div
-                className="bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 p-2 rounded-xl flex flex-col items-center justify-center">
+                className="bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 p-2 rounded-lg flex flex-col items-center justify-center">
 
                 <Image src="/ps-logo-simple-color.svg" alt="Logo" className="w-8 h-8 mb-1" width={40} height={40}/>
 

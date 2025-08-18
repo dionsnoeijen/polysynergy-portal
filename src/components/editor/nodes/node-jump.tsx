@@ -6,7 +6,7 @@ import Connector from "@/components/editor/nodes/connector";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
-import useMockStore from "@/stores/mockStore";
+
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
 import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
 
@@ -15,8 +15,8 @@ const NodeJump: React.FC<NodeProps> = ({node}) => {
     const {handleNodeMouseDown} = useNodeMouseDown(node);
     const {handleContextMenu} = useNodeContextMenu(node);
     const position = useNodePlacement(node);
-    const mockNode = useMockStore((state) => state.getMockNode(node.id));
-    const hasMockData = useMockStore((state) => state.hasMockData);
+    
+    
     const className = useNodeColor(node, selectedNodes.includes(node.id), mockNode, hasMockData);
 
     return (

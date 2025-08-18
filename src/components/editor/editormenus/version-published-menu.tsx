@@ -3,12 +3,12 @@
 import React from 'react';
 import useEditorStore from '@/stores/editorStore';
 import useDocumentationStore from '@/stores/documentationStore';
-import useMockStore from '@/stores/mockStore';
+
 import SavingIndicator from '@/components/saving-indicator';
 import {FormType} from '@/types/types';
 
 import {
-    Bars3Icon, 
+    // Bars3Icon, 
     ArrowDownTrayIcon,
     PlayIcon,
     ArrowUturnUpIcon,
@@ -26,8 +26,8 @@ export default function VersionPublishedMenu() {
     const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
     const fetchCategories = useDocumentationStore((state) => state.fetchCategories);
     
-    const hasMockData = useMockStore((state) => state.hasMockData);
-    const clearMockStore = useMockStore((state) => state.clearMockStore);
+    
+    
 
     const handleOpenDocs = async () => {
         setDocumentationType('general');
@@ -37,7 +37,7 @@ export default function VersionPublishedMenu() {
 
     return (
         <div
-            className="absolute bottom-5 right-5 flex items-center gap-2 p-2 bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-xl z-20">
+            className="absolute bottom-2 right-2 flex items-center gap-2 p-2 bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-lg z-20">
             
             {/* Clear Mock Data Button */}
             <button 

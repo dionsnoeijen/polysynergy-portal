@@ -7,7 +7,7 @@ import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
 import {ChevronRightIcon} from "@heroicons/react/24/outline";
 import {Strong} from "@/components/text";
-import useMockStore from "@/stores/mockStore";
+
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
 
 const NodeComparison: React.FC<NodeProps> = ({ node }) => {
@@ -15,7 +15,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);
-    const mockNode = useMockStore((state) => state.getMockNode(node.id));
+    
 
     return (
         <div

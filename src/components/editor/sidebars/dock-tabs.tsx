@@ -43,7 +43,7 @@ const DockTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
     return (
         <div {...restProps} className="absolute left-0 top-0 right-0 bottom-0 flex flex-col">
             <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
-                <Tab.List className="flex items-center gap-1 p-1 border border-sky-500/50 dark:border-white/20 rounded-md bg-white dark:bg-zinc-800">
+                <Tab.List className="flex items-center gap-1 p-1 border-b border-sky-500/50 dark:border-white/20 bg-white dark:bg-zinc-800">
                     {/* Close button - clearly separated at the start */}
                     <button
                         onClick={toggleClose}

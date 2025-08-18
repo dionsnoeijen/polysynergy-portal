@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import useEditorStore from '@/stores/editorStore';
+// import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
 import {useHandlePlay} from '@/hooks/editor/useHandlePlay';
 import {PlayIcon, ChevronDownIcon} from '@heroicons/react/24/outline';
@@ -57,7 +57,7 @@ export default function BottomLeftPlayMenu() {
         }
     };
 
-    const getNodeDisplayName = (node: any) => {
+    const getNodeDisplayName = (node: { id: string; handle: string }) => {
         if (!node) return 'Play';
         const title = getNodeVariable(node.id, "title")?.value as string;
         return title?.trim() || `Play ${node.handle}`;
@@ -69,8 +69,8 @@ export default function BottomLeftPlayMenu() {
     }
 
     return (
-        <div className="absolute bottom-5 left-5 z-20">
-            <div className="bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-xl p-2 flex items-center gap-2">
+        <div className="absolute bottom-2 left-2 z-20">
+            <div className="bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-lg p-2 flex items-center gap-2">
                 {hasMultiplePlayButtons ? (
                     <div className="flex items-center">
                         {/* Play Button */}
@@ -95,7 +95,7 @@ export default function BottomLeftPlayMenu() {
                             
                             {/* Dropdown Menu */}
                             {showDropdown && (
-                                <div className="absolute bottom-full mb-2 left-0 bg-white dark:bg-zinc-800 border border-sky-500/60 dark:border-white/25 rounded-lg shadow-lg min-w-48 py-1 z-50">
+                                <div className="absolute bottom-full mb-2 left-0 bg-white dark:bg-zinc-800 border border-sky-500/60 dark:border-white/25 rounded-md shadow-lg min-w-48 py-1 z-50">
                                     {allPlayableNodes.map((node) => (
                                         <button
                                             key={node.id}

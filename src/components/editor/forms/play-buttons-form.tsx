@@ -1,8 +1,9 @@
+import React from "react";
 import {Node, NodeVariable, NodeVariableType} from "@/types/types";
-import React, {useEffect, useMemo, useState} from "react";
+
 
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
-import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
+
 import EditDictVariable from "@/components/editor/forms/variable/edit-dict-variable";
 
 import {Subheading} from "@/components/heading";
@@ -18,7 +19,7 @@ import {VariableTypeComponents} from "@/components/editor/sidebars/dock";
 import useNodesStore from "@/stores/nodesStore";
 import useStagesStore from "@/stores/stagesStore";
 import useProjectSecretsStore from "@/stores/projectSecretsStore";
-import useMockStore from "@/stores/mockStore";
+
 import useEditorStore from "@/stores/editorStore";
 
 import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
@@ -66,7 +67,7 @@ const PlayButtonsForm: React.FC = () => {
     const [dictVariables, setDictVariables] = useState<{ [nodeId: string]: { [handle: string]: NodeVariable[] } }>({});
     const [simpleVariables, setSimpleVariables] = useState<{ [nodeId: string]: { [handle: string]: string } }>({});
     const [secretVariables, setSecretVariables] = useState<{ key: string, value: string }[]>([]);
-    const [envVariables, setEnvVariables] = useState<{ key: string; value: string }[]>([]);
+    // const [envVariables, setEnvVariables] = useState<{ key: string; value: string }[]>([]);
 
     useEffect(() => {
         fetchSecretsWithRetry(fetchSecrets);
@@ -404,7 +405,7 @@ const PlayButtonsForm: React.FC = () => {
                     No published variables connected to this play button
                 </div>
             ) : (
-                publishedVariables.map(({variable, nodeId, nodeServiceHandle, nodeServiceVariant}) => {
+                publishedVariables.map(({variable, nodeId, nodeServiceHandle, /* nodeServiceVariant */}) => {
                     if (variable.parentHandle) return null;
                     const {baseType} = interpretNodeVariableType(variable);
 

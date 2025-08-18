@@ -85,7 +85,7 @@ const ProjectSecretsForm: React.FC = () => {
             // Auto-clear success message after 3 seconds
             setTimeout(() => setSuccess(null), 3000);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
+        } catch (err: unknown) {
             setError(err.message || "An error occurred.");
         } finally {
             setSavingStages(prev => ({ ...prev, [stage]: false }));

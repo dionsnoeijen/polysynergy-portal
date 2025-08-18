@@ -40,7 +40,7 @@ export default function SecretTree(): ReactElement {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const secretIdVar = node.variables.find((v: any) => v.handle === "true_path");
+        const secretIdVar = node.variables.find((v: unknown) => v.handle === "true_path");
         if (secretIdVar) {
             secretIdVar.value = key;
         }

@@ -44,7 +44,7 @@ const ItemManagerTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
             {/* Scrollable content area that contains everything except tenant header */}
             <div className="flex-1 overflow-y-auto flex flex-col gap-2 mb-2">
                 <Tab.Group selectedIndex={selectedIndex} onChange={setSelectedIndex}>
-                    <Tab.List className="flex items-center gap-1 p-1 border border-sky-500/50 dark:border-white/20 rounded-md bg-white dark:bg-zinc-800">
+                    <Tab.List className="flex items-center gap-1 p-1 border-b border-sky-500/50 dark:border-white/20 bg-white dark:bg-zinc-800">
                         {/* Tabs */}
                         <div className="flex flex-1">
                             {tabs.map((tab, index) => (

@@ -9,8 +9,8 @@ import {Input} from "@/components/input";
 
 type Props = {
     title: string;
-    items: any[];
-    onChange: (updatedVariables: any[], handle?: string) => void;
+    items: unknown[];
+    onChange: (updatedVariables: unknown[], handle?: string) => void;
     handle?: string;
     dock?: Dock;
 };
@@ -22,7 +22,7 @@ const EditListVariable: React.FC<Props> = ({
     handle
 }) => {
 
-    const handleEditItem = (index: number, value: any) => {
+    const handleEditItem = (index: number, value: unknown) => {
         const updatedItems = items.map((f, i) =>
             i === index ? value : f
         );
@@ -51,7 +51,7 @@ const EditListVariable: React.FC<Props> = ({
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {items.map((item: any, index: number) => (
+                        {items.map((item: unknown, index: number) => (
                         <TableRow key={`row-${index}`}>
                             <TableCell>
                                 <Input value={item as string} onChange={(e) => handleEditItem(index, e.target.value)} />

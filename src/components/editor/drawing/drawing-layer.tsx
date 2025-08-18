@@ -120,14 +120,14 @@ export default function DrawingLayer() {
         return () => window.removeEventListener('keydown', handleKeyDown)
     }, [editorMode, selectedObjectId, notes, paths, images, deleteNote, deletePath, deleteImage, setSelectedObject, setCurrentTool, isEditingText])
 
-    const handleStageClick = (e: any) => {
+    const handleStageClick = (e: unknown) => {
         const clickedOnEmpty = e.target === e.target.getStage()
         if (clickedOnEmpty) {
             setSelectedObject(null)
         }
     }
 
-    const handleStageDoubleClick = (e: any) => {
+    const handleStageDoubleClick = (e: unknown) => {
         if (editorMode !== EditorMode.Draw || currentTool !== 'note') return
         
         const clickedOnEmpty = e.target === e.target.getStage()
@@ -154,7 +154,7 @@ export default function DrawingLayer() {
         }
     }
 
-    const handleStageMouseDown = (e: any) => {
+    const handleStageMouseDown = (e: unknown) => {
         if (editorMode !== EditorMode.Draw) return
         
         const clickedOnEmpty = e.target === e.target.getStage()
@@ -181,7 +181,7 @@ export default function DrawingLayer() {
         }
     }
 
-    const handleStageMouseMove = (e: any) => {
+    const handleStageMouseMove = (e: unknown) => {
         if (!isDrawingPath || (currentTool !== 'pen' && currentTool !== 'eraser')) return
         
         const stage = e.target.getStage()

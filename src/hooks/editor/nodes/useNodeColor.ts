@@ -103,20 +103,20 @@ export const getCategoryBorderColor = (
     nodeSubType?: NodeSubType
 ) => {
     if (nodeSubType === NodeSubType.Service) {
-        return "border-purple-500";
+        return "border-purple-500/50";
     }
     switch (nodeType) {
         case NodeType.Mock:
-            return "border-orange-500";
+            return "border-orange-500/50";
         case NodeType.Note:
-            return "border-yellow-500";
+            return "border-yellow-500/50";
         case NodeType.Group:
-            return "border-green-400";
+            return "border-green-400/50";
         case NodeType.Flow:
         case NodeType.Jump:
-            return "border-pink-700";
+            return "border-pink-700/50";
         default:
-            return "border-sky-500";
+            return "border-sky-500/50";
     }
 }
 

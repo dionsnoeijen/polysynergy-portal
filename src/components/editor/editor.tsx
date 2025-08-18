@@ -40,11 +40,11 @@ export default function Editor() {
     } = useEditorEventHandlers(contentRef);
     const { handleConfirmDelete, handleCancelDelete } = useEditorKeyBindings();
     const {
-        isInteracted,
-        setIsInteracted,
+        // isInteracted,
+        // setIsInteracted,
         selectedNodes,
         deleteNodesDialogOpen,
-        isDraft,
+        // isDraft,
         editorMode,
         activeVersionId,
         nodesToRender,

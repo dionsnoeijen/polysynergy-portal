@@ -4,7 +4,7 @@ import useEditorStore from "@/stores/editorStore";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import useStagesStore from "@/stores/stagesStore";
 import {formatSegments} from "@/utils/formatters";
-import useMockStore from "@/stores/mockStore";
+
 import {Button} from "@/components/button";
 
 const Info: React.FC = (): React.ReactElement => {
@@ -13,7 +13,7 @@ const Info: React.FC = (): React.ReactElement => {
     const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
     const stages = useStagesStore((state) => state.stages);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
-    const mockNodes = useMockStore((state) => state.mockNodes);
+    
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
 
     const [activeItem, setActiveItem] = useState<Route | undefined>();

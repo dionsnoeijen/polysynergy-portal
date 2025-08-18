@@ -21,10 +21,10 @@ const JsonEditorForm: React.FC = () => {
 
     const [node, setNode] = useState<Node>();
     const [activeTab, setActiveTab] = useState<'visual' | 'code'>('visual');
-    const [parsedJson, setParsedJson] = useState<any>(null);
+    const [parsedJson, setParsedJson] = useState<unknown>(null);
     const [jsonError, setJsonError] = useState<string | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const editorRef = useRef<any>(null);
+    const editorRef = useRef<unknown>(null);
     const [json, setJson] = useState<string | undefined>();
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -55,7 +55,7 @@ const JsonEditorForm: React.FC = () => {
         }
     };
 
-    const handleVisualChange = (newValue: any) => {
+    const handleVisualChange = (newValue: unknown) => {
         setParsedJson(newValue);
         setJsonError(null);
         // Update the text editor
@@ -68,7 +68,7 @@ const JsonEditorForm: React.FC = () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleEditorDidMount = (editor: any) => {
+    const handleEditorDidMount = (editor: unknown) => {
         editorRef.current = editor;
 
         const updateHeight = () => {

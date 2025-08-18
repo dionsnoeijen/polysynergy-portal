@@ -49,7 +49,7 @@ export default function TreeList<T extends ListItemWithId>({
 
     const getItemClassName = (item: T) => {
         const baseClasses =
-            "flex items-center border-l border-r border-sky-500/50 dark:border-white/20 justify-between pl-2 transition-colors duration-200 group dark:hover:bg-sky-500 dark:hover:text-white";
+            "flex items-center justify-between pl-2 transition-colors duration-200 group dark:hover:bg-sky-500 dark:hover:text-white";
 
         const isActive = activeItem === item.id;
         const isEditing = formEditingItem === item.id;
@@ -70,9 +70,7 @@ export default function TreeList<T extends ListItemWithId>({
             )}
             <div className="mt-[10px]">
                 <div
-                    className={`flex items-center shadow-sm justify-between border border-sky-500/50 bg-white/90 p-1 pl-2 pr-2 dark:border-white/20 dark:bg-zinc-800 rounded-md${
-                        isOpen ? " rounded-bl-none rounded-br-none" : ""
-                    }`}
+                    className={`flex items-center shadow-sm justify-between border-t border-b border-sky-500/50 bg-white/90 p-1 pl-2 pr-2 dark:border-white/20 dark:bg-zinc-800`}
                     data-tour-id={dataTourId ?? null}
                 >
                     <h4 className={`text-sky-500 dark:text-white/70`}>{title}</h4>
@@ -107,13 +105,13 @@ export default function TreeList<T extends ListItemWithId>({
                         )}
                     >
                         <div
-                            className="border border-sky-500/50 bg-white dark:bg-zinc-800 dark:border-white/20 rounded-md rounded-tr-none rounded-tl-none">
+                            className="border-t border-b border-sky-500/50 bg-white dark:bg-zinc-800 dark:border-white/20">
                             <button
                                 disabled={addDisabled || Boolean(isExecuting)}
                                 onClick={isExecuting ? () => {} : addButtonClick}
                                 className={clsx(
                                     "w-full flex items-center justify-center p-1",
-                                    "rounded-tr-none rounded-tl-none text-sky-500 dark:text-white/70",
+                                    "text-sky-500 dark:text-white/70",
                                     "hover:bg-sky-100/50 dark:hover:bg-white/10"
                                 )}
                             >
@@ -137,7 +135,7 @@ export default function TreeList<T extends ListItemWithId>({
                         data-tour-id={dataTourId ?? null}
                         className={clsx(
                             "w-full flex items-center justify-between gap-2 px-3 py-2",
-                            "rounded-md border border-dotted text-sky-500 border-sky-500 dark:border-white/50",
+                            "border-t border-b border-dotted text-sky-500 border-sky-500 dark:border-white/50",
                             "bg-white/60 dark:bg-black/60 hover:bg-sky-100 dark:hover:bg-white/10",
                             "transition-colors duration-200"
                         )}

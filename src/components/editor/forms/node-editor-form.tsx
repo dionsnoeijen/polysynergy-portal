@@ -71,7 +71,7 @@ const NodeEditorForm: React.FC = () => {
 
     const handleEditorDidMount = (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        editor: any,
+        editor: unknown,
     ) => {
         editorRef.current = editor;
 

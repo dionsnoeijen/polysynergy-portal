@@ -29,7 +29,7 @@ const TemplateEditorForm: React.FC = () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleEditorDidMount = (editor: any) => {
+    const handleEditorDidMount = (editor: unknown) => {
         editorRef.current = editor;
 
         const updateHeight = () => {

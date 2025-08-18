@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+
 import useNodesStore from '@/stores/nodesStore';
 import useConnectionsStore from '@/stores/connectionsStore';
 import useEditorStore from '@/stores/editorStore';
@@ -291,8 +291,8 @@ const Minimap: React.FC = () => {
     }, [setPanPositionForVersion, activeVersionId]);
     
     return (
-        <div className="absolute top-4 right-4 z-30">
-            <div className="bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-xl overflow-hidden">
+        <div className="absolute top-2 right-2 z-30">
+            <div className="bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-lg overflow-hidden">
                 {/* Header */}
                 <div 
                     className="flex items-center justify-between px-2 py-1 border-b border-sky-200/30 dark:border-zinc-700/30 cursor-pointer hover:bg-sky-50/50 dark:hover:bg-zinc-800/50"

@@ -139,10 +139,10 @@ const EditorLayout = ({
                 </>
             )}
             <div className="absolute top-0 right-0 left-0" data-panel="top"
-                 style={{height: outputClosed ? windowHeight - 10 : height.horizontalEditorLayout}}>
+                 style={{height: outputClosed ? windowHeight : height.horizontalEditorLayout}}>
                 {!itemManagerClosed && (
                     <div style={{width: width.itemManager}} className="absolute top-0 left-0 bottom-0" data-panel="item-manager">
-                        <div className="absolute inset-[10px]">
+                        <div className="absolute inset-0">
                             <ItemManagerTabs toggleClose={handleToggleItemManager}/>
                         </div>
                         <button
@@ -160,11 +160,11 @@ const EditorLayout = ({
                 ><ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/></button>)}
 
                 <main className="absolute top-0 bottom-0" data-panel="main" style={{
-                    left: itemManagerClosed ? 10 : width.itemManager,
-                    right: dockClosed ? 10 : width.dock
+                    left: itemManagerClosed ? 0 : width.itemManager,
+                    right: dockClosed ? 0 : width.dock
                 }}>
                     <div
-                        className={`absolute top-[10px] left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border border-sky-500/50 dark:border-white/20 shadow-sm rounded-md ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
+                        className={`absolute top-0 left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border-l border-r border-black ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {showForm ? (
                             <Form/>
@@ -202,7 +202,7 @@ const EditorLayout = ({
                 {!dockClosed && (
                     <>
                         <div style={{width: width.dock}} className="absolute top-0 right-0 bottom-0 overflow-scroll" data-panel="dock">
-                            <div className="absolute inset-[10px]">
+                            <div className="absolute inset-0">
                                 <DockTabs toggleClose={toggleCloseDock}/>
                             </div>
                             <button
@@ -233,7 +233,7 @@ const EditorLayout = ({
                     <button
                         type="button"
                         onClick={toggleCloseOutput}
-                        className={`absolute z-10 top-[10px] right-[10px] p-3 radius-bl-0`}
+                        className={`absolute z-10 top-2 right-2 p-3 radius-bl-0`}
                     ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/></button>
                     <button
                         onMouseDown={() => startResizing(ResizeWhat.Output)}
@@ -241,7 +241,7 @@ const EditorLayout = ({
                         className="absolute h-[8px] left-0 right-0 top-0 cursor-row-resize z-10"
                     />
                     <div
-                        className="absolute top-[10px] left-[10px] right-[10px] bottom-[10px]">
+                        className="absolute top-0 left-0 right-0 bottom-0">
                         <BottomBar/>
                     </div>
                 </div>
@@ -251,7 +251,7 @@ const EditorLayout = ({
                 <button
                     type="button"
                     onClick={toggleCloseOutput}
-                    className="absolute z-10 bottom-[10px] left-1/2 -translate-x-1/2 p-3 radius-bl-0"
+                    className="absolute z-10 bottom-2 left-1/2 -translate-x-1/2 p-3 radius-bl-0"
                 >
                     <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/>
                 </button>

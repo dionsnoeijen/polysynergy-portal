@@ -2,7 +2,7 @@ import React, { useRef, useLayoutEffect, useState, useEffect } from "react";
 import { Connection as ConnectionProps } from "@/types/types";
 import { useTheme } from "next-themes";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
-import useMockStore from "@/stores/mockStore";
+
 import { connectionHistoryActions } from "@/stores/history";
 
 type Props = { connection: ConnectionProps; };

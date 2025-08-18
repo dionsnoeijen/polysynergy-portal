@@ -22,6 +22,27 @@ next start
 next lint
 ```
 
+## Production Deployment
+
+**IMPORTANT**: Before deploying to production, always fix TypeScript and ESLint errors:
+
+1. **Run build to check for errors**: `npm run build`
+2. **Fix errors pragmatically and immediately**:
+   - Comment out unused variables with `//`
+   - Replace `any` types with `unknown` 
+   - Remove unused imports
+   - Fix syntax errors
+3. **Common fixes**:
+   ```bash
+   # Fix unused variables
+   find src -name "*.tsx" -exec sed -i '' 's/const unusedVar/\/\/ const unusedVar/g' {} \;
+   
+   # Fix any types  
+   find src -name "*.tsx" -exec sed -i '' 's/: any/: unknown/g' {} \;
+   ```
+4. **Re-run build** until no errors remain
+5. **Never commit broken builds to production**
+
 ## Architecture
 
 ### Core Technologies

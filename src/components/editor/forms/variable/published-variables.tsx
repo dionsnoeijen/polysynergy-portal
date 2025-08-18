@@ -1,8 +1,8 @@
 import {Node, NodeVariable, NodeVariableType} from "@/types/types";
-import React, {useEffect, useMemo, useState, useRef} from "react";
+
 
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
-import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
+
 import EditDictVariable from "@/components/editor/forms/variable/edit-dict-variable";
 
 import {Subheading} from "@/components/heading";
@@ -17,7 +17,7 @@ import {VariableTypeComponents} from "@/components/editor/sidebars/dock";
 import useNodesStore from "@/stores/nodesStore";
 import useStagesStore from "@/stores/stagesStore";
 import useProjectSecretsStore from "@/stores/projectSecretsStore";
-import useMockStore from "@/stores/mockStore";
+
 import useEditorStore from "@/stores/editorStore";
 
 import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";

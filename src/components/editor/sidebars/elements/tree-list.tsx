@@ -70,7 +70,7 @@ export default function TreeList<T extends ListItemWithId>({
             )}
             <div className="mt-[10px]">
                 <div
-                    className={`flex items-center shadow-sm justify-between border-t border-b border-sky-500/50 bg-white/90 p-1 pl-2 pr-2 dark:border-white/20 dark:bg-zinc-800`}
+                    className={`flex items-center shadow-sm justify-between border-t border-b border-sky-500/50 bg-white/90 p-1 pl-2 pr-2 dark:border-white/10 dark:bg-zinc-800`}
                     data-tour-id={dataTourId ?? null}
                 >
                     <h4 className={`text-sky-500 dark:text-white/70`}>{title}</h4>
@@ -105,7 +105,7 @@ export default function TreeList<T extends ListItemWithId>({
                         )}
                     >
                         <div
-                            className="border-t border-b border-sky-500/50 bg-white dark:bg-zinc-800 dark:border-white/20">
+                            className="border-t border-b border-sky-500/50 bg-white dark:bg-zinc-800 dark:border-white/10">
                             <button
                                 disabled={addDisabled || Boolean(isExecuting)}
                                 onClick={isExecuting ? () => {} : addButtonClick}

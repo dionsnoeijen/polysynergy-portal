@@ -215,9 +215,13 @@ const NodeOutput: React.FC = (): React.ReactElement => {
             // Collapse - simply close accordion and clear visual states
             setExpandedRuns(new Set());
             
-            // Always clear mock data and visual states when closing any accordion item
-            useMockStore.getState().clearMockStore();
-            // Clear visual states from nodes
+            // Only clear mock data if this is NOT the current live run
+            // For current run, preserve the live data for when accordion reopens
+            if (runId !== currentRunId) {
+                useMockStore.getState().clearMockStore();
+            }
+            
+            // Always clear visual states from nodes
             const elements = document.querySelectorAll('[data-node-id]');
             elements.forEach((el) => {
                 el.classList.remove('executing', 'executed-success', 'executed-killed', 'executed-error');

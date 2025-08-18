@@ -28,7 +28,8 @@ export default function RouteTree(): ReactElement {
                     <Link
                         href={`/project/${activeProjectId}/route/${route.id}`}
                         onClick={() => {
-                            setIsExecuting('Loading Route')
+                            // Set loading indicator immediately when user clicks
+                            useEditorStore.getState().setIsLoadingFlow(true);
                         }}
                         title={`${route.method}: /${formatSegments(route.segments)} - ${route.id}`}
                         className={`block flex-1 truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'text-white' : 'dark:text-zinc-500'}`}

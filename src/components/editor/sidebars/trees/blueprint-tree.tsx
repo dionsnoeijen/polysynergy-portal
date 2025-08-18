@@ -101,7 +101,8 @@ export default function BlueprintTree(): ReactElement {
                         href={`/project/${activeProjectId}/blueprint/${blueprint.id}`}
                         title={`${blueprint.name} - ${blueprint.id}`}
                         onClick={() => {
-                            setIsExecuting('Loading Blueprint')
+                            // Set loading indicator immediately when user clicks  
+                            useEditorStore.getState().setIsLoadingFlow(true);
                         }}
                         className={`block flex-1 truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'text-white' : 'dark:text-zinc-500'}`}
                     >

@@ -21,7 +21,7 @@ async function fetchAndApplyNodeSetup({
 
     if (!routeId && !scheduleId && !blueprintId) return;
 
-    // CRITICAL: Set loading state to disable editor and show loading indicator
+    // CRITICAL: Ensure loading state is set (may already be set by menu click)
     useEditorStore.getState().setIsLoadingFlow(true);
     
     console.log("fetchAndApplyNodeSetup", { routeId, scheduleId, blueprintId });

@@ -8,9 +8,11 @@ import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
 
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
+import useMockStore from "@/stores/mockStore";
 
 const NodeMath: React.FC<NodeProps> = ({ node }) => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
+    const mockNode = useMockStore((state) => state.getMockNode(node.id));
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);
@@ -67,7 +69,7 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
             <Connector
                 out
                 nodeId={node.id}
-                handle="result"
+                handle="true_path"
                 iconClassName="text-white dark:text-white"
                 className={`ring-blue-200/50 bg-green-400 dark:bg-green-400 ${node.view.disabled && 'select-none opacity-0'}`}
                 disabled={node.view.disabled}

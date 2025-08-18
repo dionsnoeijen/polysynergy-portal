@@ -15,7 +15,7 @@ const VariableTypeImage: React.FC<VariableTypeProps> = ({
     onChange,
     categoryBorder = 'border border-sky-200 dark:border-zinc-700',
     categoryMainTextColor = 'text-sky-500 dark:text-white/70',
-    categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
+    // categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
 }) => {
     const [previewUrl, setPreviewUrl] = useState<string | null>(
         typeof variable.value === 'string' && variable.value ? variable.value : null

@@ -1,4 +1,5 @@
 
+import React, { useMemo } from 'react';
 import {Subheading} from "@/components/heading";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {Switch} from "@/components/switch";

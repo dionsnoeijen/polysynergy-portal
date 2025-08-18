@@ -11,7 +11,7 @@ const IsExecuting: React.FC<IsExecutingProps> = ({ connectionStatus }) => {
         <>
             {/* WebSocket Connection Status - always show if not connected */}
             {connectionStatus && connectionStatus !== 'connected' && (
-                <div className="absolute bottom-4 left-32 z-40 pointer-events-none">
+                <div className="absolute bottom-3.5 left-20 z-40 pointer-events-none">
                     <div className="bg-white/90 dark:bg-zinc-800/90 border border-gray-200 dark:border-gray-700 backdrop-blur-sm
                                     rounded-md py-2 px-3 flex items-center gap-2 shadow-md">
                         <WebSocketStatusDot status={connectionStatus} />

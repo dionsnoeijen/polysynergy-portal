@@ -9,9 +9,11 @@ import {ChevronRightIcon} from "@heroicons/react/24/outline";
 import {Strong} from "@/components/text";
 
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
+import useMockStore from "@/stores/mockStore";
 
 const NodeComparison: React.FC<NodeProps> = ({ node }) => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
+    const mockNode = useMockStore((state) => state.getMockNode(node.id));
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);
@@ -34,7 +36,6 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
             data-adding={node.view.adding}
             data-node-id={node.id}
         >
-            {mockNode && <ExecutionOrder mockNode={mockNode} centered={true} />}
             <Connector
                 in
                 nodeId={node.id}
@@ -98,6 +99,8 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
                 disabled={node.view.disabled}
                 nodeVariableType={[NodeVariableType.FalsePath, NodeVariableType.Number, NodeVariableType.String].join(',')}
             />
+            
+            {mockNode && <ExecutionOrder mockNode={mockNode} centered={true} />}
         </div>
     );
 };

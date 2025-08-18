@@ -1,8 +1,8 @@
 import { runMockApi } from "@/api/runApi";
-import useEditorStore from "@/stores/editorStore";
+import useEditorStore, { BottomBarView } from "@/stores/editorStore";
 import useMockStore from "@/stores/mockStore";
 import useNodesStore from "@/stores/nodesStore";
-import { NodeVariable } from "@/types/types";
+// import { NodeVariable } from "@/types/types";
 import React from "react";
 import {getNodeExecutionDetails} from "@/api/executionApi";
 import useListenerStore from "@/stores/listenerStore";
@@ -13,17 +13,32 @@ export const useHandlePlay = () => {
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
-    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
+    const setBottomBarView = useEditorStore((state) => state.setBottomBarView);
+    // const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     return async (e: React.MouseEvent, nodeId: string, subStage: string = 'mock') => {
         e.preventDefault();
         e.stopPropagation();
+        
+        // Check if the node exists in the store
+        const nodeExists = useNodesStore.getState().getNode(nodeId);
+        
+        if (!nodeExists) {
+            console.error('PLAY ERROR - Node not found:', nodeId);
+            return;
+        }
 
         if (!activeVersionId) return;
 
         try {
+            // CRITICAL: Open output panel when PLAY is clicked - this was missing!
+            setBottomBarView(BottomBarView.Output);
+            
             clearMockStore();
             setIsExecuting('Running...');
+            
+            console.log('🎬 PLAY STARTED - Output panel opened, mock store cleared, execution state set');
+
 
             const response = await runMockApi(
                 activeProjectId,
@@ -39,7 +54,7 @@ export const useHandlePlay = () => {
             
             // Handle error responses where result might be undefined
             if (!data.result) {
-                console.error('Execution failed:', data);
+                console.error('PLAY ERROR - Execution failed, no result:', data);
                 return;
             }
             

@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {Node, NodeVariable, NodeVariableType} from "@/types/types";
 
 
@@ -28,6 +28,7 @@ import {Select} from "@/components/select";
 import useEnvVarsStore from "@/stores/envVarsStore";
 import IsExecuting from "@/components/editor/is-executing";
 import {Heading} from "@/components/heading";
+// import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
 
 type VariableIdentifier = {
     variable: NodeVariable;
@@ -50,7 +51,7 @@ const PlayButtonsForm: React.FC = () => {
     const leadsToPlayConfig = useNodesStore((state) => state.leadsToPlayConfig);
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
     const secrets = useProjectSecretsStore((state) => state.secrets);
-    const getMockResultForNode = useMockStore((state) => state.getMockResultForNode);
+    // const getMockResultForNode = useMockStore((state) => state.getMockResultForNode);
     const handlePlay = useHandlePlay();
 
     const stages = useStagesStore((state) => state.stages);
@@ -67,7 +68,8 @@ const PlayButtonsForm: React.FC = () => {
     const [dictVariables, setDictVariables] = useState<{ [nodeId: string]: { [handle: string]: NodeVariable[] } }>({});
     const [simpleVariables, setSimpleVariables] = useState<{ [nodeId: string]: { [handle: string]: string } }>({});
     const [secretVariables, setSecretVariables] = useState<{ key: string, value: string }[]>([]);
-    // const [envVariables, setEnvVariables] = useState<{ key: string; value: string }[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [envVariables, setEnvVariables] = useState<{ key: string; value: string }[]>([]);
 
     useEffect(() => {
         fetchSecretsWithRetry(fetchSecrets);
@@ -374,7 +376,7 @@ const PlayButtonsForm: React.FC = () => {
     const title = getNodeVariable(selectedPlayButton.id, "title")?.value as string;
     const fallbackTitle = `Play ${selectedPlayButton.handle}`;
     const displayTitle = title?.trim() || fallbackTitle;
-    const result = getMockResultForNode?.(selectedPlayButton.id);
+    // const result = getMockResultForNode?.(selectedPlayButton.id);
 
     return (
         <div className="flex flex-col gap-4 relative p-10">
@@ -611,14 +613,14 @@ const PlayButtonsForm: React.FC = () => {
             </div>
 
             {/* Show results for executed play button */}
-            {result?.variables && (
+            {/* {result?.variables && (
                 <div className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4 bg-sky-50 dark:bg-white/5">
                     <div className="mb-2 text-sky-500 dark:text-white font-semibold text-sm">
                         Result from {displayTitle}
                     </div>
                     <FormattedNodeOutput variables={result.variables}/>
                 </div>
-            )}
+            )} */}
         </div>
     );
 };

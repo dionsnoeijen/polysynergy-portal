@@ -5,8 +5,10 @@ import {getNodeExecutionDetails, getAvailableRuns, getAllNodesForRun, clearAllRu
 
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
+import useMockStore, { MockNode } from "@/stores/mockStore";
 import { Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle } from "@/components/dialog";
 import { Button } from "@/components/button";
+import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
 
 interface Run {
     run_id: string;
@@ -22,6 +24,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     const setSelectedRunId = useEditorStore((state) => state.setSelectedRunId);
     const loadHistoricalRunData = useEditorStore((state) => state.loadHistoricalRunData);
     const globalIsExecuting = useEditorStore((state) => state.isExecuting);
+    const mockNodes = useMockStore((state) => state.mockNodes);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [expandedNodes, setExpandedNodes] = useState<Record<string, any>>({});
@@ -241,6 +244,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                 
                 try {
                     // First try to get stored mock nodes (perfect recreation)
+                    if (!activeVersionId || !activeProjectId) return;
                     const mockNodesResponse = await getMockNodesForRun(activeVersionId, runId, activeProjectId);
                     const storedMockNodes = mockNodesResponse.mock_nodes;
                     
@@ -248,7 +252,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                         console.log("Using stored mock nodes for perfect recreation:", storedMockNodes.length);
                         
                         // Apply stored mock nodes directly
-                        storedMockNodes.forEach(node => {
+                        storedMockNodes.forEach((node: MockNode) => {
                             useMockStore.getState().addOrUpdateMockNode(node);
                         });
                         useMockStore.getState().setHasMockData(true);
@@ -263,11 +267,14 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                         console.log("No stored mock nodes, falling back to reconstruction");
                         let nodes = historicalNodes[runId];
                         if (!nodes) {
-                            nodes = await fetchHistoricalNodes(runId);
+                            const fetchedNodes = await fetchHistoricalNodes(runId);
+                            if (fetchedNodes) {
+                                nodes = fetchedNodes;
+                            }
                         }
                         
                         if (nodes && nodes.length > 0) {
-                            nodes.forEach(node => {
+                            nodes.forEach((node: MockNode) => {
                                 useMockStore.getState().addOrUpdateMockNode(node);
                             });
                             useMockStore.getState().setHasMockData(true);
@@ -310,7 +317,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const toggleNode = async (node: unknown, runId: string) => {
+    const toggleNode = async (node: MockNode, runId: string) => {
         // Create a unique key for this node in this run
         const nodeKey = `${node.id}-${runId}`;
         

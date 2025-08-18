@@ -15,7 +15,7 @@ const VariableTypeBoolean: React.FC<VariableTypeProps> = ({
     onChange,
     currentValue,
     inDock = true,
-    categoryBorder = 'border border-sky-200 dark:border-zinc-700',
+    // categoryBorder = 'border border-sky-200 dark:border-zinc-700',
     // eslint-disable-next-line
     categoryMainTextColor = 'text-sky-500 dark:text-white/70',
     // eslint-disable-next-line

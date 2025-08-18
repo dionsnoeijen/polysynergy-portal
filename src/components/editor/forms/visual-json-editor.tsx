@@ -5,17 +5,14 @@ import {
     ChevronDownIcon, 
     ChevronRightIcon,
     CubeIcon,
-    ListBulletIcon
+    ListBulletIcon,
+    TrashIcon
 } from '@heroicons/react/24/outline';
 import { Checkbox } from '@/components/checkbox';
 
 interface VisualJsonEditorProps {
     value: unknown;
     onChange: (value: unknown) => void;
-}
-
-interface FocusCallbacks {
-    onPropertyAdded?: (path: string[], key: string) => void;
 }
 
 type JsonValueType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'null';
@@ -80,9 +77,10 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
                 newArray[index] = updateNestedValue(newArray[index], rest, value);
                 return newArray;
             } else {
+                const objAsRecord = obj as Record<string, unknown>;
                 return {
-                    ...obj,
-                    [key]: updateNestedValue(obj[key], rest, value)
+                    ...objAsRecord,
+                    [key]: updateNestedValue(objAsRecord[key], rest, value)
                 };
             }
         };
@@ -105,7 +103,9 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
                     newArray.splice(parseInt(key), 1);
                     return newArray;
                 } else {
-                    const { [key]: deleted, ...rest } = obj;
+                    const objAsRecord = obj as Record<string, unknown>;
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const { [key]: deleted, ...rest } = objAsRecord;
                     return rest;
                 }
             }
@@ -119,9 +119,10 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
                 newArray[index] = deletePath(newArray[index], rest);
                 return newArray;
             } else {
+                const objAsRecord = obj as Record<string, unknown>;
                 return {
-                    ...obj,
-                    [key]: deletePath(obj[key], rest)
+                    ...objAsRecord,
+                    [key]: deletePath(objAsRecord[key], rest)
                 };
             }
         };
@@ -148,7 +149,7 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
                 if (Array.isArray(obj)) {
                     return [...obj, value];
                 } else {
-                    return { ...obj, [key]: value };
+                    return { ...(obj as Record<string, unknown>), [key]: value };
                 }
             }
             
@@ -156,14 +157,14 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
             const isArray = Array.isArray(obj);
             
             if (isArray) {
-                const newArray = [...obj];
+                const newArray = [...(obj as unknown[])];
                 const index = parseInt(currentKey);
                 newArray[index] = addToPath(newArray[index], rest, key, value);
                 return newArray;
             } else {
                 return {
-                    ...obj,
-                    [currentKey]: addToPath(obj[currentKey], rest, key, value)
+                    ...(obj as Record<string, unknown>),
+                    [currentKey]: addToPath((obj as Record<string, unknown>)[currentKey], rest, key, value)
                 };
             }
         };
@@ -174,13 +175,13 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
         // Focus the newly created field if it's a primitive value
         if (shouldFocus && ['string', 'number'].includes(valueType)) {
             const newPath = Array.isArray(value || {}) 
-                ? [...path, ((value || []).length).toString()]
+                ? [...path, (Array.isArray(value) ? value.length : 0).toString()]
                 : [...path, key];
             setFocusPath(newPath.join('.'));
         }
     };
 
-    const renderValue = (val: unknown, path: string[] = [], parentKey?: string): React.ReactNode => {
+    const renderValue = (val: unknown, path: string[] = [], /* parentKey?: string */): React.ReactNode => {
         const pathString = path.join('.');
         const isExpanded = expandedPaths.has(pathString);
 
@@ -233,7 +234,7 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 e.preventDefault();
-                                e.currentTarget.blur(); // Unfocus input
+                                (e.currentTarget as HTMLInputElement).blur(); // Unfocus input
                                 handleValueConfirmed(path); // Activate add property mode
                             }
                         }}
@@ -306,7 +307,7 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
         }
 
         if (typeof val === 'object') {
-            const entries = Object.entries(val);
+            const entries = Object.entries(val as Record<string, unknown>);
             
             return (
                 <div className="">
@@ -338,7 +339,7 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
                     
                     {isExpanded && (
                         <div className="">
-                            {entries.map(([key, value], index) => (
+                            {entries.map(([key, value], /* index */) => (
                                 <PropertyRow 
                                     key={key} 
                                     originalKey={key}
@@ -346,7 +347,7 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
                                     path={[...path, key]}
                                     onKeyChange={(oldKey, newKey) => {
                                         if (newKey !== oldKey) {
-                                            const newObj = { ...val };
+                                            const newObj = { ...val } as Record<string, unknown>;
                                             newObj[newKey] = newObj[oldKey];
                                             delete newObj[oldKey];
                                             updateValue(path, newObj);
@@ -429,7 +430,7 @@ const VisualJsonEditor: React.FC<VisualJsonEditorProps> = ({ value, onChange }) 
                             onClick={() => createRootValue('string')}
                             className="flex items-center gap-2 p-3 text-left border border-zinc-200 dark:border-zinc-700 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-800"
                         >
-                            <span className="w-4 h-4 flex items-center justify-center text-zinc-400 font-mono text-xs">"</span>
+                            <span className="w-4 h-4 flex items-center justify-center text-zinc-400 font-mono text-xs">&quot;</span>
                             <span className="text-sm">String</span>
                         </button>
                         <button
@@ -667,7 +668,7 @@ const PropertyRow: React.FC<{
     const handleKeyKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            e.currentTarget.blur();
+            (e.currentTarget as HTMLInputElement).blur();
             
             // Direct focus to value input if it's a primitive type
             if (typeof value === 'string' || typeof value === 'number') {
@@ -687,7 +688,9 @@ const PropertyRow: React.FC<{
             return (
                 <input
                     ref={(ref) => {
-                        valueInputRef.current = ref;
+                        if (valueInputRef.current !== ref) {
+                            (valueInputRef as React.MutableRefObject<HTMLInputElement | null>).current = ref;
+                        }
                         // Also register with parent focus system
                         registerInputRef(currentPath.join('.'), ref);
                     }}
@@ -705,7 +708,7 @@ const PropertyRow: React.FC<{
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             e.preventDefault();
-                            e.currentTarget.blur();
+                            (e.currentTarget as HTMLInputElement).blur();
                             // Trigger the add property workflow like the original
                             onValueConfirmed(currentPath);
                         }

@@ -9,9 +9,12 @@ import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
 
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
 import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
+import useMockStore from "@/stores/mockStore";
 
 const NodeJump: React.FC<NodeProps> = ({node}) => {
     const {selectedNodes} = useEditorStore();
+    const mockNode = useMockStore((state) => state.getMockNode(node.id));
+    const hasMockData = useMockStore((state) => state.hasMockData);
     const {handleNodeMouseDown} = useNodeMouseDown(node);
     const {handleContextMenu} = useNodeContextMenu(node);
     const position = useNodePlacement(node);

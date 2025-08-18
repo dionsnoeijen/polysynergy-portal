@@ -86,7 +86,8 @@ const ProjectSecretsForm: React.FC = () => {
             setTimeout(() => setSuccess(null), 3000);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: unknown) {
-            setError(err.message || "An error occurred.");
+            const error = err as Error;
+            setError(error.message || "An error occurred.");
         } finally {
             setSavingStages(prev => ({ ...prev, [stage]: false }));
         }

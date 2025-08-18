@@ -151,6 +151,9 @@ export type EditorState = {
     isExecuting: string | null;
     setIsExecuting: (isExecuting: string | null) => void;
 
+    isLoadingFlow: boolean;
+    setIsLoadingFlow: (isLoading: boolean) => void;
+
     hasAutoFitted: Record<string, boolean>;
 
     setHasAutoFitted(setupId: string, value: boolean): void;
@@ -165,6 +168,8 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
     isExecuting: null,
     setIsExecuting: (isExecuting) => set({isExecuting: isExecuting}),
+    isLoadingFlow: false,
+    setIsLoadingFlow: (isLoading) => set({isLoadingFlow: isLoading}),
 
     zoomFactor: .75,
     setZoomFactor: (factor) => set({zoomFactor: factor}),

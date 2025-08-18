@@ -14,6 +14,7 @@ export default function RunHistorySelector() {
     const [loading, setLoading] = useState(false);
     
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const selectedRunId = useEditorStore((state) => state.selectedRunId);
     const isViewingHistoricalRun = useEditorStore((state) => state.isViewingHistoricalRun);
     const setSelectedRunId = useEditorStore((state) => state.setSelectedRunId);
@@ -29,7 +30,7 @@ export default function RunHistorySelector() {
             
             setLoading(true);
             try {
-                const response = await getAvailableRuns(activeVersionId);
+                const response = await getAvailableRuns(activeVersionId!, activeProjectId!);
                 setRuns(response.runs || []);
             } catch (error) {
                 console.error("Failed to fetch runs:", error);

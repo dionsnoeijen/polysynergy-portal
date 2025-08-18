@@ -1,6 +1,6 @@
 import * as Headless from '@headlessui/react'
 import clsx from 'clsx'
-import React, { forwardRef, useState, useRef, useEffect } from 'react'
+import React, { forwardRef, useState, useRef, useEffect, useImperativeHandle } from 'react'
 import { XMarkIcon } from '@heroicons/react/20/solid';
 
 interface VariableChip {
@@ -34,6 +34,9 @@ export const TemplateInput = forwardRef(function TemplateInput(
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Forward the ref to the input element
+  useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
   
   useEffect(() => {
     setEditValue(value);

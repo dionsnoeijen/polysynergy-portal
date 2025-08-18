@@ -1,6 +1,6 @@
 import useNodesStore from '@/stores/nodesStore';
 import useConnectionsStore from '@/stores/connectionsStore';
-import { FlowNode, NodeVariable } from '@/types/types';
+import { Node } from '@/types/types';
 
 export interface StorageConfig {
     type: 'LocalAgentStorage' | 'DynamoDBAgentStorage';
@@ -23,27 +23,18 @@ export function traceStorageConfiguration(promptNodeId: string): StorageConfig |
 /**
  * Traces connections from a prompt node to find both the AgnoAgent and its storage configuration
  */
-export function traceAgentAndStorage(promptNodeId: string): { agentNode: FlowNode; storageConfig: StorageConfig; agentAvatar?: string; agentName?: string } | null {
-    const { getNode } = useNodesStore.getState();
-    const { connections } = useConnectionsStore.getState();
-
+export function traceAgentAndStorage(promptNodeId: string): { agentNode: Node; storageConfig: StorageConfig; agentAvatar?: string; agentName?: string } | null {
     // Step 1: Find AgnoAgent connected to this prompt node
     const agentNode = findConnectedAgentNode(promptNodeId);
     if (!agentNode) {
-        console.log('No AgnoAgent found connected to prompt node');
         return null;
     }
-
-    console.log(`Found connected agent: ${agentNode.id} (${agentNode.name})`);
 
     // Step 2: Find storage node connected to the agent
     const storageNode = findConnectedStorageNode(agentNode.id);
     if (!storageNode) {
-        console.log('No storage node found connected to agent');
         return null;
     }
-
-    console.log(`Found connected storage: ${storageNode.id} (${storageNode.path})`);
 
     // Step 3: Extract storage configuration from the storage node
     const storageConfig = extractStorageConfig(storageNode);
@@ -66,14 +57,14 @@ export function traceAgentAndStorage(promptNodeId: string): { agentNode: FlowNod
 /**
  * Find the AgnoAgent node connected to a prompt node
  */
-function findConnectedAgentNode(promptNodeId: string): FlowNode | null {
+function findConnectedAgentNode(promptNodeId: string): Node | null {
     const { getNode } = useNodesStore.getState();
     const { connections } = useConnectionsStore.getState();
 
     // Look for connections where prompt node output connects to agent node input
     for (const connection of connections) {
         if (connection.sourceNodeId === promptNodeId) {
-            const targetNode = getNode(connection.targetNodeId);
+            const targetNode = getNode(connection.targetNodeId as string);
             if (targetNode && isAgnoAgentNode(targetNode)) {
                 return targetNode;
             }
@@ -86,7 +77,7 @@ function findConnectedAgentNode(promptNodeId: string): FlowNode | null {
 /**
  * Find the storage node connected to an AgnoAgent node
  */
-function findConnectedStorageNode(agentNodeId: string): FlowNode | null {
+function findConnectedStorageNode(agentNodeId: string): Node | null {
     const { getNode } = useNodesStore.getState();
     const { connections } = useConnectionsStore.getState();
 
@@ -106,7 +97,7 @@ function findConnectedStorageNode(agentNodeId: string): FlowNode | null {
 /**
  * Check if a node is an AgnoAgent or AgnoTeam node
  */
-function isAgnoAgentNode(node: FlowNode): boolean {
+function isAgnoAgentNode(node: Node): boolean {
     return node.path === 'polysynergy_nodes_agno.agno_agent.agno_agent.AgnoAgent' ||
            node.path === 'polysynergy_nodes_agno.agno_team.agno_team.AgnoTeam' ||
            node.category === 'agno_agent' ||
@@ -116,7 +107,7 @@ function isAgnoAgentNode(node: FlowNode): boolean {
 /**
  * Check if a node is a storage node
  */
-function isStorageNode(node: FlowNode): boolean {
+function isStorageNode(node: Node): boolean {
     return node.path === 'polysynergy_nodes_agno.agno_storage.local_agent_storage.LocalAgentStorage' ||
            node.path === 'polysynergy_nodes_agno.agno_storage.dynamodb_agent_storage.DynamoDBAgentStorage' ||
            node.category === 'agno_storage';
@@ -125,7 +116,7 @@ function isStorageNode(node: FlowNode): boolean {
 /**
  * Extract storage configuration from a storage node
  */
-function extractStorageConfig(storageNode: FlowNode): StorageConfig | null {
+function extractStorageConfig(storageNode: Node): StorageConfig | null {
     const getVariableValue = (handle: string): string | undefined => {
         const variable = storageNode.variables.find(v => v.handle === handle);
         return variable?.value as string;

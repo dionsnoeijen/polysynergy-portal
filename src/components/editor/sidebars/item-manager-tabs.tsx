@@ -47,7 +47,7 @@ const ItemManagerTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
                     <Tab.List className="flex items-center gap-1 p-1 border-b border-sky-500/50 dark:border-white/20 bg-white dark:bg-zinc-800">
                         {/* Tabs */}
                         <div className="flex flex-1">
-                            {tabs.map((tab, index) => (
+                            {tabs.map((tab, /* index */) => (
                                 <Tab
                                     key={tab.name}
                                     disabled={tab.disabled}

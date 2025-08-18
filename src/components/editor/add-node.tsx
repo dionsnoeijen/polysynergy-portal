@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import useEditorStore from "@/stores/editorStore";
 import { Input, InputGroup } from "@/components/input";
 import { ChevronRightIcon, MagnifyingGlassIcon, FolderIcon } from "@heroicons/react/24/outline";
@@ -251,19 +252,32 @@ const AddNode: React.FC = () => {
     // Calculate total node count
     const totalNodeCount = categories.reduce((sum, cat) => sum + cat.count, 0);
 
+    // Only render portal if we're in the browser (client-side)
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
     return (
         <>
-            {showAddingNode && (
-                <div
-                    ref={modalRef}
-                    onWheel={(e) => e.stopPropagation()}
-                    className="absolute p-4 bg-sky-100 dark:bg-black/90 dark:border-white/10 border-sky-500/50 rounded-lg shadow-lg w-[800px] h-[480px] z-30"
-                    style={{
-                        left: '50%',
-                        top: 'clamp(20px, 50%, calc(100vh - 500px))',
-                        transform: 'translateX(-50%) translateY(-50%)'
-                    }}
-                >
+            {showAddingNode && createPortal(
+                <>
+                    {/* Backdrop */}
+                    <div 
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
+                        onClick={() => setShowAddingNode(false)}
+                    />
+                    
+                    {/* Modal */}
+                    <div
+                        ref={modalRef}
+                        onWheel={(e) => e.stopPropagation()}
+                        className="fixed p-4 bg-sky-100 dark:bg-black/90 dark:border-white/10 border-sky-500/50 rounded-lg shadow-2xl w-[800px] h-[480px] z-[9999] border"
+                        style={{
+                            left: '50%',
+                            top: '50%',
+                            transform: 'translateX(-50%) translateY(-50%)'
+                        }}
+                    >
                     <InputGroup className="mb-4">
                         <MagnifyingGlassIcon data-slot="icon" className="h-5 w-5 text-zinc-500" />
                         <Input
@@ -399,6 +413,8 @@ const AddNode: React.FC = () => {
                         <span>Type to search</span>
                     </div>
                 </div>
+                </>,
+                document.body
             )}
         </>
     );

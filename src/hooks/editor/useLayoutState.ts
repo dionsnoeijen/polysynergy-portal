@@ -11,6 +11,7 @@ export const useLayoutState = () => {
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const closeFormMessage = useEditorStore((state) => state.closeFormMessage);
     const isExecuting = useEditorStore((state) => state.isExecuting);
+    const isLoadingFlow = useEditorStore((state) => state.isLoadingFlow);
 
     // Auto-fetch hook
     useAutoFetch();
@@ -23,6 +24,7 @@ export const useLayoutState = () => {
         activeVersionId,
         closeFormMessage,
         isExecuting,
+        isLoadingFlow,
         
         // Functions
         fetchAvailableNodes

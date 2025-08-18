@@ -147,6 +147,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
                 const {[runId]: __, ...restSequences} = state.sequenceCounters;
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const {[runId]: ___, ...restChunks} = state.chunkBuffers;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const {[runId]: _listeners, ...restListeners} = state.runCompletionListeners;
                 return {
                     messagesByRun: restMessages, 
@@ -295,8 +296,11 @@ const useChatStore = create<ChatStore>((set, get) => ({
                 delete newListeners[runId];
                 
                 // Also clear the run's messages
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { [runId]: _, ...restMessages } = state.messagesByRun;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { [runId]: __, ...restSequences } = state.sequenceCounters;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { [runId]: ___, ...restChunks } = state.chunkBuffers;
                 
                 return {

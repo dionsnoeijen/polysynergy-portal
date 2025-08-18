@@ -1,10 +1,10 @@
-
 import { ChevronRightIcon, EllipsisHorizontalIcon } from "@heroicons/react/24/outline";
 import { InOut } from "@/types/types";
 import useConnectionsStore from "@/stores/connectionsStore";
 import { useConnectorHandlers } from "@/hooks/editor/nodes/useConnectorHandlers";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 import useNodesStore from "@/stores/nodesStore";
+import {useEffect, useMemo} from "react";
 
 type ConnectorGroupProps = {
     groupId: string;

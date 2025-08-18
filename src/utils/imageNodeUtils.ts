@@ -26,12 +26,12 @@ const IMAGE_NODE_CATEGORIES = [
  */
 export function isImageNode(node: Node): boolean {
     // Check by path first (most specific)
-    if (node.path && IMAGE_NODE_PATHS.includes(node.path as any)) {
+    if (node.path && IMAGE_NODE_PATHS.includes(node.path as unknown as (typeof IMAGE_NODE_PATHS)[number])) {
         return true;
     }
     
     // Check by category (broader check)
-    if (node.category && IMAGE_NODE_CATEGORIES.includes(node.category as any)) {
+    if (node.category && IMAGE_NODE_CATEGORIES.includes(node.category as unknown as (typeof IMAGE_NODE_CATEGORIES)[number])) {
         return true;
     }
     

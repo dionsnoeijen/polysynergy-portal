@@ -31,7 +31,7 @@ import {Input} from "@/components/input";
 import {Field, Fieldset, Label} from "@/components/fieldset";
 import {
     getCategoryGradientBackgroundColor,
-    getCategoryBorderColor, getCategoryPlaneBackgroundColor,
+    getCategoryBorderColor, // getCategoryPlaneBackgroundColor,
     getCategoryTextColor,
     NodeSubType
 } from "@/hooks/editor/nodes/useNodeColor";

@@ -1,4 +1,5 @@
 
+import React, { memo, useMemo } from 'react';
 import { 
     DocumentIcon, 
     PhotoIcon, 

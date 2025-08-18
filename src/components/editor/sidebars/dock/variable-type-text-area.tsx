@@ -12,12 +12,12 @@ const VariableTypeTextArea: React.FC<VariableTypeProps> = ({
     variable,
     publishedButton = true,
     inDock = true,
-    categoryBorder = 'border border-sky-200 dark:border-zinc-700',
+    // categoryBorder = 'border border-sky-200 dark:border-zinc-700',
     // eslint-disable-next-line
     categoryMainTextColor = 'text-sky-500 dark:text-white/70',
     // eslint-disable-next-line
     categorySubTextColor = 'text-sky-800 dark:text-white/70',
-    categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
+    // categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
     // eslint-disable-next-line
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
 }) => {

@@ -46,7 +46,7 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
     disabled = false,
     value = "",
     onChange,
-    categoryBorder = 'border border-sky-200 dark:border-zinc-700',
+    // categoryBorder = 'border border-sky-200 dark:border-zinc-700',
     // eslint-disable-next-line
     categoryMainTextColor = 'text-sky-500 dark:text-white/70',
     // eslint-disable-next-line
@@ -97,22 +97,22 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
         onChange(htmlContent);
     };
 
-    const handleEditBlur = (e: React.FocusEvent) => {
-        // Check if the new focus target is still within the editor
-        const currentTarget = e.currentTarget;
-        const relatedTarget = e.relatedTarget as Node;
-        
-        // If clicking outside the editor container, exit edit mode
-        if (!relatedTarget || !currentTarget.contains(relatedTarget)) {
-            setIsEditing(false);
-        }
-    };
+    // const handleEditBlur = (e: React.FocusEvent) => {
+    //     // Check if the new focus target is still within the editor
+    //     const currentTarget = e.currentTarget;
+    //     const relatedTarget = e.relatedTarget as Node;
+    //     
+    //     // If clicking outside the editor container, exit edit mode
+    //     if (!relatedTarget || !currentTarget.contains(relatedTarget)) {
+    //         setIsEditing(false);
+    //     }
+    // };
 
-    const handleEditKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Escape') {
-            setIsEditing(false);
-        }
-    };
+    // const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    //     if (e.key === 'Escape') {
+    //         setIsEditing(false);
+    //     }
+    // };
 
     // Handle clicks outside the editor
     useEffect(() => {
@@ -144,8 +144,7 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
     };
 
     const handleKeyCommand = (command: string, state: EditorState) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const newState: unknown = RichUtils.handleKeyCommand(state, command);
+        const newState = RichUtils.handleKeyCommand(state, command) as unknown as EditorState;
         if (newState) {
             setEditorState(newState);
             const htmlContent = stateToHTML(newState.getCurrentContent());
@@ -397,27 +396,27 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
     );
 };
 
-interface VariableChipProps {
-    handle: string;
-    onRemove: () => void;
-}
+// interface VariableChipProps {
+//     handle: string;
+//     onRemove: () => void;
+// }
 
-const VariableChipComponent: React.FC<VariableChipProps> = ({ handle, onRemove }) => {
-    return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 mx-0.5 bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-200 rounded-md text-sm font-mono border border-sky-200 dark:border-sky-700/50">
-            <span className="truncate max-w-[200px]">{handle}</span>
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onRemove();
-                }}
-                className="flex-shrink-0 text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-200 transition-colors"
-                title="Remove variable"
-            >
-                <XMarkIcon className="w-3 h-3" />
-            </button>
-        </span>
-    );
-};
+// const VariableChipComponent: React.FC<VariableChipProps> = ({ handle, onRemove }) => {
+//     return (
+//         <span className="inline-flex items-center gap-1 px-2 py-0.5 mx-0.5 bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-200 rounded-md text-sm font-mono border border-sky-200 dark:border-sky-700/50">
+//             <span className="truncate max-w-[200px]">{handle}</span>
+//             <button
+//                 onClick={(e) => {
+//                     e.stopPropagation();
+//                     onRemove();
+//                 }}
+//                 className="flex-shrink-0 text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-200 transition-colors"
+//                 title="Remove variable"
+//             >
+//                 <XMarkIcon className="w-3 h-3" />
+//             </button>
+//         </span>
+//     );
+// };
 
 export default TemplateRichTextEditor;

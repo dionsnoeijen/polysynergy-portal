@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 
 import { connectionHistoryActions } from "@/stores/history";
+import useMockStore from "@/stores/mockStore";
 
 type Props = { connection: ConnectionProps; };
 
@@ -96,7 +97,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     style={{ cursor: 'pointer' }}
                     onClick={handleConnectionClick}
                 >
-                    <title>Click to delete connection</title>
+                    <title>Click to delete connection {connection.id}</title>
                 </path>
                 {window.debugMode && (
                     <text

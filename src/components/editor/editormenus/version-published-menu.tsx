@@ -3,6 +3,7 @@
 import React from 'react';
 import useEditorStore from '@/stores/editorStore';
 import useDocumentationStore from '@/stores/documentationStore';
+import useMockStore from '@/stores/mockStore';
 
 import SavingIndicator from '@/components/saving-indicator';
 import {FormType} from '@/types/types';
@@ -26,8 +27,8 @@ export default function VersionPublishedMenu() {
     const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
     const fetchCategories = useDocumentationStore((state) => state.fetchCategories);
     
-    
-    
+    const hasMockData = useMockStore((state) => state.hasMockData);
+    const clearMockStore = useMockStore((state) => state.clearMockStore);
 
     const handleOpenDocs = async () => {
         setDocumentationType('general');

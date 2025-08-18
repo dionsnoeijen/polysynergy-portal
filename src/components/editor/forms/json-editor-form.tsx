@@ -63,7 +63,8 @@ const JsonEditorForm: React.FC = () => {
         setJson(jsonString);
         // Also update Monaco editor if it's mounted
         if (editorRef.current) {
-            editorRef.current.setValue(jsonString);
+            const typedEditor = editorRef.current as { setValue: (value: string) => void };
+            typedEditor.setValue(jsonString);
         }
     };
 
@@ -78,7 +79,8 @@ const JsonEditorForm: React.FC = () => {
 
         updateHeight();
 
-        editor.onDidChangeModelContent(() => {
+        const typedEditor = editor as { onDidChangeModelContent: (callback: () => void) => void };
+        typedEditor.onDidChangeModelContent(() => {
             updateHeight();
         });
     };

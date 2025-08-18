@@ -32,13 +32,15 @@ const CodeEditorForm: React.FC = () => {
         editorRef.current = editor;
 
         const updateHeight = () => {
-            const contentHeight = editor.getContentHeight();
+            const typedEditor = editor as { getContentHeight: () => number };
+            const contentHeight = typedEditor.getContentHeight();
             setEditorHeight(contentHeight + 20); // Voeg wat padding toe
         };
 
         updateHeight();
 
-        editor.onDidChangeModelContent(() => {
+        const typedEditor = editor as { onDidChangeModelContent: (callback: () => void) => void };
+        typedEditor.onDidChangeModelContent(() => {
             updateHeight();
         });
     };

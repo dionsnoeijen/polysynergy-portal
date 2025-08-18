@@ -7,6 +7,27 @@ import {Fundamental} from '@/types/types';
 
 let debounceTimeout: NodeJS.Timeout | null = null;
 let savingInProgress = false;
+let autosaveEnabled = true; // Global flag to disable autosave during critical operations
+
+// CRITICAL: Global functions to control autosave during node setup switching
+export const disableAutosave = (reason = 'Unknown') => {
+    console.log(`🔒 DISABLING AUTOSAVE - Reason: ${reason}`);
+    autosaveEnabled = false;
+    
+    // Cancel any pending saves to prevent corruption
+    if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+        debounceTimeout = null;
+        console.log('🔒 Cancelled pending autosave during disable');
+    }
+};
+
+export const enableAutosave = (reason = 'Unknown') => {
+    console.log(`🔓 ENABLING AUTOSAVE - Reason: ${reason}`);
+    autosaveEnabled = true;
+};
+
+export const isAutosaveEnabled = () => autosaveEnabled;
 
 export default function useGlobalStoreListenersWithImmediateSave() {
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
@@ -37,10 +58,24 @@ export default function useGlobalStoreListenersWithImmediateSave() {
 
         if (!fundamentalId || !type) return;
 
-        // ⛔ skip save als type en versie niet matchen met vorige
-        // BUT: Don't skip on first initialization (when last values are null)
-        if ((last.versionId !== activeVersionId || last.type !== type) && last.versionId !== null) {
+        // CRITICAL: Detect node setup switching and handle safely
+        const isVersionSwitch = last.versionId !== activeVersionId && last.versionId !== null;
+        const isTypeSwitch = last.type !== type && last.type !== null;
+        const isSwitching = isVersionSwitch || isTypeSwitch;
+        
+        if (isSwitching) {
+            console.log('🚨 DETECTED NODE SETUP SWITCH:', {
+                from: { type: last.type, versionId: last.versionId },
+                to: { type, versionId: activeVersionId },
+                isVersionSwitch,
+                isTypeSwitch
+            });
+            
+            // SAFETY: Update tracking immediately to prevent future saves going to wrong target
             lastTypeAndVersionRef.current = {type, versionId: activeVersionId};
+            
+            // Skip this save since we're switching contexts
+            console.log('🚨 Skipping save due to context switch - data corruption prevented!');
             return;
         }
         
@@ -109,6 +144,12 @@ export default function useGlobalStoreListenersWithImmediateSave() {
     }, [forceImmediateSave, setForceSave]);
 
     const saveNodeSetup = useCallback(() => {
+        // CRITICAL: Skip autosave if disabled (during node setup switching)
+        if (!autosaveEnabled) {
+            console.log('🔒 Autosave disabled - skipping save operation');
+            return;
+        }
+        
         const now = Date.now();
         const elapsed = now - lastSaveTimeRef.current;
 

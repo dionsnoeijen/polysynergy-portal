@@ -38,7 +38,7 @@ const NodeHandlesContent: React.FC = () => {
 
     if (!selectedNode) {
         return (
-            <div className="h-full flex flex-col items-center pt-[150px]">
+            <div className="h-full flex flex-col items-center p-4 pt-[150px]">
                 <div className="bg-sky-50/50 dark:bg-zinc-800/50 rounded-lg px-4 py-3">
                     <div className="text-center text-zinc-500 dark:text-zinc-500 text-sm">
                         Select a node to view handles

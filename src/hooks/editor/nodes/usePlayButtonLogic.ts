@@ -30,8 +30,11 @@ export const usePlayButtonLogic = ({
 
         const buttonClassName = `h-9 ${staged ? 'w-9' : 'w-full'} min-w-[2.25rem] flex justify-center items-center rounded-md border border-white/90 focus:outline-none`;
 
-        const run = (e: React.MouseEvent) => {
-            handlePlay(e, nodeId, selectedStage);
+        const run = (e: React.MouseEvent, currentNodeId?: string) => {
+            // CRITICAL: Use provided nodeId or fall back to prop - prevents stale ID usage
+            const actualNodeId = currentNodeId || nodeId;
+            console.log('🎯 PLAY BUTTON CLICKED - Using nodeId:', actualNodeId, 'from:', currentNodeId ? 'runtime' : 'props');
+            handlePlay(e, actualNodeId, selectedStage);
         };
 
         const handleStageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

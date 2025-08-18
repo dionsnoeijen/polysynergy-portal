@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 'use client'
 
 import React, {useEffect, useRef, useState, useMemo} from 'react'
 import {Stage, Layer} from 'react-konva'
+import type Konva from 'konva'
 import useEditorStore from '@/stores/editorStore'
 import useDrawingStore from '@/stores/drawingStore'
 import {EditorMode} from '@/types/types'
@@ -18,7 +18,7 @@ export default function DrawingLayer() {
     const activeVersionId = useEditorStore((state) => state.activeVersionId)
     const [canvasSize, setCanvasSize] = useState({width: 0, height: 0})
     const containerRef = useRef<HTMLDivElement>(null)
-    const stageRef = useRef<any>(null)
+    const stageRef = useRef<Konva.Stage>(null)
     
     // Drawing store
     const allNotes = useDrawingStore((state) => state.notes)
@@ -32,7 +32,6 @@ export default function DrawingLayer() {
     const updateNote = useDrawingStore((state) => state.updateNote)
     const deleteNote = useDrawingStore((state) => state.deleteNote)
     const addPath = useDrawingStore((state) => state.addPath)
-    const updatePath = useDrawingStore((state) => state.updatePath)
     const deletePath = useDrawingStore((state) => state.deletePath)
     const addImage = useDrawingStore((state) => state.addImage)
     const updateImage = useDrawingStore((state) => state.updateImage)
@@ -120,19 +119,13 @@ export default function DrawingLayer() {
         return () => window.removeEventListener('keydown', handleKeyDown)
     }, [editorMode, selectedObjectId, notes, paths, images, deleteNote, deletePath, deleteImage, setSelectedObject, setCurrentTool, isEditingText])
 
-    const handleStageClick = (e: unknown) => {
-        const clickedOnEmpty = e.target === e.target.getStage()
-        if (clickedOnEmpty) {
-            setSelectedObject(null)
-        }
-    }
-
     const handleStageDoubleClick = (e: unknown) => {
         if (editorMode !== EditorMode.Draw || currentTool !== 'note') return
         
-        const clickedOnEmpty = e.target === e.target.getStage()
+        const target = e as { target: { getStage: () => unknown, getPointerPosition?: () => { x: number, y: number } | null } }
+        const clickedOnEmpty = target.target === target.target.getStage()
         if (clickedOnEmpty) {
-            const stage = e.target.getStage()
+            const stage = target.target as { getPointerPosition: () => { x: number, y: number } | null }
             const pointer = stage.getPointerPosition()
             if (pointer) {
                 // Adjust for pan and zoom
@@ -157,7 +150,8 @@ export default function DrawingLayer() {
     const handleStageMouseDown = (e: unknown) => {
         if (editorMode !== EditorMode.Draw) return
         
-        const clickedOnEmpty = e.target === e.target.getStage()
+        const target = e as { target: { getStage: () => unknown, getPointerPosition?: () => { x: number, y: number } | null } }
+        const clickedOnEmpty = target.target === target.target.getStage()
         if (clickedOnEmpty) {
             setSelectedObject(null)
             
@@ -165,7 +159,7 @@ export default function DrawingLayer() {
             if (currentTool === 'pen' || currentTool === 'eraser') {
                 setIsDrawingPath(true)
                 setIsDrawing(true)
-                const stage = e.target.getStage()
+                const stage = target.target as { getPointerPosition: () => { x: number, y: number } | null }
                 const pointer = stage.getPointerPosition()
                 if (pointer) {
                     const x = (pointer.x - panPosition.x) / zoomFactor
@@ -184,7 +178,8 @@ export default function DrawingLayer() {
     const handleStageMouseMove = (e: unknown) => {
         if (!isDrawingPath || (currentTool !== 'pen' && currentTool !== 'eraser')) return
         
-        const stage = e.target.getStage()
+        const target = e as { target: { getPointerPosition: () => { x: number, y: number } | null } }
+        const stage = target.target
         const pointer = stage.getPointerPosition()
         if (pointer) {
             const x = (pointer.x - panPosition.x) / zoomFactor

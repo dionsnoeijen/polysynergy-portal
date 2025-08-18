@@ -39,7 +39,8 @@ const TemplateEditorForm: React.FC = () => {
 
         updateHeight();
 
-        editor.onDidChangeModelContent(() => {
+        const typedEditor = editor as { onDidChangeModelContent: (callback: () => void) => void };
+        typedEditor.onDidChangeModelContent(() => {
             updateHeight();
         });
     };

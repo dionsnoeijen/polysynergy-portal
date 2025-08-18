@@ -1,4 +1,5 @@
 
+import React, { useMemo } from 'react';
 import NodeChatBubble from '@/components/editor/nodes/node-chat-bubble';
 import useNodesStore from '@/stores/nodesStore';
 import useEditorStore from '@/stores/editorStore';

@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {Node, NodeVariable, NodeVariableType} from "@/types/types";
 
 
@@ -388,7 +389,7 @@ const PublishedVariables: React.FC<Props> = ({
 
                     if (nodeServiceHandle === SECRET_IDENTIFIER) {
                         return (
-                            <React.Fragment key={nodeId + "-" + variable.handle}>
+                            <div key={nodeId + "-" + variable.handle}>
                                 <div className={'border rounded-md border-sky-500/50 dark:border-white/10 p-5'}>
                                     <Subheading>
                                         <span className="inline-flex items-center gap-2 mb-2">
@@ -451,11 +452,11 @@ const PublishedVariables: React.FC<Props> = ({
                                     </div>
                                 </div>
                                 <Divider className="my-10" soft bleed/>
-                            </React.Fragment>
+                            </div>
                         );
                     } else if (nodeServiceHandle === ENV_IDENTIFIER) {
                         return (
-                            <React.Fragment key={`env-${nodeId}-${variable.handle}`}>
+                            <div key={`env-${nodeId}-${variable.handle}`}>
                                 <div className="border rounded-md border-sky-500/50 dark:border-white/10 p-5">
                                     <Subheading>
                                         <span className="inline-flex items-center gap-2 mb-2">
@@ -502,7 +503,7 @@ const PublishedVariables: React.FC<Props> = ({
                                     </div>
                                 </div>
                                 <Divider className="my-10" soft bleed/>
-                            </React.Fragment>
+                            </div>
                         );
                     } else if (baseType === NodeVariableType.Dict) {
                         return (

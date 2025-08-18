@@ -1,8 +1,8 @@
 'use client';
 
 import CustomPopover from './custom-popover';
+import {PopoverContentProps} from '@reactour/tour';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function CustomPopoverItemManager(props: unknown) {
+export default function CustomPopoverItemManager(props: PopoverContentProps) {
     return <CustomPopover {...props} storageKey="intro_item_manager_seen" />;
 }

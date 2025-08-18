@@ -76,7 +76,8 @@ const EditorLayout = ({
         showDocs,
         activeVersionId,
         closeFormMessage,
-        fetchAvailableNodes
+        fetchAvailableNodes,
+        isLoadingFlow
     } = useLayoutState();
 
     // Initialize window dimensions
@@ -197,6 +198,16 @@ const EditorLayout = ({
                             )
                         )}
                     </div>
+                    
+                    {/* Loading Overlay for Flow Switching */}
+                    {isLoadingFlow && (
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                            <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 shadow-xl flex items-center gap-4">
+                                <div className="animate-spin h-6 w-6 border-2 border-sky-500 border-t-transparent rounded-full"></div>
+                                <span className="text-gray-900 dark:text-white font-medium">Loading flow...</span>
+                            </div>
+                        </div>
+                    )}
                 </main>
 
                 {!dockClosed && (

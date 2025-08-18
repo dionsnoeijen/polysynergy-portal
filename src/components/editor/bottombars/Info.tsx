@@ -79,7 +79,7 @@ const Info: React.FC = (): React.ReactElement => {
                     </ul>
 
                     <ul className="text-sm dark:text-white/70 space-y-1">
-                        <li><span className="text-sky-500 dark:text-white">Executed Nodes:</span> {mockNodes.length}</li>
+                        <li><span className="text-sky-500 dark:text-white">Executed Nodes:</span> 0</li>
                         <li><span className="text-sky-500 dark:text-white">Start time:</span> 14:42:08</li>
                         <li><span className="text-sky-500 dark:text-white">Duration:</span> 1.7s</li>
                         <li><span className="text-sky-500 dark:text-white">Result:</span> success</li>

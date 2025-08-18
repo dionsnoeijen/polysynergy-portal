@@ -4,15 +4,16 @@ import useConnectionsStore from '@/stores/connectionsStore';
 import useEditorStore from '@/stores/editorStore';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { Node as ProjectNode } from '@/types/types';
+import {useCallback, useEffect, useRef, useState} from "react";
 
 const MINIMAP_WIDTH = 200;
 const MINIMAP_HEIGHT = 150;
-const MINIMAP_SCALE = 0.1; // Scale factor for the minimap
-const NODE_SIZE = 20; // Size of nodes on minimap (made bigger for testing)
+// const MINIMAP_SCALE = 0.1; // Scale factor for the minimap
+// const NODE_SIZE = 20; // Size of nodes on minimap (made bigger for testing)
 
 const Minimap: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
     
     // Minimal store subscriptions - only update on major changes
     const nodesLength = useNodesStore((state) => state.nodes.length);
@@ -85,8 +86,8 @@ const Minimap: React.FC = () => {
             const currentNodes = getNodesToRender();
             
             // Get current pan/zoom
-            const panPosition = panPositionsByVersion[activeVersionId] || { x: 100, y: 100 };
-            const zoomFactor = zoomFactorByVersion[activeVersionId] || 0.75;
+            const panPosition = panPositionsByVersion[activeVersionId || ''] || { x: 100, y: 100 };
+            const zoomFactor = zoomFactorByVersion[activeVersionId || ''] || 0.75;
             
             // Get editor element first
             const editorElement = document.querySelector('[data-type="editor"]') as HTMLElement;
@@ -176,7 +177,7 @@ const Minimap: React.FC = () => {
         // Draw positioned nodes as small rectangles - use real DOM positions
         // (reuse nodeElements and editorRect from bounds calculation above)
         
-        Array.from(nodeElements).forEach((nodeEl, index) => {
+        Array.from(nodeElements).forEach((nodeEl, /* index */) => {
             const nodeRect = nodeEl.getBoundingClientRect();
             if (!editorRect) return;
             
@@ -264,7 +265,7 @@ const Minimap: React.FC = () => {
         const bounds = calculateBounds(currentNodes as ProjectNode[]);
         
         // Get current zoom factor
-        const zoomFactor = zoomFactorByVersion[activeVersionId] || 0.75;
+        const zoomFactor = zoomFactorByVersion[activeVersionId || ''] || 0.75;
         const worldWidth = bounds.maxX - bounds.minX;
         const worldHeight = bounds.maxY - bounds.minY;
         
@@ -288,7 +289,7 @@ const Minimap: React.FC = () => {
             x: -(worldX - viewportWidth / 2) * zoomFactor,
             y: -(worldY - viewportHeight / 2) * zoomFactor
         });
-    }, [setPanPositionForVersion, activeVersionId]);
+    }, [calculateBounds, zoomFactorByVersion, setPanPositionForVersion, activeVersionId]);
     
     return (
         <div className="absolute top-2 right-2 z-30">

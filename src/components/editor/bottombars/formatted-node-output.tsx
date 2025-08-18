@@ -12,12 +12,77 @@ interface FormattedNodeOutputProps {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const RenderValue = ({label, value}: { label: string; value: unknown }) => {
     const {theme} = useTheme();
+    
+    // Debug logging to see what values we're receiving
+    console.log('RenderValue DEBUG:', { label, value, type: typeof value });
 
     const isProbablyHtml = (value: string) => {
         const htmlTagRegex = /<\/?[a-z][^>]*>/i;
         const customPlaceholderRegex = /^<[^>]+>$/;
         return htmlTagRegex.test(value) && !customPlaceholderRegex.test(value);
     };
+
+    // Handle null and undefined
+    if (value === null || value === undefined) {
+        return (
+            <div className="mb-2">
+                <div className="text-xs font-bold text-black/70 dark:text-white/70">{label}</div>
+                <p className="text-sm text-black/40 dark:text-white/40 bg-gray-200 dark:bg-white/10 rounded p-3 italic">
+                    {value === null ? 'null' : 'undefined'}
+                </p>
+            </div>
+        );
+    }
+
+    // Handle numbers (integers, floats)
+    if (typeof value === "number") {
+        return (
+            <div className="mb-2">
+                <div className="text-xs font-bold text-black/70 dark:text-white/70">{label}</div>
+                <p className="text-sm text-black/70 dark:text-white bg-blue-200 dark:bg-blue-900/20 rounded p-3 font-mono">
+                    {value}
+                </p>
+            </div>
+        );
+    }
+
+    // Handle booleans
+    if (typeof value === "boolean") {
+        return (
+            <div className="mb-2">
+                <div className="text-xs font-bold text-black/70 dark:text-white/70">{label}</div>
+                <p className={`text-sm font-semibold rounded p-3 ${
+                    value 
+                        ? 'text-green-700 dark:text-green-300 bg-green-200 dark:bg-green-900/20' 
+                        : 'text-red-700 dark:text-red-300 bg-red-200 dark:bg-red-900/20'
+                }`}>
+                    {value ? 'true' : 'false'}
+                </p>
+            </div>
+        );
+    }
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+        return (
+            <div className="mb-2">
+                <div className="text-xs font-bold text-black/70 dark:text-white/70">{label}</div>
+                <div className="bg-purple-200 dark:bg-purple-900/20 rounded p-3">
+                    <div className="text-xs text-purple-700 dark:text-purple-300 mb-2">
+                        Array ({value.length} items)
+                    </div>
+                    <div className="space-y-1">
+                        {value.map((item, index) => (
+                            <div key={index} className="text-sm text-black/70 dark:text-white bg-white/50 dark:bg-black/20 rounded p-2">
+                                <span className="text-xs text-purple-600 dark:text-purple-400 mr-2">[{index}]</span>
+                                {typeof item === 'object' ? JSON.stringify(item) : String(item)}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (typeof value === "string") {
         const isHtml = isProbablyHtml(value);
@@ -61,17 +126,33 @@ const RenderValue = ({label, value}: { label: string; value: unknown }) => {
                 </div>
             );
         } catch {
-            return null;
+            // If JSON parsing fails, fall through to the final fallback
         }
     }
 
-    return null;
+    // Fallback for any other types (functions, symbols, etc.)
+    return (
+        <div className="mb-2">
+            <div className="text-xs font-bold text-black/70 dark:text-white/70">{label}</div>
+            <p className="text-sm text-black/50 dark:text-white/50 bg-gray-200 dark:bg-white/10 rounded p-3 italic">
+                {typeof value} ({String(value)})
+            </p>
+        </div>
+    );
 };
 
 const FormattedNodeOutput: React.FC<FormattedNodeOutputProps> = ({variables}) => {
     const specialKeys = ["true_path", "false_path"];
     const remainingEntries = Object.entries(variables).filter(([key]) => !specialKeys.includes(key));
     const {theme} = useTheme();
+    
+    // Debug logging to see what data we're receiving
+    console.log('FormattedNodeOutput DEBUG:', { 
+        variables, 
+        true_path: variables.true_path,
+        true_path_type: typeof variables.true_path,
+        remainingEntries 
+    });
 
 
     return (

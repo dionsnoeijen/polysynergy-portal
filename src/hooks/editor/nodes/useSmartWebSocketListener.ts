@@ -141,7 +141,8 @@ export function useSmartWebSocketListener(flowId: string) {
                             }));
                             
                             // Call API to store mock nodes state
-                            const response = await fetch(`${config.LOCAL_API_URL}/execution/${activeVersionId}/${message.run_id}/mock-nodes/?project_id=${activeProjectId}`, {
+                            // const response = 
+                            await fetch(`${config.LOCAL_API_URL}/execution/${activeVersionId}/${message.run_id}/mock-nodes/?project_id=${activeProjectId}`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',

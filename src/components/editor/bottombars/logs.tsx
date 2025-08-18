@@ -100,19 +100,34 @@ export default function Logs() {
                             {[...logs].reverse().map((log, index) => {
                                 const isError = log.message.includes("[ERROR]");
                                 const isInfo = log.message.includes("[INFO]");
+                                const isNewRun = log.message.includes("START RequestId:");
+                                
+                                // Check if this is the start of a new run and not the first log
+                                const shouldShowSeparator = isNewRun && index > 0;
 
                                 return (
-                                    <div key={index} className="whitespace-normal break-all">
-                                        <span className="text-zinc-500 mr-2">
-                                            [{new Date(log.timestamp).toLocaleTimeString()}]
-                                        </span>
-                                        <span className="mr-2 px-1 rounded text-xs bg-zinc-700">
-                                            {log.variant}
-                                        </span>
-                                        <span className={isError ? "text-red-400" : isInfo ? "text-green-400" : ""}>
-                                            {log.message}
-                                        </span>
-                                    </div>
+                                    <React.Fragment key={index}>
+                                        {shouldShowSeparator && (
+                                            <div className="my-4 flex items-center">
+                                                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
+                                                <div className="px-4 text-xs text-sky-400 font-medium">
+                                                    NEW RUN
+                                                </div>
+                                                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
+                                            </div>
+                                        )}
+                                        <div className="whitespace-normal break-all">
+                                            <span className="text-zinc-500 mr-2">
+                                                [{new Date(log.timestamp).toLocaleTimeString()}]
+                                            </span>
+                                            <span className="mr-2 px-1 rounded text-xs bg-zinc-700">
+                                                {log.variant}
+                                            </span>
+                                            <span className={isError ? "text-red-400" : isInfo ? "text-green-400" : isNewRun ? "text-sky-300 font-medium" : ""}>
+                                                {log.message}
+                                            </span>
+                                        </div>
+                                    </React.Fragment>
                                 );
                             })}
                         </div>

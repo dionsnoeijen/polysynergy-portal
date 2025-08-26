@@ -3,6 +3,7 @@ import React from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import useDocumentationStore from "@/stores/documentationStore";
+import { fetchNodeDocumentationAPI } from "@/api/documentationApi";
 
 import Heading from "@/components/editor/sidebars/elements/heading";
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
@@ -149,59 +150,94 @@ const Dock: React.FC<Props> = ({toggleClose, ...restProps}) => {
                 <NodeHandle node={node} categoryBorder={categoryBorder} />
             </VariableGroup>}
 
-            {node && node.documentation && (
-                <Button color={'skyLight'} onClick={() => {
-                    setDocumentationType('node');
-                    openDocs(node?.documentation as string);
+            {node && node.has_documentation && (
+                <div style={{ 
+                    marginLeft: '50px', 
+                    marginRight: '50px', 
+                    marginTop: '20px', 
+                    marginBottom: '20px',
+                    backgroundColor: 'red',
+                    padding: '10px'
                 }}>
-                    Documentation <InformationCircleIcon/>
-                </Button>
+                    <Button color={'skyLight'} onClick={async () => {
+                        if (!node?.type) return;
+                        
+                        try {
+                            const nodeType = node.path.split('.').pop() || node.type;
+                            const docData = await fetchNodeDocumentationAPI(nodeType);
+                            openDocs(docData.content);
+                        } catch (error) {
+                            console.error('Failed to fetch node documentation:', error);
+                        }
+                    }}>
+                        Documentation <InformationCircleIcon/>
+                    </Button>
+                </div>
             )}
 
-            {isService && (
-              <div className={`relative z-20 p-2`}>
-                <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
-                    This is a service, only the published variables are editable from the published variables form.
-                </span>
-            </div>
+            {/* Always show node name when node is selected */}
+            {node && (
+                <VariableGroup
+                    title={node.name}
+                    version={node.version || 0.0}
+                    categoryBorderColor={categoryContainerBorder}
+                    categoryMainTextColor={categoryMainTextColor}
+                    categorySubTextColor={categorySubTextColor}
+                    categoryBackgroundColor={categoryBackground}
+                    categoryGradientBackgroundColor={categoryGradientBackground}
+                    isService={isService}
+                >
+                    {isService && (
+                        <div className={`relative z-20 p-2`}>
+                            <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
+                                This is a service, only the published variables are editable from the published variables form.
+                            </span>
+                        </div>
+                    )}
+                    
+                    {/* Show variables if they exist and have dock variables, or if it's a math node */}
+                    {node.variables.length > 0 && (node.variables.some((variable: NodeVariable) => variable.has_dock) || node.category === 'math') && (
+                        <>
+                            {node.variables.map((variable: NodeVariable) => {
+                                // For math nodes, show all input variables, otherwise only dock variables
+                                const shouldShow = node.category === 'math' ? 
+                                    (variable.has_in === true && variable.node !== false) : 
+                                    variable.has_dock;
+                                    
+                                if (!shouldShow) return null;
+                                
+                                const {baseType} = interpretNodeVariableType(variable);
+                                const VariableComponent = VariableTypeComponents[baseType];
+
+                                return VariableComponent ? (
+                                    <div key={node.id + '-' + variable.handle}>
+                                        <VariableComponent
+                                            nodeId={node.id}
+                                            variable={variable}
+                                            publishedButton={true}
+                                            inDock={true}
+                                            categoryBorder={categoryBorder}
+                                        />
+                                    </div>
+                                ) : null;
+                            })}
+                        </>
+                    )}
+                    
+                    {/* Show message if no dock variables */}
+                    {(!node.variables.length || (!node.variables.some((variable: NodeVariable) => variable.has_dock) && node.category !== 'math')) && (
+                        <div style={{ backgroundColor: 'yellow', padding: '20px', color: 'black' }}>
+                            <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                                NODE NAME: {node.name} (CATEGORY: {node.category})
+                            </h1>
+                            <p>VARIABLES: {node.variables.length}</p>
+                            <p>HAS DOCK: {node.variables.some(v => v.has_dock) ? 'YES' : 'NO'}</p>
+                            <p>Original message: Node does not have variables that can be edited from the dock.</p>
+                        </div>
+                    )}
+                </VariableGroup>
             )}
 
-            {node && node.variables.length > 0 ? (
-                node.variables.some((variable: NodeVariable) => variable.has_dock) ? (
-                    <VariableGroup
-                        title={node.name}
-                        version={node.version || 0.0}
-                        categoryBorderColor={categoryContainerBorder}
-                        categoryMainTextColor={categoryMainTextColor}
-                        categorySubTextColor={categorySubTextColor}
-                        categoryBackgroundColor={categoryBackground}
-                        categoryGradientBackgroundColor={categoryGradientBackground}
-                        isService={isService}
-                    >
-                        {node.variables.map((variable: NodeVariable) => {
-                            if (!variable.has_dock) return null;
-                            const {baseType} = interpretNodeVariableType(variable);
-                            const VariableComponent = VariableTypeComponents[baseType];
-
-                            return VariableComponent ? (
-                                <div key={node.id + '-' + variable.handle}>
-                                    <VariableComponent
-                                        nodeId={node.id}
-                                        variable={variable}
-                                        publishedButton={true}
-                                        inDock={true}
-                                        categoryBorder={categoryBorder}
-                                    />
-                                </div>
-                            ) : null;
-                        })}
-                    </VariableGroup>
-                ) : (
-                    <p className="text-zinc-400 text-sm italic p-4">
-                        Node does not have variables that can be edited from the dock.
-                    </p>
-                )
-            ) : null}
             {group && (
                 <>
                     <VariableGroup

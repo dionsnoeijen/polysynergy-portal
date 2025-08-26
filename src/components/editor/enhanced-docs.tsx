@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import useEditorStore from "@/stores/editorStore";
 import useDocumentationStore, { DocumentationType } from "@/stores/documentationStore";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
-import { fetchAllDocumentationAPI } from "@/api/documentationApi";
+import { fetchAllDocumentationAPI, fetchNodeDocumentationAPI } from "@/api/documentationApi";
 import { Button } from "@/components/button";
 import { Input, InputGroup } from "@/components/input";
 import { 
@@ -20,8 +20,106 @@ import { Divider } from "@/components/divider";
 import { Heading } from "@/components/heading";
 import Editor from "@monaco-editor/react";
 
+const EnhancedDocumentationContent: React.FC<{ nodeType?: string }> = ({ nodeType }) => {
+    const [nodeDocContent, setNodeDocContent] = useState<string | null>(null);
+    const [isLoadingDoc, setIsLoadingDoc] = useState(false);
+    const [docError, setDocError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (nodeType) {
+            setIsLoadingDoc(true);
+            setDocError(null);
+            
+            fetchNodeDocumentationAPI(nodeType)
+                .then((docData) => {
+                    setNodeDocContent(docData.content);
+                })
+                .catch((error) => {
+                    console.error('Failed to fetch node documentation:', error);
+                    setDocError('Failed to load documentation');
+                })
+                .finally(() => {
+                    setIsLoadingDoc(false);
+                });
+        }
+    }, [nodeType]);
+
+    if (isLoadingDoc) {
+        return (
+            <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                    <div className="animate-spin h-6 w-6 border-2 border-sky-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                    <p className="text-gray-500 dark:text-gray-400">Loading node documentation...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (docError) {
+        return (
+            <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                    <ExclamationTriangleIcon className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+                    <p className="text-red-600 dark:text-red-400">{docError}</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (nodeDocContent) {
+        return (
+            <div className="flex-1 overflow-auto">
+                <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                        code({ className, children }) {
+                            const isBlock = className?.includes("language-");
+                            const language = className ? className.replace("language-", "") : "plaintext";
+                            const codeText = String(children).trim();
+                            const lineCount = codeText.split("\n").length;
+                            const dynamicHeight = Math.max(150, lineCount * 20) + "px";
+                            const editorTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "vs-dark" : "vs-light";
+
+                            return isBlock ? (
+                                <div className="my-4 rounded-md overflow-hidden border border-zinc-300 dark:border-zinc-700">
+                                    <Editor
+                                        height={dynamicHeight}
+                                        defaultLanguage={language}
+                                        value={codeText}
+                                        theme={editorTheme}
+                                        options={{
+                                            readOnly: true,
+                                            minimap: { enabled: false },
+                                            scrollBeyondLastLine: false,
+                                            automaticLayout: true,
+                                            lineNumbers: "off",
+                                            fontSize: 14,
+                                            padding: { top: 10, bottom: 10 },
+                                            overviewRulerLanes: 0,
+                                            wordWrap: "on",
+                                        }}
+                                    />
+                                </div>
+                            ) : (
+                                <code className="bg-zinc-200 dark:bg-zinc-800 text-sky-700 dark:text-sky-400 px-1 py-0.5 rounded-md font-mono text-sm border border-zinc-400 dark:border-zinc-500/50 leading-tight">
+                                    {children}
+                                </code>
+                            );
+                        },
+                    }}
+                >
+                    {nodeDocContent}
+                </ReactMarkdown>
+            </div>
+        );
+    }
+
+    return null;
+};
+
 const EnhancedDocs: React.FC = () => {
     const docsMarkdown = useEditorStore((state) => state.docsMarkdown);
+    const docsNodeId = useEditorStore((state) => state.docsNodeId);
     const closeDocs = useEditorStore((state) => state.closeDocs);
     const [editorTheme, setEditorTheme] = useState<"vs-dark" | "vs-light">("vs-dark");
     
@@ -79,22 +177,31 @@ const EnhancedDocs: React.FC = () => {
         }
     }, [documentationType, fetchCategories, fetchAvailableNodes, hasInitialFetched, loadAllDocumentCounts]);
 
-    // Auto-select node when docsMarkdown is set and we're on node tab
+    // Auto-select node when docsNodeId is set and we're on node tab
     useEffect(() => {
-        if (documentationType === 'node' && docsMarkdown && docsMarkdown.trim() && availableNodes.length > 0 && selectedNodeDoc === null) {
-            console.log('Auto-selecting node for docsMarkdown:', docsMarkdown.substring(0, 100) + '...');
-            // Find the node that matches the current docsMarkdown
-            const matchingNode = availableNodes.find(node => 
-                node.documentation && node.documentation.trim() === docsMarkdown.trim()
-            );
+        console.log('Auto-select effect triggered:', {
+            documentationType,
+            docsNodeId,
+            availableNodesCount: availableNodes.length,
+            selectedNodeDoc,
+            hasInitialFetched
+        });
+        
+        if (docsNodeId && availableNodes.length > 0 && selectedNodeDoc !== docsNodeId) {
+            console.log('Auto-selecting node with ID:', docsNodeId);
+            const matchingNode = availableNodes.find(node => node.id === docsNodeId);
             if (matchingNode) {
                 console.log('Found matching node:', matchingNode.name, matchingNode.id);
-                setSelectedNodeDoc(matchingNode.id);
+                setSelectedNodeDoc(docsNodeId);
+                // Also ensure we're on the node tab
+                if (documentationType !== 'node') {
+                    setDocumentationType('node');
+                }
             } else {
-                console.log('No matching node found for docsMarkdown');
+                console.log('No matching node found for docsNodeId:', docsNodeId, 'Available nodes:', availableNodes.map(n => n.id));
             }
         }
-    }, [documentationType, docsMarkdown, availableNodes, selectedNodeDoc]);
+    }, [documentationType, docsNodeId, availableNodes, selectedNodeDoc, hasInitialFetched, setDocumentationType]);
 
     const handleTabChange = (type: DocumentationType) => {
         setDocumentationType(type);
@@ -126,48 +233,62 @@ const EnhancedDocs: React.FC = () => {
 
     const renderNodeDocs = () => {
         console.log('Total availableNodes:', availableNodes.length);
-        console.log('Nodes with docs:', availableNodes.filter(node => node.documentation && node.documentation.trim()).length);
-        console.log('Sample nodes:', availableNodes.slice(0, 3).map(n => ({ name: n.name, hasDocs: !!n.documentation })));
+        console.log('Nodes with docs:', availableNodes.filter(node => node.has_documentation).length);
+        console.log('Sample nodes:', availableNodes.slice(0, 3).map(n => ({ name: n.name, hasDocs: !!n.has_documentation })));
         
         const selectedNode = availableNodes.find(node => node.id === selectedNodeDoc);
         
-        if (selectedNode && selectedNode.documentation) {
+        if (selectedNode && selectedNode.has_documentation) {
             return (
-                <div>
-                    {/* Back button */}
-                    <div className="mb-4">
-                        <Button 
-                            color="zinc"
-                            onClick={() => {
-                                // Clear the docsMarkdown to prevent auto-reselection
-                                useEditorStore.getState().openDocs('');
-                                setSelectedNodeDoc(null);
-                            }}
-                            className="flex items-center gap-2"
-                        >
-                            <ArrowLeftIcon className="h-4 w-4" />
-                            Back to Nodes
-                        </Button>
+                <div className="flex-1 overflow-auto">
+                    <div className="px-4 py-4 bg-white dark:bg-zinc-900">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                    <Button 
+                                        color="zinc"
+                                        onClick={() => {
+                                            // Clear the docsMarkdown to prevent auto-reselection
+                                            useEditorStore.getState().openDocs('');
+                                            setSelectedNodeDoc(null);
+                                        }}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <ArrowLeftIcon className="h-4 w-4" />
+                                        Back to Nodes
+                                    </Button>
+                                </div>
+                                <div className="flex-1" />
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                                <span className="text-xl font-semibold text-zinc-900 dark:text-white">
+                                    {selectedNode.name}
+                                </span>
+                                <span className="px-2 py-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-md">
+                                    v{selectedNode.version}
+                                </span>
+                            </div>
+                            
+                            <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                                <strong>Category:</strong> {selectedNode.category || 'General'}
+                            </div>
+                            
+                            {selectedNode.description && (
+                                <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                                    <strong>Description:</strong> {selectedNode.description}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     
-                    {/* Node title */}
-                    <div className="mb-6">
-                        <h2 className="text-2xl font-bold">{selectedNode.name}</h2>
-                        {selectedNode.category && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                Category: {selectedNode.category}
-                            </p>
-                        )}
-                    </div>
-                    
-                    {/* Node documentation */}
-                    {renderMarkdownContent(stripFrontmatter(selectedNode.documentation))}
+                    <EnhancedDocumentationContent nodeType={selectedNode.path.split('.').pop() || selectedNode.type} />
                 </div>
             );
         }
 
         // Show nodes list organized by categories
-        const nodesWithDocs = availableNodes.filter(node => node.documentation && node.documentation.trim());
+        const nodesWithDocs = availableNodes.filter(node => node.has_documentation);
         const allNodes = availableNodes; // DEBUG: Show all nodes temporarily
         
         console.log('Nodes breakdown:', {
@@ -233,7 +354,7 @@ const EnhancedDocs: React.FC = () => {
                     <div className="space-y-3">
                         {(selectedNodeCategory ? nodesByCategory[selectedNodeCategory] : allNodes)
                             ?.map((node) => {
-                                const hasDocs = node.documentation && node.documentation.trim();
+                                const hasDocs = node.has_documentation;
                                 return (
                                     <button
                                         key={node.id}
@@ -639,6 +760,10 @@ const EnhancedDocs: React.FC = () => {
                         <div className="animate-spin h-6 w-6 border-2 border-sky-500 border-t-transparent rounded-full mx-auto mb-2"></div>
                         <p className="text-gray-500 dark:text-gray-400">Loading documentation...</p>
                     </div>
+                </div>
+            ) : docsMarkdown && docsMarkdown.trim() ? (
+                <div className="prose prose-invert dark:prose-dark max-w-none">
+                    {renderMarkdownContent(docsMarkdown)}
                 </div>
             ) : documentationType === 'node' ? (
                 renderNodeDocs()

@@ -163,3 +163,24 @@ export const fetchDocumentsByCategoryAPI = async (category: string): Promise<Doc
 
     return await response.json();
 };
+
+// Get node-specific documentation
+export const fetchNodeDocumentationAPI = async (nodeType: string): Promise<DocumentationDocument> => {
+    const idToken = getIdToken();
+    if (!idToken) {
+        throw new Error('Authentication token not available');
+    }
+    
+    const response = await fetch(`${config.LOCAL_API_URL}/documentation/nodes/${encodeURIComponent(nodeType)}`, {
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch node documentation: ${response.status}`);
+    }
+
+    return await response.json();
+};

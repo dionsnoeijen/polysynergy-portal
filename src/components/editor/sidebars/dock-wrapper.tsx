@@ -3,6 +3,7 @@ import React from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import useDocumentationStore from "@/stores/documentationStore";
+import { fetchNodeDocumentationAPI } from "@/api/documentationApi";
 
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
 import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";
@@ -153,13 +154,22 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
                 <NodeHandle node={node} categoryBorder={categoryBorder} />
             </VariableGroup>}
 
-            {node && node.documentation && (
-                <Button color={'skyLight'} onClick={() => {
-                    setDocumentationType('node');
-                    openDocs(node?.documentation as string);
-                }}>
-                    Documentation <InformationCircleIcon/>
-                </Button>
+            {node && node.has_documentation && (
+                <div className="px-2">
+                    <Button color={'skyLight'} className="w-full" onClick={async () => {
+                        if (!node?.type) return;
+                        
+                        try {
+                            const nodeType = node.path.split('.').pop() || node.type;
+                            const docData = await fetchNodeDocumentationAPI(nodeType);
+                            openDocs(docData.content);
+                        } catch (error) {
+                            console.error('Failed to fetch node documentation:', error);
+                        }
+                    }}>
+                        Documentation <InformationCircleIcon/>
+                    </Button>
+                </div>
             )}
 
             {isService && (
@@ -201,9 +211,20 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
                         })}
                     </VariableGroup>
                 ) : (
-                    <p className="text-zinc-400 text-sm italic p-4">
-                        Node does not have variables that can be edited from the dock.
-                    </p>
+                    <VariableGroup
+                        title={node.name}
+                        version={node.version || 0.0}
+                        categoryBorderColor={categoryContainerBorder}
+                        categoryMainTextColor={categoryMainTextColor}
+                        categorySubTextColor={categorySubTextColor}
+                        categoryBackgroundColor={categoryBackground}
+                        categoryGradientBackgroundColor={categoryGradientBackground}
+                        isService={isService}
+                    >
+                        <p className="text-zinc-400 text-sm italic p-4">
+                            Node does not have variables that can be edited from the dock.
+                        </p>
+                    </VariableGroup>
                 )
             ) : null}
             {group && (

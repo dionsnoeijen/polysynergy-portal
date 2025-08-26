@@ -246,6 +246,7 @@ export type Node = {
     service?: NodeService;
     icon?: string;
     documentation?: string;
+    has_documentation?: boolean;
     handle: string;
     name: string;
     category: string;

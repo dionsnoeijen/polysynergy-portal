@@ -174,7 +174,7 @@ const useChatStore = create<ChatStore>((set, get) => ({
             
             // If we have a pending user message and a new run is starting, add it
             if (runId && state.pendingUserMessage) {
-                console.log(`Adding pending user message to new run: ${runId}`);
+                console.log(`Adding pending user message to new run: ${runId}`, 'Message:', state.pendingUserMessage);
                 const sequence = (state.sequenceCounters[runId] || 0) + 1;
                 const messages = [
                     ...(state.messagesByRun[runId] || []),
@@ -289,25 +289,14 @@ const useChatStore = create<ChatStore>((set, get) => ({
             }
         });
         
-        // Clear the completed run's messages and listeners
+        // Clear only the listeners, keep messages for chat history
         setTimeout(() => {
             set((state) => {
                 const newListeners = { ...state.runCompletionListeners };
                 delete newListeners[runId];
                 
-                // Also clear the run's messages
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { [runId]: _, ...restMessages } = state.messagesByRun;
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { [runId]: __, ...restSequences } = state.sequenceCounters;
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { [runId]: ___, ...restChunks } = state.chunkBuffers;
-                
                 return {
                     runCompletionListeners: newListeners,
-                    messagesByRun: restMessages,
-                    sequenceCounters: restSequences,
-                    chunkBuffers: restChunks,
                 };
             });
         }, 100); // Short delay to allow UI to process

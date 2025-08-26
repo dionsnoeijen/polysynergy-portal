@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ArrowUpIcon, Cog6ToothIcon, PlusIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import ReferenceDisplay from './reference-display';
+import { parseMessageReferences } from '@/utils/referenceParser';
 import useChatStore from '@/stores/chatStore';
 import useNodesStore from '@/stores/nodesStore';
 import useEditorStore from '@/stores/editorStore';
@@ -20,6 +22,7 @@ const EnhancedChat: React.FC = () => {
     const setPendingUserMessage = useChatStore((state) => state.setPendingUserMessage);
     const pendingUserMessage = useChatStore((state) => state.pendingUserMessage);
     const activeRunId = useChatStore((state) => state.activeRunId);
+    const clearChatStore = useChatStore((state) => state.clearChatStore);
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
     // const getNode = useNodesStore((state) => state.getNode);
     const forceSave = useEditorStore((state) => state.forceSave);
@@ -38,6 +41,14 @@ const EnhancedChat: React.FC = () => {
     // const [wasAtBottom, setWasAtBottom] = useState(true);
     const [manualRefreshLoading, setManualRefreshLoading] = useState(false);
     const [agentInfo, setAgentInfo] = useState<{ avatar?: string; name?: string } | null>(null);
+    const [completedRunIds, setCompletedRunIds] = useState<Set<string>>(new Set());
+    const [displayedMessages, setDisplayedMessages] = useState<Array<{
+        sender: 'user' | 'agent';
+        text: string;
+        node_id?: string;
+        timestamp: string | number;
+        isPending?: boolean;
+    }>>([]);
 
     // Set default selected prompt node and handle node removal
     useEffect(() => {
@@ -70,6 +81,7 @@ const EnhancedChat: React.FC = () => {
                 if (!storageConfig) {
                     console.log('No storage configuration found - agent may not have storage connected');
                     setChatHistory(null);
+                    setDisplayedMessages([]);
                     return;
                 }
 
@@ -79,6 +91,7 @@ const EnhancedChat: React.FC = () => {
                 if (!sessionId) {
                     console.log('No session_id set in prompt node');
                     setChatHistory(null);
+                    setDisplayedMessages([]);
                     return;
                 }
 
@@ -87,11 +100,34 @@ const EnhancedChat: React.FC = () => {
                 const chatApi = createAgnoChatHistoryApi(activeProjectId);
                 const history = await chatApi.getSessionHistory(storageConfig, sessionId, userId);
                 
+                // Deduplicate messages to work around Agno storage bug
+                if (history && history.messages) {
+                    const uniqueMessages = history.messages.filter((msg, index, self) => {
+                        // Skip empty messages
+                        if (!msg.text || msg.text.trim() === '') return false;
+                        
+                        // Find first occurrence of this message
+                        return index === self.findIndex((m) => 
+                            m.timestamp === msg.timestamp && 
+                            m.text === msg.text && 
+                            m.sender === msg.sender
+                        );
+                    });
+                    
+                    history.messages = uniqueMessages;
+                    console.log(`Loaded ${uniqueMessages.length} unique messages (filtered from ${history.messages.length}) for session ${sessionId}`);
+                }
+                
                 setChatHistory(history);
-                console.log(`Loaded ${history.messages.length} messages for session ${sessionId} using Agno ${storageConfig.type}`);
+                // Update displayed messages with history
+                if (history && history.messages) {
+                    setDisplayedMessages(history.messages);
+                }
+                console.log(`Loaded messages for session ${sessionId} using Agno ${storageConfig.type}`);
             } catch (error) {
                 console.error('Failed to load chat history:', error);
                 setChatHistory(null);
+                setDisplayedMessages([]);
             } finally {
                 setIsLoadingHistory(false);
             }
@@ -183,59 +219,101 @@ const EnhancedChat: React.FC = () => {
         }
     };
 
-    // SIMPLE: Show streaming if active, otherwise show history + pending
-    const { messages, currentRunId } = useMemo(() => {
-        const historyMessages = chatHistory?.messages || [];
-        
-        // If we have an active run with messages, show history + streaming
-        if (activeRunId && messagesByRun[activeRunId]?.length > 0) {
-            const currentMessages = messagesByRun[activeRunId];
-            return {
-                messages: [...historyMessages, ...currentMessages],
-                currentRunId: activeRunId
-            };
-        }
-        
-        // Show pending user message if exists
-        if (pendingUserMessage) {
-            return {
-                messages: [...historyMessages, {
-                    sender: 'user' as const,
-                    text: pendingUserMessage,
-                    timestamp: new Date().toISOString()
-                }],
-                currentRunId: null
-            };
-        }
-        
-        // Just show history
-        return {
-            messages: historyMessages,
-            currentRunId: null
-        };
-    }, [messagesByRun, chatHistory, pendingUserMessage, activeRunId]);
-    
-    // Listen for run completion: clear streaming + reload history
+    // Update displayedMessages when streaming messages change
     useEffect(() => {
-        if (!currentRunId) return;
+        if (!activeRunId || completedRunIds.has(activeRunId)) {
+            return;
+        }
         
-        const unsubscribe = onRunCompleted(currentRunId, () => {
-            console.log(`Run ${currentRunId} completed, clearing and reloading...`);
-            // Clear everything and reload history
+        const streamingMessages = messagesByRun[activeRunId];
+        if (!streamingMessages || streamingMessages.length === 0) {
+            return;
+        }
+        
+        setDisplayedMessages(prev => {
+            if (chatHistory?.messages) {
+                // With storage: use history + streaming messages
+                return [...chatHistory.messages, ...streamingMessages];
+            } else {
+                // Without storage: filter out messages from current run, keep only non-current-run messages
+                const nonCurrentRunMessages = prev.filter(m => {
+                    // Keep messages that don't match any streaming message
+                    return !streamingMessages.some(sm => 
+                        sm.text && m.text &&
+                        sm.text.trim() === m.text.trim() &&
+                        sm.sender === m.sender
+                    );
+                });
+                
+                // Add streaming messages
+                return [...nonCurrentRunMessages, ...streamingMessages];
+            }
+        });
+    }, [activeRunId, messagesByRun[activeRunId], chatHistory?.messages, completedRunIds]);
+    
+    // Clean up pending messages when run starts
+    useEffect(() => {
+        if (activeRunId && messagesByRun[activeRunId]?.length > 0) {
+            // Remove pending flag from messages when run actually starts
+            setDisplayedMessages(prev => prev.map(m => ({ ...m, isPending: false })));
+        }
+    }, [activeRunId, messagesByRun[activeRunId]?.length]);
+    
+    // Listen for run completion: reload history but keep messages for chat bubbles
+    useEffect(() => {
+        if (!activeRunId) return;
+        
+        const unsubscribe = onRunCompleted(activeRunId, async () => {
+            console.log(`Run ${activeRunId} completed, reloading chat history only...`);
+            const completedRunId = activeRunId; // Capture the runId
+            
+            // Mark this run as completed so streaming effect stops updating
+            setCompletedRunIds(prev => new Set([...prev, completedRunId]));
+            
+            // Clear pending message
             setPendingUserMessage(null);
-            // The reload will happen automatically when forceReloadTrigger changes
-            setForceReloadTrigger(prev => prev + 1);
+            
+            // Fetch updated history from server
+            try {
+                const storageConfig = traceStorageConfiguration(selectedPromptNodeId);
+                const { sessionId, userId } = getSessionInfo(selectedPromptNodeId);
+                
+                if (storageConfig && sessionId && activeProjectId) {
+                    const chatApi = createAgnoChatHistoryApi(activeProjectId);
+                    const history = await chatApi.getSessionHistory(storageConfig, sessionId, userId);
+                    
+                    if (history && history.messages) {
+                        // Deduplicate
+                        const uniqueMessages = history.messages.filter((msg, index, self) => {
+                            if (!msg.text || msg.text.trim() === '') return false;
+                            return index === self.findIndex((m) => 
+                                m.timestamp === msg.timestamp && 
+                                m.text === msg.text && 
+                                m.sender === msg.sender
+                            );
+                        });
+                        
+                        // Smoothly update displayed messages - React will diff this
+                        setDisplayedMessages(uniqueMessages);
+                        setChatHistory({ ...history, messages: uniqueMessages });
+                        console.log(`Smoothly updated to ${uniqueMessages.length} messages from server`);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to reload history after completion:', error);
+                // Keep existing displayedMessages on error
+            }
         });
         
         return unsubscribe;
-    }, [currentRunId, onRunCompleted]);
+    }, [activeRunId, onRunCompleted, selectedPromptNodeId, activeProjectId]);
     
     // SIMPLE: Always scroll to bottom when messages change
     useEffect(() => {
         setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }, 50);
-    }, [messages.length]);
+    }, [displayedMessages.length, displayedMessages[displayedMessages.length - 1]?.text?.length]);
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -244,7 +322,15 @@ const EnhancedChat: React.FC = () => {
         const userInput = input;
         setInput("");
         
-        // Show user message immediately
+        // Show user message immediately in displayed messages
+        console.log('Adding user message to displayedMessages:', userInput);
+        setDisplayedMessages(prev => [...prev, {
+            sender: 'user' as const,
+            text: userInput,
+            timestamp: new Date().toISOString(),
+            isPending: true
+        }]);
+        
         setPendingUserMessage(userInput);
 
         try {
@@ -261,6 +347,9 @@ const EnhancedChat: React.FC = () => {
             
             await handlePlay(syntheticEvent, selectedPromptNodeId, 'mock');
             
+            // Restart log polling when prompt is submitted
+            window.dispatchEvent(new CustomEvent('restart-log-polling'));
+            
         } catch (error) {
             console.error('Failed to save and execute:', error);
             setPendingUserMessage(null);
@@ -268,9 +357,87 @@ const EnhancedChat: React.FC = () => {
     };
 
 
+    // Memoize displayed message rendering - MUST be at top level
+    const renderedDisplayedMessages = useMemo(() => 
+        displayedMessages.filter(msg => msg.text.trim()).map((msg, i) => (
+            <div
+                key={i}
+                className={msg.sender === "user" ? "flex justify-end" : "flex justify-start items-start space-x-2"}
+            >
+                {/* Agent avatar - only show if message has actual content */}
+                {msg.sender === "agent" && agentInfo?.avatar && (
+                    <div className="flex-shrink-0 mt-1">
+                        <img 
+                            src={agentInfo.avatar} 
+                            alt={agentInfo.name || 'Agent'}
+                            className="w-8 h-8 rounded-full object-cover"
+                            onError={(e) => {
+                                // Hide avatar if image fails to load
+                                e.currentTarget.style.display = 'none';
+                            }}
+                        />
+                    </div>
+                )}
+                
+                <div
+                    className={`px-4 py-2 rounded-xl text-sm max-w-[70%] ${
+                        msg.sender === "user"
+                            ? "bg-blue-500 text-white"
+                            : "text-gray-900 dark:text-gray-100"
+                    }`}
+                >
+                    {msg.sender === "user" ? (
+                        // User messages as plain text
+                        <div className="whitespace-pre-wrap">{msg.text}</div>
+                    ) : (
+                        // Agent messages with reference parsing and markdown
+                        (() => {
+                            const parsed = parseMessageReferences(msg.text);
+                            return (
+                                <div>
+                                    {/* References (if any) */}
+                                    {parsed.references && parsed.references.length > 0 && (
+                                        <ReferenceDisplay references={parsed.references} />
+                                    )}
+                                    
+                                    {/* Main message content */}
+                                    {parsed.text && (
+                                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                                            <ReactMarkdown 
+                                                remarkPlugins={[remarkGfm]}
+                                                components={{
+                                                    // Custom styling for markdown elements
+                                                    p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
+                                                    code: ({children, className}) => {
+                                                        const isInline = !className;
+                                                        return isInline ? (
+                                                            <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{children}</code>
+                                                        ) : (
+                                                            <code className="block bg-gray-100 dark:bg-gray-800 p-2 rounded text-xs overflow-x-auto">{children}</code>
+                                                        );
+                                                    },
+                                                    pre: ({children}) => <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-x-auto">{children}</pre>,
+                                                    ul: ({children}) => <ul className="list-disc list-inside mb-2">{children}</ul>,
+                                                    ol: ({children}) => <ol className="list-decimal list-inside mb-2">{children}</ol>,
+                                                    li: ({children}) => <li className="mb-1">{children}</li>,
+                                                    blockquote: ({children}) => <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic">{children}</blockquote>,
+                                                }}
+                                            >
+                                                {parsed.text}
+                                            </ReactMarkdown>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })()
+                    )}
+                </div>
+            </div>
+        )), [displayedMessages, agentInfo]);
+
     const selectedPromptNode = promptNodes.find(node => node.id === selectedPromptNodeId);
 
-    // Auto-scroll to bottom during streaming
+    // Auto-scroll to bottom during streaming - optimized with debouncing
     useEffect(() => {
         const container = messagesContainerRef.current;
         if (!container) return;
@@ -284,12 +451,12 @@ const EnhancedChat: React.FC = () => {
         // 2. When user was already near bottom  
         // 3. When there's a pending message (user just submitted)
         if (wasNearBottom || pendingUserMessage) {
-            // Use setTimeout to ensure DOM is updated
-            setTimeout(() => {
+            // Use requestAnimationFrame for better performance
+            requestAnimationFrame(() => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }, 10);
+            });
         }
-    }, [messages, pendingUserMessage]);
+    }, [displayedMessages.length, pendingUserMessage]); // Only depend on changes, not entire arrays
 
     // Show message if no prompt nodes
     if (!chatWindowVisible) {
@@ -410,66 +577,9 @@ const EnhancedChat: React.FC = () => {
                     </div>
                 )}
                 
-                {messages.filter(msg => msg.text.trim()).map((msg, i) => (
-                    <div
-                        key={i}
-                        className={msg.sender === "user" ? "flex justify-end" : "flex justify-start items-start space-x-2"}
-                    >
-                        {/* Agent avatar - only show if message has actual content */}
-                        {msg.sender === "agent" && agentInfo?.avatar && (
-                            <div className="flex-shrink-0 mt-1">
-                                <img 
-                                    src={agentInfo.avatar} 
-                                    alt={agentInfo.name || 'Agent'}
-                                    className="w-8 h-8 rounded-full object-cover"
-                                    onError={(e) => {
-                                        // Hide avatar if image fails to load
-                                        e.currentTarget.style.display = 'none';
-                                    }}
-                                />
-                            </div>
-                        )}
-                        
-                        <div
-                            className={`px-4 py-2 rounded-xl text-sm max-w-[70%] ${
-                                msg.sender === "user"
-                                    ? "bg-blue-500 text-white"
-                                    : "text-gray-900 dark:text-gray-100"
-                            }`}
-                        >
-                            {msg.sender === "user" ? (
-                                // User messages as plain text
-                                <div className="whitespace-pre-wrap">{msg.text}</div>
-                            ) : (
-                                // Agent messages with markdown parsing
-                                <div className="prose prose-sm dark:prose-invert max-w-none">
-                                    <ReactMarkdown 
-                                        remarkPlugins={[remarkGfm]}
-                                        components={{
-                                            // Custom styling for markdown elements
-                                            p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
-                                            code: ({children, className}) => {
-                                                const isInline = !className;
-                                                return isInline ? (
-                                                    <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs">{children}</code>
-                                                ) : (
-                                                    <code className="block bg-gray-100 dark:bg-gray-800 p-2 rounded text-xs overflow-x-auto">{children}</code>
-                                                );
-                                            },
-                                            pre: ({children}) => <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-x-auto">{children}</pre>,
-                                            ul: ({children}) => <ul className="list-disc list-inside mb-2">{children}</ul>,
-                                            ol: ({children}) => <ol className="list-decimal list-inside mb-2">{children}</ol>,
-                                            li: ({children}) => <li className="mb-1">{children}</li>,
-                                            blockquote: ({children}) => <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic">{children}</blockquote>,
-                                        }}
-                                    >
-                                        {msg.text}
-                                    </ReactMarkdown>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                ))}
+                {/* All Messages - Single source of truth, smooth updates */}
+                {renderedDisplayedMessages}
+                
                 <div ref={messagesEndRef} />
             </div>
 

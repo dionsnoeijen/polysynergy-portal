@@ -67,16 +67,17 @@ const FileAssignmentPanel: React.FC<FileAssignmentPanelProps> = ({
         e.preventDefault();
         setIsDragOver(false);
         
-        // Extract file paths from drag data
+        // Extract file paths and URLs from drag data
         try {
             const dragData = e.dataTransfer.getData('application/json');
-            const { filePaths } = JSON.parse(dragData);
+            const { filePaths, fileUrls } = JSON.parse(dragData);
             if (Array.isArray(filePaths) && filePaths.length > 0) {
                 onDrop?.(filePaths);
                 
-                // Also directly assign to the node
+                // Also directly assign to the node using URLs if available, otherwise fallback to paths
                 if (fileSelectionNode) {
-                    const uniqueFiles = [...new Set([...assignedFiles, ...filePaths])];
+                    const urlsToAssign = fileUrls && Array.isArray(fileUrls) ? fileUrls : filePaths;
+                    const uniqueFiles = [...new Set([...assignedFiles, ...urlsToAssign])];
                     updateNodeVariable(fileSelectionNode.id, 'selected_files', uniqueFiles);
                 }
             }
@@ -125,25 +126,44 @@ const FileAssignmentPanel: React.FC<FileAssignmentPanelProps> = ({
                             <p className="text-xs mt-1">Select files and click &quot;Assign Selected&quot; or drag files here</p>
                         </div>
                     ) : (
-                        assignedFiles.map((filePath, index) => (
-                            <div
-                                key={index}
-                                className="flex items-center justify-between py-2 px-1 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"
-                            >
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-zinc-900 dark:text-zinc-100 truncate" title={filePath}>
-                                        {filePath.split('/').pop() || filePath}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => handleRemoveFile(filePath)}
-                                    className="ml-2 p-1 text-zinc-400 hover:text-red-500 transition-colors"
-                                    title="Remove file"
+                        assignedFiles.map((filePathOrUrl, index) => {
+                            // Extract filename from URL or path for display
+                            const getDisplayName = (pathOrUrl: string) => {
+                                try {
+                                    // If it's a URL, extract the path part and get the filename
+                                    if (pathOrUrl.startsWith('http')) {
+                                        const url = new URL(pathOrUrl);
+                                        // Remove query parameters and extract filename from path
+                                        return url.pathname.split('/').pop() || pathOrUrl;
+                                    }
+                                    // If it's a path, just get the filename
+                                    return pathOrUrl.split('/').pop() || pathOrUrl;
+                                } catch {
+                                    // Fallback for invalid URLs
+                                    return pathOrUrl.split('/').pop() || pathOrUrl;
+                                }
+                            };
+
+                            return (
+                                <div
+                                    key={index}
+                                    className="flex items-center justify-between py-2 px-1 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors"
                                 >
-                                    <TrashIcon className="w-3 h-3" />
-                                </button>
-                            </div>
-                        ))
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-zinc-900 dark:text-zinc-100 truncate" title={filePathOrUrl}>
+                                            {getDisplayName(filePathOrUrl)}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => handleRemoveFile(filePathOrUrl)}
+                                        className="ml-2 p-1 text-zinc-400 hover:text-red-500 transition-colors"
+                                        title="Remove file"
+                                    >
+                                        <TrashIcon className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            );
+                        })
                     )}
                 </div>
 

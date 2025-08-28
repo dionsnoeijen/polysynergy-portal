@@ -160,7 +160,8 @@ const GridItem: React.FC<GridItemProps> = memo(({
             onDragStart={(e) => {
                 if (!isDirectory) {
                     e.dataTransfer.setData('application/json', JSON.stringify({
-                        filePaths: [item.path]
+                        filePaths: [item.path],
+                        fileUrls: [item.url || item.path] // Include URL for full file access
                     }));
                 }
             }}

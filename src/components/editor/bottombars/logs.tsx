@@ -76,10 +76,26 @@ export default function Logs() {
         }
     }, [inactiveCount]);
 
+    // Listen for prompt submission to restart log polling
+    useEffect(() => {
+        const handleRestartPolling = () => {
+            console.log('Restarting log polling due to prompt submission');
+            setPaused(false);
+            setInactiveCount(0);
+            // Don't set loading=true for incremental fetches - keep existing logs visible
+        };
+
+        window.addEventListener('restart-log-polling', handleRestartPolling);
+
+        return () => {
+            window.removeEventListener('restart-log-polling', handleRestartPolling);
+        };
+    }, []);
+
     const handleResume = () => {
         setPaused(false);
         setInactiveCount(0);
-        setLoading(true);
+        // Don't set loading=true - keep existing logs visible during resume
     };
 
     return (
@@ -102,12 +118,23 @@ export default function Logs() {
                     ) : (
                         <div className="p-2">
                             {[...logs].reverse().map((log, index) => {
-                                const isError = log.message.includes("[ERROR]");
+                                const message = log.message.toLowerCase();
+                                const isError = log.message.includes("[ERROR]") || message.includes("exception") || message.includes("error");
+                                const isWarning = log.message.includes("[WARNING]") || log.message.includes("[WARN]") || message.includes("warning") || message.includes("warn");
                                 const isInfo = log.message.includes("[INFO]");
                                 const isNewRun = log.message.includes("START RequestId:");
                                 
                                 // Check if this is the start of a new run and not the first log
                                 const shouldShowSeparator = isNewRun && index > 0;
+
+                                // Determine text color based on content
+                                const getTextColor = () => {
+                                    if (isError) return "text-red-400";
+                                    if (isWarning) return "text-yellow-400";
+                                    if (isInfo) return "text-green-400";
+                                    if (isNewRun) return "text-sky-300 font-medium";
+                                    return "";
+                                };
 
                                 return (
                                     <React.Fragment key={index}>
@@ -118,7 +145,7 @@ export default function Logs() {
                                             <span className="mr-2 px-1 rounded text-xs bg-zinc-700">
                                                 {log.variant}
                                             </span>
-                                            <span className={isError ? "text-red-400" : isInfo ? "text-green-400" : isNewRun ? "text-sky-300 font-medium" : ""}>
+                                            <span className={getTextColor()}>
                                                 {log.message}
                                             </span>
                                         </div>

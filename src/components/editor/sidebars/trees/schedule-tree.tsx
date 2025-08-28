@@ -13,7 +13,7 @@ export default function ScheduleTree(): ReactElement {
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
-    const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
+    // const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
 
     return (
         <TreeList

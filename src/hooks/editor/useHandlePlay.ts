@@ -1,5 +1,5 @@
 import { runMockApi } from "@/api/runApi";
-import useEditorStore, { BottomBarView } from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
 import useMockStore from "@/stores/mockStore";
 import useNodesStore from "@/stores/nodesStore";
 // import { NodeVariable } from "@/types/types";
@@ -13,12 +13,16 @@ export const useHandlePlay = () => {
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
-    const setBottomBarView = useEditorStore((state) => state.setBottomBarView);
+    // const setBottomBarView = useEditorStore((state) => state.setBottomBarView);
     // const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     return async (e: React.MouseEvent, nodeId: string, subStage: string = 'mock') => {
         e.preventDefault();
         e.stopPropagation();
+        
+        // CRITICAL: IMMEDIATELY switch to output tab in dock - FIRST PRIORITY!
+        console.log('🚀 IMMEDIATELY SWITCHING TO OUTPUT TAB IN DOCK');
+        window.dispatchEvent(new CustomEvent('switch-to-output-tab'));
         
         // Check if the node exists in the store
         const nodeExists = useNodesStore.getState().getNode(nodeId);
@@ -31,9 +35,6 @@ export const useHandlePlay = () => {
         if (!activeVersionId) return;
 
         try {
-            // CRITICAL: Open output panel when PLAY is clicked - this was missing!
-            setBottomBarView(BottomBarView.Output);
-            
             clearMockStore();
             setIsExecuting('Running...');
             

@@ -23,6 +23,7 @@ type ChatStore = {
     runCompletionListeners: Record<string, (() => void)[]>; // runId -> callback functions
     pendingUserMessage: string | null; // User message waiting for run to start
     addUserMessage: (text: string, runId: string) => void;
+    addUserMessageWithTimestamp: (text: string, runId: string, timestamp: number, sequence?: number) => void;
     addAgentMessage: (text: string, runId: string, nodeId?: string, sequence?: number, microtime?: number) => void;
     clearChatStore: (runId?: string) => void;
     activeRunId: string | null;
@@ -56,6 +57,25 @@ const useChatStore = create<ChatStore>((set, get) => ({
                 sequenceCounters: {
                     ...state.sequenceCounters,
                     [runId]: sequence,
+                },
+            };
+        }),
+
+    addUserMessageWithTimestamp: (text, runId, timestamp, sequence) =>
+        set((state) => {
+            const seq = sequence || ((state.sequenceCounters[runId] || 0) + 1);
+            const messages = [
+                ...(state.messagesByRun[runId] || []),
+                {sender: 'user', text, timestamp, sequence: seq} as const,
+            ];
+            return {
+                messagesByRun: {
+                    ...state.messagesByRun,
+                    [runId]: messages,
+                },
+                sequenceCounters: {
+                    ...state.sequenceCounters,
+                    [runId]: Math.max(state.sequenceCounters[runId] || 0, seq),
                 },
             };
         }),

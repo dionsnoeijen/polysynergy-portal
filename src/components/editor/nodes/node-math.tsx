@@ -1,8 +1,7 @@
-import { NodeProps, NodeMathType } from "@/types/types";
-import React from "react";
+import { NodeProps } from "@/types/types";
+import React, { useMemo } from "react";
 import useEditorStore from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
-import { Strong } from "@/components/text";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
@@ -16,6 +15,38 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);
+    
+    // Extract input and output variables from node.variables
+    const inputVariables = useMemo(() => 
+        node.variables.filter(v => v.has_in === true && v.node !== false),
+        [node.variables]
+    );
+    
+    const outputVariables = useMemo(() => 
+        node.variables.filter(v => v.has_out === true && v.node !== false && v.handle === 'true_path'),
+        [node.variables]
+    );
+    
+    // Calculate connector positions for inputs
+    const getInputConnectorPosition = (index: number, total: number) => {
+        if (total === 1) {
+            // Single input: center on left side of circle
+            return 'left-0 top-1/2 -translate-y-1/2 -translate-x-1/2';
+        } else if (total === 2) {
+            // Two inputs: spread out more on left side of circle
+            return index === 0 
+                ? 'left-0 top-1/4 -translate-y-1/2 -translate-x-1/2'  // Top quarter
+                : 'left-0 top-3/4 -translate-y-1/2 -translate-x-1/2'; // Bottom quarter
+        } else {
+            // Multiple inputs: simple vertical distribution
+            const positions = [
+                'left-0 top-1/4 -translate-y-1/2 -translate-x-1/2',   // Top
+                'left-0 top-1/2 -translate-y-1/2 -translate-x-1/2',   // Center
+                'left-0 top-3/4 -translate-y-1/2 -translate-x-1/2',   // Bottom
+            ];
+            return positions[index] || 'left-0 top-1/2 -translate-y-1/2 -translate-x-1/2';
+        }
+    };
     
 
     return (
@@ -36,44 +67,40 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
             data-node-id={node.id}
         >
             {mockNode && <ExecutionOrder mockNode={mockNode} centered={true} />}
-            <Connector
-                in
-                nodeId={node.id}
-                handle="a"
-                iconClassName="text-white dark:text-white"
-                className={`-translate-y-5 ring-blue-200/50 bg-blue-400 dark:bg-blue-400 ${node.view.disabled && 'select-none opacity-0'}`}
-                disabled={node.view.disabled}
-            />
-            <Connector
-                in
-                nodeId={node.id}
-                handle="b"
-                iconClassName="text-white dark:text-white"
-                className={`translate-y-2 ring-blue-200/50 bg-blue-400 dark:bg-blue-400 ${node.view.disabled && 'select-none opacity-0'}`}
-                disabled={node.view.disabled}
-            />
+            
+            {/* Dynamic Input Connectors */}
+            {inputVariables.map((variable, index) => (
+                <Connector
+                    key={`in-${variable.handle}`}
+                    in
+                    nodeId={node.id}
+                    handle={variable.handle}
+                    iconClassName="text-white dark:text-white"
+                    className={`${getInputConnectorPosition(index, inputVariables.length)} ring-blue-200/50 bg-blue-400 dark:bg-blue-400 ${node.view.disabled && 'select-none opacity-0'}`}
+                    disabled={node.view.disabled}
+                />
+            ))}
 
-            {node.type === NodeMathType.Add && (
-                <Strong className={`text-white text-4xl dark:text-white -mt-1 ${node.view.disabled && 'select-none opacity-0'}`}>+</Strong>
-            )}
-            {node.type === NodeMathType.Subtract && (
-                <Strong className={`text-white text-4xl dark:text-white -mt-1 ${node.view.disabled && 'select-none opacity-0'}`}>-</Strong>
-            )}
-            {node.type === NodeMathType.Multiply && (
-                <Strong className={`text-white text-4xl dark:text-white -mt-1 ${node.view.disabled && 'select-none opacity-0'}`}>×</Strong>
-            )}
-            {node.type === NodeMathType.Divide && (
-                <Strong className={`text-white text-4xl dark:text-white -mt-1 ${node.view.disabled && 'select-none opacity-0'}`}>÷</Strong>
+            {/* Math Icon */}
+            {node.icon && (
+                <div 
+                    className={`text-white dark:text-white ${node.view.disabled && 'select-none opacity-0'}`}
+                    dangerouslySetInnerHTML={{ __html: node.icon }}
+                />
             )}
 
-            <Connector
-                out
-                nodeId={node.id}
-                handle="true_path"
-                iconClassName="text-white dark:text-white"
-                className={`ring-blue-200/50 bg-green-400 dark:bg-green-400 ${node.view.disabled && 'select-none opacity-0'}`}
-                disabled={node.view.disabled}
-            />
+            {/* Dynamic Output Connectors */}
+            {outputVariables.map((variable) => (
+                <Connector
+                    key={`out-${variable.handle}`}
+                    out
+                    nodeId={node.id}
+                    handle={variable.handle}
+                    iconClassName="text-white dark:text-white"
+                    className={`right-0 top-1/2 -translate-y-1/2 translate-x-1/2 ring-blue-200/50 bg-green-400 dark:bg-green-400 ${node.view.disabled && 'select-none opacity-0'}`}
+                    disabled={node.view.disabled}
+                />
+            ))}
         </div>
     );
 };

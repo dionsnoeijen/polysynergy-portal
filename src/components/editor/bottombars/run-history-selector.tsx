@@ -6,6 +6,7 @@ import { getAvailableRuns } from "@/api/executionApi";
 interface Run {
     run_id: string;
     timestamp: string;
+    run_number?: number;
 }
 
 export default function RunHistorySelector() {

@@ -27,7 +27,7 @@ const LabelPublish: React.FC<Props> = ({
         <LabelGroup
             actions={
                 <>
-                    {variable?.dock?.info && (
+                    {variable?.info && (
                         <button
                             onClick={() => setShowInfo(!showInfo)}
                             className={`p-1 mb-1 rounded-md hover:bg-sky-500 ${showInfo && 'bg-sky-500 !hover:bg-sky-600'}`}
@@ -52,15 +52,30 @@ const LabelPublish: React.FC<Props> = ({
                 </>
             }
         >
-            <Label>{variable.name} <span
-                className="text-zinc-500 dark:text-zinc-400 text-xs">{'{'}{variable.handle}{'}'}</span></Label>
+            {variable?.info ? (
+                <button
+                    onClick={() => setShowInfo(!showInfo)}
+                    className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 text-left w-full"
+                    title="Click for more info"
+                >
+                    <Label>
+                        {variable.name} <span
+                        className="text-zinc-500 dark:text-zinc-400 text-xs">{'{'}{variable.handle}{'}'}</span>
+                    </Label>
+                </button>
+            ) : (
+                <Label>
+                    {variable.name} <span
+                    className="text-zinc-500 dark:text-zinc-400 text-xs">{'{'}{variable.handle}{'}'}</span>
+                </Label>
+            )}
 
-            {variable?.dock?.info && (
+            {variable?.info && (
                 <ConfirmDialog
                     open={showInfo}
                     onClose={() => setShowInfo(false)}
                     title={'Info'}
-                    description={variable.dock.info}
+                    description={variable.info}
                 />
             )}
         </LabelGroup>

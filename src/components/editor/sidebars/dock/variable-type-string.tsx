@@ -2,12 +2,11 @@ import React from "react";
 import { VariableTypeProps } from "@/types/types";
 import { TemplateInput } from "@/components/template-input";
 import { Field, FieldGroup, Fieldset } from "@/components/fieldset";
-import { Text } from "@/components/text";
 import { Select } from "@/components/select";
 import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 import useConnectionsStore from "@/stores/connectionsStore";
-import {BoltIcon} from "@heroicons/react/24/outline";
 import { nodeHistoryActions } from "@/stores/history";
+import ValueConnected from "./value-connected";
 
 const VariableTypeString: React.FC<VariableTypeProps> = ({
     nodeId,
@@ -52,13 +51,7 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
         <>
         {
             isValueConnected ? (
-                <div className={'border border-orange-800 dark:border-white/20 flex items-center justify-between rounded-md w-full relative mt-3 pl-3 pr-1 pb-1 pt-1 bg-white/5'}>
-                    <Text className={'!text-orange-800 !dark:text-yellow-300 truncate'}>
-                        <span className="truncate">{variable.name}</span>{' '}
-                        <span className="text-zinc-500 dark:text-zinc-400 text-xs truncate">{'{'}{variable.handle}{'}'}</span>
-                    </Text>
-                    <BoltIcon className={'w-5 h-5 text-orange-800 dark:text-yellow-300'} />
-                </div>
+                <ValueConnected variable={variable} />
             ) : (
                 <Fieldset className={'w-full'}>
                     {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}

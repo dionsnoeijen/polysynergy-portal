@@ -23,7 +23,7 @@ const TopRightEditorListener: React.FC = () => {
         <button
             title={`Listener ${isActive ? "actief" : "inactief"} – klik om te togglen`}
             onClick={() => toggleListener(activeVersionId)}
-            className="absolute bottom-3.5 left-16 z-50 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="absolute bottom-3.5 left-20 z-50 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
         >
             {isActive ? (
                 <SignalIcon className="w-6 h-6 text-green-500 dark:text-green-400" />

@@ -163,6 +163,12 @@ const useNodeColor = (
             } else {
                 classList += ` ring-green-500 ring-4 ${baseBg}`;
             }
+        } else if (mockNode?.status === 'provided') {
+            if (isSelected) {
+                classList += ` ring-purple-500 ring-8 shadow-2xl ${baseBg}`;
+            } else {
+                classList += ` ring-purple-500 ring-4 ${baseBg}`;
+            }
         } else if (mockNode?.status === 'error' || mockNode?.status === 'killed') {
             if (isSelected) {
                 classList += ` ring-red-500 ring-8 shadow-2xl ${baseBg}`;

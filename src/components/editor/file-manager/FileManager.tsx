@@ -113,14 +113,20 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
         const selectedFilesVar = currentNode.variables.find(v => v.handle === 'selected_files');
         const currentFiles = Array.isArray(selectedFilesVar?.value) ? selectedFilesVar.value as string[] : [];
         
-        // Add new files to existing ones (avoid duplicates)
-        const uniqueFiles = [...new Set([...currentFiles, ...state.selectedFiles])];
+        // Convert selected file paths to full URLs using directory contents
+        const selectedFileUrls = state.selectedFiles.map(path => {
+            const fileInfo = directoryContents.files.find(f => f.path === path);
+            return fileInfo?.url || path; // fallback to path if URL not found
+        });
+        
+        // Add new file URLs to existing ones (avoid duplicates)
+        const uniqueFiles = [...new Set([...currentFiles, ...selectedFileUrls])];
         
         updateNodeVariable(selectedFileSelectionNode.id, 'selected_files', uniqueFiles);
         
         // Clear file selection after assignment
         clearSelection();
-    }, [selectedFileSelectionNode?.id, state.selectedFiles, getNode, updateNodeVariable, clearSelection]);
+    }, [selectedFileSelectionNode?.id, state.selectedFiles, getNode, updateNodeVariable, clearSelection, directoryContents.files]);
 
     // Upload handler
     const handleUpload = useCallback((files: File[]) => {

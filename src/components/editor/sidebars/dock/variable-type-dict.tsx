@@ -136,7 +136,7 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
                             onClick={() => onEdit(nodeId)}
                         >
                             <PencilIcon
-                                className="w-4 h-4 inline text-sky-700/50 group-hover:text-sky-700 dark:text-white/50 dark:group-hover:text-white"/>
+                                className="w-4 h-4 inline text-sky-700 group-hover:text-sky-500 dark:text-white/70 dark:group-hover:text-white"/>
                         </button>
                     </div>
                 </div>

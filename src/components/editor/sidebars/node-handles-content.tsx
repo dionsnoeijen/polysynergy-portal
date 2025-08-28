@@ -214,7 +214,7 @@ const NodeHandlesContent: React.FC = () => {
         
         return (
             <div 
-                className="flex items-center gap-2 px-2 py-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded cursor-pointer group transition-all duration-150"
+                className="flex items-center gap-2 px-2 py-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 border-t border-b border-zinc-200 dark:border-zinc-700 cursor-pointer group transition-all duration-150"
                 onClick={() => copyToClipboard(display.fullHandle)}
                 title={`Copy: {{ ${display.fullHandle} }}`}
             >
@@ -261,7 +261,7 @@ const NodeHandlesContent: React.FC = () => {
         <div className="space-y-3">
             {/* Current Node Variables */}
             {currentNodeVars.length > 0 && (
-                <div className="bg-sky-50/50 dark:bg-zinc-800/50 rounded-lg p-2 border border-sky-200/30 dark:border-zinc-700/50">
+                <div className="bg-sky-50/50 dark:bg-zinc-800/50 p-2 border-t border-b border-sky-200/30 dark:border-zinc-700/50">
                     <div className="flex items-center gap-2 mb-2 px-1">
                         <CubeIcon className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                         <h3 className="font-medium text-zinc-800 dark:text-zinc-200 text-sm">
@@ -293,7 +293,7 @@ const NodeHandlesContent: React.FC = () => {
                     {Object.entries(predecessorsByNode).map(([nodeId, displays]) => {
                         const node = displays[0].node;
                         return (
-                            <div key={nodeId} className="bg-zinc-50 dark:bg-zinc-800/30 rounded-lg p-2 border border-zinc-200/50 dark:border-zinc-700/30">
+                            <div key={nodeId} className="bg-zinc-50 dark:bg-zinc-800/30 p-2 border-t border-b border-zinc-200/50 dark:border-zinc-700/30">
                                 <div className="flex items-center gap-2 mb-1.5 px-1">
                                     <div className="w-2 h-2 bg-zinc-400 dark:bg-zinc-500 rounded-full"></div>
                                     <h4 className="font-medium text-zinc-700 dark:text-zinc-300 text-sm">

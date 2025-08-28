@@ -13,7 +13,7 @@ import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-o
 interface Run {
     run_id: string;
     timestamp: string;
-    status?: 'success' | 'error' | 'running';
+    status?: 'success' | 'error' | 'running' | 'provided';
 }
 
 const NodeOutput: React.FC = (): React.ReactElement => {
@@ -113,7 +113,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
         if (mockNodes.length > 0) {
             const allNodesFinished = mockNodes.every(node => {
                 // A node is finished if it has a status (success, error, killed) or is marked as processed
-                return node.status === 'success' || node.status === 'error' || node.status === 'killed' || !node.started;
+                return node.status === 'success' || node.status === 'error' || node.status === 'killed' || node.status === 'provided' || !node.started;
             });
             
             if (allNodesFinished && isExecuting) {
@@ -129,7 +129,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
         previousMockNodesLength.current = mockNodes.length;
     }, [mockNodes.length, currentRunId]);
 
-    const reversedNodes = [...mockNodes]
+    const sortedNodes = [...mockNodes]
         .sort((a, b) => a.order - b.order)
         .reverse();
 
@@ -156,7 +156,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     const getNodesForRun = (runId: string) => {
         if (runId === currentRunId) {
             // Return live mockNodes for current run
-            return reversedNodes;
+            return sortedNodes;
         } else {
             // Return historical nodes if we have them
             return historicalNodes[runId] || [];
@@ -315,6 +315,8 @@ const NodeOutput: React.FC = (): React.ReactElement => {
             return <XCircleIcon className="w-4 h-4 text-red-400" />;
         } else if (run.status === 'success') {
             return <CheckCircleIcon className="w-4 h-4 text-green-400" />;
+        } else if (run.status === 'provided') {
+            return <CheckCircleIcon className="w-4 h-4 text-purple-400" />;
         } else {
             return <ClockIcon className="w-4 h-4 text-white dark:text-white" />;
         }
@@ -454,7 +456,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                                         {getStatusIcon(run)}
                                         <div className="min-w-0 flex-1">
                                             <div className="text-xs text-white font-medium flex items-center gap-2">
-                                                Run #{allRuns.length - index}
+                                                Run #{run.run_number || (allRuns.length - index)}
                                                 {isCurrent && (
                                                     <span className="text-green-400 text-xs">• Live</span>
                                                 )}
@@ -477,7 +479,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                                                 {isCurrent ? "Waiting for execution..." : "No execution data"}
                                             </div>
                                         ) : (
-                                            runNodes.map((node, nodeIndex) => {
+                                            runNodes.map((node) => {
                                                 const nodeKey = `${node.id}-${run.run_id}`;
                                                 const isOpen = !!expandedNodes[nodeKey];
                                                 
@@ -490,7 +492,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                                                             >
                                                                 <span className="inline-flex items-center gap-2">
                                                                     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-sky-500 text-white text-xs">
-                                                                        {runNodes.length - nodeIndex}
+                                                                        {node.order + 1}
                                                                     </span>
                                                                     <span className="text-xs font-medium">{node.type}</span>:
                                                                     <span className="text-xs font-light text-zinc-400">{node.handle}</span>

@@ -42,6 +42,7 @@ const EnhancedChat: React.FC = () => {
     const [manualRefreshLoading, setManualRefreshLoading] = useState(false);
     const [agentInfo, setAgentInfo] = useState<{ avatar?: string; name?: string } | null>(null);
     const [completedRunIds, setCompletedRunIds] = useState<Set<string>>(new Set());
+    const [hasMemoryConnected, setHasMemoryConnected] = useState(false);
     const [displayedMessages, setDisplayedMessages] = useState<Array<{
         sender: 'user' | 'agent';
         text: string;
@@ -82,6 +83,7 @@ const EnhancedChat: React.FC = () => {
                     console.log('No storage configuration found - agent may not have storage connected');
                     setChatHistory(null);
                     setDisplayedMessages([]);
+                    setHasMemoryConnected(false);
                     return;
                 }
 
@@ -92,6 +94,7 @@ const EnhancedChat: React.FC = () => {
                     console.log('No session_id set in prompt node');
                     setChatHistory(null);
                     setDisplayedMessages([]);
+                    setHasMemoryConnected(false);
                     return;
                 }
 
@@ -119,6 +122,7 @@ const EnhancedChat: React.FC = () => {
                 }
                 
                 setChatHistory(history);
+                setHasMemoryConnected(true);
                 // Update displayed messages with history
                 if (history && history.messages) {
                     setDisplayedMessages(history.messages);
@@ -128,6 +132,7 @@ const EnhancedChat: React.FC = () => {
                 console.error('Failed to load chat history:', error);
                 setChatHistory(null);
                 setDisplayedMessages([]);
+                setHasMemoryConnected(false);
             } finally {
                 setIsLoadingHistory(false);
             }
@@ -564,6 +569,13 @@ const EnhancedChat: React.FC = () => {
                     </div>
                 )}
                 
+                {/* No memory warning */}
+                {!hasMemoryConnected && !isLoadingHistory && (
+                    <div className="text-center text-xs text-orange-500 dark:text-orange-400 pb-2 border-b border-orange-200 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20 p-2 rounded">
+                        ⚠️ No memory connected - messages will not persist between sessions
+                    </div>
+                )}
+
                 {/* Session info display */}
                 {chatHistory && !isLoadingHistory && (
                     <div className="text-center text-xs text-gray-400 dark:text-gray-500 pb-2 border-b border-gray-200 dark:border-gray-700">

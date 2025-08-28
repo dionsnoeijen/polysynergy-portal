@@ -21,7 +21,7 @@ export default function BlueprintTree(): ReactElement {
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeBlueprintId = useEditorStore((state) => state.activeBlueprintId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
-    const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
+    // const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
 
     const addNode = useNodesStore((state) => state.addNode);
     const addConnection = useConnectionsStore((state) => state.addConnection);

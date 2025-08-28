@@ -81,7 +81,41 @@ export function useSmartWebSocketListener(flowId: string) {
 
             if (eventType === 'run_start') {
                 cleanupExecutionGlow();
-                useChatStore.getState().setActiveRunId(message.run_id as string);
+                const realRunId = message.run_id as string;
+                const chatStore = useChatStore.getState();
+                
+                // Check if we have a pending run with user messages
+                const currentActiveRunId = chatStore.activeRunId;
+                if (currentActiveRunId && currentActiveRunId.startsWith('pending-')) {
+                    // Migrate messages from temporary run to real run
+                    const pendingMessages = chatStore.messagesByRun[currentActiveRunId];
+                    if (pendingMessages) {
+                        console.log('📨 MIGRATING MESSAGES from', currentActiveRunId, 'to', realRunId);
+                        console.log('📨 PENDING MESSAGES:', pendingMessages.map(m => ({
+                            sender: m.sender,
+                            timestamp: m.timestamp,
+                            sequence: m.sequence,
+                            text: m.text.substring(0, 30) + '...'
+                        })));
+                        
+                        // Copy messages to the real run ID preserving original timestamps
+                        pendingMessages.forEach(msg => {
+                            if (msg.sender === 'user') {
+                                console.log('📨 MIGRATING USER MESSAGE:', {
+                                    text: msg.text.substring(0, 30) + '...',
+                                    originalTimestamp: msg.timestamp,
+                                    sequence: msg.sequence
+                                });
+                                // Use new method that preserves timestamp and sequence
+                                chatStore.addUserMessageWithTimestamp(msg.text, realRunId, msg.timestamp, msg.sequence);
+                            }
+                        });
+                        // Clear the temporary run
+                        chatStore.clearChatStore(currentActiveRunId);
+                    }
+                }
+                
+                chatStore.setActiveRunId(realRunId);
                 // Don't clear the chat store - keep existing messages visible
                 return;
             }
@@ -127,33 +161,6 @@ export function useSmartWebSocketListener(flowId: string) {
                     );
                     setMockConnections(data);
                     setHasMockData(true);
-                    
-                    // Store the final mock nodes state for perfect recreation
-                    const currentMockNodes = useMockStore.getState().mockNodes;
-                    if (currentMockNodes.length > 0) {
-                        try {
-                            const activeProjectId = useEditorStore.getState().activeProjectId;
-                            
-                            // Fix the mock nodes state for proper visual recreation
-                            const fixedMockNodes = currentMockNodes.map(node => ({
-                                ...node,
-                                started: true, // Ensure all completed nodes show as started for visual states
-                            }));
-                            
-                            // Call API to store mock nodes state
-                            // const response = 
-                            await fetch(`${config.LOCAL_API_URL}/execution/${activeVersionId}/${message.run_id}/mock-nodes/?project_id=${activeProjectId}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${getIdToken()}`,
-                                },
-                                body: JSON.stringify({ mock_nodes: fixedMockNodes })
-                            });
-                        } catch (error) {
-                            console.error('Failed to store mock nodes state:', error);
-                        }
-                    }
                 }, 100);
                 return;
             }
@@ -256,53 +263,6 @@ export function useSmartWebSocketListener(flowId: string) {
                 }
             }
             
-            // Fetch and sync execution results for this node
-            if (message.status === 'success' && message.run_id) {
-                const activeVersionId = useEditorStore.getState().activeVersionId;
-                if (activeVersionId) {
-                    getNodeExecutionDetails(
-                        activeVersionId,
-                        message.run_id,
-                        node_id,
-                        message.order || 0,
-                        'mock',
-                        'mock'
-                    ).then(executeResult => {
-                        setMockResultForNode(node_id, executeResult);
-                        
-                        // Selective sync: only sync execution results for image nodes and image-type variables
-                        // This prevents type errors like "Can't configure: 'values' existing type is: str, not a dict!"
-                        if (executeResult?.variables) {
-                            const currentNode = getNode(node_id);
-                            if (currentNode) {
-                                // Get list of variable handles that should be updated (only image variables in image nodes)
-                                const updatableHandles = getUpdatableVariableHandles(currentNode, executeResult.variables);
-                                
-                                if (updatableHandles.length > 0) {
-                                    console.log(`Found ${updatableHandles.length} image variable(s) to update for image node ${node_id}:`, updatableHandles);
-                                    
-                                    // Only update variables that are meant to hold image data
-                                    updatableHandles.forEach(variableHandle => {
-                                        const value = executeResult.variables[variableHandle];
-                                        const variable = currentNode.variables.find(v => v.handle === variableHandle);
-                                        
-                                        if (variable && shouldUpdateVariableFromExecution(currentNode, variable, value)) {
-                                            console.log(`Updating image variable '${variableHandle}' with image data for node ${node_id}`);
-                                            updateNodeVariable(node_id, variableHandle, value as string | number | boolean | string[] | NodeVariable[] | null);
-                                        }
-                                    });
-                                } else {
-                                    console.log(`No image variables to update for node ${node_id} (${currentNode.path || currentNode.category || 'unknown'})`);
-                                }
-                            } else {
-                                console.warn(`Node ${node_id} not found when trying to update variables from execution results`);
-                            }
-                        }
-                    }).catch(err => {
-                        console.error(`Failed to fetch execution details for node ${node_id}:`, err);
-                    });
-                }
-            }
         });
 
         return () => {

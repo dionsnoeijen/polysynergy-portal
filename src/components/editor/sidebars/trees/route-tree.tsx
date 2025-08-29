@@ -28,8 +28,10 @@ export default function RouteTree(): ReactElement {
                     <Link
                         href={`/project/${activeProjectId}/route/${route.id}`}
                         onClick={() => {
-                            // Set loading indicator immediately when user clicks
+                            // CRITICAL: Disable autosave BEFORE navigation to prevent empty saves
+                            useEditorStore.getState().setAutosaveEnabled(false);
                             useEditorStore.getState().setIsLoadingFlow(true);
+                            console.log('🔒 Route clicked - autosave disabled for switching');
                         }}
                         title={`${route.method}: /${formatSegments(route.segments)} - ${route.id}`}
                         className={`block flex-1 truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'text-white' : 'dark:text-zinc-500'}`}

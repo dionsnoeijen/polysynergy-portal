@@ -100,8 +100,7 @@ export const useUnifiedChatStore = create<UnifiedChatStore>((set, get) => ({
     // Message management
     addMessage: (messageData) => {
         const id = uuidv4();
-        let timestamp = messageData.timestamp ?? Date.now();
-        
+        const timestamp = messageData.timestamp ?? Date.now();
         
         const message: ChatMessage = {
             ...messageData,
@@ -237,14 +236,6 @@ export const useUnifiedChatStore = create<UnifiedChatStore>((set, get) => ({
     // Stream management
     startStream: (conversationId, nodeId) => {
         const streamId = uuidv4();
-        const messageId = get().addMessage({
-            conversationId,
-            source: 'agent_stream',
-            state: 'streaming',
-            content: '',
-            nodeId,
-            streamId,
-        });
 
         set((state) => ({
             pendingStreamIds: new Set([...state.pendingStreamIds, streamId]),

@@ -5,7 +5,6 @@ import useEditorStore from '@/stores/editorStore';
 import useDocumentationStore from '@/stores/documentationStore';
 import useMockStore from '@/stores/mockStore';
 
-import SavingIndicator from '@/components/saving-indicator';
 import {FormType} from '@/types/types';
 
 import {
@@ -38,7 +37,7 @@ export default function VersionPublishedMenu() {
 
     return (
         <div
-            className="absolute bottom-2 right-2 flex items-center gap-2 p-2 bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-lg z-20">
+            className="absolute bottom-2 right-12 flex items-center gap-2 p-2 bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-lg z-20">
             
             {/* Clear Mock Data Button */}
             <button 
@@ -98,7 +97,6 @@ export default function VersionPublishedMenu() {
                 <RocketLaunchIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
             </button>
             
-            <SavingIndicator isSaving={isSaving}/>
         </div>
     );
 }

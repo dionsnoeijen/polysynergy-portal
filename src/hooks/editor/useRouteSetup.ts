@@ -58,35 +58,88 @@ export const useRouteSetup = ({
 
     // Handle route/schedule/blueprint setup
     useEffect(() => {
+        const { hasLoadedOnce } = useEditorStore.getState();
+        
         if (routeUuid) {
-            // CRITICAL: Clear stores BEFORE switching to prevent data contamination
-            safelyClearStores();
+            // CRITICAL: Only clear stores on switching, not initial load (prevents crude reset)
+            if (hasLoadedOnce) {
+                safelyClearStores();
+                console.log('🔄 Switching to route - stores cleared');
+            } else {
+                console.log('🚀 Initial route load - preserving UI state');
+            }
             
             setActiveRouteId(routeUuid);
-            setActiveScheduleId('');
-            setActiveBlueprintId('');
+            // Only clear other IDs if they're not already empty (prevent unnecessary re-renders)
+            const currentState = useEditorStore.getState();
+            if (currentState.activeScheduleId !== '') {
+                setActiveScheduleId('');
+            }
+            if (currentState.activeBlueprintId !== '') {
+                setActiveBlueprintId('');
+            }
             fetchAndApplyNodeSetup({ routeId: routeUuid });
             addRouteNodesIfNeeded(routeUuid);
             setIsExecuting(null);
-        } else if (scheduleUuid) {
-            // CRITICAL: Clear stores BEFORE switching to prevent data contamination
-            safelyClearStores();
             
-            setActiveRouteId('');
+            // Mark as loaded for future switches
+            if (!hasLoadedOnce) {
+                useEditorStore.getState().setHasLoadedOnce(true);
+                console.log('✅ First load complete - future clicks will be switches');
+            }
+        } else if (scheduleUuid) {
+            // CRITICAL: Only clear stores on switching, not initial load (prevents crude reset)
+            if (hasLoadedOnce) {
+                safelyClearStores();
+                console.log('🔄 Switching to schedule - stores cleared');
+            } else {
+                console.log('🚀 Initial schedule load - preserving UI state');
+            }
+            
+            // Only clear other IDs if they're not already empty (prevent unnecessary re-renders)
+            const currentState = useEditorStore.getState();
+            if (currentState.activeRouteId !== '') {
+                setActiveRouteId('');
+            }
             setActiveScheduleId(scheduleUuid);
-            setActiveBlueprintId('');
+            if (currentState.activeBlueprintId !== '') {
+                setActiveBlueprintId('');
+            }
             fetchAndApplyNodeSetup({ scheduleId: scheduleUuid });
             addScheduleNodesIfNeeded(scheduleUuid);
             setIsExecuting(null);
-        } else if (blueprintUuid) {
-            // CRITICAL: Clear stores BEFORE switching to prevent data contamination
-            safelyClearStores();
             
-            setActiveRouteId('');
-            setActiveScheduleId('');
+            // Mark as loaded for future switches
+            if (!hasLoadedOnce) {
+                useEditorStore.getState().setHasLoadedOnce(true);
+                console.log('✅ First load complete - future clicks will be switches');
+            }
+        } else if (blueprintUuid) {
+            // CRITICAL: Only clear stores on switching, not initial load (prevents crude reset)
+            if (hasLoadedOnce) {
+                safelyClearStores();
+                console.log('🔄 Switching to blueprint - stores cleared');
+            } else {
+                console.log('🚀 Initial blueprint load - preserving UI state');
+            }
+            
+            // Only clear other IDs if they're not already empty (prevent unnecessary re-renders)
+            const currentState = useEditorStore.getState();
+            if (currentState.activeRouteId !== '') {
+                setActiveRouteId('');
+            }
+            if (currentState.activeScheduleId !== '') {
+                setActiveScheduleId('');
+            }
             setActiveBlueprintId(blueprintUuid);
             fetchAndApplyNodeSetup({ blueprintId: blueprintUuid });
             setIsExecuting(null);
+            
+            // Mark as loaded for future switches
+            if (!hasLoadedOnce) {
+                useEditorStore.getState().setHasLoadedOnce(true);
+                console.log('✅ First load complete - future clicks will be switches');
+            }
         }
     }, [
         routeUuid, 

@@ -119,6 +119,12 @@ export type EditorState = {
     forceSave: (() => Promise<void>) | null;
     setForceSave: (forceSave: (() => Promise<void>) | null) => void;
 
+    // CRITICAL: Autosave control flags for safe node setup switching
+    autosaveEnabled: boolean;
+    setAutosaveEnabled: (enabled: boolean) => void;
+    hasLoadedOnce: boolean;
+    setHasLoadedOnce: (loaded: boolean) => void;
+
     isDraft: boolean;
     setIsDraft: (isDraft: boolean) => void;
 
@@ -323,6 +329,15 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setIsSaving: (isSaving) => set({isSaving: isSaving}),
     forceSave: null,
     setForceSave: (forceSave) => set({forceSave}),
+
+    // CRITICAL: Default autosave OFF to prevent saves during initial load
+    autosaveEnabled: false,
+    setAutosaveEnabled: (enabled) => {
+        console.log(`${enabled ? '✅ AUTOSAVE ENABLED' : '🔒 AUTOSAVE DISABLED'}`);
+        set({autosaveEnabled: enabled});
+    },
+    hasLoadedOnce: false,
+    setHasLoadedOnce: (loaded) => set({hasLoadedOnce: loaded}),
 
     isDraft: false,
     setIsDraft: (isDraft) => set({isDraft: isDraft}),

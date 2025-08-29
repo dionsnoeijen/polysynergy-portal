@@ -9,7 +9,8 @@ import {
     TrashIcon,
     DocumentTextIcon,
     ArrowPathIcon,
-    PlusIcon
+    PlusIcon,
+    PencilSquareIcon
 } from '@heroicons/react/24/outline';
 import { FileViewMode } from '@/types/types';
 
@@ -17,6 +18,7 @@ type FileManagerToolbarProps = {
     viewMode: FileViewMode;
     isPublicMode: boolean;
     selectedCount: number;
+    selectedFileCount: number;
     showPreviewPanel: boolean;
     showAssignmentPanel?: boolean;
     canAssignFiles?: boolean;
@@ -28,12 +30,14 @@ type FileManagerToolbarProps = {
     onDeleteSelected: () => void;
     onReload: () => void;
     onAssignSelectedFiles?: () => void;
+    onEditMetadata?: () => void;
 };
 
 const FileManagerToolbar: React.FC<FileManagerToolbarProps> = ({
     viewMode,
     isPublicMode,
     selectedCount,
+    selectedFileCount,
     showPreviewPanel,
     // showAssignmentPanel = false,
     canAssignFiles = false,
@@ -44,7 +48,8 @@ const FileManagerToolbar: React.FC<FileManagerToolbarProps> = ({
     onUpload,
     onDeleteSelected,
     onReload,
-    onAssignSelectedFiles
+    onAssignSelectedFiles,
+    onEditMetadata
 }) => {
     return (
         <div className="flex items-center justify-between px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
@@ -76,6 +81,17 @@ const FileManagerToolbar: React.FC<FileManagerToolbarProps> = ({
                     <ArrowPathIcon className="w-4 h-4" />
                     <span>Refresh</span>
                 </button>
+                
+                {selectedFileCount === 1 && onEditMetadata && (
+                    <button
+                        onClick={onEditMetadata}
+                        className="flex items-center space-x-1 px-2 py-1 text-sm rounded hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 transition-colors"
+                        title="Edit metadata for selected file"
+                    >
+                        <PencilSquareIcon className="w-4 h-4" />
+                        <span>Edit Metadata</span>
+                    </button>
+                )}
                 
                 {canAssignFiles && selectedCount > 0 && onAssignSelectedFiles && (
                     <button

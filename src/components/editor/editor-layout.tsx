@@ -16,6 +16,7 @@ import TopRightEditorListener from "@/components/editor/editormenus/top-right-ed
 import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
 import BottomLeftPlayMenu from "@/components/editor/editormenus/bottom-left-play-menu";
 import ItemManagerIntroTour from "@/components/guidedtour/item-manager-intro-tour";
+import AutosaveIndicator from "@/components/AutosaveIndicator";
 
 import { useLayoutPanels } from "@/hooks/editor/useLayoutPanels";
 import { useLayoutResizing } from "@/hooks/editor/useLayoutResizing";
@@ -182,6 +183,11 @@ const EditorLayout = ({
                                         <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
                                         <VersionPublishedMenu/>
                                         <BottomLeftPlayMenu/>
+                                        
+                                        {/* Floating AutosaveIndicator - centered relative to menu height */}
+                                        <div className="absolute bottom-1 right-2 z-[9999] pointer-events-none flex items-center" style={{height: '52px'}}>
+                                            <AutosaveIndicator />
+                                        </div>
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">
@@ -202,9 +208,9 @@ const EditorLayout = ({
                     {/* Loading Overlay for Flow Switching */}
                     {isLoadingFlow && (
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-                            <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 shadow-xl flex items-center gap-4">
+                            <div className="flex items-center gap-4">
                                 <div className="animate-spin h-6 w-6 border-2 border-sky-500 border-t-transparent rounded-full"></div>
-                                <span className="text-gray-900 dark:text-white font-medium">Loading flow...</span>
+                                <span className="text-white font-medium">Loading flow...</span>
                             </div>
                         </div>
                     )}
@@ -244,7 +250,7 @@ const EditorLayout = ({
                     <button
                         type="button"
                         onClick={toggleCloseOutput}
-                        className={`absolute z-10 top-2 right-2 p-3 radius-bl-0`}
+                        className={`absolute z-10 top-1 left-2 p-3 radius-bl-0`}
                     ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/></button>
                     <button
                         onMouseDown={() => startResizing(ResizeWhat.Output)}

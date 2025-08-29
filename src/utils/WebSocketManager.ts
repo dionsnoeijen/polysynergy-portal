@@ -48,7 +48,13 @@ export class WebSocketManager {
     this.setStatus('connecting');
     this.log(`🔌 Connecting to ${this.url}`);
 
-    this.ws = new WebSocket(this.url);
+    try {
+      this.ws = new WebSocket(this.url);
+    } catch (error) {
+      this.log('❌ WebSocket connection failed immediately:', error);
+      this.setStatus('failed');
+      return;
+    }
 
     this.ws.onopen = () => {
       this.log('🔌 WebSocket connected');
@@ -68,7 +74,12 @@ export class WebSocketManager {
     };
 
     this.ws.onclose = (event) => {
-      this.log(`🔌 WebSocket closed: ${event.code} - ${event.reason}`);
+      this.log(`🔌 WebSocket closed: ${event.code} - ${event.reason}`, { 
+        wasClean: event.wasClean,
+        code: event.code,
+        reason: event.reason,
+        url: this.url
+      });
       this.stopHeartbeat();
       
       if (!this.isManualClose && this.shouldReconnect) {
@@ -80,7 +91,7 @@ export class WebSocketManager {
     };
 
     this.ws.onerror = (error) => {
-      this.log('❌ WebSocket error:', error);
+      this.log('❌ WebSocket error:', error, { url: this.url, readyState: this.ws?.readyState });
     };
   }
 

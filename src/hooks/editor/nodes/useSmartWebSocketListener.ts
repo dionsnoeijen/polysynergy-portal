@@ -1,14 +1,12 @@
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import useNodesStore from "@/stores/nodesStore";
 import useMockStore, {MockNode} from '@/stores/mockStore';
-import {getConnectionExecutionDetails, getNodeExecutionDetails} from "@/api/executionApi";
+import {getConnectionExecutionDetails} from "@/api/executionApi";
 import useEditorStore from "@/stores/editorStore";
 import useChatStore from '@/stores/chatStore';
-import { NodeVariable } from "@/types/types";
-import config from "@/config";
-import { useSmartWebSocket } from '@/hooks/editor/useSmartWebSocket';
-import { getIdToken } from "@/api/auth/authToken";
-import { shouldUpdateVariableFromExecution, getUpdatableVariableHandles } from '@/utils/imageNodeUtils';
+import { websocketStatusStore } from '@/hooks/editor/useHandlePlay';
+import globalWebSocketSingleton from '@/utils/GlobalWebSocketManager';
+import { ConnectionStatus } from '@/utils/WebSocketManager';
 
 type ExecutionMessage = {
     node_id?: string;
@@ -25,52 +23,56 @@ type ExecutionMessage = {
 const groupStates = new Map<string, { count: number, remaining: number }>();
 const nodeExecutionState = new Map<string, { started: boolean; ended: boolean; status?: string }>();
 
+let listenerInstanceCount = 0;
+
+// CRITICAL: Force close ALL WebSocket connections immediately
+export function forceCloseAllWebSockets() {
+    console.log('🔌 FORCE CLOSING ALL WEBSOCKET CONNECTIONS via global singleton');
+    globalWebSocketSingleton.forceCloseAll();
+    listenerInstanceCount = 0;
+    console.log('🔌 ALL WEBSOCKETS FORCE CLOSED');
+}
+
+// Call immediately to clean up existing connections
+forceCloseAllWebSockets();
+
 export function useSmartWebSocketListener(flowId: string) {
+    listenerInstanceCount++;
+    console.log('🔌 WEBSOCKET LISTENER INSTANCE:', { instanceCount: listenerInstanceCount, flowId });
+
+    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
+    const [isConnected, setIsConnected] = useState(false);
+
     const getNode = useNodesStore((state) => state.getNode);
-    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
     const addOrUpdateMockNode = useMockStore((state) => state.addOrUpdateMockNode);
     const setMockConnections = useMockStore((state) => state.setMockConnections);
     const setHasMockData = useMockStore((state) => state.setHasMockData);
-    const setMockResultForNode = useMockStore((state) => state.setMockResultForNode);
     const addAgentMessage = useChatStore((state) => state.addAgentMessage);
     const fireRunCompleted = useChatStore((state) => state.fireRunCompleted);
 
-    const websocketUrl = flowId ? `${config.WEBSOCKET_URL}/execution/${flowId}` : '';
-
-    const { 
-        connectionStatus, 
-        isConnected, 
-        onMessage 
-    } = useSmartWebSocket(websocketUrl, {
-        enabled: !!flowId,
-        autoConnect: true,
-        heartbeatInterval: 30000, // 30 seconds
-        pingTimeout: 5000,       // 5 seconds
-        maxReconnectAttempts: 10,
-        maxBackoffDelay: 30000   // 30 seconds max delay
-    });
-
+    // Use the global singleton WebSocket manager
     useEffect(() => {
         if (!flowId) return;
 
-        cleanupExecutionGlow();
+        console.log('🔌 USING GLOBAL WEBSOCKET SINGLETON for:', flowId);
 
-        const unsubscribe = onMessage((event) => {
+        // Define message handler inline since we need access to all the hooks
+        const handleWebSocketMessage = (event: MessageEvent) => {
             const message: ExecutionMessage = JSON.parse(event.data);
             const eventType = message.event;
             let node_id = message.node_id;
 
+            // Process all message types inline
             if ((
                 message.event === 'RunResponseContent' ||
-                message.event === 'TeamRunResponseContent') && message.content) {
+                message.event === 'TeamRunResponseContent') && message.content
+            ) {
                 const {run_id, content, sequence_id, microtime} = message;
                 if (!run_id) return;
 
-                // Removed excessive chunk logging - was causing console spam
-                
                 // Add the message with enhanced ordering info
                 addAgentMessage(content, run_id, node_id, sequence_id, microtime);
-                
+
                 // Sort messages to maintain order
                 useChatStore.getState().sortMessages(run_id);
             }
@@ -80,10 +82,11 @@ export function useSmartWebSocketListener(flowId: string) {
             }
 
             if (eventType === 'run_start') {
+                console.log('🚀 RUN START EVENT:', { run_id: message.run_id, message });
                 cleanupExecutionGlow();
                 const realRunId = message.run_id as string;
                 const chatStore = useChatStore.getState();
-                
+
                 // Check if we have a pending run with user messages
                 const currentActiveRunId = chatStore.activeRunId;
                 if (currentActiveRunId && currentActiveRunId.startsWith('pending-')) {
@@ -97,7 +100,7 @@ export function useSmartWebSocketListener(flowId: string) {
                             sequence: m.sequence,
                             text: m.text.substring(0, 30) + '...'
                         })));
-                        
+
                         // Copy messages to the real run ID preserving original timestamps
                         pendingMessages.forEach(msg => {
                             if (msg.sender === 'user') {
@@ -114,9 +117,8 @@ export function useSmartWebSocketListener(flowId: string) {
                         chatStore.clearChatStore(currentActiveRunId);
                     }
                 }
-                
+
                 chatStore.setActiveRunId(realRunId);
-                // Don't clear the chat store - keep existing messages visible
                 return;
             }
 
@@ -138,12 +140,14 @@ export function useSmartWebSocketListener(flowId: string) {
             }
 
             if (eventType === 'run_end') {
+                console.log('🏁 RUN END EVENT:', { run_id: message.run_id, status: message.status, message });
+
                 // Fire run completion event for chat history reload
                 if (message.run_id) {
                     console.log(`Firing run completion event for run: ${message.run_id}`);
                     fireRunCompleted(message.run_id);
                 }
-                
+
                 setTimeout(async () => {
                     const executingEls = document.querySelectorAll('[data-node-id].executing');
                     executingEls.forEach((el) => {
@@ -153,7 +157,7 @@ export function useSmartWebSocketListener(flowId: string) {
                     nodeExecutionState.clear();
 
                     const activeVersionId = useEditorStore.getState().activeVersionId;
-                    
+
                     // Get connection data
                     const data = await getConnectionExecutionDetails(
                         activeVersionId as string,
@@ -174,10 +178,12 @@ export function useSmartWebSocketListener(flowId: string) {
                 : nodeFlowNode?.path.split(".").pop();
 
             if (eventType === 'start_node' || eventType === 'end_node') {
+                console.log('🎯 EXECUTION LIFECYCLE EVENT:', { eventType, node_id, status: message.status, order: message.order });
+
                 // Check if we're currently viewing a historical run to avoid interference
                 const isViewingHistoricalRun = useEditorStore.getState().isViewingHistoricalRun;
                 const selectedRunId = useEditorStore.getState().selectedRunId;
-                
+
                 // Only process if not viewing historical AND this event is for the currently selected run
                 if (!isViewingHistoricalRun && (!selectedRunId || message.run_id === selectedRunId)) {
                     addOrUpdateMockNode({
@@ -203,7 +209,7 @@ export function useSmartWebSocketListener(flowId: string) {
                 // Check if we're currently viewing a historical run to avoid interference
                 const isViewingHistoricalRun = useEditorStore.getState().isViewingHistoricalRun;
                 const selectedRunId = useEditorStore.getState().selectedRunId;
-                
+
                 // Only process group fallback if not viewing historical AND this event is for current run
                 if (!isViewingHistoricalRun && (!selectedRunId || message.run_id === selectedRunId)) {
                     const groupInfo = useNodesStore.getState().findNearestVisibleGroupWithCount?.(node_id);
@@ -237,7 +243,7 @@ export function useSmartWebSocketListener(flowId: string) {
             // Individual node - only apply visual changes if not viewing historical run
             const isViewingHistoricalRun = useEditorStore.getState().isViewingHistoricalRun;
             const selectedRunId = useEditorStore.getState().selectedRunId;
-            
+
             // Only apply visual changes if not viewing historical AND this event is for current run
             if (!isViewingHistoricalRun && (!selectedRunId || message.run_id === selectedRunId)) {
                 const state = nodeExecutionState.get(node_id) || {started: false, ended: false};
@@ -262,16 +268,40 @@ export function useSmartWebSocketListener(flowId: string) {
                     }
                 }
             }
-            
-        });
+        };
+
+        const unsubscribe = globalWebSocketSingleton.subscribe(
+            flowId,
+            (status: ConnectionStatus, connected: boolean) => {
+                setConnectionStatus(status);
+                setIsConnected(connected);
+                console.log('🔌 GLOBAL SINGLETON STATUS UPDATE:', { flowId, status, connected });
+            },
+            handleWebSocketMessage
+        );
+
+        return unsubscribe;
+    }, [flowId, getNode, addOrUpdateMockNode, setMockConnections, setHasMockData, addAgentMessage, fireRunCompleted]);
+
+
+    // CRITICAL: Update global WebSocket status store for execution verification
+    useEffect(() => {
+        websocketStatusStore.updateStatus(isConnected, connectionStatus);
+        console.log('🔌 WebSocket Status Updated:', { isConnected, connectionStatus, flowId });
+    }, [isConnected, connectionStatus, flowId]);
+
+    // Move the message processing logic into the handleWebSocketMessage function
+    useEffect(() => {
+        if (!flowId) return;
+        cleanupExecutionGlow();
+
+        // The WebSocket message handling is now done through the global singleton
 
         return () => {
-            unsubscribe();
-            groupStates.clear();
-            nodeExecutionState.clear();
             cleanupExecutionGlow();
         };
-    }, [flowId, onMessage, getNode, updateNodeVariable, addOrUpdateMockNode, setMockConnections, setHasMockData, setMockResultForNode, addAgentMessage, fireRunCompleted]);
+    }, [flowId]);
+
 
     function cleanupExecutionGlow() {
         const elements = document.querySelectorAll('[data-node-id]');

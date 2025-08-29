@@ -17,14 +17,11 @@ import { traceStorageConfiguration, traceAgentAndStorage, getSessionInfo } from 
 const EnhancedChat: React.FC = () => {
     const { promptNodes, chatWindowVisible, multipleChats } = usePromptNodeDetection();
     const messagesByRun = useChatStore((state) => state.messagesByRun);
-    // // const addUserMessage = useChatStore((state) => state.addUserMessage);
     const onRunCompleted = useChatStore((state) => state.onRunCompleted);
     const setPendingUserMessage = useChatStore((state) => state.setPendingUserMessage);
     const pendingUserMessage = useChatStore((state) => state.pendingUserMessage);
     const activeRunId = useChatStore((state) => state.activeRunId);
-    const clearChatStore = useChatStore((state) => state.clearChatStore);
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
-    // const getNode = useNodesStore((state) => state.getNode);
     const forceSave = useEditorStore((state) => state.forceSave);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const handlePlay = useHandlePlay();
@@ -38,7 +35,6 @@ const EnhancedChat: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const [forceReloadTrigger, setForceReloadTrigger] = useState(0);
-    // const [wasAtBottom, setWasAtBottom] = useState(true);
     const [manualRefreshLoading, setManualRefreshLoading] = useState(false);
     const [agentInfo, setAgentInfo] = useState<{ avatar?: string; name?: string } | null>(null);
     const [completedRunIds, setCompletedRunIds] = useState<Set<string>>(new Set());

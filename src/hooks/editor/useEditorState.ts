@@ -75,14 +75,14 @@ export const useEditorState = (isMouseDown?: boolean) => {
         editorMode,
         activeVersionId,
         isExecuting,
-        
+
         // Derived state
         nodesToRender,
         openGroups,
         connections,
         connectionStatus,
         isConnected,
-        
+
         // Classes
         containerClass
     };

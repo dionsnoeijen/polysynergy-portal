@@ -10,6 +10,7 @@ export type FileInfo = {
     last_modified: string;
     url?: string;
     is_directory: boolean;
+    custom_metadata?: Record<string, string>;
 };
 
 export type DirectoryInfo = {
@@ -253,6 +254,15 @@ export class FileManagerApi {
         const encodedPath = encodeURIComponent(filePath);
         return this.makeRequest<FileInfo>(`/metadata/${encodedPath}`, {
             method: 'GET',
+        });
+    }
+
+    // Update file metadata
+    async updateFileMetadata(filePath: string, metadata: Record<string, string>): Promise<FileOperationResponse> {
+        const encodedPath = encodeURIComponent(filePath);
+        return this.makeRequest<FileOperationResponse>(`/metadata/${encodedPath}`, {
+            method: 'PUT',
+            body: JSON.stringify({ metadata })
         });
     }
 

@@ -5,11 +5,13 @@ import {
     PencilIcon,
     DocumentPlusIcon,
     ArrowUpTrayIcon,
+    DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 
 import { useFileManager } from '@/hooks/useFileManager';
 import { FileViewMode, ContextMenuItem } from '@/types/types';
-import { FileInfo, DirectoryInfo } from '@/api/fileManagerApi';
+import { FileInfo, DirectoryInfo, createFileManagerApi } from '@/api/fileManagerApi';
+import useProjectStore from '@/stores/projectsStore';
 
 import Breadcrumb from './Breadcrumb';
 import FileGrid from './FileGrid';
@@ -19,6 +21,7 @@ import FileManagerToolbar from './FileManagerToolbar';
 import FilePreviewPanel from './FilePreviewPanel';
 import CreateFolderModal from './CreateFolderModal';
 import FileAssignmentPanel from './FileAssignmentPanel';
+import MetadataEditor from './MetadataEditor';
 import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
 
@@ -30,6 +33,9 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
     const [showPreviewPanel, setShowPreviewPanel] = useState(false);
     const [selectedPreviewItem, setSelectedPreviewItem] = useState<FileInfo | DirectoryInfo | null>(null);
     const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
+    const [showMetadataEditor, setShowMetadataEditor] = useState(false);
+    const [selectedFileForMetadata, setSelectedFileForMetadata] = useState<FileInfo | null>(null);
+    const [isUpdatingMetadata, setIsUpdatingMetadata] = useState(false);
     
     // Editor store integration for file_selection nodes
     const selectedNodes = useEditorStore(state => state.selectedNodes);
@@ -76,6 +82,44 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
         setDragOver,
         refresh
     } = useFileManager();
+
+    // Get current project ID
+    const currentProject = useProjectStore(state => state.currentProject);
+    const projectId = currentProject?.id || '';
+
+    // Metadata handler functions
+    const handleEditMetadata = useCallback((file: FileInfo) => {
+        setSelectedFileForMetadata(file);
+        setShowMetadataEditor(true);
+    }, []);
+
+    const handleSaveMetadata = useCallback(async (metadata: Record<string, string>) => {
+        if (!selectedFileForMetadata || !projectId) return;
+
+        setIsUpdatingMetadata(true);
+        try {
+            const fileManagerApi = createFileManagerApi(projectId);
+            await fileManagerApi.updateFileMetadata(selectedFileForMetadata.path, metadata);
+            
+            // Refresh the directory contents to show updated metadata
+            refresh();
+            
+            // Close the editor
+            setShowMetadataEditor(false);
+            setSelectedFileForMetadata(null);
+        } catch (error) {
+            console.error('Error updating file metadata:', error);
+            // TODO: Show error toast/notification
+        } finally {
+            setIsUpdatingMetadata(false);
+        }
+    }, [selectedFileForMetadata, projectId, refresh]);
+
+    const handleCloseMetadataEditor = useCallback(() => {
+        setShowMetadataEditor(false);
+        setSelectedFileForMetadata(null);
+    }, []);
+
 
 
     // File input ref for upload
@@ -149,6 +193,7 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
     // Context menu for file/directory items
     const handleItemContextMenu = useCallback((e: React.MouseEvent, item: FileInfo | DirectoryInfo) => {
         e.preventDefault();
+        e.stopPropagation(); // Prevent bubbling to parent container
         
         const isDirectory = item.is_directory;
         const items: ContextMenuItem[] = [
@@ -175,6 +220,15 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                     }
                 }
             },
+            // Add Edit Metadata option for files only
+            ...(!isDirectory ? [{
+                label: 'Edit Metadata',
+                icon: <DocumentTextIcon className="w-4 h-4" />,
+                action: () => {
+                    handleEditMetadata(item as FileInfo);
+                }
+            }] : []),
+            { divider: true },
             {
                 label: 'Delete',
                 icon: <TrashIcon className="w-4 h-4" />,
@@ -186,8 +240,9 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
             }
         ];
 
+        console.log('About to call showContextMenu with', e.clientX, e.clientY, items.length, 'items');
         showContextMenu(e.clientX, e.clientY, items);
-    }, [navigateToDirectory, handleFileDoubleClick, moveFile, deleteFile, showContextMenu]);
+    }, [navigateToDirectory, handleFileDoubleClick, moveFile, deleteFile, showContextMenu, handleEditMetadata]);
 
     // Context menu for empty area
     const handleEmptyAreaContextMenu = useCallback((e: React.MouseEvent) => {
@@ -325,6 +380,7 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                 viewMode={state.viewMode}
                 isPublicMode={state.isPublicMode}
                 selectedCount={state.selectedFiles.length + state.selectedDirectories.length}
+                selectedFileCount={state.selectedFiles.length}
                 showPreviewPanel={showPreviewPanel}
                 showAssignmentPanel={showAssignmentPanel}
                 canAssignFiles={showAssignmentPanel && state.selectedFiles.length > 0}
@@ -335,6 +391,11 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                 onUpload={handleUploadClick}
                 onReload={refresh}
                 onAssignSelectedFiles={handleAssignSelectedFiles}
+                onEditMetadata={() => {
+                    if (state.selectedFiles.length === 1) {
+                        handleEditMetadata(state.selectedFiles[0]);
+                    }
+                }}
                 onDeleteSelected={() => {
                     const selectedCount = state.selectedFiles.length + state.selectedDirectories.length;
                     if (selectedCount > 0) {
@@ -452,6 +513,16 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                 onCreateFolder={handleCreateFolderSubmit}
                 currentPath={state.currentPath}
             />
+
+            {/* Metadata Editor */}
+            {showMetadataEditor && selectedFileForMetadata && (
+                <MetadataEditor
+                    file={selectedFileForMetadata}
+                    onSave={handleSaveMetadata}
+                    onClose={handleCloseMetadataEditor}
+                    isLoading={isUpdatingMetadata}
+                />
+            )}
         </div>
     );
 };

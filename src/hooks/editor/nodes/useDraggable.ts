@@ -83,11 +83,13 @@ const useDraggable = () => {
             return;
         }
 
-        const updatedNodes = selectedNodesRef.current.map((nodeId) => {
-            const x = snapToGrid(initialPositionsRef.current[nodeId].x);
-            const y = snapToGrid(initialPositionsRef.current[nodeId].y);
-            return { id: nodeId, x, y };
-        });
+        const updatedNodes = selectedNodesRef.current
+            .filter((nodeId) => initialPositionsRef.current[nodeId]) // Only include nodes with recorded positions
+            .map((nodeId) => {
+                const x = snapToGrid(initialPositionsRef.current[nodeId].x);
+                const y = snapToGrid(initialPositionsRef.current[nodeId].y);
+                return { id: nodeId, x, y };
+            });
 
         // Use history-enabled node position updates
         if (updatedNodes.length === 1) {

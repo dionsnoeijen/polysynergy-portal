@@ -101,8 +101,10 @@ export default function BlueprintTree(): ReactElement {
                         href={`/project/${activeProjectId}/blueprint/${blueprint.id}`}
                         title={`${blueprint.name} - ${blueprint.id}`}
                         onClick={() => {
-                            // Set loading indicator immediately when user clicks  
+                            // CRITICAL: Disable autosave BEFORE navigation to prevent empty saves
+                            useEditorStore.getState().setAutosaveEnabled(false);
                             useEditorStore.getState().setIsLoadingFlow(true);
+                            console.log('🔒 Blueprint clicked - autosave disabled for switching');
                         }}
                         className={`block flex-1 truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'text-white' : 'dark:text-zinc-500'}`}
                     >

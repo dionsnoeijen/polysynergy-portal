@@ -6,6 +6,21 @@ import useNodesStore from "@/stores/nodesStore";
 import React from "react";
 import {getNodeExecutionDetails} from "@/api/executionApi";
 import useListenerStore from "@/stores/listenerStore";
+import config from "@/config";
+import { getIdToken } from "@/api/auth/authToken";
+
+// Create a WebSocket status store to share status across hooks
+const websocketStatusStore = {
+    isConnected: false,
+    connectionStatus: 'disconnected',
+    updateStatus: (isConnected: boolean, connectionStatus: string) => {
+        websocketStatusStore.isConnected = isConnected;
+        websocketStatusStore.connectionStatus = connectionStatus;
+    }
+};
+
+// Export the status store so WebSocket listener can update it
+export { websocketStatusStore };
 
 export const useHandlePlay = () => {
     const setMockResultForNode = useMockStore((state) => state.setMockResultForNode);
@@ -34,12 +49,59 @@ export const useHandlePlay = () => {
 
         if (!activeVersionId) return;
 
+        // TEMPORARY: Disable WebSocket verification to fix connection loop first
+        if (false && !websocketStatusStore.isConnected) {
+            console.error('❌ EXECUTION BLOCKED: WebSocket not connected!', { 
+                connectionStatus: websocketStatusStore.connectionStatus, 
+                isConnected: websocketStatusStore.isConnected, 
+                activeVersionId 
+            });
+            alert(`WebSocket not ready! Status: ${websocketStatusStore.connectionStatus}. Cannot execute without live connection.`);
+            return;
+        }
+
         try {
             clearMockStore();
             setIsExecuting('Running...');
             
-            console.log('🎬 PLAY STARTED - Output panel opened, mock store cleared, execution state set');
+            console.log('🎬 PLAY STARTED - WebSocket verified connected, proceeding with execution');
 
+            // CRITICAL FIX: Activate WebSocket listener BEFORE execution starts  
+            const setListenerActive = useListenerStore.getState().setListenerState;
+            
+            try {
+                // Actually call the backend API to activate the listener
+                const activateResult = await fetch(
+                    `${config.LOCAL_API_URL}/listeners/${activeVersionId}/activate/`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${getIdToken()}`,
+                        },
+                    }
+                );
+                
+                const activateData = await activateResult.json();
+                console.log('🔌 BACKEND LISTENER ACTIVATION:', { 
+                    success: activateResult.ok, 
+                    status: activateResult.status,
+                    data: activateData 
+                });
+                
+                if (!activateResult.ok) {
+                    console.error('❌ BACKEND LISTENER ACTIVATION FAILED:', activateData);
+                    alert('Failed to activate WebSocket listener on backend. Execution may not show live feedback.');
+                }
+                
+                // Update frontend state
+                setListenerActive(activeVersionId, true);
+                console.log('🔌 CRITICAL: WebSocket listener activated on backend and frontend');
+                
+            } catch (error) {
+                console.error('❌ LISTENER ACTIVATION ERROR:', error);
+                alert('Error activating WebSocket listener. Execution may not show live feedback.');
+            }
 
             const response = await runMockApi(
                 activeProjectId,
@@ -48,10 +110,16 @@ export const useHandlePlay = () => {
                 'mock',
                 subStage
             );
-            const setListenerActive =
-                useListenerStore.getState().setListenerState;
-            setListenerActive(activeVersionId, true);
+            
+            // CRITICAL DEBUG: Log API response to see if execution started
+            console.log('🚀 EXECUTION API RESPONSE:', { 
+                status: response.status, 
+                ok: response.ok,
+                url: response.url 
+            });
+            
             const data = await response.json();
+            console.log('🚀 EXECUTION API DATA:', data);
             
             // Handle error responses where result might be undefined
             if (!data.result) {

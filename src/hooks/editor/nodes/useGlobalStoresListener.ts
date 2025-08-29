@@ -58,6 +58,13 @@ export default function useGlobalStoreListenersWithImmediateSave() {
 
         if (!fundamentalId || !type) return;
 
+        // CRITICAL: Never save empty node arrays - final safety net
+        const { nodes } = useNodesStore.getState();
+        if (nodes.length === 0) {
+            console.warn('🚨 PREVENTED SAVING EMPTY NODE ARRAY - Data loss protection active');
+            return;
+        }
+
         // CRITICAL: Detect node setup switching and handle safely
         const isVersionSwitch = last.versionId !== activeVersionId && last.versionId !== null;
         const isTypeSwitch = last.type !== type && last.type !== null;
@@ -144,7 +151,8 @@ export default function useGlobalStoreListenersWithImmediateSave() {
     }, [forceImmediateSave, setForceSave]);
 
     const saveNodeSetup = useCallback(() => {
-        // CRITICAL: Skip autosave if disabled (during node setup switching)
+        // CRITICAL: Check EditorStore autosave flag instead of module variable
+        const { autosaveEnabled } = useEditorStore.getState();
         if (!autosaveEnabled) {
             console.log('🔒 Autosave disabled - skipping save operation');
             return;

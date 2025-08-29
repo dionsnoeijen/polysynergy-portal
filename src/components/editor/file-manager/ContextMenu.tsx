@@ -15,12 +15,22 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     onClose
 }) => {
     const menuRef = useRef<HTMLDivElement>(null);
+    const ignoreNextClick = useRef(false);
 
     // Close menu when clicking outside
     useEffect(() => {
         if (!visible) return;
 
+        // Ignore the first click that opened the menu
+        ignoreNextClick.current = true;
+
         const handleClickOutside = (event: MouseEvent) => {
+            // Ignore the click that opened the context menu
+            if (ignoreNextClick.current) {
+                ignoreNextClick.current = false;
+                return;
+            }
+            
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
                 onClose();
             }
@@ -77,7 +87,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
         };
     };
 
-    if (!visible || items.length === 0) return null;
+    if (!visible || items.length === 0) {
+        return null;
+    }
 
     return (
         <>

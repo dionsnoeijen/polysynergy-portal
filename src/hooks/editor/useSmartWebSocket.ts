@@ -17,15 +17,24 @@ export function useSmartWebSocket(
 
   // Initialize WebSocket manager
   useEffect(() => {
-    if (!enabled || !url) return;
+    if (!enabled || !url) {
+      console.log('🔌 WEBSOCKET MANAGER: Not initializing', { enabled, url });
+      return;
+    }
 
+    console.log('🔌 WEBSOCKET MANAGER: Initializing with URL:', url);
     managerRef.current = new WebSocketManager(url, {
-      debug: process.env.NODE_ENV === 'development',
+      debug: true, // FORCE debug logging to see connection issues
       ...managerConfig
     });
 
+    console.log('🔌 WEBSOCKET MANAGER: Created, subscribing to status changes');
+
     // Subscribe to status changes
-    const unsubscribeStatus = managerRef.current.onStatusChange(setConnectionStatus);
+    const unsubscribeStatus = managerRef.current.onStatusChange((status) => {
+      console.log('🔌 WEBSOCKET MANAGER: Status changed to:', status);
+      setConnectionStatus(status);
+    });
 
     // Subscribe to messages and forward to registered handlers
     const unsubscribeMessage = managerRef.current.onMessage((event) => {
@@ -34,7 +43,10 @@ export function useSmartWebSocket(
 
     // Auto-connect if enabled
     if (autoConnect) {
+      console.log('🔌 WEBSOCKET MANAGER: Auto-connecting...');
       managerRef.current.connect();
+    } else {
+      console.log('🔌 WEBSOCKET MANAGER: Auto-connect disabled');
     }
 
     return () => {

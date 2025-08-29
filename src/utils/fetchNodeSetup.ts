@@ -5,7 +5,6 @@ import {fetchDynamicRoute as fetchDynamicRouteAPI} from "@/api/dynamicRoutesApi"
 import {fetchBlueprint as fetchBlueprintAPI} from "@/api/blueprintApi";
 import {fetchSchedule as fetchScheduleAPI} from "@/api/schedulesApi";
 import {NodeSetupVersion, Route} from "@/types/types";
-import { disableAutosave, enableAutosave } from "@/hooks/editor/nodes/useGlobalStoresListener";
 
 async function fetchAndApplyNodeSetup({
     routeId = null,
@@ -55,9 +54,9 @@ async function fetchAndApplyNodeSetup({
             version = getVersion(blueprint?.node_setup?.versions);
         }
 
-        // CRITICAL: Disable autosave during node setup switching to prevent data corruption
+        // CRITICAL: Autosave already disabled by tree click handler - just identify setup type
         const setupType = routeId ? 'route' : scheduleId ? 'schedule' : 'blueprint';
-        disableAutosave(`Switching to ${setupType} ${routeId || scheduleId || blueprintId}`);
+        console.log(`📥 Loading ${setupType} data...`);
 
         try {
             useEditorStore.getState().setIsDraft(version?.draft ?? false);
@@ -77,18 +76,17 @@ async function fetchAndApplyNodeSetup({
             await new Promise(resolve => setTimeout(resolve, 100));
             
         } finally {
-            // CRITICAL: Re-enable autosave after switching is complete
-            enableAutosave(`Completed switch to ${setupType} ${routeId || scheduleId || blueprintId}`);
-            
-            // CRITICAL: Clear loading state to re-enable editor
+            // CRITICAL: Re-enable autosave after loading is complete (replaces old module-based control)
+            useEditorStore.getState().setAutosaveEnabled(true);
             useEditorStore.getState().setIsLoadingFlow(false);
+            console.log(`✅ ${setupType} loaded - autosave re-enabled`);
         }
     } catch (error) {
         console.error('Failed to fetch or apply node setup:', error);
-        // Ensure autosave is re-enabled even on error
-        enableAutosave('Error recovery during node setup switch');
-        // CRITICAL: Clear loading state even on error
+        // CRITICAL: Ensure autosave is re-enabled even on error for safety
+        useEditorStore.getState().setAutosaveEnabled(true);
         useEditorStore.getState().setIsLoadingFlow(false);
+        console.log('⚠️ Error recovery - autosave re-enabled for safety');
     }
 }
 

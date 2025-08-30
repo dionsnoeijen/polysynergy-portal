@@ -250,7 +250,7 @@ const EnhancedChat: React.FC = () => {
                 return [...nonCurrentRunMessages, ...streamingMessages];
             }
         });
-    }, [activeRunId, messagesByRun[activeRunId], chatHistory?.messages, completedRunIds]);
+    }, [activeRunId, messagesByRun[activeRunId as string], chatHistory?.messages, completedRunIds]);
     
     // Clean up pending messages when run starts
     useEffect(() => {
@@ -258,7 +258,7 @@ const EnhancedChat: React.FC = () => {
             // Remove pending flag from messages when run actually starts
             setDisplayedMessages(prev => prev.map(m => ({ ...m, isPending: false })));
         }
-    }, [activeRunId, messagesByRun[activeRunId]?.length]);
+    }, [activeRunId, messagesByRun[activeRunId as string]?.length]);
     
     // Listen for run completion: reload history but keep messages for chat bubbles
     useEffect(() => {

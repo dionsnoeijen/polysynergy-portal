@@ -239,8 +239,6 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                 }
             }
         ];
-
-        console.log('About to call showContextMenu with', e.clientX, e.clientY, items.length, 'items');
         showContextMenu(e.clientX, e.clientY, items);
     }, [navigateToDirectory, handleFileDoubleClick, moveFile, deleteFile, showContextMenu, handleEditMetadata]);
 

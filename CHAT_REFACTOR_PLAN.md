@@ -98,11 +98,13 @@ graph LR
 ## Implementation Tasks
 
 ### Phase 1: Cleanup (Day 1)
-- [ ] Remove `enhanced-chat.tsx`
-- [ ] Remove `reference-display.tsx` (if only used by enhanced-chat)
-- [ ] Clean up unused imports in `bottom-bar.tsx`
-- [ ] Remove dead code from `chatStore.ts`
-- [ ] Document current working implementation
+- [x] Remove `enhanced-chat.tsx`
+- [x] Remove unused `usePromptNodeDetection.ts` hook
+- [x] Update prompt node with `active_session` and `active_user` variables
+- [x] Clean up unused imports and references
+- [x] Document current working implementation
+- [ ] **IMMEDIATE**: Fix chat reactivity for prompt node add/remove
+- [ ] **IMMEDIATE**: Add no-prompt-node inactive state with message
 
 ### Phase 2: Session Dict Enhancement (Day 2)
 - [ ] Update the existing `session` Dict variable structure
@@ -140,6 +142,8 @@ graph LR
 - [ ] Test data persistence
 - [ ] Add loading states
 - [ ] Add error boundaries
+- [ ] Fix chat screen reactivity: ensure immediate updates when prompt nodes are added/removed
+- [ ] Optimize prompt node detection for performance (efficient re-renders only when necessary)
 
 ### Phase 7: Enhanced Chat Mode (Day 8)
 Building on existing functionality:
@@ -153,6 +157,34 @@ Building on existing functionality:
 - [ ] Add keyboard shortcut for chat mode toggle (e.g., Shift+C)
 
 ## Technical Details
+
+### Chat Reactivity Requirements
+
+**Current Issue:** Adding/removing prompt nodes doesn't immediately update the chat screen.
+
+**Solution Requirements:**
+- Chat component must efficiently detect prompt node changes
+- Use optimized selectors to prevent unnecessary re-renders  
+- Implement proper dependency tracking in React hooks
+- Ensure chat visibility toggles instantly when prompt nodes are added/removed
+- When no prompt nodes exist, show inactive chat with informative message
+
+**Implementation Strategy:**
+```typescript
+// Efficient selector that only updates when prompt nodes actually change
+const promptNodeIds = useNodesStore(
+  useCallback((s) => s.nodes.filter(n => n.path === PROMPT_NODE_PATH).map(n => n.id), [])
+);
+
+// Shallow comparison to prevent unnecessary updates
+const promptMeta = useNodesStore(s => s.getPromptMeta(), shallow);
+```
+
+**Performance Optimizations:**
+- Use `useCallback` for selectors to prevent recreation
+- Implement shallow comparison for prompt node arrays
+- Only re-render chat components when prompt node count/IDs actually change
+- Cache prompt node lookups where possible
 
 ### Session ID Format
 Use timestamp-based IDs for natural sorting:

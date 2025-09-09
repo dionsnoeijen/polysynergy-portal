@@ -196,6 +196,14 @@ export type NodeVariable = {
     dock?: Dock;
     node?: boolean;
     metadata?: object;
+    info?: string;
+};
+
+export type PromptNodeInfo = {
+  id: string;
+  name: string;
+  handle: string;
+  node: Node;
 };
 
 export type NodeVariableWithId = NodeVariable & ListItemWithId;

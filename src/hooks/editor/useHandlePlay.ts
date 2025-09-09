@@ -34,9 +34,6 @@ export const useHandlePlay = () => {
     return async (e: React.MouseEvent, nodeId: string, subStage: string = 'mock') => {
         e.preventDefault();
         e.stopPropagation();
-        
-        // CRITICAL: IMMEDIATELY switch to output tab in dock - FIRST PRIORITY!
-        console.log('🚀 IMMEDIATELY SWITCHING TO OUTPUT TAB IN DOCK');
         window.dispatchEvent(new CustomEvent('switch-to-output-tab'));
         
         // Check if the node exists in the store
@@ -50,27 +47,17 @@ export const useHandlePlay = () => {
         if (!activeVersionId) return;
 
         // TEMPORARY: Disable WebSocket verification to fix connection loop first
-        if (false && !websocketStatusStore.isConnected) {
-            console.error('❌ EXECUTION BLOCKED: WebSocket not connected!', { 
-                connectionStatus: websocketStatusStore.connectionStatus, 
-                isConnected: websocketStatusStore.isConnected, 
-                activeVersionId 
-            });
+        if (!websocketStatusStore.isConnected) {
             alert(`WebSocket not ready! Status: ${websocketStatusStore.connectionStatus}. Cannot execute without live connection.`);
-            return;
         }
 
         try {
             clearMockStore();
             setIsExecuting('Running...');
-            
-            console.log('🎬 PLAY STARTED - WebSocket verified connected, proceeding with execution');
 
-            // CRITICAL FIX: Activate WebSocket listener BEFORE execution starts  
             const setListenerActive = useListenerStore.getState().setListenerState;
             
             try {
-                // Actually call the backend API to activate the listener
                 const activateResult = await fetch(
                     `${config.LOCAL_API_URL}/listeners/${activeVersionId}/activate/`,
                     {
@@ -82,24 +69,16 @@ export const useHandlePlay = () => {
                     }
                 );
                 
-                const activateData = await activateResult.json();
-                console.log('🔌 BACKEND LISTENER ACTIVATION:', { 
-                    success: activateResult.ok, 
-                    status: activateResult.status,
-                    data: activateData 
-                });
-                
+                await activateResult.json();
                 if (!activateResult.ok) {
-                    console.error('❌ BACKEND LISTENER ACTIVATION FAILED:', activateData);
                     alert('Failed to activate WebSocket listener on backend. Execution may not show live feedback.');
                 }
                 
                 // Update frontend state
                 setListenerActive(activeVersionId, true);
-                console.log('🔌 CRITICAL: WebSocket listener activated on backend and frontend');
                 
             } catch (error) {
-                console.error('❌ LISTENER ACTIVATION ERROR:', error);
+                console.log(error);
                 alert('Error activating WebSocket listener. Execution may not show live feedback.');
             }
 
@@ -110,13 +89,6 @@ export const useHandlePlay = () => {
                 'mock',
                 subStage
             );
-            
-            // CRITICAL DEBUG: Log API response to see if execution started
-            console.log('🚀 EXECUTION API RESPONSE:', { 
-                status: response.status, 
-                ok: response.ok,
-                url: response.url 
-            });
             
             const data = await response.json();
             console.log('🚀 EXECUTION API DATA:', data);

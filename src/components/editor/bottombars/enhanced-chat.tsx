@@ -41,7 +41,6 @@ const EnhancedChat: React.FC = () => {
     const messagesByRun = useChatStore((s) => s.messagesByRun);
     const onRunCompleted = useChatStore((s) => s.onRunCompleted);
     const setPendingUserMessage = useChatStore((s) => s.setPendingUserMessage);
-    const pendingUserMessage = useChatStore((s) => s.pendingUserMessage);
     const activeRunId = useChatStore((s) => s.activeRunId);
 
     const updateNodeVariable = useNodesStore((s) => s.updateNodeVariable);
@@ -100,60 +99,60 @@ const EnhancedChat: React.FC = () => {
     const traced = traceAgentAndStorage(selectedPromptNodeId);
     const agentNodeId = traced?.agentNode?.id ?? null;
 
-        // — live session id rechtstreeks uit de Nodes store —
-const sessionIdFromStore = useNodesStore(
-  React.useCallback((s) => {
-    if (!agentNodeId) return null;
-    const n = s.getNode(agentNodeId);
-    const v = n?.variables?.find((vv: any) => vv.handle === 'session_id')?.value;
-    return (typeof v === 'string' && v.trim() !== '') ? v : null;
-  }, [agentNodeId])
-);
+    // — live session id rechtstreeks uit de Nodes store —
+    const sessionIdFromStore = useNodesStore(
+        React.useCallback((s) => {
+            if (!agentNodeId) return null;
+            const n = s.getNode(agentNodeId);
+            const v = n?.variables?.find((vv: any) => vv.handle === 'session_id')?.value;
+            return (typeof v === 'string' && v.trim() !== '') ? v : null;
+        }, [agentNodeId])
+    );
 
     const hasMemory = !!(storageConfig && (sessionIdFromStore ?? sessionId));
 
     useEffect(() => {
-  const load = async () => {
-    const { storageNow, sid, uid } = getLiveContext();
-    const hasMemoryNow = !!(activeProjectId && storageNow && sid);
+        const load = async () => {
+            const {storageNow, sid, uid} = getLiveContext();
+            const hasMemoryNow = !!(activeProjectId && storageNow && sid);
 
-    if (!hasMemoryNow) {
-      setChatHistory(null);
-      setBaseMessages([]);
-      setStreamMessages([]);
-      return;
-    }
+            if (!hasMemoryNow) {
+                setChatHistory(null);
+                setBaseMessages([]);
+                setStreamMessages([]);
+                return;
+            }
 
-    setIsLoadingHistory(true);
-    try {
-      const chatApi = createAgnoChatHistoryApi(activeProjectId!);
-      const history = await chatApi.getSessionHistory(storageNow!, sid!, uid || undefined);
-      const uniq = collapseContiguous(
-        (history?.messages || [])
-          .filter(m => m.text?.trim())
-          .map((m, i) => ({
-            id: `${m.timestamp}-${i}`,
-            sender: m.sender,
-            text: m.text,
-            timestamp: m.timestamp
-          }))
-      );
-      setChatHistory(history || null);
-      setBaseMessages(uniq);
-      setStreamMessages([]);
-    } catch (e) {
-      console.error('load history failed', e);
-      setChatHistory(null);
-      setBaseMessages([]);
-      setStreamMessages([]);
-    } finally {
-      setIsLoadingHistory(false);
-    }
-  };
+            setIsLoadingHistory(true);
+            try {
+                const chatApi = createAgnoChatHistoryApi(activeProjectId!);
+                const history = await chatApi.getSessionHistory(storageNow!, sid!, uid || undefined);
+                const uniq = collapseContiguous(
+                    (history?.messages || [])
+                        .filter(m => m.text?.trim())
+                        .map((m, i) => ({
+                            id: `${m.timestamp}-${i}`,
+                            sender: m.sender,
+                            text: m.text,
+                            timestamp: m.timestamp
+                        }))
+                );
+                setChatHistory(history || null);
+                setBaseMessages(uniq);
+                setStreamMessages([]);
+            } catch (e) {
+                console.error('load history failed', e);
+                setChatHistory(null);
+                setBaseMessages([]);
+                setStreamMessages([]);
+            } finally {
+                setIsLoadingHistory(false);
+            }
+        };
 
-  load();
-// ⬇️ voeg sessionIdFromStore toe
-}, [activeProjectId, selectedPromptNodeId, forceReloadTrigger, sessionIdFromStore]);
+        load();
+    // ⬇️ voeg sessionIdFromStore toe
+    }, [activeProjectId, selectedPromptNodeId, forceReloadTrigger, sessionIdFromStore]);
 
     // Sessions dropdown data
     const loadAvailableSessions = async () => {
@@ -200,10 +199,8 @@ const sessionIdFromStore = useNodesStore(
         prev: Msg[],          // huidige baseMessages
         nextRaw: Msg[]        // messages van server (al collapsed)
     ): Msg[] => {
-        // Indexeer oude berichten op sleutel -> bestaand id
         const oldByKey = new Map(prev.map(m => [makeKey(m), m.id]));
 
-        // Bouw nieuwe lijst en hergebruik id waar mogelijk
         const next: Msg[] = nextRaw.map((m, i) => {
             const key = makeKey(m);
             const reusedId = oldByKey.get(key);
@@ -235,79 +232,80 @@ const sessionIdFromStore = useNodesStore(
     };
 
     // STREAMING: bouw streamMessages live uit chatStore
-useEffect(() => {
-  if (!activeRunId) {
-    setStreamMessages([]);
-    return;
-  }
+    useEffect(() => {
+        if (!activeRunId) {
+            setStreamMessages([]);
+            return;
+        }
 
-  const chunks = messagesByRun[activeRunId] || [];
-  const mapped: Msg[] = chunks
-    .filter((m: any) => m?.text?.trim())
-    .map((m: any) => ({
-      id: `${activeRunId}-live-${m.sender}`, // 1 id per sender per run is ok i.c.m. collapse
-      sender: m.sender,
-      text: m.text,
-      timestamp: m.timestamp || Date.now(),
-    }));
+        const chunks = messagesByRun[activeRunId] || [];
+        let seq = 0;
+        const mapped: Msg[] = chunks
+            .filter((m: any) => m?.text?.trim())
+            .map((m: any) => ({
+                id: `${activeRunId}-live-${m.sender}-${seq++}`, // unieke id per chunk
+                sender: m.sender,
+                text: m.text,
+                timestamp: m.timestamp || Date.now(),
+            }));
 
-  setStreamMessages(collapseContiguous(mapped));
-}, [activeRunId, messagesByRun]);
+        setStreamMessages(collapseContiguous(mapped));
+    }, [activeRunId, messagesByRun]);
 
     useEffect(() => {
-  if (!activeRunId) return;
-  const unsub = onRunCompleted(activeRunId, async () => {
-    setPendingUserMessage(null);
-    const container = messagesContainerRef.current;
+        if (!activeRunId) return;
+        const unsub = onRunCompleted(activeRunId, async () => {
+            setPendingUserMessage(null);
+            const container = messagesContainerRef.current;
 
-    const { storageNow, sid, uid } = getLiveContext();
+            const {storageNow, sid, uid} = getLiveContext();
 
-    if (activeProjectId && storageNow && sid) {
-      try {
-        const chatApi = createAgnoChatHistoryApi(activeProjectId);
-        const history = await chatApi.getSessionHistory(storageNow, sid, uid || undefined);
-        const uniq = collapseContiguous(
-          (history?.messages || [])
-            .filter(m => m.text?.trim())
-            .map((m, i) => ({
-              id: `${m.timestamp}-${i}`,
-              sender: m.sender,
-              text: m.text,
-              timestamp: m.timestamp
-            }))
-        );
-        setChatHistory(history || null);
-        preserveBottomScroll(container, () => {
-          setBaseMessages(prev => reconcileMessages(prev, uniq));
-          setStreamMessages([]);
+            if (activeProjectId && storageNow && sid) {
+                try {
+                    const chatApi = createAgnoChatHistoryApi(activeProjectId);
+                    const history = await chatApi.getSessionHistory(storageNow, sid, uid || undefined);
+                    const uniq = collapseContiguous(
+                        (history?.messages || [])
+                            .filter(m => m.text?.trim())
+                            .map((m, i) => ({
+                                id: `${m.timestamp}-${i}`,
+                                sender: m.sender,
+                                text: m.text,
+                                timestamp: m.timestamp
+                            }))
+                    );
+                    setChatHistory(history || null);
+                    preserveBottomScroll(container, () => {
+                        setBaseMessages(prev => reconcileMessages(prev, uniq));
+                        setStreamMessages([]);
+                    });
+                } catch (e) {
+                    console.error('post-complete reload failed', e);
+                    preserveBottomScroll(container, () => setStreamMessages([]));
+                }
+            } else {
+                preserveBottomScroll(container, () => {
+                    setBaseMessages(prev => collapseContiguous([...prev, ...streamMessages]));
+                    setStreamMessages([]);
+                });
+            }
         });
-      } catch (e) {
-        console.error('post-complete reload failed', e);
-        preserveBottomScroll(container, () => setStreamMessages([]));
-      }
-    } else {
-      preserveBottomScroll(container, () => {
-        setBaseMessages(prev => collapseContiguous([...prev, ...streamMessages]));
-        setStreamMessages([]);
-      });
-    }
-  });
 
-  // ⬇️ sessionIdFromStore toevoegen
-  return unsub;
-}, [activeRunId, selectedPromptNodeId, activeProjectId, onRunCompleted, streamMessages, sessionIdFromStore]);
+        // ⬇️ sessionIdFromStore toevoegen
+        return unsub;
+    }, [activeRunId, selectedPromptNodeId, activeProjectId, onRunCompleted, streamMessages, sessionIdFromStore]);
 
-// helper om telkens de meest actuele ids/config te pakken
-const getLiveContext = () => {
-  const storageNow = selectedPromptNodeId ? traceStorageConfiguration(selectedPromptNodeId) : null;
-  const { sessionId: sidMemo, userId: uidMemo } =
-    selectedPromptNodeId ? getSessionInfo(selectedPromptNodeId) : { sessionId: null, userId: null };
-  return {
-    storageNow,
-    sid: sessionIdFromStore ?? sidMemo,
-    uid: uidMemo,
-  };
-};
+    // helper om telkens de meest actuele ids/config te pakken
+    const getLiveContext = () => {
+        const storageNow = selectedPromptNodeId ? traceStorageConfiguration(selectedPromptNodeId) : null;
+        const {sessionId: sidMemo, userId: uidMemo} =
+            selectedPromptNodeId ? getSessionInfo(selectedPromptNodeId) : {sessionId: null, userId: null};
+        return {
+            storageNow,
+            sid: sessionIdFromStore ?? sidMemo,
+            uid: uidMemo,
+        };
+    };
 
     // 3) wanneer session_id verandert: zachte reset + herladen
     useEffect(() => {
@@ -594,19 +592,19 @@ const getLiveContext = () => {
 
             <div className="border-t border-sky-500/50 dark:border-white/10 p-4">
                 <div className="relative max-w-3xl mx-auto">
-          <textarea
-              className="w-full resize-none border border-sky-500/50 dark:border-white/20 rounded-md p-3 pr-12 min-h-[40px] max-h-[120px] text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-white/40 transition-colors"
-              rows={1}
-              value={input}
-              placeholder={`Prompt${selectedPromptNode ? ` for ${selectedPromptNode.name}` : ''}...`}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                  }
-              }}
-          />
+                    <textarea
+                        className="w-full resize-none border border-sky-500/50 dark:border-white/20 rounded-md p-3 pr-12 min-h-[40px] max-h-[120px] text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-white/40 transition-colors"
+                        rows={1}
+                        value={input}
+                        placeholder={`Prompt${selectedPromptNode ? ` for ${selectedPromptNode.name}` : ''}...`}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSend();
+                            }
+                        }}
+                    />
                     <button
                         className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-sky-500 hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-700 text-white p-1.5 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         onClick={handleSend}

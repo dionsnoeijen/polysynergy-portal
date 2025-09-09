@@ -52,23 +52,10 @@ const LabelPublish: React.FC<Props> = ({
                 </>
             }
         >
-            {variable?.info ? (
-                <button
-                    onClick={() => setShowInfo(!showInfo)}
-                    className="cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 text-left w-full"
-                    title="Click for more info"
-                >
-                    <Label>
-                        {variable.name} <span
-                        className="text-zinc-500 dark:text-zinc-400 text-xs">{'{'}{variable.handle}{'}'}</span>
-                    </Label>
-                </button>
-            ) : (
-                <Label>
-                    {variable.name} <span
-                    className="text-zinc-500 dark:text-zinc-400 text-xs">{'{'}{variable.handle}{'}'}</span>
-                </Label>
-            )}
+            <Label>
+                {variable.name} <span
+                className="text-zinc-500 dark:text-zinc-400 text-xs">{'{'}{variable.handle}{'}'}</span>
+            </Label>
 
             {variable?.info && (
                 <ConfirmDialog

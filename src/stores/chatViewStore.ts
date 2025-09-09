@@ -1,0 +1,164 @@
+// stores/chatViewStore.ts
+import {create} from "zustand";
+import {ChatHistory, ChatMessage, createAgnoChatHistoryApi, StorageConfig} from "@/api/agnoChatHistoryApi";
+
+export type ChatViewMessage = {
+    id: string;
+    sender: "user" | "agent";
+    text: string;
+    timestamp: number;
+    node_id?: string | null;
+    run_id?: string | null;
+    parts?: Array<{ seq?: number; ts: number; text: string }>;
+};
+
+type ChatViewState = {
+    activeSessionId: string | null;
+    messagesBySession: Record<string, ChatViewMessage[]>;
+
+    setActiveSession: (sessionId: string | null) => void;
+    getActiveSessionId: () => string | null;
+
+    appendUser: (sessionId: string, text: string) => void;
+    appendAgentChunk: (
+        sessionId: string,
+        nodeId: string | undefined,
+        text: string,
+        ts?: number,
+        seq?: number,
+        runId?: string | null
+    ) => void;
+
+    finalizeAgentMessage: (sessionId: string) => void;
+    replaceHistory: (sessionId: string, messages: ChatViewMessage[]) => void;
+    getMessages: () => ChatViewMessage[];
+    syncSessionFromBackend: (args: {
+        projectId: string;
+        storageConfig: StorageConfig;
+        sessionId: string;
+        userId?: string;
+        limit?: number;
+    }) => Promise<void>;
+};
+
+const MERGE_WINDOW_MS = 5000; // iets ruimer voor streaming
+
+const useChatViewStore = create<ChatViewState>((set, get) => ({
+    activeSessionId: null,
+    messagesBySession: {},
+
+    setActiveSession: (sessionId) => set({activeSessionId: sessionId}),
+    getActiveSessionId: () => get().activeSessionId,
+
+    appendUser: (sessionId, text) =>
+        set((s) => {
+            const now = Date.now();
+            const prev = s.messagesBySession[sessionId] ?? [];
+            const last = prev[prev.length - 1];
+
+            if (last && last.sender === "user" && now - last.timestamp <= MERGE_WINDOW_MS) {
+                const merged = [...prev];
+                merged[merged.length - 1] = {...last, text: last.text + text, timestamp: now};
+                return {messagesBySession: {...s.messagesBySession, [sessionId]: merged}};
+            }
+
+            const next: ChatViewMessage = {
+                id: `user-${now}`,
+                sender: "user",
+                text,
+                timestamp: now,
+            };
+            return {messagesBySession: {...s.messagesBySession, [sessionId]: [...prev, next]}};
+        }),
+
+    appendAgentChunk: (sessionId, nodeId, text, ts, seq, runId) =>
+        set((s) => {
+            const now = ts ?? Date.now(); // verwacht ms
+            const prev = s.messagesBySession[sessionId] ?? [];
+            const last = prev[prev.length - 1];
+
+            const sameAgentThread =
+                last?.sender === "agent" &&
+                (last.node_id ?? null) === (nodeId ?? null) &&
+                (last.run_id ?? null) === (runId ?? null);
+
+            const withinWindow = last ? now - last.timestamp <= MERGE_WINDOW_MS : false;
+
+            if (sameAgentThread && withinWindow) {
+                // voeg als part toe, sorteer, rebuild text
+                const merged = [...prev];
+                const msg = {...last};
+                const parts = msg.parts ? [...msg.parts] : [];
+                parts.push({seq, ts: now, text});
+                parts.sort((a, b) => {
+                    if (a.seq != null && b.seq != null && a.seq !== b.seq) return a.seq - b.seq;
+                    return a.ts - b.ts; // fallback
+                });
+                msg.parts = parts;
+                msg.text = parts.map((p) => p.text).join(""); // of "\n" als je paragraph breaks wilt
+                msg.timestamp = now;
+                merged[merged.length - 1] = msg;
+                return {messagesBySession: {...s.messagesBySession, [sessionId]: merged}};
+            }
+
+            const next: ChatViewMessage = {
+                id: `agent-${now}-${Math.random().toString(36).slice(2, 7)}`,
+                sender: "agent",
+                text,
+                timestamp: now,
+                node_id: nodeId ?? null,
+                run_id: runId ?? null,
+                parts: [{seq, ts: now, text}],
+            };
+            return {
+                messagesBySession: {
+                    ...s.messagesBySession,
+                    [sessionId]: [...prev, next],
+                },
+            };
+        }),
+
+    finalizeAgentMessage: () => ({}),
+
+    replaceHistory: (sessionId, messages) =>
+        set((s) => ({messagesBySession: {...s.messagesBySession, [sessionId]: messages}})),
+
+    getMessages: () => {
+        const {activeSessionId, messagesBySession} = get();
+        if (!activeSessionId) return [];
+        return messagesBySession[activeSessionId] ?? [];
+    },
+
+    syncSessionFromBackend: async ({projectId, storageConfig, sessionId, userId, limit = 200}) => {
+        try {
+            const api = createAgnoChatHistoryApi(projectId);
+            const data: ChatHistory = await api.getSessionHistory(storageConfig, sessionId, userId, limit);
+
+            // Als backend niks terug geeft (geen storage of empty), niet forceren
+            if (!data || !Array.isArray(data.messages)) return;
+
+            // Map naar ChatViewMessage (timestamps naar ms, id stabiel genoeg)
+            const mapped: ChatViewMessage[] = data.messages.map((m: ChatMessage, i) => {
+                const tsMs =
+                    typeof m.timestamp === "string"
+                        ? new Date(m.timestamp).getTime()
+                        : (m.timestamp as unknown as number);
+                return {
+                    id: `srv-${data.session_id}-${i}-${tsMs || Date.now()}`,
+                    sender: m.sender === "user" ? "user" : "agent",
+                    text: m.text ?? "",
+                    timestamp: tsMs || Date.now(),
+                    node_id: null,  // storage-history bevat meestal geen node_id; UI kan er zonder
+                    run_id: null,
+                };
+            });
+
+            get().replaceHistory(sessionId, mapped);
+        } catch (e) {
+            // Niet fatal voor UI: log en laat lokale state staan
+            console.warn("[chat-sync] failed to fetch session history", e);
+        }
+    },
+}));
+
+export default useChatViewStore;

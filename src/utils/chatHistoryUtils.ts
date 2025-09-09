@@ -20,6 +20,35 @@ export function traceStorageConfiguration(promptNodeId: string): StorageConfig |
     return result?.storageConfig || null;
 }
 
+export function getAgentMetaFromNode(node?: Node | null) {
+  if (!node) {
+    return {
+      agentName: "Agent",
+      agentAvatar: null as string | null,
+    };
+  }
+
+  const vars = node.variables ?? [];
+
+  const find = (h: string) =>
+    vars.find(v => (v.handle ?? "").toLowerCase() === h.toLowerCase());
+
+  const avatarVar = find("avatar");
+  const nameVar   = find("agent_name");
+
+  const agentAvatar =
+    (typeof avatarVar?.value === "string" && avatarVar.value.trim().length > 0)
+      ? avatarVar.value
+      : null;
+
+  const agentName =
+    (typeof nameVar?.value === "string" && nameVar.value.trim().length > 0)
+      ? nameVar.value
+      : (node.name || node.handle || "Agent");
+
+  return { agentName, agentAvatar };
+}
+
 /**
  * Traces connections from a prompt node to find both the AgnoAgent and its storage configuration
  */

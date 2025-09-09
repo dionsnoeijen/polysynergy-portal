@@ -11,7 +11,6 @@ import {
 import { useFileManager } from '@/hooks/useFileManager';
 import { FileViewMode, ContextMenuItem } from '@/types/types';
 import { FileInfo, DirectoryInfo, createFileManagerApi } from '@/api/fileManagerApi';
-import useProjectStore from '@/stores/projectsStore';
 
 import Breadcrumb from './Breadcrumb';
 import FileGrid from './FileGrid';
@@ -84,8 +83,7 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
     } = useFileManager();
 
     // Get current project ID
-    const currentProject = useProjectStore(state => state.currentProject);
-    const projectId = currentProject?.id || '';
+    const projectId = useEditorStore(state => state.activeProjectId);
 
     // Metadata handler functions
     const handleEditMetadata = useCallback((file: FileInfo) => {

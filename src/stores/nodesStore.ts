@@ -1,10 +1,11 @@
 import {create} from 'zustand';
 import {v4 as uuidv4} from "uuid";
-import {FlowState, Group, Node, NodeType, NodeVariable, NodeVariableType} from "@/types/types";
+import {FlowState, Group, Node, NodeType, NodeVariable, NodeVariableType, PromptNodeInfo} from "@/types/types";
 import {adjectives, animals, colors, uniqueNamesGenerator} from 'unique-names-generator';
 import useConnectionsStore from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
-import { sanitizeExecutionValue } from "@/utils/dataSanitization";
+import {sanitizeExecutionValue} from "@/utils/dataSanitization";
+import {getSessionInfo, traceAgentAndStorage, traceStorageConfiguration} from "@/utils/chatHistoryUtils";
 
 export type NodesStore = {
     nodes: Node[];
@@ -75,9 +76,33 @@ export type NodesStore = {
     openedGroup: string | null;
     initGroups: (groupStack: string[], openedGroup: string | null) => void;
     getNodesByServiceHandleAndVariant: (handle: string, variant: number) => Node[];
+
+    getPromptNodes: () => PromptNodeInfo[];
+    getPromptMeta: () => {
+        promptNodes: PromptNodeInfo[],
+        chatWindowVisible: boolean;
+        multipleChats: boolean;
+        promptNodeCount: number
+    };
+    selectedPromptNodeId: string;
+    setSelectedPromptNodeId: (id: string) => void;
+    ensurePromptSelected: () => void;
+
+    getAgentNodeIdForPrompt: (promptNodeId: string | null) => string | null;
+    getNodeVarString: (nodeId: string | null, handle: string) => string | null;
+    getSessionIdForAgentNode: (agentNodeId: string | null) => string | null;
+    getLiveContextForPrompt: (promptNodeId: string | null) => {
+        storageNow: any | null;
+        sid: string | null;
+        uid: string | null;
+        agentNodeId: string | null;
+        hasMemory: boolean;
+    };
 };
 
 const nodesByIdsCache = new Map<string, Node[]>();
+
+const PROMPT_NODE_PATH = 'polysynergy_nodes.play.prompt.Prompt';
 
 export const createDefaultNode = (overrides = {}): Partial<Node> => ({
     id: uuidv4(),
@@ -1150,7 +1175,75 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
         return node;
 
-    }
+    },
+
+    getPromptNodes: (): PromptNodeInfo[] => {
+        const nodes = get().nodes;
+        return nodes
+            .filter(n => n.path === PROMPT_NODE_PATH)
+            .map(n => {
+                const nameVar = n.variables?.find(v => v.handle === 'name');
+                const displayName = (nameVar?.value ? String(nameVar.value) : n.handle) || n.handle;
+                return {id: n.id, name: displayName, handle: n.handle, node: n};
+            });
+    },
+
+    getPromptMeta: () => {
+        const promptNodes = get().getPromptNodes();
+        return {
+            promptNodes,
+            chatWindowVisible: promptNodes.length > 0,
+            multipleChats: promptNodes.length > 1,
+            promptNodeCount: promptNodes.length,
+        };
+    },
+
+    selectedPromptNodeId: '' as string,
+
+    setSelectedPromptNodeId: (id: string) => set({selectedPromptNodeId: id}),
+
+    ensurePromptSelected: () => {
+        const s = get();
+        const list = s.getPromptNodes();
+        const exists = list.some(n => n.id === s.selectedPromptNodeId);
+        if (!exists) set({selectedPromptNodeId: list[0]?.id ?? ''});
+    },
+
+    getAgentNodeIdForPrompt: (promptNodeId) => {
+        if (!promptNodeId) return null;
+        const traced = traceAgentAndStorage(promptNodeId);
+        return traced?.agentNode?.id ?? null;
+    },
+
+    getNodeVarString: (nodeId, handle) => {
+        if (!nodeId) return null;
+        const n = get().getNode(nodeId);
+        const v = n?.variables?.find(vv => vv.handle === handle)?.value;
+        if (typeof v !== 'string') return null;
+        const s = v.trim();
+        return s.length ? s : null;
+    },
+
+    getSessionIdForAgentNode: (agentNodeId) => {
+        return get().getNodeVarString(agentNodeId, 'session_id');
+    },
+
+    getLiveContextForPrompt: (promptNodeId) => {
+        if (!promptNodeId) {
+            return {storageNow: null, sid: null, uid: null, agentNodeId: null, hasMemory: false};
+        }
+
+        const storageNow = traceStorageConfiguration(promptNodeId);
+        const {sessionId: sidMemo, userId: uidMemo} = getSessionInfo(promptNodeId);
+        const agentNodeId = get().getAgentNodeIdForPrompt(promptNodeId);
+        const sidFromStore = get().getSessionIdForAgentNode(agentNodeId);
+
+        const sid = sidFromStore ?? sidMemo ?? null;
+        const uid = uidMemo ?? null;
+        const hasMemory = !!(storageNow && sid);
+
+        return {storageNow, sid, uid, agentNodeId, hasMemory};
+    },
 }));
 
 export default useNodesStore;

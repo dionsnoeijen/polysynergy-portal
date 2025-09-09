@@ -1,12 +1,15 @@
+// hooks/useSmartWebSocketListener.ts (jouw bestand)
 import {useEffect, useState} from 'react';
 import useNodesStore from "@/stores/nodesStore";
 import useMockStore, {MockNode} from '@/stores/mockStore';
 import {getConnectionExecutionDetails} from "@/api/executionApi";
 import useEditorStore from "@/stores/editorStore";
-import useChatStore from '@/stores/chatStore';
 import {websocketStatusStore} from '@/hooks/editor/useHandlePlay';
 import globalWebSocketSingleton from '@/utils/GlobalWebSocketManager';
 import {ConnectionStatus} from '@/utils/WebSocketManager';
+
+// ⬇️ NIEUW
+import useChatViewStore from '@/stores/chatViewStore';
 
 type ExecutionMessage = {
     node_id?: string;
@@ -24,17 +27,16 @@ const groupStates = new Map<string, { count: number, remaining: number }>();
 const nodeExecutionState = new Map<string, { started: boolean; ended: boolean; status?: string }>();
 
 export function useSmartWebSocketListener(flowId: string) {
-
     const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
         if (!flowId) return;
 
-        const handleWebSocketMessage = (event: MessageEvent) => {
-            // (optioneel) defensief parsen als je soms non-JSON ontvangt
+        const handleWebSocketMessage = async (event: MessageEvent) => {
             const data = typeof event.data === 'string' ? event.data.trim() : '';
             if (!data || (data[0] !== '{' && data[0] !== '[')) return;
+
             let message: ExecutionMessage;
             try {
                 message = JSON.parse(data);
@@ -42,50 +44,66 @@ export function useSmartWebSocketListener(flowId: string) {
                 return;
             }
 
-            const chatStore = useChatStore.getState();
             const editorStore = useEditorStore.getState();
             const nodesStore = useNodesStore.getState();
             const mockStore = useMockStore.getState();
 
+            // ⬇️ chat-view store ophalen
+            const chatView = useChatViewStore.getState();
+
             const eventType = message.event;
             let node_id = message.node_id;
 
-            if ((eventType === 'RunResponseContent' || eventType === 'TeamRunResponseContent') && message.content && message.run_id) {
-                chatStore.addAgentMessage(message.content, message.run_id, node_id, message.sequence_id, message.microtime);
-                chatStore.sortMessages(message.run_id);
+            // ---- STREAM CONTENT ----
+            if ((eventType === "RunResponseContent" || eventType === "TeamRunResponseContent")
+                && message.content) {
+                const sessionId = chatView.getActiveSessionId();
+                if (sessionId && message.content) {
+                    const tsMs =
+                        typeof message.microtime === "number" ? Math.round(message.microtime * 1000) : Date.now();
+
+                    chatView.appendAgentChunk(
+                        sessionId,
+                        message.node_id,
+                        message.content,
+                        tsMs,
+                        message.sequence_id,
+                        message.run_id ?? null
+                    );
+                }
             }
 
+            // ---- RUN START ----
             if (eventType === 'run_start') {
                 cleanupExecutionGlow();
-                const realRunId = message.run_id as string;
-                const currentActiveRunId = chatStore.activeRunId;
-                if (currentActiveRunId && currentActiveRunId.startsWith('pending-')) {
-                    const pending = chatStore.messagesByRun[currentActiveRunId] || [];
-                    pending.forEach(m => {
-                        if (m.sender === 'user') chatStore.addUserMessageWithTimestamp(m.text, realRunId, m.timestamp, m.sequence);
-                    });
-                    chatStore.clearChatStore(currentActiveRunId);
-                }
-                chatStore.setActiveRunId(realRunId);
                 return;
             }
 
+            // ---- TOOLS UI ----
             if (eventType === 'start_tool') {
-                console.log('START TOOL');
                 document.querySelector(`[data-node-id="${node_id}"]`)?.classList.add('executing-tool');
                 return;
             }
             if (eventType === 'end_tool') {
-                setTimeout(() => document.querySelector(`[data-node-id="${node_id}"]`)?.classList.remove('executing-tool'), 5000);
+                setTimeout(() => {
+                    document.querySelector(`[data-node-id="${node_id}"]`)?.classList.remove('executing-tool');
+                }, 5000);
                 return;
             }
 
+            // ---- RUN END ----
             if (eventType === 'run_end') {
-                if (message.run_id) chatStore.fireRunCompleted(message.run_id);
+                const sessionId = chatView.getActiveSessionId();
+                if (sessionId) {
+                    chatView.finalizeAgentMessage(sessionId);
+                }
+
                 setTimeout(async () => {
-                    document.querySelectorAll('[data-node-id].executing').forEach((el) => el.classList.remove('executing', 'executed-success', 'executed-killed'));
+                    document.querySelectorAll('[data-node-id].executing')
+                        .forEach((el) => el.classList.remove('executing', 'executed-success', 'executed-killed'));
                     groupStates.clear();
                     nodeExecutionState.clear();
+
                     const activeVersionId = editorStore.activeVersionId as string;
                     const data = await getConnectionExecutionDetails(activeVersionId, message.run_id as string);
                     mockStore.setMockConnections(data);
@@ -94,6 +112,7 @@ export function useSmartWebSocketListener(flowId: string) {
                 return;
             }
 
+            // ---- NODE GLOW / MOCK ----
             if (!node_id || !message.run_id) return;
 
             const isViewingHistoricalRun = editorStore.isViewingHistoricalRun;
@@ -181,7 +200,7 @@ export function useSmartWebSocketListener(flowId: string) {
             handleWebSocketMessage
         );
         return unsubscribe;
-    }, [flowId]); // ✅ alleen flowId
+    }, [flowId]);
 
     useEffect(() => {
         websocketStatusStore.updateStatus(isConnected, connectionStatus);

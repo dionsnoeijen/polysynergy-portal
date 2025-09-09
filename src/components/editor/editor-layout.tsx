@@ -31,12 +31,12 @@ const Editor = dynamic(() => import('@/components/editor/editor'), {
 });
 
 const EditorLayout = ({
-                          projectUuid,
-                          routeUuid,
-                          scheduleUuid,
-                          blueprintUuid,
-                          configUuid,
-                      }: {
+    projectUuid,
+    routeUuid,
+    scheduleUuid,
+    blueprintUuid,
+    configUuid,
+}: {
     projectUuid?: string,
     routeUuid?: string,
     scheduleUuid?: string,

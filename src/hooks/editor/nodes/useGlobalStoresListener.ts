@@ -7,27 +7,6 @@ import {Fundamental} from '@/types/types';
 
 let debounceTimeout: NodeJS.Timeout | null = null;
 let savingInProgress = false;
-let autosaveEnabled = true; // Global flag to disable autosave during critical operations
-
-// CRITICAL: Global functions to control autosave during node setup switching
-export const disableAutosave = (reason = 'Unknown') => {
-    console.log(`🔒 DISABLING AUTOSAVE - Reason: ${reason}`);
-    autosaveEnabled = false;
-    
-    // Cancel any pending saves to prevent corruption
-    if (debounceTimeout) {
-        clearTimeout(debounceTimeout);
-        debounceTimeout = null;
-        console.log('🔒 Cancelled pending autosave during disable');
-    }
-};
-
-export const enableAutosave = (reason = 'Unknown') => {
-    console.log(`🔓 ENABLING AUTOSAVE - Reason: ${reason}`);
-    autosaveEnabled = true;
-};
-
-export const isAutosaveEnabled = () => autosaveEnabled;
 
 export default function useGlobalStoreListenersWithImmediateSave() {
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
@@ -59,7 +38,7 @@ export default function useGlobalStoreListenersWithImmediateSave() {
         if (!fundamentalId || !type) return;
 
         // CRITICAL: Never save empty node arrays - final safety net
-        const { nodes } = useNodesStore.getState();
+        const {nodes} = useNodesStore.getState();
         if (nodes.length === 0) {
             console.warn('🚨 PREVENTED SAVING EMPTY NODE ARRAY - Data loss protection active');
             return;
@@ -69,23 +48,23 @@ export default function useGlobalStoreListenersWithImmediateSave() {
         const isVersionSwitch = last.versionId !== activeVersionId && last.versionId !== null;
         const isTypeSwitch = last.type !== type && last.type !== null;
         const isSwitching = isVersionSwitch || isTypeSwitch;
-        
+
         if (isSwitching) {
             console.log('🚨 DETECTED NODE SETUP SWITCH:', {
-                from: { type: last.type, versionId: last.versionId },
-                to: { type, versionId: activeVersionId },
+                from: {type: last.type, versionId: last.versionId},
+                to: {type, versionId: activeVersionId},
                 isVersionSwitch,
                 isTypeSwitch
             });
-            
+
             // SAFETY: Update tracking immediately to prevent future saves going to wrong target
             lastTypeAndVersionRef.current = {type, versionId: activeVersionId};
-            
+
             // Skip this save since we're switching contexts
             console.log('🚨 Skipping save due to context switch - data corruption prevented!');
             return;
         }
-        
+
         // Initialize tracking for first save
         if (last.versionId === null) {
             lastTypeAndVersionRef.current = {type, versionId: activeVersionId};
@@ -107,33 +86,33 @@ export default function useGlobalStoreListenersWithImmediateSave() {
             savingInProgress = false;
             debounceTimeout = null;
         }
-    // eslint-disable-next-line
+        // eslint-disable-next-line
     }, [activeVersionId, activeProjectId, activeRouteId, activeScheduleId, activeBlueprintId, activeConfigId, setIsSaving]);
-    
+
     // Create force save function that cancels debounce and saves immediately
     const forceImmediateSave = useCallback(async () => {
         console.log('Force save requested...');
-        
+
         // Cancel any pending debounced save
         if (debounceTimeout) {
             clearTimeout(debounceTimeout);
             debounceTimeout = null;
             console.log('Cancelled pending debounced save');
         }
-        
+
         // Wait for any ongoing save to complete
         let waitCount = 0;
         while (savingInProgress && waitCount < 200) { // Max 10 seconds
             await new Promise(resolve => setTimeout(resolve, 50));
             waitCount++;
         }
-        
+
         if (savingInProgress) {
             console.error('Save still in progress after timeout - forcing anyway');
         }
-        
+
         console.log('Executing immediate save...');
-        
+
         // Force immediate save
         try {
             await doSave();
@@ -143,7 +122,7 @@ export default function useGlobalStoreListenersWithImmediateSave() {
             throw error;
         }
     }, [doSave]);
-    
+
     // Register the force save function in the store
     useEffect(() => {
         setForceSave(forceImmediateSave);
@@ -152,12 +131,12 @@ export default function useGlobalStoreListenersWithImmediateSave() {
 
     const saveNodeSetup = useCallback(() => {
         // CRITICAL: Check EditorStore autosave flag instead of module variable
-        const { autosaveEnabled } = useEditorStore.getState();
+        const {autosaveEnabled} = useEditorStore.getState();
         if (!autosaveEnabled) {
             console.log('🔒 Autosave disabled - skipping save operation');
             return;
         }
-        
+
         const now = Date.now();
         const elapsed = now - lastSaveTimeRef.current;
 
@@ -190,11 +169,19 @@ export default function useGlobalStoreListenersWithImmediateSave() {
     }, [activeVersionId, cancelPendingSave]);
 
     useEffect(() => {
-        const unsubNodes = useNodesStore.subscribe(() => {
-            setTimeout(() => saveNodeSetup(), 0);
+        const unsubNodes = useNodesStore.subscribe((state, prev) => {
+            const changed =
+                state.nodes !== prev.nodes ||
+                state.groupStack !== prev.groupStack ||
+                state.openedGroup !== prev.openedGroup;
+
+            if (changed) setTimeout(() => saveNodeSetup(), 0);
         });
-        const unsubConns = useConnectionsStore.subscribe(() => {
-            setTimeout(() => saveNodeSetup(), 0);
+
+        const unsubConns = useConnectionsStore.subscribe((state, prev) => {
+            if (state.connections !== prev.connections) {
+                setTimeout(() => saveNodeSetup(), 0);
+            }
         });
 
         return () => {
@@ -202,5 +189,20 @@ export default function useGlobalStoreListenersWithImmediateSave() {
             unsubConns();
             cancelPendingSave();
         };
-    }, [activeRouteId, activeScheduleId, activeBlueprintId, activeConfigId, saveNodeSetup, cancelPendingSave]);
+    }, [saveNodeSetup, cancelPendingSave]);
+
+    // useEffect(() => {
+    //     const unsubNodes = useNodesStore.subscribe(() => {
+    //         setTimeout(() => saveNodeSetup(), 0);
+    //     });
+    //     const unsubConns = useConnectionsStore.subscribe(() => {
+    //         setTimeout(() => saveNodeSetup(), 0);
+    //     });
+    //
+    //     return () => {
+    //         unsubNodes();
+    //         unsubConns();
+    //         cancelPendingSave();
+    //     };
+    // }, [activeRouteId, activeScheduleId, activeBlueprintId, activeConfigId, saveNodeSetup, cancelPendingSave]);
 }

@@ -184,21 +184,25 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
             {/* New User Dialog */}
             {showNewUserDialog && (
                 <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-2">
+                    <form autoComplete="off" onSubmit={(e) => { e.preventDefault(); addNewUser(); }}>
+                        <div className="flex items-center gap-2">
                         <Input
                             type="text"
                             value={newUserId}
                             onChange={(e) => setNewUserId(e.target.value)}
-                            placeholder="Enter user ID..."
+                            placeholder="Enter identifier..."
                             className="flex-1"
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') addNewUser();
                                 if (e.key === 'Escape') setShowNewUserDialog(false);
                             }}
                             autoFocus
-                            autoComplete="off"
+                            autoComplete="new-password"
                             data-form-type="other"
                             data-lpignore="true"
+                            data-1p-ignore="true"
+                            name="node-identifier"
+                            role="textbox"
                         />
                         <Button
                             onClick={addNewUser}
@@ -235,9 +239,12 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
                                 if (e.key === 'Escape') setShowNewSessionDialog(false);
                             }}
                             autoFocus
-                            autoComplete="off"
+                            autoComplete="new-password"
                             data-form-type="other"
                             data-lpignore="true"
+                            data-1p-ignore="true"
+                            name="session-label"
+                            role="textbox"
                         />
                         <Button
                             onClick={addNewSession}

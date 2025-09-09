@@ -1,6 +1,8 @@
 import React, {useState, useMemo} from "react";
-import {PlusIcon, TrashIcon, PencilIcon} from "@heroicons/react/24/outline";
+import {PlusIcon, TrashIcon, CheckIcon, XMarkIcon} from "@heroicons/react/24/outline";
 import useNodesStore from "@/stores/nodesStore";
+import {Input} from "@/components/input";
+import {Button} from "@/components/button";
 
 interface SessionUserManagerProps {
     promptNodeId: string;
@@ -118,22 +120,24 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
                         </select>
                     )}
                     
-                    <button
+                    <Button
                         onClick={() => setShowNewUserDialog(true)}
-                        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                        color="outline"
                         title="Add new user"
+                        className="!px-1.5 !py-1.5 !text-xs"
                     >
-                        <PlusIcon className="w-4 h-4" />
-                    </button>
+                        <PlusIcon data-slot="icon" className="w-4 h-4" />
+                    </Button>
                     
                     {activeUser && (
-                        <button
+                        <Button
                             onClick={() => removeUser(activeUser)}
-                            className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                            color="outline"  
                             title="Remove current user"
+                            className="!px-1.5 !py-1.5 !text-xs !text-red-600 dark:!text-red-400 hover:!text-red-700 dark:hover:!text-red-300 hover:!border-red-300 dark:hover:!border-red-600"
                         >
-                            <TrashIcon className="w-4 h-4" />
-                        </button>
+                            <TrashIcon data-slot="icon" className="w-4 h-4" />
+                        </Button>
                     )}
                 </div>
 
@@ -155,88 +159,102 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
                         </select>
                     )}
                     
-                    <button
+                    <Button
                         onClick={() => setShowNewSessionDialog(true)}
-                        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                        color="outline"
                         title="Add new session"
+                        className="!px-1.5 !py-1.5 !text-xs"
                     >
-                        <PlusIcon className="w-4 h-4" />
-                    </button>
+                        <PlusIcon data-slot="icon" className="w-4 h-4" />
+                    </Button>
                     
                     {activeSession && (
-                        <button
+                        <Button
                             onClick={() => removeSession(activeSession)}
-                            className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                            color="outline"
                             title="Remove current session"
+                            className="!px-1.5 !py-1.5 !text-xs !text-red-600 dark:!text-red-400 hover:!text-red-700 dark:hover:!text-red-300 hover:!border-red-300 dark:hover:!border-red-600"
                         >
-                            <TrashIcon className="w-4 h-4" />
-                        </button>
+                            <TrashIcon data-slot="icon" className="w-4 h-4" />
+                        </Button>
                     )}
                 </div>
             </div>
 
             {/* New User Dialog */}
             {showNewUserDialog && (
-                <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded border">
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2">
-                        <input
+                        <Input
                             type="text"
                             value={newUserId}
                             onChange={(e) => setNewUserId(e.target.value)}
                             placeholder="Enter user ID..."
-                            className="flex-1 text-sm border rounded px-2 py-1 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                            className="flex-1"
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') addNewUser();
                                 if (e.key === 'Escape') setShowNewUserDialog(false);
                             }}
                             autoFocus
+                            autoComplete="off"
+                            data-form-type="other"
+                            data-lpignore="true"
                         />
-                        <button
+                        <Button
                             onClick={addNewUser}
                             disabled={!newUserId.trim()}
-                            className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:bg-gray-400"
+                            title="Add user"
+                            className="!px-2 !py-1"
                         >
-                            Add
-                        </button>
-                        <button
+                            <CheckIcon data-slot="icon" className="w-4 h-4" />
+                        </Button>
+                        <Button
                             onClick={() => setShowNewUserDialog(false)}
-                            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                            color="outline"
+                            title="Cancel"
+                            className="!px-2 !py-1"
                         >
-                            Cancel
-                        </button>
+                            <XMarkIcon data-slot="icon" className="w-4 h-4" />
+                        </Button>
                     </div>
                 </div>
             )}
 
             {/* New Session Dialog */}
             {showNewSessionDialog && (
-                <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded border">
+                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2">
-                        <input
+                        <Input
                             type="text"
                             value={newSessionName}
                             onChange={(e) => setNewSessionName(e.target.value)}
                             placeholder="Enter session name..."
-                            className="flex-1 text-sm border rounded px-2 py-1 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                            className="flex-1"
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') addNewSession();
                                 if (e.key === 'Escape') setShowNewSessionDialog(false);
                             }}
                             autoFocus
+                            autoComplete="off"
+                            data-form-type="other"
+                            data-lpignore="true"
                         />
-                        <button
+                        <Button
                             onClick={addNewSession}
                             disabled={!newSessionName.trim()}
-                            className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:bg-gray-400"
+                            title="Add session"
+                            className="!px-2 !py-1"
                         >
-                            Add
-                        </button>
-                        <button
+                            <CheckIcon data-slot="icon" className="w-4 h-4" />
+                        </Button>
+                        <Button
                             onClick={() => setShowNewSessionDialog(false)}
-                            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                            color="outline"
+                            title="Cancel"
+                            className="!px-2 !py-1"
                         >
-                            Cancel
-                        </button>
+                            <XMarkIcon data-slot="icon" className="w-4 h-4" />
+                        </Button>
                     </div>
                 </div>
             )}

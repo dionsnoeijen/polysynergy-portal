@@ -1,6 +1,7 @@
 import React, {useEffect, useMemo} from "react";
 import useNodesStore from "@/stores/nodesStore";
 import useChatViewStore from "@/stores/chatViewStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 import PromptField from "@/components/editor/chat/components/prompt-field";
 import ChatTabs from "@/components/editor/chat/components/chat-tabs";
 import Messages from "@/components/editor/chat/components/messages";
@@ -10,8 +11,9 @@ import {traceStorageConfiguration} from "@/utils/chatHistoryUtils";
 const PROMPT_NODE_PATH = 'polysynergy_nodes.play.prompt.Prompt';
 
 const Chat: React.FC = () => {
-    // Select stable primitive data from store
+    // Select stable primitive data from stores
     const nodes = useNodesStore(s => s.nodes);
+    const connections = useConnectionsStore(s => s.connections);
     
     // Memoize prompt nodes calculation
     const promptNodes = useMemo(() => {
@@ -32,11 +34,11 @@ const Chat: React.FC = () => {
     const selectedPromptNodeId = useNodesStore(s => s.selectedPromptNodeId);
     const {sid} = getLiveContextForPrompt(selectedPromptNodeId);
 
-    // Check for storage configuration - essential for session/user management
+    // Check for storage configuration - reactive to both nodes AND connections
     const hasStorage = useMemo(() => {
         if (!selectedPromptNodeId) return false;
         return !!traceStorageConfiguration(selectedPromptNodeId);
-    }, [selectedPromptNodeId]);
+    }, [selectedPromptNodeId, nodes, connections]);
 
     // ✅ session activeren zodra we ‘m kennen (of fallback op nodeId)
     const setActiveSession = useChatViewStore(s => s.setActiveSession);

@@ -1,20 +1,33 @@
-import React, {useEffect, useCallback} from "react";
+import React, {useEffect, useMemo} from "react";
 import useNodesStore from "@/stores/nodesStore";
 import useChatViewStore from "@/stores/chatViewStore";
 import PromptField from "@/components/editor/chat/components/prompt-field";
 import ChatTabs from "@/components/editor/chat/components/chat-tabs";
 import Messages from "@/components/editor/chat/components/messages";
 
+const PROMPT_NODE_PATH = 'polysynergy_nodes.play.prompt.Prompt';
+
 const Chat: React.FC = () => {
-    // Reactive selectors that update when nodes change
-    const promptMeta = useNodesStore(
-        useCallback((s) => s.getPromptMeta(), [])
-    );
+    // Select stable primitive data from store
+    const nodes = useNodesStore(s => s.nodes);
+    
+    // Memoize prompt nodes calculation
+    const promptNodes = useMemo(() => {
+        return nodes
+            .filter(n => n.path === PROMPT_NODE_PATH)
+            .map(n => {
+                const nameVar = n.variables?.find(v => v.handle === 'name');
+                const displayName = (nameVar?.value ? String(nameVar.value) : n.handle) || n.handle;
+                return {id: n.id, name: displayName, handle: n.handle, node: n};
+            });
+    }, [nodes]);
+    
+    const chatWindowVisible = promptNodes.length > 0;
+    const multipleChats = promptNodes.length > 1;
+    
     const getLiveContextForPrompt = useNodesStore(s => s.getLiveContextForPrompt);
     const ensurePromptSelected = useNodesStore(s => s.ensurePromptSelected);
     const selectedPromptNodeId = useNodesStore(s => s.selectedPromptNodeId);
-
-    const {promptNodes, chatWindowVisible, multipleChats} = promptMeta;
     const {sid} = getLiveContextForPrompt(selectedPromptNodeId);
 
     // ✅ session activeren zodra we ‘m kennen (of fallback op nodeId)

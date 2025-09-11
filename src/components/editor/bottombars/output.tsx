@@ -2,6 +2,7 @@ import React, {useState, useEffect, useCallback} from "react";
 import Logs from "@/components/editor/bottombars/logs";
 import Chat from "@/components/editor/chat/chat";
 import {ChevronLeftIcon, ChevronRightIcon} from "@heroicons/react/24/outline";
+import useEditorStore from "@/stores/editorStore";
 
 type Mode = "split" | "logs" | "chat";
 
@@ -11,6 +12,8 @@ const LS_KEY_MODE = "output.mode";
 const clamp = (val: number, min: number, max: number) => Math.min(max, Math.max(min, val));
 
 const Output: React.FC = (): React.ReactElement => {
+    const chatMode = useEditorStore(s => s.chatMode);
+    
     // restore persisted state
     const [logsRatio, setLogsRatio] = useState<number>(() => {
         const v = Number(localStorage.getItem(LS_KEY_RATIO));
@@ -20,6 +23,13 @@ const Output: React.FC = (): React.ReactElement => {
         const m = localStorage.getItem(LS_KEY_MODE) as Mode | null;
         return m === "logs" || m === "chat" || m === "split" ? m : "split";
     });
+    
+    // Auto-switch to chat mode when Chat Mode is enabled
+    useEffect(() => {
+        if (chatMode) {
+            setMode("chat");
+        }
+    }, [chatMode]);
 
     const [isDragging, setIsDragging] = useState(false);
 

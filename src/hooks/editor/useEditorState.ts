@@ -20,6 +20,7 @@ export const useEditorState = (isMouseDown?: boolean) => {
     const isFormOpen = useEditorStore((state) => state.isFormOpen);
     const activeVersionId = useEditorStore(state => state.activeVersionId);
     const isExecuting = useEditorStore((state) => state.isExecuting);
+    const chatMode = useEditorStore((state) => state.chatMode);
 
     const getNodesToRender = useNodesStore((state) => state.getNodesToRender);
     const getOpenGroups = useNodesStore((state) => state.getOpenGroups);
@@ -75,6 +76,7 @@ export const useEditorState = (isMouseDown?: boolean) => {
         editorMode,
         activeVersionId,
         isExecuting,
+        chatMode,
 
         // Derived state
         nodesToRender,

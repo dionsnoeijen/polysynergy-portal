@@ -185,6 +185,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
                     <VariableGroup
                         title={node.name}
                         version={node.version || 0.0}
+                        nodeId={node.id}
                         categoryBorderColor={categoryContainerBorder}
                         categoryMainTextColor={categoryMainTextColor}
                         categorySubTextColor={categorySubTextColor}
@@ -214,6 +215,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
                     <VariableGroup
                         title={node.name}
                         version={node.version || 0.0}
+                        nodeId={node.id}
                         categoryBorderColor={categoryContainerBorder}
                         categoryMainTextColor={categoryMainTextColor}
                         categorySubTextColor={categorySubTextColor}

@@ -1,12 +1,6 @@
 
 import React, { memo, useMemo } from 'react';
 import { 
-    DocumentIcon, 
-    PhotoIcon, 
-    VideoCameraIcon, 
-    SpeakerWaveIcon, 
-    ArchiveBoxIcon,
-    CodeBracketIcon,
     FolderIcon,
     ChevronUpIcon,
     ChevronDownIcon,
@@ -14,6 +8,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { FileInfo, DirectoryInfo } from '@/api/fileManagerApi';
 import { FileSortBy, FileSortOrder } from '@/types/types';
+import { FileIcon } from '@/utils/fileIcons';
+import { FileNameWithExtension } from '@/utils/fileNameUtils';
 
 type FileListProps = {
     files: FileInfo[];
@@ -31,27 +27,7 @@ type FileListProps = {
     onSort: (sortBy: FileSortBy) => void;
 };
 
-const getFileIcon = (contentType: string, fileName: string) => {
-    if (contentType.startsWith('image/')) {
-        return <PhotoIcon className="w-5 h-5 text-green-500" />;
-    }
-    if (contentType.startsWith('video/')) {
-        return <VideoCameraIcon className="w-5 h-5 text-red-500" />;
-    }
-    if (contentType.startsWith('audio/')) {
-        return <SpeakerWaveIcon className="w-5 h-5 text-purple-500" />;
-    }
-    if (contentType.includes('zip') || contentType.includes('tar') || contentType.includes('archive')) {
-        return <ArchiveBoxIcon className="w-5 h-5 text-orange-500" />;
-    }
-    
-    const ext = fileName.split('.').pop()?.toLowerCase();
-    if (ext && ['js', 'ts', 'jsx', 'tsx', 'py', 'html', 'css', 'json', 'xml', 'yaml', 'yml'].includes(ext)) {
-        return <CodeBracketIcon className="w-5 h-5 text-blue-500" />;
-    }
-    
-    return <DocumentIcon className="w-5 h-5 text-zinc-500" />;
-};
+// Removed - using FileIcon from utils
 
 const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 B';
@@ -156,14 +132,26 @@ const ListRow: React.FC<ListRowProps> = memo(({
                 {isDirectory ? (
                     <FolderIcon className="w-5 h-5 text-sky-600 dark:text-sky-400 flex-shrink-0" />
                 ) : (
-                    getFileIcon(fileInfo.content_type, fileInfo.name)
+                    <FileIcon 
+                        contentType={fileInfo.content_type} 
+                        fileName={fileInfo.name} 
+                        size="md"
+                    />
                 )}
-                <span 
-                    className="truncate text-sm text-zinc-900 dark:text-zinc-100"
-                    title={item.name}
-                >
-                    {item.name}
-                </span>
+                {isDirectory ? (
+                    <span 
+                        className="truncate text-sm text-zinc-900 dark:text-zinc-100"
+                        title={item.name}
+                    >
+                        {item.name}
+                    </span>
+                ) : (
+                    <FileNameWithExtension 
+                        fileName={item.name}
+                        className="truncate text-sm"
+                        maxLength={50}
+                    />
+                )}
                 {isAssigned && !isDirectory && (
                     <div className="flex-shrink-0 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
                         <CheckIcon className="w-2 h-2 text-white" />

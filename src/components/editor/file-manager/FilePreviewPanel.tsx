@@ -2,17 +2,14 @@ import React, { memo, useState, useCallback } from 'react';
 import { createFileManagerApi } from '@/api/fileManagerApi';
 import useEditorStore from '@/stores/editorStore';
 import { 
-    DocumentIcon, 
-    PhotoIcon, 
-    VideoCameraIcon, 
-    SpeakerWaveIcon, 
-    ArchiveBoxIcon,
-    CodeBracketIcon,
+    DocumentIcon,
     FolderIcon,
     XMarkIcon,
-    EyeIcon
+    EyeIcon,
+    SpeakerWaveIcon
 } from '@heroicons/react/24/outline';
 import { FileInfo, DirectoryInfo } from '@/api/fileManagerApi';
+import { FileIconWithBadge } from '@/utils/fileIcons';
 
 type FilePreviewPanelProps = {
     selectedItem: FileInfo | DirectoryInfo | null;
@@ -40,29 +37,7 @@ const formatDate = (dateString: string): string => {
     });
 };
 
-const getFileIcon = (contentType: string, fileName: string, size: 'small' | 'large' = 'large') => {
-    const iconClass = size === 'large' ? 'w-16 h-16' : 'w-6 h-6';
-    
-    if (contentType.startsWith('image/')) {
-        return <PhotoIcon className={`${iconClass} text-green-500`} />;
-    }
-    if (contentType.startsWith('video/')) {
-        return <VideoCameraIcon className={`${iconClass} text-red-500`} />;
-    }
-    if (contentType.startsWith('audio/')) {
-        return <SpeakerWaveIcon className={`${iconClass} text-purple-500`} />;
-    }
-    if (contentType.includes('zip') || contentType.includes('tar') || contentType.includes('archive')) {
-        return <ArchiveBoxIcon className={`${iconClass} text-orange-500`} />;
-    }
-    
-    const ext = fileName.split('.').pop()?.toLowerCase();
-    if (ext && ['js', 'ts', 'jsx', 'tsx', 'py', 'html', 'css', 'json', 'xml', 'yaml', 'yml'].includes(ext)) {
-        return <CodeBracketIcon className={`${iconClass} text-blue-500`} />;
-    }
-    
-    return <DocumentIcon className={`${iconClass} text-zinc-500`} />;
-};
+// Removed - using FileIconWithBadge from utils
 
 const FilePreview: React.FC<{ file: FileInfo }> = memo(({ file }) => {
     const [imageError, setImageError] = useState(false);
@@ -201,7 +176,11 @@ const FilePreview: React.FC<{ file: FileInfo }> = memo(({ file }) => {
     return (
         <div className="mb-4">
             <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-8 flex items-center justify-center">
-                {getFileIcon(file.content_type, file.name, 'large')}
+                <FileIconWithBadge 
+                    contentType={file.content_type} 
+                    fileName={file.name} 
+                    size="lg"
+                />
             </div>
         </div>
     );
@@ -238,7 +217,11 @@ const TextFilePreview: React.FC<{ file: FileInfo }> = memo(({ file }) => {
         return (
             <div className="mb-4">
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-6 text-center">
-                    {getFileIcon(file.content_type, file.name, 'large')}
+                    <FileIconWithBadge 
+                        contentType={file.content_type} 
+                        fileName={file.name} 
+                        size="lg"
+                    />
                     <button
                         onClick={loadTextContent}
                         disabled={loading}

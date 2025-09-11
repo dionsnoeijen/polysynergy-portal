@@ -58,4 +58,4 @@ const VariableTypeRichTextArea: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default VariableTypeRichTextArea;
+export default React.memo(VariableTypeRichTextArea);

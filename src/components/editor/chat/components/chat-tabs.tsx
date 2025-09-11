@@ -73,6 +73,8 @@ const ChatTabs: React.FC<ChatTabsProps> = ({
         })();
     }, [selectedPromptNodeId, activeProjectId, getLiveContextForPrompt, setActiveSession, syncSessionFromBackend]);
 
+    // IMPORTANT: Don't return null before the useEffect runs!
+    // The history loading must happen even for single chat
     if (!multipleChats) return null;
 
     return (

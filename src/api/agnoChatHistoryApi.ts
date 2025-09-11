@@ -2,7 +2,7 @@ import config from '@/config';
 import { getIdToken } from '@/api/auth/authToken';
 
 export interface StorageConfig {
-    type: 'LocalAgentStorage' | 'DynamoDBAgentStorage';
+    type: 'LocalAgentStorage' | 'DynamoDBAgentStorage' | 'LocalDb' | 'DynamoDb';
     table_name?: string;
     db_file?: string;
     region_name?: string;

@@ -130,7 +130,9 @@ const Dock: React.FC<Props> = ({toggleClose, ...restProps}) => {
             className={`absolute left-0 top-0 right-0 bottom-0 flex flex-col gap-2`}
         >
             <Heading arrowToLeft={true} toggleClose={toggleClose}>
-                Dock: {node ? `${node.name}` : "select node"}
+                <span title={node?.id || undefined}>
+                    Dock: {node ? `${node.name}` : "select node"}
+                </span>
             </Heading>
 
             {!node && !group && (

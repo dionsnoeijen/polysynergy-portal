@@ -2,16 +2,12 @@ import React, { memo, useState, useCallback, useMemo } from 'react';
 import { createFileManagerApi } from '@/api/fileManagerApi';
 import useEditorStore from '@/stores/editorStore';
 import { 
-    DocumentIcon, 
-    PhotoIcon, 
-    VideoCameraIcon, 
-    SpeakerWaveIcon, 
-    ArchiveBoxIcon,
-    CodeBracketIcon,
     FolderIcon,
     CheckIcon
 } from '@heroicons/react/24/outline';
 import { FileInfo, DirectoryInfo } from '@/api/fileManagerApi';
+import { FileIconWithBadge } from '@/utils/fileIcons';
+import { FileNameGridView } from '@/utils/fileNameUtils';
 
 type FileGridProps = {
     files: FileInfo[];
@@ -26,28 +22,7 @@ type FileGridProps = {
     onContextMenu: (e: React.MouseEvent, item: FileInfo | DirectoryInfo) => void;
 };
 
-const getFileIcon = (contentType: string, fileName: string) => {
-    if (contentType.startsWith('image/')) {
-        return <PhotoIcon className="w-8 h-8 text-green-500" />;
-    }
-    if (contentType.startsWith('video/')) {
-        return <VideoCameraIcon className="w-8 h-8 text-red-500" />;
-    }
-    if (contentType.startsWith('audio/')) {
-        return <SpeakerWaveIcon className="w-8 h-8 text-purple-500" />;
-    }
-    if (contentType.includes('zip') || contentType.includes('tar') || contentType.includes('archive')) {
-        return <ArchiveBoxIcon className="w-8 h-8 text-orange-500" />;
-    }
-    
-    // Check by file extension
-    const ext = fileName.split('.').pop()?.toLowerCase();
-    if (ext && ['js', 'ts', 'jsx', 'tsx', 'py', 'html', 'css', 'json', 'xml', 'yaml', 'yml'].includes(ext)) {
-        return <CodeBracketIcon className="w-8 h-8 text-blue-500" />;
-    }
-    
-    return <DocumentIcon className="w-8 h-8 text-zinc-500" />;
-};
+// Removed - using FileIconWithBadge from utils
 
 const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 B';
@@ -173,7 +148,11 @@ const GridItem: React.FC<GridItemProps> = memo(({
                         <FolderIcon className="w-10 h-10 text-sky-600 dark:text-sky-400" />
                     ) : (
                         <div className="relative">
-                            {getFileIcon(fileInfo.content_type, fileInfo.name)}
+                            <FileIconWithBadge 
+                                contentType={fileInfo.content_type} 
+                                fileName={fileInfo.name} 
+                                size="lg"
+                            />
                             {/* Image preview for images */}
                             {fileInfo.content_type.startsWith('image/') && imageUrl && !imageError && (
                                 <div className="absolute inset-0 rounded overflow-hidden">
@@ -213,12 +192,19 @@ const GridItem: React.FC<GridItemProps> = memo(({
                 
                 {/* File name */}
                 <div className="text-center w-full">
-                    <p 
-                        className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate"
-                        title={item.name}
-                    >
-                        {item.name}
-                    </p>
+                    {isDirectory ? (
+                        <p 
+                            className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate"
+                            title={item.name}
+                        >
+                            {item.name}
+                        </p>
+                    ) : (
+                        <FileNameGridView 
+                            fileName={item.name}
+                            className="text-sm font-medium"
+                        />
+                    )}
                     {!isDirectory && (
                         <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                             {formatFileSize(fileInfo.size)}

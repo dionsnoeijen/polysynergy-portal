@@ -155,14 +155,11 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
         const selectedFilesVar = currentNode.variables.find(v => v.handle === 'selected_files');
         const currentFiles = Array.isArray(selectedFilesVar?.value) ? selectedFilesVar.value as string[] : [];
         
-        // Convert selected file paths to full URLs using directory contents
-        const selectedFileUrls = state.selectedFiles.map(path => {
-            const fileInfo = directoryContents.files.find(f => f.path === path);
-            return fileInfo?.url || path; // fallback to path if URL not found
-        });
+        // Use file paths directly (S3 keys) instead of URLs
+        const selectedFilePaths = state.selectedFiles;
         
-        // Add new file URLs to existing ones (avoid duplicates)
-        const uniqueFiles = [...new Set([...currentFiles, ...selectedFileUrls])];
+        // Add new file paths to existing ones (avoid duplicates)
+        const uniqueFiles = [...new Set([...currentFiles, ...selectedFilePaths])];
         
         updateNodeVariable(selectedFileSelectionNode.id, 'selected_files', uniqueFiles);
         

@@ -3,6 +3,7 @@ import React from "react";
 type Props = React.PropsWithChildren<{
     title: string;
     version?: number;
+    nodeId?: string;
     categoryBorderColor?: string;
     categoryMainTextColor?: string;
     categorySubTextColor?: string;
@@ -14,6 +15,7 @@ type Props = React.PropsWithChildren<{
 const VariableGroup: React.FC<Props> = ({
                                             title,
                                             version,
+                                            nodeId,
                                             children,
                                             categoryMainTextColor = 'text-sky-500 dark:text-white/70',
                                             categorySubTextColor = 'text-sky-800 dark:text-white/70',
@@ -33,7 +35,7 @@ const VariableGroup: React.FC<Props> = ({
             <div
                 className={`flex justify-between items-center border-b ${categoryBorderColor} ${categoryGradientBackgroundColor} p-2`}>
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className={`${categoryMainTextColor} truncate`}>{title}</span>
+                    <span className={`${categoryMainTextColor} truncate`} title={nodeId}>{title}</span>
                     {formattedVersion && (
                     <span
                         className={`text-xs px-2 py-0.5 ${categoryBackgroundColor} rounded ${categorySubTextColor}`}>

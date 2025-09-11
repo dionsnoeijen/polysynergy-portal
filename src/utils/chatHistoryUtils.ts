@@ -3,7 +3,7 @@ import useConnectionsStore from '@/stores/connectionsStore';
 import { Node } from '@/types/types';
 
 export interface StorageConfig {
-    type: 'LocalAgentStorage' | 'DynamoDBAgentStorage';
+    type: 'LocalAgentStorage' | 'DynamoDBAgentStorage' | 'LocalDb' | 'DynamoDb';
     table_name?: string;
     db_file?: string;
     region_name?: string;
@@ -110,9 +110,9 @@ function findConnectedStorageNode(agentNodeId: string): Node | null {
     const { getNode } = useNodesStore.getState();
     const { connections } = useConnectionsStore.getState();
 
-    // Look for connections where storage node output connects to agent node storage input
+    // Look for connections where storage node output connects to agent node storage/db input
     for (const connection of connections) {
-        if (connection.targetNodeId === agentNodeId && connection.targetHandle === 'storage') {
+        if (connection.targetNodeId === agentNodeId && (connection.targetHandle === 'storage' || connection.targetHandle === 'db')) {
             const sourceNode = getNode(connection.sourceNodeId);
             if (sourceNode && isStorageNode(sourceNode)) {
                 return sourceNode;
@@ -134,12 +134,20 @@ function isAgnoAgentNode(node: Node): boolean {
 }
 
 /**
- * Check if a node is a storage node
+ * Check if a node is a storage node (supports both v1 and v2)
  */
 function isStorageNode(node: Node): boolean {
-    return node.path === 'polysynergy_nodes_agno.agno_storage.local_agent_storage.LocalAgentStorage' ||
-           node.path === 'polysynergy_nodes_agno.agno_storage.dynamodb_agent_storage.DynamoDBAgentStorage' ||
-           node.category === 'agno_storage';
+    // Agno v1 storage nodes
+    const isV1Storage = node.path === 'polysynergy_nodes_agno.agno_storage.local_agent_storage.LocalAgentStorage' ||
+                       node.path === 'polysynergy_nodes_agno.agno_storage.dynamodb_agent_storage.DynamoDBAgentStorage' ||
+                       node.category === 'agno_storage';
+    
+    // Agno v2 db nodes
+    const isV2Db = node.path === 'polysynergy_nodes_agno.agno_db.local_db.LocalDb' ||
+                  node.path === 'polysynergy_nodes_agno.agno_db.dynamodb_db.DynamoDb' ||
+                  node.category === 'agno_db';
+    
+    return isV1Storage || isV2Db;
 }
 
 /**
@@ -151,13 +159,20 @@ function extractStorageConfig(storageNode: Node): StorageConfig | null {
         return variable?.value as string;
     };
 
-    // Determine storage type from node path
-    let type: 'LocalAgentStorage' | 'DynamoDBAgentStorage';
+    // Determine storage type from node path (supports both v1 and v2)
+    let type: 'LocalAgentStorage' | 'DynamoDBAgentStorage' | 'LocalDb' | 'DynamoDb';
     
+    // Agno v1 detection
     if (storageNode.path?.includes('LocalAgentStorage') || storageNode.path?.includes('local_agent_storage')) {
         type = 'LocalAgentStorage';
     } else if (storageNode.path?.includes('DynamoDBAgentStorage') || storageNode.path?.includes('dynamodb_agent_storage')) {
         type = 'DynamoDBAgentStorage';
+    }
+    // Agno v2 detection
+    else if (storageNode.path?.includes('LocalDb') || storageNode.path?.includes('local_db')) {
+        type = 'LocalDb';
+    } else if (storageNode.path?.includes('DynamoDb') || storageNode.path?.includes('dynamodb_db')) {
+        type = 'DynamoDb';
     } else {
         console.error('Unknown storage node type:', storageNode.path);
         return null;
@@ -169,12 +184,12 @@ function extractStorageConfig(storageNode: Node): StorageConfig | null {
     const tableName = getVariableValue('table_name');
     if (tableName) config.table_name = tableName;
 
-    if (type === 'LocalAgentStorage') {
-        // SQLite-specific configuration
+    if (type === 'LocalAgentStorage' || type === 'LocalDb') {
+        // SQLite-specific configuration (both v1 and v2)
         const dbFile = getVariableValue('db_file');
         if (dbFile) config.db_file = dbFile;
-    } else if (type === 'DynamoDBAgentStorage') {
-        // DynamoDB-specific configuration
+    } else if (type === 'DynamoDBAgentStorage' || type === 'DynamoDb') {
+        // DynamoDB-specific configuration (both v1 and v2)
         const regionName = getVariableValue('region_name');
         const accessKeyId = getVariableValue('aws_access_key_id');
         const secretAccessKey = getVariableValue('aws_secret_access_key');
@@ -185,15 +200,45 @@ function extractStorageConfig(storageNode: Node): StorageConfig | null {
         if (secretAccessKey) config.aws_secret_access_key = secretAccessKey;
         if (endpointUrl) config.endpoint_url = endpointUrl;
     }
-
-    console.log('Extracted storage config:', config);
     return config;
 }
 
 /**
- * Get session information from the agent node (not prompt node)
+ * Get session information from the prompt node (priority) or agent node (fallback)
  */
 export function getSessionInfo(promptNodeId: string): { sessionId?: string; userId?: string; sessionName?: string } {
+    // First, try to get session info from the prompt node itself
+    const nodesStore = useNodesStore.getState();
+    const promptNode = nodesStore.nodes.find(n => n.id === promptNodeId);
+    
+    if (promptNode) {
+        // Get values from prompt node variables
+        const activeSessionVar = promptNode.variables?.find(v => v.handle === 'active_session');
+        const activeUserVar = promptNode.variables?.find(v => v.handle === 'active_user');
+        const sessionVar = promptNode.variables?.find(v => v.handle === 'session');
+        
+        const sessionId = activeSessionVar?.value as string;
+        const userId = activeUserVar?.value as string;
+        
+        // Get session name from session dict if available
+        let sessionName: string | undefined;
+        if (sessionId && sessionVar?.value) {
+            if (Array.isArray(sessionVar.value)) {
+                // Session is a NodeVariable array
+                const sessionItem = sessionVar.value.find((v: any) => v.handle === sessionId);
+                sessionName = sessionItem?.value as string;
+            } else if (typeof sessionVar.value === 'object') {
+                // Session is a dict
+                sessionName = (sessionVar.value as any)[sessionId];
+            }
+        }
+        
+        if (sessionId || userId) {
+            return { sessionId, userId, sessionName };
+        }
+    }
+    
+    // Fallback: try to get from agent node (old method for backward compatibility)
     const result = traceAgentAndStorage(promptNodeId);
     if (!result) {
         console.log('No agent/storage configuration found for session info');

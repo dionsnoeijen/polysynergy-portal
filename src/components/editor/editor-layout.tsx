@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon } from "@heroicons/react/24/outline";
 import dynamic from 'next/dynamic';
 
@@ -24,6 +24,7 @@ import { useRouteSetup } from "@/hooks/editor/useRouteSetup";
 import { useDebugTools } from "@/hooks/editor/useDebugTools";
 import { useLayoutEventHandlers } from "@/hooks/editor/useLayoutEventHandlers";
 import { useLayoutState } from "@/hooks/editor/useLayoutState";
+import useEditorStore from "@/stores/editorStore";
 
 const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false });
 const Editor = dynamic(() => import('@/components/editor/editor'), {
@@ -81,6 +82,79 @@ const EditorLayout = ({
         isLoadingFlow
     } = useLayoutState();
 
+    // Chat mode and execution state for glow
+    const chatMode = useEditorStore(s => s.chatMode);
+    const setChatMode = useEditorStore(s => s.setChatMode);
+    const isExecuting = useEditorStore(s => s.isExecuting);
+    
+    // Chat Mode functions - moved here where layout panels are available
+    const enterChatMode = useCallback(() => {
+        // Hide sidebars only (not output panel)
+        // Check if they're already closed to avoid unnecessary state updates
+        let needsUpdate = false;
+        if (!itemManagerClosed) {
+            toggleCloseItemManager();
+            needsUpdate = true;
+        }
+        if (!dockClosed) {
+            toggleCloseDock();
+            needsUpdate = true;
+        }
+        
+        // Keep output panel open but set to chat mode (will handle in bottom bar)
+        setChatMode(true);
+        
+        // Update editor position after panel changes
+        if (needsUpdate) {
+            setTimeout(() => {
+                updateEditorPosition();
+            }, 200);
+        }
+    }, [itemManagerClosed, dockClosed, toggleCloseItemManager, toggleCloseDock, setChatMode, updateEditorPosition]);
+    
+    const exitChatMode = useCallback(() => {
+        // Restore sidebars
+        // Check if they're closed to avoid unnecessary state updates
+        let needsUpdate = false;
+        if (itemManagerClosed) {
+            toggleCloseItemManager();
+            needsUpdate = true;
+        }
+        if (dockClosed) {
+            toggleCloseDock();
+            needsUpdate = true;
+        }
+        
+        setChatMode(false);
+        
+        // Update editor position after panel changes
+        if (needsUpdate) {
+            setTimeout(() => {
+                updateEditorPosition();
+            }, 200);
+        }
+    }, [itemManagerClosed, dockClosed, toggleCloseItemManager, toggleCloseDock, setChatMode, updateEditorPosition]);
+    
+
+    // Listen for Chat Mode events from child components
+    useEffect(() => {
+        const handleEnterChatMode = () => {
+            enterChatMode();
+        };
+
+        const handleExitChatMode = () => {
+            exitChatMode();
+        };
+
+        window.addEventListener('enterChatMode', handleEnterChatMode);
+        window.addEventListener('exitChatMode', handleExitChatMode);
+
+        return () => {
+            window.removeEventListener('enterChatMode', handleEnterChatMode);
+            window.removeEventListener('exitChatMode', handleExitChatMode);
+        };
+    }, [enterChatMode, exitChatMode]);
+
     // Initialize window dimensions
     useEffect(() => {
         setWindowDimensions(window.innerHeight, window.innerHeight * 0.6);
@@ -107,7 +181,14 @@ const EditorLayout = ({
             // Check for 'f' key (case insensitive)
             if (event.key.toLowerCase() === 'f' && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
                 event.preventDefault();
-                toggleFullscreen();
+                
+                // If in Chat Mode, exit it first
+                if (chatMode) {
+                    exitChatMode();
+                } else {
+                    toggleFullscreen();
+                }
+                
                 // Update editor position after toggle
                 setTimeout(() => {
                     updateEditorPosition();
@@ -117,7 +198,7 @@ const EditorLayout = ({
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [toggleFullscreen, updateEditorPosition]);
+    }, [chatMode, exitChatMode, toggleFullscreen, updateEditorPosition]);
 
     // Enhanced toggle functions with editor position updates
     const handleToggleItemManager = () => {
@@ -178,16 +259,20 @@ const EditorLayout = ({
                                     <>
                                         <DrawingLayer />
                                         <Editor key={'editor-' + activeVersionId}/>
-                                        <BottomDrawToolbar/>
-                                        <TopRightEditorListener/>
-                                        <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
-                                        <VersionPublishedMenu/>
-                                        <BottomLeftPlayMenu/>
-                                        
-                                        {/* Floating AutosaveIndicator - centered relative to menu height */}
-                                        <div className="absolute bottom-1 right-2 z-[9999] pointer-events-none flex items-center" style={{height: '52px'}}>
-                                            <AutosaveIndicator />
-                                        </div>
+                                        {!chatMode && (
+                                            <>
+                                                <BottomDrawToolbar/>
+                                                <TopRightEditorListener/>
+                                                <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
+                                                <VersionPublishedMenu/>
+                                                <BottomLeftPlayMenu/>
+                                                
+                                                {/* Floating AutosaveIndicator - centered relative to menu height */}
+                                                <div className="absolute bottom-1 right-2 z-[9999] pointer-events-none flex items-center" style={{height: '52px'}}>
+                                                    <AutosaveIndicator />
+                                                </div>
+                                            </>
+                                        )}
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">

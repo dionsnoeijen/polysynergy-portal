@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Editor, EditorState, RichUtils } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
 import { stateFromHTML } from 'draft-js-import-html';
@@ -59,6 +59,7 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
     const [isEditing, setIsEditing] = useState(false);
     const [editorState, setEditorState] = useState(() => createEditorStateFromValue(value));
     const editorRef = useRef<Editor>(null);
+    const debounceTimeoutRef = useRef<NodeJS.Timeout>();
 
     useEffect(() => {
         if (!isEditing) {
@@ -66,13 +67,22 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
         }
     }, [value, isEditing]);
 
-    // Parse template variables from HTML/text
-    const parseVariables = (text: string): VariableChip[] => {
+    // Cleanup debounce timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    // Memoize variable parsing to avoid expensive regex operations
+    const parsedVariables = useMemo(() => {
         const variables: VariableChip[] = [];
         const regex = /\{\{\s*([^}]+?)\s*\}\}/g;
         let match;
         
-        while ((match = regex.exec(text)) !== null) {
+        while ((match = regex.exec(value)) !== null) {
             variables.push({
                 id: `${match.index}-${match[1]}`,
                 handle: match[1].trim(),
@@ -82,20 +92,29 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
         }
         
         return variables;
-    };
+    }, [value]);
 
     const removeVariable = (variable: VariableChip) => {
         const newValue = value.slice(0, variable.startPos) + value.slice(variable.endPos);
         onChange(newValue);
     };
 
-    const handleEditorChange = (state: EditorState) => {
+    const debouncedOnChange = useCallback((htmlContent: string) => {
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+        debounceTimeoutRef.current = setTimeout(() => {
+            onChange(htmlContent);
+        }, 300); // 300ms debounce
+    }, [onChange]);
+
+    const handleEditorChange = useCallback((state: EditorState) => {
         setEditorState(state);
         const content = state.getCurrentContent();
         const isEmpty = !content.hasText() && content.getBlockMap().first()?.getType() === "unstyled";
         const htmlContent = isEmpty ? "" : stateToHTML(content);
-        onChange(htmlContent);
-    };
+        debouncedOnChange(htmlContent);
+    }, [debouncedOnChange]);
 
     // const handleEditBlur = (e: React.FocusEvent) => {
     //     // Check if the new focus target is still within the editor
@@ -179,10 +198,9 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
             .trim();
     };
 
-    // Render preview with variable chips  
-    const renderPreviewContent = () => {
-        const variables = parseVariables(value);
-        if (variables.length === 0) {
+    // Memoize preview content rendering
+    const previewContent = useMemo(() => {
+        if (parsedVariables.length === 0) {
             return (
                 <div className="text-zinc-500 dark:text-zinc-400 pointer-events-none">
                     {value ? (
@@ -197,7 +215,7 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
         const parts = [];
         let lastIndex = 0;
 
-        variables.forEach((variable, index) => {
+        parsedVariables.forEach((variable, index) => {
             // Add HTML before variable (convert to inline)
             if (variable.startPos > lastIndex) {
                 const htmlPart = value.slice(lastIndex, variable.startPos);
@@ -263,7 +281,7 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
                 {parts}
             </span>
         );
-    };
+    }, [value, parsedVariables]);
 
     const currentInlineStyle = editorState.getCurrentInlineStyle();
     const currentBlockType = RichUtils.getCurrentBlockType(editorState);
@@ -388,7 +406,7 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
                 <div className="relative border border-zinc-950/10 hover:border-zinc-950/20 dark:border-white/10 dark:hover:border-white/20 bg-transparent dark:bg-white/5 rounded-lg cursor-text">
                     {/* Preview content with same structure as editor */}
                     <div className="p-3 min-h-[6rem] text-base/6 text-zinc-950 sm:text-sm/6 dark:text-white">
-                        {renderPreviewContent()}
+                        {previewContent}
                     </div>
                 </div>
             )}
@@ -419,4 +437,4 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
 //     );
 // };
 
-export default TemplateRichTextEditor;
+export default React.memo(TemplateRichTextEditor);

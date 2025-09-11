@@ -13,15 +13,14 @@ import {Divider} from "@/components/divider";
 import {useKeyBindings} from "@/hooks/editor/useKeyBindings";
 import {EditorMode} from "@/types/types";
 import Image from "next/image";
-import useChatStore from "@/stores/chatStore";
-// 
+import useChatViewStore from "@/stores/chatViewStore";
 import { useHistoryStore } from "@/stores/historyStore";
 
 const TopLeftEditorMenu: React.FC = () => {
     const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
     const editorMode = useEditorStore((state) => state.editorMode);
     const setEditorMode = useEditorStore((state) => state.setEditorMode);
-    const clearChatStore = useChatStore((state) => state.clearChatStore);
+    const clearAllSessions = useChatViewStore((state) => state.clearAllSessions);
     const clearAccordionAndMockData = useEditorStore((state) => state.clearAccordionAndMockData);
     
     // History store hooks
@@ -61,7 +60,7 @@ const TopLeftEditorMenu: React.FC = () => {
         'c': {
             handler: () => {
                 clearAccordionAndMockData();
-                clearChatStore();
+                clearAllSessions();
             },
         },
         'b': {

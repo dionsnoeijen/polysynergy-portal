@@ -50,6 +50,7 @@ export default function Editor() {
         nodesToRender,
         openGroups,
         isExecuting,
+        chatMode,
         connections,
         connectionStatus,
         containerClass
@@ -81,6 +82,15 @@ export default function Editor() {
                     className="absolute top-0 left-0 w-full h-full z-20 pointer-events-none
                                bg-transparent
                                draft-executing"
+                />
+            )}
+
+            {/* Chat Mode Glow - Blue Pulsing Border */}
+            {chatMode && !isExecuting && (
+                <div
+                    className="absolute top-0 left-0 w-full h-full z-20 pointer-events-none
+                               bg-transparent
+                               chat-mode"
                 />
             )}
 

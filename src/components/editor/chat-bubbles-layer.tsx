@@ -3,15 +3,15 @@ import React, { useMemo } from 'react';
 import NodeChatBubble from '@/components/editor/nodes/node-chat-bubble';
 import useNodesStore from '@/stores/nodesStore';
 import useEditorStore from '@/stores/editorStore';
-import useChatStore from '@/stores/chatStore';
+import useChatViewStore from '@/stores/chatViewStore';
 import { NodeVariableType } from '@/types/types';
 
 const ChatBubblesLayer: React.FC = () => {
     const nodes = useNodesStore((state) => state.nodes);
     const zoomFactor = useEditorStore((state) => state.zoomFactor);
     const panPosition = useEditorStore((state) => state.panPosition);
-    const runId = useChatStore((state) => state.activeRunId);
-    const messagesByRun = useChatStore((state) => state.messagesByRun);
+    const activeSessionId = useChatViewStore((state) => state.activeSessionId);
+    const messagesBySession = useChatViewStore((state) => state.messagesBySession);
 
     // Memoize the filtered nodes to avoid infinite re-renders
     const nodesToRender = useMemo(() => {
@@ -20,12 +20,12 @@ const ChatBubblesLayer: React.FC = () => {
 
     // Memoize messages to avoid re-renders
     const messages = useMemo(() => {
-        return runId ? messagesByRun[runId] || [] : [];
-    }, [runId, messagesByRun]);
+        return activeSessionId ? messagesBySession[activeSessionId] || [] : [];
+    }, [activeSessionId, messagesBySession]);
 
     // Find nodes that have avatar variables and have chat messages
     const nodesWithChatBubbles = useMemo(() => {
-        if (!runId || messages.length === 0) return [];
+        if (!activeSessionId || messages.length === 0) return [];
         
         return nodesToRender.filter(node => {
             // Check if node has avatar variables
@@ -40,10 +40,10 @@ const ChatBubblesLayer: React.FC = () => {
             
             return hasAvatarVariable && hasMessages;
         });
-    }, [runId, messages, nodesToRender]);
+    }, [activeSessionId, messages, nodesToRender]);
 
     // Early returns after all hooks
-    if (!runId || messages.length === 0 || nodesWithChatBubbles.length === 0) return null;
+    if (!activeSessionId || messages.length === 0 || nodesWithChatBubbles.length === 0) return null;
 
     return (
         <div 

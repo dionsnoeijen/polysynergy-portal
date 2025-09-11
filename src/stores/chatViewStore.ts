@@ -39,6 +39,10 @@ type ChatViewState = {
         userId?: string;
         limit?: number;
     }) => Promise<void>;
+    
+    // Clear functions to replace chatStore functionality
+    clearSession: (sessionId?: string) => void;
+    clearAllSessions: () => void;
 };
 
 const MERGE_WINDOW_MS = 5000; // iets ruimer voor streaming
@@ -159,6 +163,28 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
             console.warn("[chat-sync] failed to fetch session history", e);
         }
     },
+    
+    // Clear functions to replace chatStore functionality
+    clearSession: (sessionId) => 
+        set((s) => {
+            if (!sessionId) {
+                // If no sessionId provided, clear active session
+                const activeId = s.activeSessionId;
+                if (!activeId) return s;
+                const {[activeId]: _, ...remaining} = s.messagesBySession;
+                return {messagesBySession: remaining};
+            } else {
+                // Clear specific session
+                const {[sessionId]: _, ...remaining} = s.messagesBySession;
+                return {messagesBySession: remaining};
+            }
+        }),
+    
+    clearAllSessions: () => 
+        set(() => ({
+            activeSessionId: null,
+            messagesBySession: {}
+        })),
 }));
 
 export default useChatViewStore;

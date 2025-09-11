@@ -67,17 +67,16 @@ const FileAssignmentPanel: React.FC<FileAssignmentPanelProps> = ({
         e.preventDefault();
         setIsDragOver(false);
         
-        // Extract file paths and URLs from drag data
+        // Extract file paths from drag data - use paths (S3 keys) not URLs
         try {
             const dragData = e.dataTransfer.getData('application/json');
-            const { filePaths, fileUrls } = JSON.parse(dragData);
+            const { filePaths } = JSON.parse(dragData);
             if (Array.isArray(filePaths) && filePaths.length > 0) {
                 onDrop?.(filePaths);
                 
-                // Also directly assign to the node using URLs if available, otherwise fallback to paths
+                // Assign file paths (S3 keys) to the node, not URLs
                 if (fileSelectionNode) {
-                    const urlsToAssign = fileUrls && Array.isArray(fileUrls) ? fileUrls : filePaths;
-                    const uniqueFiles = [...new Set([...assignedFiles, ...urlsToAssign])];
+                    const uniqueFiles = [...new Set([...assignedFiles, ...filePaths])];
                     updateNodeVariable(fileSelectionNode.id, 'selected_files', uniqueFiles);
                 }
             }
@@ -127,19 +126,19 @@ const FileAssignmentPanel: React.FC<FileAssignmentPanelProps> = ({
                         </div>
                     ) : (
                         assignedFiles.map((filePathOrUrl, index) => {
-                            // Extract filename from URL or path for display
+                            // Extract filename from S3 key/path or legacy URL for display
                             const getDisplayName = (pathOrUrl: string) => {
                                 try {
-                                    // If it's a URL, extract the path part and get the filename
+                                    // If it's a legacy URL, extract the path part and get the filename
                                     if (pathOrUrl.startsWith('http')) {
                                         const url = new URL(pathOrUrl);
                                         // Remove query parameters and extract filename from path
                                         return url.pathname.split('/').pop() || pathOrUrl;
                                     }
-                                    // If it's a path, just get the filename
+                                    // If it's an S3 key/path, just get the filename
                                     return pathOrUrl.split('/').pop() || pathOrUrl;
                                 } catch {
-                                    // Fallback for invalid URLs
+                                    // Fallback for any parsing errors
                                     return pathOrUrl.split('/').pop() || pathOrUrl;
                                 }
                             };

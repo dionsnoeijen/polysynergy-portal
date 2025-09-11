@@ -13,7 +13,7 @@ import useChatViewStore from '@/stores/chatViewStore';
 
 type ExecutionMessage = {
     node_id?: string;
-    event: 'run_start' | 'start_node' | 'end_node' | 'run_end' | "start_tool" | "end_tool" | "RunResponseContent" | "TeamRunResponseContent" | "TeamToolCallCompleted";
+    event: 'run_start' | 'start_node' | 'end_node' | 'run_end' | "start_tool" | "end_tool" | "RunContent" | "TeamRunContent" | "TeamToolCallCompleted";
     status?: 'success' | 'killed' | 'error';
     order?: number;
     run_id?: string;
@@ -25,6 +25,14 @@ type ExecutionMessage = {
 
 const groupStates = new Map<string, { count: number, remaining: number }>();
 const nodeExecutionState = new Map<string, { started: boolean; ended: boolean; status?: string }>();
+const processedEvents = new Set<string>();
+const pendingAnimations = new Map<string, NodeJS.Timeout>();
+
+// Tool execution timing tracker
+const toolExecutionTracker = new Map<string, { startTime: number; startEvent: any }>();
+
+// Tool visualization tracker - ensures minimum display time
+const toolVisualizationTracker = new Map<string, { timeoutId: NodeJS.Timeout; displayStartTime: number }>();
 
 export function useSmartWebSocketListener(flowId: string) {
     const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
@@ -55,7 +63,7 @@ export function useSmartWebSocketListener(flowId: string) {
             let node_id = message.node_id;
 
             // ---- STREAM CONTENT ----
-            if ((eventType === "RunResponseContent" || eventType === "TeamRunResponseContent")
+            if ((eventType === "RunContent" || eventType === "TeamRunContent")
                 && message.content) {
                 const sessionId = chatView.getActiveSessionId();
                 if (sessionId && message.content) {
@@ -81,13 +89,82 @@ export function useSmartWebSocketListener(flowId: string) {
 
             // ---- TOOLS UI ----
             if (eventType === 'start_tool') {
-                document.querySelector(`[data-node-id="${node_id}"]`)?.classList.add('executing-tool');
+                const startTime = performance.now();
+                const trackingKey = `${node_id}-${message.run_id}`;
+                
+                // Check if we already have a visualization running for this tool
+                const existingViz = toolVisualizationTracker.get(trackingKey);
+                if (existingViz) {
+                    return;
+                }
+                
+                // Store start time for duration calculation
+                toolExecutionTracker.set(trackingKey, {
+                    startTime,
+                    startEvent: message
+                });
+                
+                const element = document.querySelector(`[data-node-id="${node_id}"]`);
+                if (element) {
+                    element.classList.add('executing-tool');
+                    
+                    // Store visualization info for minimum display time
+                    toolVisualizationTracker.set(trackingKey, {
+                        timeoutId: null as any, // Will be set when end_tool arrives
+                        displayStartTime: performance.now()
+                    });
+                } else {
+                    console.warn('⚠️ Element not found for node_id:', node_id);
+                }
                 return;
             }
+            
             if (eventType === 'end_tool') {
-                setTimeout(() => {
-                    document.querySelector(`[data-node-id="${node_id}"]`)?.classList.remove('executing-tool');
-                }, 5000);
+                const endTime = performance.now();
+                const trackingKey = `${node_id}-${message.run_id}`;
+                const startData = toolExecutionTracker.get(trackingKey);
+                const vizData = toolVisualizationTracker.get(trackingKey);
+
+                let duration = 'unknown';
+                if (startData) {
+                    const durationMs = endTime - startData.startTime;
+                    duration = `${durationMs.toFixed(2)}ms`;
+                    toolExecutionTracker.delete(trackingKey);
+                }
+
+                // Show warning if tool executed too quickly
+                if (startData && (endTime - startData.startTime) < 50) {
+                    console.warn('⚡ VERY FAST TOOL EXECUTION - Duration:', duration);
+                }
+
+                // Handle visualization with minimum display time
+                if (vizData) {
+                    const MINIMUM_DISPLAY_TIME = 2000; // 2 seconds minimum
+                    const displayTimeElapsed = endTime - vizData.displayStartTime;
+                    const remainingDisplayTime = Math.max(0, MINIMUM_DISPLAY_TIME - displayTimeElapsed);
+
+                    const cleanup = () => {
+                        const element = document.querySelector(`[data-node-id="${node_id}"]`);
+                        if (element) {
+                            element.classList.remove('executing-tool');
+                        }
+                        toolVisualizationTracker.delete(trackingKey);
+                    };
+
+                    if (remainingDisplayTime > 0) {
+                        // Need to wait more to reach minimum display time
+                        const timeoutId = setTimeout(cleanup, remainingDisplayTime);
+                        toolVisualizationTracker.set(trackingKey, {
+                            ...vizData,
+                            timeoutId
+                        });
+                    } else {
+                        // Already displayed long enough, cleanup immediately
+                        cleanup();
+                    }
+                } else {
+                    console.warn('⚠️ END_TOOL received without corresponding START_TOOL visualization');
+                }
                 return;
             }
 
@@ -99,16 +176,32 @@ export function useSmartWebSocketListener(flowId: string) {
                 }
 
                 setTimeout(async () => {
-                    document.querySelectorAll('[data-node-id].executing')
-                        .forEach((el) => el.classList.remove('executing', 'executed-success', 'executed-killed'));
+                    // Cancel all pending animation timeouts
+                    pendingAnimations.forEach((timeoutId) => clearTimeout(timeoutId));
+                    pendingAnimations.clear();
+                    
+                    // Remove all execution-related classes from all nodes
+                    document.querySelectorAll('[data-node-id]').forEach((el) => {
+                        el.classList.remove('executing', 'executing-tool');
+                        el.classList.forEach((cls) => {
+                            if (cls.startsWith('executed-')) el.classList.remove(cls);
+                        });
+                    });
                     groupStates.clear();
                     nodeExecutionState.clear();
+                    processedEvents.clear();
 
                     const activeVersionId = editorStore.activeVersionId as string;
                     const data = await getConnectionExecutionDetails(activeVersionId, message.run_id as string);
                     mockStore.setMockConnections(data);
                     mockStore.setHasMockData(true);
                 }, 100);
+                return;
+            }
+
+            // ---- FILTER INVALID EVENTS ----
+            // Skip events with undefined status or order (spurious events)
+            if ((eventType === 'end_node' && !message.status) || message.order === undefined) {
                 return;
             }
 
@@ -124,6 +217,13 @@ export function useSmartWebSocketListener(flowId: string) {
             const type = typeof nodeFlowNode?.path === 'undefined' ? 'GroupNode' : nodeFlowNode?.path.split(".").pop();
 
             if ((eventType === 'start_node' || eventType === 'end_node') && forCurrentView) {
+                // Create unique event ID to prevent processing duplicates
+                const eventId = `${eventType}-${node_id}-${message.run_id}-${message.order}`;
+                if (processedEvents.has(eventId)) {
+                    return;
+                }
+                processedEvents.add(eventId);
+
                 mockStore.addOrUpdateMockNode({
                     id: `${node_id}-${message.order || 0}`,
                     handle: nodeFlowNode?.handle,
@@ -182,8 +282,13 @@ export function useSmartWebSocketListener(flowId: string) {
                     state.status = message.status || 'success';
                     nodeExecutionState.set(node_id, state);
                     if (state.started) {
-                        el.classList.remove('executing');
-                        el.classList.add(`executed-${state.status}`);
+                        // Ensure the blue bounce animation is visible for at least 500ms
+                        const timeoutId = setTimeout(() => {
+                            el.classList.remove('executing');
+                            el.classList.add(`executed-${state.status}`);
+                            pendingAnimations.delete(node_id);
+                        }, 500);
+                        pendingAnimations.set(node_id, timeoutId);
                         nodeExecutionState.delete(node_id);
                     }
                 }
@@ -195,7 +300,6 @@ export function useSmartWebSocketListener(flowId: string) {
             (status, connected) => {
                 setConnectionStatus(status);
                 setIsConnected(connected);
-                console.log('🔌 GLOBAL SINGLETON STATUS UPDATE:', {flowId, status, connected});
             },
             handleWebSocketMessage
         );
@@ -213,6 +317,10 @@ export function useSmartWebSocketListener(flowId: string) {
     }, [flowId]);
 
     function cleanupExecutionGlow() {
+        // Cancel all pending animation timeouts
+        pendingAnimations.forEach((timeoutId) => clearTimeout(timeoutId));
+        pendingAnimations.clear();
+        
         document.querySelectorAll('[data-node-id]').forEach((el) => {
             el.classList.remove('executing', 'executing-tool');
             el.classList.forEach((cls) => {
@@ -221,6 +329,7 @@ export function useSmartWebSocketListener(flowId: string) {
         });
         groupStates.clear();
         nodeExecutionState.clear();
+        processedEvents.clear();
     }
 
     return {connectionStatus, isConnected};

@@ -8,6 +8,8 @@ PolySynergy Portal is a Next.js web application that provides a visual node-base
 
 ## Development Commands
 
+**IMPORTANT**: This application runs in a Docker container and is available at **http://localhost:4000** when running locally.
+
 ```bash
 # Start development server
 pnpm dev

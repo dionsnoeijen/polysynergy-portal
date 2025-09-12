@@ -94,6 +94,9 @@ const Messages: React.FC = () => {
                 // Key is nu uniek per runBatch + nodeId; geen "gissen"
                 const first = groupMsgs[0];
                 const groupKey = `group-${runBatch}-${nodeId ?? "null"}-${first?.id ?? idx}`;
+                
+                // Get run_id from first message in the group
+                const runId = first?.run_id || null;
 
                 return (
                     <NodeResponseCard
@@ -101,6 +104,7 @@ const Messages: React.FC = () => {
                         nodeName={agentName}
                         agentAvatar={agentAvatar}
                         text={combinedText}
+                        runId={runId}
                     />
                 );
             })}

@@ -138,13 +138,11 @@ function isAgnoAgentNode(node: Node): boolean {
  */
 function isStorageNode(node: Node): boolean {
     // Agno v1 storage nodes
-    const isV1Storage = node.path === 'polysynergy_nodes_agno.agno_storage.local_agent_storage.LocalAgentStorage' ||
-                       node.path === 'polysynergy_nodes_agno.agno_storage.dynamodb_agent_storage.DynamoDBAgentStorage' ||
+    const isV1Storage = node.path?.startsWith('polysynergy_nodes_agno.agno_storage.') ||
                        node.category === 'agno_storage';
     
-    // Agno v2 db nodes
-    const isV2Db = node.path === 'polysynergy_nodes_agno.agno_db.local_db.LocalDb' ||
-                  node.path === 'polysynergy_nodes_agno.agno_db.dynamodb_db.DynamoDb' ||
+    // Agno v2 db nodes - flexible pattern to match any DB type
+    const isV2Db = node.path?.startsWith('polysynergy_nodes_agno.agno_db.') ||
                   node.category === 'agno_db';
     
     return isV1Storage || isV2Db;
@@ -159,23 +157,32 @@ function extractStorageConfig(storageNode: Node): StorageConfig | null {
         return variable?.value as string;
     };
 
-    // Determine storage type from node path (supports both v1 and v2)
+    // Determine storage type from node path (supports both v1 and v2 and any new DB types)
     let type: 'LocalAgentStorage' | 'DynamoDBAgentStorage' | 'LocalDb' | 'DynamoDb';
     
-    // Agno v1 detection
-    if (storageNode.path?.includes('LocalAgentStorage') || storageNode.path?.includes('local_agent_storage')) {
+    // For chat functionality, we just need to know there's a storage - type doesn't really matter
+    // But we keep the type for backwards compatibility
+    if (storageNode.path?.startsWith('polysynergy_nodes_agno.agno_db.')) {
+        // V2 DB nodes - use generic types
+        if (storageNode.path.includes('local_db')) {
+            type = 'LocalDb';
+        } else if (storageNode.path.includes('dynamodb_db')) {
+            type = 'DynamoDb';
+        } else {
+            // For any other DB type (PostgreSQL, etc.), just treat as LocalDb
+            type = 'LocalDb';
+            console.log(`Detected DB type: ${storageNode.path}, treating as LocalDb for chat`);
+        }
+    }
+    // Agno v1 detection (legacy)
+    else if (storageNode.path?.includes('LocalAgentStorage') || storageNode.path?.includes('local_agent_storage')) {
         type = 'LocalAgentStorage';
     } else if (storageNode.path?.includes('DynamoDBAgentStorage') || storageNode.path?.includes('dynamodb_agent_storage')) {
         type = 'DynamoDBAgentStorage';
-    }
-    // Agno v2 detection
-    else if (storageNode.path?.includes('LocalDb') || storageNode.path?.includes('local_db')) {
-        type = 'LocalDb';
-    } else if (storageNode.path?.includes('DynamoDb') || storageNode.path?.includes('dynamodb_db')) {
-        type = 'DynamoDb';
     } else {
-        console.error('Unknown storage node type:', storageNode.path);
-        return null;
+        // Fallback - shouldn't happen but handle gracefully
+        type = 'LocalDb';
+        console.log(`Unknown storage type: ${storageNode.path}, treating as LocalDb`);
     }
 
     const config: StorageConfig = { type };

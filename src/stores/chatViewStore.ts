@@ -152,8 +152,8 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                     sender: m.sender === "user" ? "user" : "agent",
                     text: m.text ?? "",
                     timestamp: tsMs || Date.now(),
-                    node_id: null,  // storage-history bevat meestal geen node_id; UI kan er zonder
-                    run_id: null,
+                    node_id: (m as unknown).node_id || null,  // Use node_id from backend (team_id/agent_id)
+                    run_id: (m as unknown).run_id || null,  // Use run_id from backend if available
                 };
             });
 
@@ -171,11 +171,11 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 // If no sessionId provided, clear active session
                 const activeId = s.activeSessionId;
                 if (!activeId) return s;
-                const {[activeId]: _, ...remaining} = s.messagesBySession;
+                const {[activeId]: _removed, ...remaining} = s.messagesBySession;
                 return {messagesBySession: remaining};
             } else {
                 // Clear specific session
-                const {[sessionId]: _, ...remaining} = s.messagesBySession;
+                const {[sessionId]: _removed, ...remaining} = s.messagesBySession;
                 return {messagesBySession: remaining};
             }
         }),

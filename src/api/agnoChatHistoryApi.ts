@@ -121,6 +121,23 @@ export function createAgnoChatHistoryApi(projectId: string) {
             if (!response.ok) {
                 throw new Error(`Failed to delete session: ${response.statusText}`);
             }
+        },
+
+        /**
+         * Get detailed information for a specific run (for transparency)
+         */
+        async getRunDetail(runId: string): Promise<unknown> {
+            const response = await fetch(`${baseUrl}/run-detail/${runId}?project_id=${projectId}`, {
+                headers: {
+                    'Authorization': `Bearer ${getIdToken()}`,
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to get run detail: ${response.statusText}`);
+            }
+            
+            return response.json();
         }
     };
 }

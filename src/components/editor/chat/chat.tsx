@@ -8,6 +8,7 @@ import ChatTabs from "@/components/editor/chat/components/chat-tabs";
 import Messages from "@/components/editor/chat/components/messages";
 import SessionUserManager from "@/components/editor/chat/components/session-user-manager";
 import {TransparencyMonitor} from "@/components/editor/chat/components/transparency-monitor";
+import AIComplianceIndicator from "@/components/editor/chat/components/ai-compliance-indicator";
 import {traceStorageConfiguration} from "@/utils/chatHistoryUtils";
 import {NodeVariable} from "@/types/types";
 
@@ -119,12 +120,13 @@ const Chat: React.FC = () => {
                 multipleChats={multipleChats}
             />
             
-            {/* Session/User Management */}
-            <SessionUserManager
-                promptNodeId={selectedPromptNodeId}
-                hasStorage={hasStorage}
-                showTransparency={showTransparency}
-                onEnterChatMode={() => {
+            {/* Session/User Management with AI Act Compliance Indicator */}
+            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-white/10">
+                <SessionUserManager
+                    promptNodeId={selectedPromptNodeId}
+                    hasStorage={hasStorage}
+                    showTransparency={showTransparency}
+                    onEnterChatMode={() => {
                     // Chat Mode is handled in editor-layout.tsx where layout panels are available
                     const editorLayout = document.querySelector('[data-panel="top"]');
                     if (editorLayout) {
@@ -141,7 +143,9 @@ const Chat: React.FC = () => {
                     }
                 }}
                 onShowTransparency={() => setShowTransparency(!showTransparency)}
-            />
+                />
+                <AIComplianceIndicator />
+            </div>
             
             {/* Storage Warnings */}
             {!hasStorage && (

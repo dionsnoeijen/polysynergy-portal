@@ -173,6 +173,29 @@ export function useSmartWebSocketListener(flowId: string) {
                 const sessionId = chatView.getActiveSessionId();
                 if (sessionId) {
                     chatView.finalizeAgentMessage(sessionId);
+                    
+                    // Sync with backend to get correct run_id after streaming completes
+                    try {
+                        const selectedPromptNodeId = nodesStore.selectedPromptNodeId;
+                        const activeProjectId = editorStore.activeProjectId;
+                        
+                        if (selectedPromptNodeId && activeProjectId) {
+                            const context = nodesStore.getLiveContextForPrompt(selectedPromptNodeId);
+                            if (context.hasMemory && context.storageNow && context.sid) {
+                                console.log('[sync] Syncing session after streaming completion...');
+                                await chatView.syncSessionFromBackend({
+                                    projectId: activeProjectId,
+                                    storageConfig: context.storageNow,
+                                    sessionId: context.sid,
+                                    userId: context.uid as string | undefined,
+                                    limit: 200,
+                                });
+                                console.log('[sync] Session sync completed with correct run_ids');
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[sync] Failed to sync session after streaming:', e);
+                    }
                 }
 
                 setTimeout(async () => {

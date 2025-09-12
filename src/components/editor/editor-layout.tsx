@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon } from "@heroicons/react/24/outline";
 import dynamic from 'next/dynamic';
 
@@ -26,6 +26,7 @@ import { useDebugTools } from "@/hooks/editor/useDebugTools";
 import { useLayoutEventHandlers } from "@/hooks/editor/useLayoutEventHandlers";
 import { useLayoutState } from "@/hooks/editor/useLayoutState";
 import useEditorStore from "@/stores/editorStore";
+import PerformanceHUD from "@/components/debug/performance-hud";
 
 const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false });
 const Editor = dynamic(() => import('@/components/editor/editor'), {
@@ -45,6 +46,9 @@ const EditorLayout = ({
     blueprintUuid?: string,
     configUuid?: string,
 }) => {
+    // Performance HUD toggle state
+    const [showPerformanceHUD, setShowPerformanceHUD] = useState(false);
+    
     // Custom hooks for separated concerns
     const {
         width,
@@ -196,6 +200,12 @@ const EditorLayout = ({
                 }, 200);
             }
             
+            // Check for 'p' key (case insensitive) for Performance HUD toggle
+            if (event.key.toLowerCase() === 'p' && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+                event.preventDefault();
+                setShowPerformanceHUD(prev => !prev);
+            }
+            
             // Check for 'Shift+C' key for Chat Mode toggle
             if (event.key.toLowerCase() === 'c' && event.shiftKey && !event.ctrlKey && !event.metaKey) {
                 event.preventDefault();
@@ -228,7 +238,7 @@ const EditorLayout = ({
 
     return (
         <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
-            {/*<PerformanceHUD />*/}
+            {showPerformanceHUD && <PerformanceHUD />}
             <ItemManagerIntroTour/>
             {closeFormMessage && (
                 <>

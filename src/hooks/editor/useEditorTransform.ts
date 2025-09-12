@@ -8,7 +8,6 @@ export const useEditorTransform = (isDOMActiveRef?: React.RefObject<boolean>) =>
         const applyTransform = (state: EditorState) => {
             // Skip if DOM operations are active
             if (isDOMActiveRef?.current) {
-                console.log('⚠️ Skipping useEditorTransform - DOM active');
                 return;
             }
             

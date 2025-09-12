@@ -25,17 +25,17 @@ import { useExecutionTabSwitcher } from "@/hooks/editor/useExecutionTabSwitcher"
 import { EditorMode } from "@/types/types";
 import Minimap from "@/components/editor/minimap";
 import useEditorStore from "@/stores/editorStore";
-import { GRID_SIZE } from "@/utils/snapToGrid";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
     
-    // DOM-BASED PANNING & ZOOMING
+    // DOM-BASED PANNING
     const isDOMPanning = useRef(false);
-    const isDOMZooming = useRef(false);
-    const isDOMActive = useRef<boolean>(false); // Combined flag for any DOM operation
+    const isDOMActive = useRef<boolean>(false); // Block useEditorTransform during DOM operations
     const panStartPos = useRef({ x: 0, y: 0 });
     const domPanStartTransform = useRef({ x: 0, y: 0, zoom: 1 });
+    const panAnimationFrame = useRef<number | null>(null);
+    const gridElementRef = useRef<HTMLElement | null>(null);
     
     const handleDOMMouseDown = (e: React.MouseEvent) => {
         // Test with space+click OR middle mouse button
@@ -57,7 +57,6 @@ export default function Editor() {
                     zoom: matrix.m11
                 };
             }
-            console.log('🔥 DOM Panning started - React handlers disabled');
             return; // Don't call React handlers
         }
     };
@@ -68,28 +67,47 @@ export default function Editor() {
         e.preventDefault();
         e.stopPropagation(); // Block React handlers
         
-        const deltaX = e.clientX - panStartPos.current.x;
-        const deltaY = e.clientY - panStartPos.current.y;
-        
-        const newX = domPanStartTransform.current.x + deltaX;
-        const newY = domPanStartTransform.current.y + deltaY;
-        
-        const layer = transformLayerRef.current;
-        if (layer) {
-            layer.style.transform = `translate(${newX}px, ${newY}px) scale(${domPanStartTransform.current.zoom})`;
+        // Cancel previous frame if still pending
+        if (panAnimationFrame.current) {
+            cancelAnimationFrame(panAnimationFrame.current);
         }
         
-        // Also update grid background position
-        const gridElement = document.querySelector('[data-type="editor"] > div:first-child');
-        if (gridElement instanceof HTMLElement) {
-            gridElement.style.backgroundPosition = `${newX}px ${newY}px`;
-        }
+        // Throttle updates using requestAnimationFrame
+        panAnimationFrame.current = requestAnimationFrame(() => {
+            const deltaX = e.clientX - panStartPos.current.x;
+            const deltaY = e.clientY - panStartPos.current.y;
+            
+            const newX = domPanStartTransform.current.x + deltaX;
+            const newY = domPanStartTransform.current.y + deltaY;
+            
+            const layer = transformLayerRef.current;
+            if (layer) {
+                layer.style.transform = `translate(${newX}px, ${newY}px) scale(${domPanStartTransform.current.zoom})`;
+            }
+            
+            // Also update grid background position - use cached reference
+            if (!gridElementRef.current) {
+                gridElementRef.current = contentRef.current?.querySelector('.absolute.inset-0.pointer-events-none.z-1') as HTMLElement | null;
+            }
+            if (gridElementRef.current) {
+                gridElementRef.current.style.backgroundPosition = `${newX}px ${newY}px`;
+            }
+            
+            panAnimationFrame.current = null;
+        });
+        
         return; // Don't call React handlers
     };
     
     const handleDOMMouseUp = () => {
         if (!isDOMPanning.current) return;
         isDOMPanning.current = false;
+        
+        // Cancel any pending animation frame
+        if (panAnimationFrame.current) {
+            cancelAnimationFrame(panAnimationFrame.current);
+            panAnimationFrame.current = null;
+        }
         
         // Sync final position to store
         const layer = transformLayerRef.current;
@@ -100,7 +118,6 @@ export default function Editor() {
             // Sync to store
             useEditorStore.getState().setPanPositionForVersion({ x: matrix.m41, y: matrix.m42 });
             
-            console.log('🔥 DOM Pan finished - store synced:', matrix.m41, matrix.m42);
         }
         
         // Re-enable useEditorTransform after a short delay
@@ -117,11 +134,8 @@ export default function Editor() {
         if (!hoveredEl?.closest('[data-type="editor"], [data-type="drawing-layer"]')) return;
         
         e.preventDefault();
-        e.stopPropagation(); // Block React handlers
-        isDOMZooming.current = true;
+        e.stopPropagation(); // Block any other handlers
         isDOMActive.current = true; // Block useEditorTransform
-        
-        console.log('🔍 DOM Zoom event:', e.deltaY);
         
         // Get current transform
         const layer = transformLayerRef.current;
@@ -148,14 +162,18 @@ export default function Editor() {
         const newPanX = relativeMouseX - contentMousePosX * (rect.width * scaleRatio);
         const newPanY = relativeMouseY - contentMousePosY * (rect.height * scaleRatio);
         
-        // Apply transform
+        // Apply transform directly
         layer.style.transform = `translate(${newPanX}px, ${newPanY}px) scale(${newZoom})`;
         
-        // Update grid
-        const gridElement = document.querySelector('[data-type="editor"] > div:first-child');
-        if (gridElement instanceof HTMLElement) {
-            gridElement.style.backgroundPosition = `${newPanX}px ${newPanY}px`;
-            gridElement.style.backgroundSize = `
+        // Update grid background position and size - use cached reference
+        if (!gridElementRef.current) {
+            gridElementRef.current = contentRef.current?.querySelector('.absolute.inset-0.pointer-events-none.z-1') as HTMLElement | null;
+        }
+        if (gridElementRef.current) {
+            const GRID_SIZE = 20; // From snapToGrid
+            
+            gridElementRef.current.style.backgroundPosition = `${newPanX}px ${newPanY}px`;
+            gridElementRef.current.style.backgroundSize = `
                 ${GRID_SIZE * newZoom}px ${GRID_SIZE * newZoom}px, 
                 ${GRID_SIZE * newZoom}px ${GRID_SIZE * newZoom}px, 
                 ${(GRID_SIZE*5) * newZoom}px ${(GRID_SIZE*5) * newZoom}px, 
@@ -163,18 +181,17 @@ export default function Editor() {
             `;
         }
         
-        // Sync to store after short delay
-        setTimeout(() => {
-            if (!isDOMZooming.current) return;
+        // Debounced store sync - shorter delay to minimize visual jump
+        clearTimeout((window as any)._domZoomTimeout);
+        (window as any)._domZoomTimeout = setTimeout(() => {
             useEditorStore.getState().setZoomFactorForVersion(newZoom);
             useEditorStore.getState().setPanPositionForVersion({ x: newPanX, y: newPanY });
-            isDOMZooming.current = false;
             
             // Re-enable useEditorTransform after sync
             setTimeout(() => {
                 isDOMActive.current = false;
             }, 50);
-        }, 150);
+        }, 50); // Reduced from 150ms to 50ms
     };
 
     // Custom hooks for separated concerns  
@@ -186,7 +203,7 @@ export default function Editor() {
         handleMouseUpDispatch,
         handleMouseLeaveDispatch,
         handleContextMenu
-    } = useEditorEventHandlers(contentRef, { disableWheel: false }); // Re-enable normal wheel
+    } = useEditorEventHandlers(contentRef, { disableWheel: true }); // Disable React wheel - we do DOM
     const { handleConfirmDelete, handleCancelDelete } = useEditorKeyBindings();
     const {
         // isInteracted,
@@ -212,14 +229,14 @@ export default function Editor() {
     useAutoFitNodes(contentRef, nodesToRender, 40, activeVersionId);
     useExecutionTabSwitcher();
     
-    // // DOM wheel event listener - DISABLED for now
-    // useEffect(() => {
-    //     const element = contentRef.current;
-    //     if (!element) return;
+    // DOM wheel event listener for smooth zooming
+    useEffect(() => {
+        const element = contentRef.current;
+        if (!element) return;
         
-    //     element.addEventListener('wheel', handleDOMWheel, { passive: false });
-    //     return () => element.removeEventListener('wheel', handleDOMWheel);
-    // }, []);
+        element.addEventListener('wheel', handleDOMWheel, { passive: false });
+        return () => element.removeEventListener('wheel', handleDOMWheel);
+    }, []);
 
     return (
         <div

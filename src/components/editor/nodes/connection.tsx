@@ -3,8 +3,8 @@ import { Connection as ConnectionProps } from "@/types/types";
 import { useTheme } from "next-themes";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 
-import { connectionHistoryActions } from "@/stores/history";
 import useMockStore from "@/stores/mockStore";
+import useEditorStore from "@/stores/editorStore";
 
 type Props = { connection: ConnectionProps; };
 
@@ -16,10 +16,12 @@ const Connection: React.FC<Props> = ({ connection }) => {
     const [isReady, setIsReady] = useState(false);
     const [middle, setMiddle] = useState({ x: 0, y: 0 });
 
+    const setDeleteConnectionDialogOpen = useEditorStore(s => s.setDeleteConnectionDialogOpen);
+
     const handleConnectionClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // Delete connection with history
-        connectionHistoryActions.removeConnectionWithHistory(connection.id);
+        // Open delete confirmation dialog instead of immediate deletion
+        setDeleteConnectionDialogOpen(true, connection.id);
     };
 
     const { theme } = useTheme();

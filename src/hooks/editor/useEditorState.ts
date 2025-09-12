@@ -14,6 +14,8 @@ export const useEditorState = (isMouseDown?: boolean) => {
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
     const deleteNodesDialogOpen = useEditorStore((state) => state.deleteNodesDialogOpen);
+    const deleteConnectionDialogOpen = useEditorStore((state) => state.deleteConnectionDialogOpen);
+    const selectedConnectionId = useEditorStore((state) => state.selectedConnectionId);
     const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
     const isDraft = useEditorStore((state) => state.isDraft);
     const editorMode = useEditorStore((state) => state.editorMode);
@@ -71,6 +73,8 @@ export const useEditorState = (isMouseDown?: boolean) => {
         setIsInteracted,
         selectedNodes,
         deleteNodesDialogOpen,
+        deleteConnectionDialogOpen,
+        selectedConnectionId,
         nodeToMoveToGroupId,
         isDraft,
         editorMode,

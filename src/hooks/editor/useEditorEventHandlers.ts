@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import useEditorStore from '@/stores/editorStore';
 import { EditorMode } from '@/types/types';
-import { usePan } from './usePan';
 import { useZoom } from './useZoom';
 import { useDeselectOnClickOutside } from './nodes/useDeselectOnClickOutside';
 
@@ -22,7 +21,10 @@ export const useEditorEventHandlers = (
     const isDraft = useEditorStore((state) => state.isDraft);
 
     const { handleZoom } = useZoom();
-    const { handlePanMouseDown, handleMouseMove, handleMouseUp } = usePan();
+    // Old usePan hook removed - we now use DOM-based panning in editor.tsx
+    const handlePanMouseDown = () => {};
+    const handleMouseMove = () => {};
+    const handleMouseUp = () => {};
     const { handleEditorMouseDown } = useDeselectOnClickOutside();
 
     const updateEditorPosition = useCallback(() => {
@@ -93,7 +95,7 @@ export const useEditorEventHandlers = (
         return () => window.removeEventListener('resize', updateEditorPosition);
     }, [updateEditorPosition]);
 
-    // Space key handling for pan mode
+    // Space key handling for pan mode - fixed to prevent store spam
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             const target = e.target as HTMLElement;
@@ -105,15 +107,22 @@ export const useEditorEventHandlers = (
             if (e.code === 'Space') {
                 e.preventDefault();
                 setIsSpacePressed(true);
-                useEditorStore.getState().setEditorModeWithMemory(EditorMode.Pan);
+                // Only change editor mode if not already in Pan mode
+                const { editorMode } = useEditorStore.getState();
+                if (editorMode !== EditorMode.Pan) {
+                    useEditorStore.getState().setEditorModeWithMemory(EditorMode.Pan);
+                }
             }
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
             if (e.code === 'Space') {
                 setIsSpacePressed(false);
-                const { previousEditorMode } = useEditorStore.getState();
-                useEditorStore.getState().setEditorMode(previousEditorMode);
+                const { previousEditorMode, editorMode } = useEditorStore.getState();
+                // Only change mode if currently in Pan and different from previous
+                if (editorMode === EditorMode.Pan && previousEditorMode !== EditorMode.Pan) {
+                    useEditorStore.getState().setEditorMode(previousEditorMode);
+                }
             }
         };
 

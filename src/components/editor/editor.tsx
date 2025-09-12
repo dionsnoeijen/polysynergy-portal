@@ -8,6 +8,7 @@ import Connection from "@/components/editor/nodes/connection";
 import BoxSelect from "@/components/editor/box-select";
 import OpenGroup from "@/components/editor/nodes/open-group";
 import DeleteDialog from "@/components/editor/nodes/delete-dialog";
+import DeleteConnectionDialog from "@/components/editor/connections/delete-connection-dialog";
 import AddNode from "@/components/editor/add-node";
 import PointZeroIndicator from "@/components/editor/point-zero-indicator";
 import EditorIntroTour from "@/components/guidedtour/editor-intro-tour";
@@ -44,6 +45,7 @@ export default function Editor() {
             e.stopPropagation(); // Stop React handlers
             isDOMPanning.current = true;
             isDOMActive.current = true; // Block useEditorTransform
+            // useEditorStore.getState().setIsPanning(true); // DISABLED: Causes store spam
             panStartPos.current = { x: e.clientX, y: e.clientY };
             
             // Get current transform values
@@ -82,7 +84,7 @@ export default function Editor() {
             
             const layer = transformLayerRef.current;
             if (layer) {
-                layer.style.transform = `translate(${newX}px, ${newY}px) scale(${domPanStartTransform.current.zoom})`;
+                layer.style.transform = `translate3d(${newX}px, ${newY}px, 0) scale3d(${domPanStartTransform.current.zoom}, ${domPanStartTransform.current.zoom}, 1)`;
             }
             
             // Also update grid background position - use cached reference
@@ -102,6 +104,9 @@ export default function Editor() {
     const handleDOMMouseUp = () => {
         if (!isDOMPanning.current) return;
         isDOMPanning.current = false;
+        
+        // Re-enable connector handlers immediately
+        // useEditorStore.getState().setIsPanning(false); // DISABLED: Causes store spam
         
         // Cancel any pending animation frame
         if (panAnimationFrame.current) {
@@ -162,8 +167,8 @@ export default function Editor() {
         const newPanX = relativeMouseX - contentMousePosX * (rect.width * scaleRatio);
         const newPanY = relativeMouseY - contentMousePosY * (rect.height * scaleRatio);
         
-        // Apply transform directly
-        layer.style.transform = `translate(${newPanX}px, ${newPanY}px) scale(${newZoom})`;
+        // Apply transform directly with 3D acceleration
+        layer.style.transform = `translate3d(${newPanX}px, ${newPanY}px, 0) scale3d(${newZoom}, ${newZoom}, 1)`;
         
         // Update grid background position and size - use cached reference
         if (!gridElementRef.current) {
@@ -210,6 +215,8 @@ export default function Editor() {
         // setIsInteracted,
         selectedNodes,
         deleteNodesDialogOpen,
+        deleteConnectionDialogOpen,
+        selectedConnectionId,
         // isDraft,
         editorMode,
         activeVersionId,
@@ -332,6 +339,13 @@ export default function Editor() {
                 onConfirm={handleConfirmDelete}
                 onCancel={handleCancelDelete}
                 selectedNodes={selectedNodes}
+            />
+            
+            <DeleteConnectionDialog
+                isOpen={deleteConnectionDialogOpen}
+                onConfirm={() => useEditorStore.getState().setDeleteConnectionDialogOpen(false)}
+                onCancel={() => useEditorStore.getState().setDeleteConnectionDialogOpen(false)}
+                connectionId={selectedConnectionId}
             />
             
             {/* Minimap in top-right corner */}

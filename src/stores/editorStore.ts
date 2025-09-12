@@ -77,6 +77,10 @@ export type EditorState = {
 
     deleteNodesDialogOpen: boolean;
     setDeleteNodesDialogOpen: (isOpen: boolean) => void;
+    
+    deleteConnectionDialogOpen: boolean;
+    selectedConnectionId: string | null;
+    setDeleteConnectionDialogOpen: (isOpen: boolean, connectionId?: string) => void;
     addingNode: string | null;
     setAddingNode: (nodeId: string | null) => void;
     showAddingNode: boolean;
@@ -415,6 +419,13 @@ const useEditorStore = create<EditorState>((set, get) => ({
         set({contextMenu: {visible: false, x: 0, y: 0, items: []}}),
     deleteNodesDialogOpen: false,
     setDeleteNodesDialogOpen: (isOpen) => set({deleteNodesDialogOpen: isOpen}),
+    
+    deleteConnectionDialogOpen: false,
+    selectedConnectionId: null,
+    setDeleteConnectionDialogOpen: (isOpen, connectionId) => set({
+        deleteConnectionDialogOpen: isOpen,
+        selectedConnectionId: connectionId || null
+    }),
     addingNode: null,
     setAddingNode: (nodeId: string | null) => set({addingNode: nodeId}),
     showAddingNode: false,
@@ -555,5 +566,6 @@ const useEditorStore = create<EditorState>((set, get) => ({
     visibleNodeCount: 0,
     setVisibleNodeCount: (count) => set({visibleNodeCount: count})
 }));
+
 
 export default useEditorStore;

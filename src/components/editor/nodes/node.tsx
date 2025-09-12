@@ -6,7 +6,8 @@ import ClosedGroup from "@/components/editor/nodes/closed-group";
 import NodeJump from "@/components/editor/nodes/node-jump";
 import NodeRows from "@/components/editor/nodes/node-rows";
 
-const Node: React.FC<NodeProps> = ({ node, preview = false }) => {
+const Node = React.memo<NodeProps>(({ node, preview = false }) => {
+    
     if (node.category === NodeType.Jump && node.type === NodeJumpType.To) {
         return <NodeJump node={node} preview={preview} />;
     }
@@ -21,6 +22,6 @@ const Node: React.FC<NodeProps> = ({ node, preview = false }) => {
         default:
             return <NodeRows node={node} preview={preview} />;
     }
-};
+});
 
 export default Node;

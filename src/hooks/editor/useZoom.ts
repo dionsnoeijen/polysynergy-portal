@@ -14,17 +14,13 @@ export const useZoom = () => {
 
     const zoomIntensity = 0.0025;
     const zoomTimeoutRef = useRef<NodeJS.Timeout | null>(null); // useRef to hold the timeout ID
+    const pendingZoomDelta = useRef(0);
+    const zoomAnimationFrame = useRef<number | null>(null);
 
-    const handleZoom = (
-        e: React.WheelEvent,
-        contentRect: DOMRect
-    ) => {
-        e.preventDefault();
-
+    const applyZoom = (deltaY: number, contentRect: DOMRect, mouseX: number, mouseY: number) => {
         const { left, top, width, height } = contentRect;
-        const { clientX: mouseX, clientY: mouseY } = e;
-
-        const newZoomFactor = Math.min(Math.max(0.1, zoomFactorForVersion - e.deltaY * zoomIntensity * Math.log2(zoomFactorForVersion + 1)), 3);
+        
+        const newZoomFactor = Math.min(Math.max(0.1, zoomFactorForVersion - deltaY * zoomIntensity * Math.log2(zoomFactorForVersion + 1)), 3);
         const scaleRatio = newZoomFactor / zoomFactorForVersion;
 
         const relativeMouseX = mouseX - left;
@@ -36,11 +32,8 @@ export const useZoom = () => {
         const newTranslateY = relativeMouseY - contentMousePosY * (height * scaleRatio);
 
         setIsZooming(true);
-
         setZoomFactorForVersion(newZoomFactor);
-
         setPanPositionForVersion({ x: newTranslateX, y: newTranslateY });
-
 
         // Clear the previous timeout
         if (zoomTimeoutRef.current) {
@@ -51,6 +44,26 @@ export const useZoom = () => {
         zoomTimeoutRef.current = setTimeout(() => {
             setIsZooming(false);
         }, 150);
+    };
+
+    const handleZoom = (
+        e: React.WheelEvent,
+        contentRect: DOMRect
+    ) => {
+        e.preventDefault();
+        
+        // Accumulate wheel deltas and use requestAnimationFrame for smooth application
+        pendingZoomDelta.current += e.deltaY;
+        
+        if (zoomAnimationFrame.current) return; // Already scheduled
+        
+        zoomAnimationFrame.current = requestAnimationFrame(() => {
+            const deltaY = pendingZoomDelta.current;
+            pendingZoomDelta.current = 0;
+            zoomAnimationFrame.current = null;
+            
+            applyZoom(deltaY, contentRect, e.clientX, e.clientY);
+        });
     };
 
     return { handleZoom };

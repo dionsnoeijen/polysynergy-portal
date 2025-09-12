@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 import Grid from "@/components/editor/grid";
 import Node from "@/components/editor/nodes/node";
@@ -24,12 +24,161 @@ import { useAutoFitNodes } from "@/hooks/editor/nodes/useAutoFitNodes";
 import { useExecutionTabSwitcher } from "@/hooks/editor/useExecutionTabSwitcher";
 import { EditorMode } from "@/types/types";
 import Minimap from "@/components/editor/minimap";
+import useEditorStore from "@/stores/editorStore";
+import { GRID_SIZE } from "@/utils/snapToGrid";
 
 export default function Editor() {
     const contentRef = useRef<HTMLDivElement>(null);
+    
+    // DOM-BASED PANNING & ZOOMING
+    const isDOMPanning = useRef(false);
+    const isDOMZooming = useRef(false);
+    const isDOMActive = useRef<boolean>(false); // Combined flag for any DOM operation
+    const panStartPos = useRef({ x: 0, y: 0 });
+    const domPanStartTransform = useRef({ x: 0, y: 0, zoom: 1 });
+    
+    const handleDOMMouseDown = (e: React.MouseEvent) => {
+        // Test with space+click OR middle mouse button
+        if (e.button === 1 || (e.button === 0 && editorMode === EditorMode.Pan)) {
+            e.preventDefault();
+            e.stopPropagation(); // Stop React handlers
+            isDOMPanning.current = true;
+            isDOMActive.current = true; // Block useEditorTransform
+            panStartPos.current = { x: e.clientX, y: e.clientY };
+            
+            // Get current transform values
+            const layer = transformLayerRef.current;
+            if (layer) {
+                const style = window.getComputedStyle(layer);
+                const matrix = new DOMMatrix(style.transform);
+                domPanStartTransform.current = {
+                    x: matrix.m41,
+                    y: matrix.m42, 
+                    zoom: matrix.m11
+                };
+            }
+            console.log('🔥 DOM Panning started - React handlers disabled');
+            return; // Don't call React handlers
+        }
+    };
+    
+    const handleDOMMouseMove = (e: React.MouseEvent) => {
+        if (!isDOMPanning.current) return;
+        
+        e.preventDefault();
+        e.stopPropagation(); // Block React handlers
+        
+        const deltaX = e.clientX - panStartPos.current.x;
+        const deltaY = e.clientY - panStartPos.current.y;
+        
+        const newX = domPanStartTransform.current.x + deltaX;
+        const newY = domPanStartTransform.current.y + deltaY;
+        
+        const layer = transformLayerRef.current;
+        if (layer) {
+            layer.style.transform = `translate(${newX}px, ${newY}px) scale(${domPanStartTransform.current.zoom})`;
+        }
+        
+        // Also update grid background position
+        const gridElement = document.querySelector('[data-type="editor"] > div:first-child');
+        if (gridElement instanceof HTMLElement) {
+            gridElement.style.backgroundPosition = `${newX}px ${newY}px`;
+        }
+        return; // Don't call React handlers
+    };
+    
+    const handleDOMMouseUp = () => {
+        if (!isDOMPanning.current) return;
+        isDOMPanning.current = false;
+        
+        // Sync final position to store
+        const layer = transformLayerRef.current;
+        if (layer) {
+            const style = window.getComputedStyle(layer);
+            const matrix = new DOMMatrix(style.transform);
+            
+            // Sync to store
+            useEditorStore.getState().setPanPositionForVersion({ x: matrix.m41, y: matrix.m42 });
+            
+            console.log('🔥 DOM Pan finished - store synced:', matrix.m41, matrix.m42);
+        }
+        
+        // Re-enable useEditorTransform after a short delay
+        setTimeout(() => {
+            isDOMActive.current = false;
+        }, 50);
+    };
+    
+    const handleDOMWheel = (e: WheelEvent) => {
+        const contentEl = contentRef.current;
+        if (!contentEl) return;
+        
+        const hoveredEl = document.elementFromPoint(e.clientX, e.clientY);
+        if (!hoveredEl?.closest('[data-type="editor"], [data-type="drawing-layer"]')) return;
+        
+        e.preventDefault();
+        e.stopPropagation(); // Block React handlers
+        isDOMZooming.current = true;
+        isDOMActive.current = true; // Block useEditorTransform
+        
+        console.log('🔍 DOM Zoom event:', e.deltaY);
+        
+        // Get current transform
+        const layer = transformLayerRef.current;
+        if (!layer) return;
+        
+        const style = window.getComputedStyle(layer);
+        const matrix = new DOMMatrix(style.transform);
+        const currentZoom = matrix.m11;
+        const currentPanX = matrix.m41;
+        const currentPanY = matrix.m42;
+        
+        // Calculate new zoom
+        const zoomIntensity = 0.0025;
+        const newZoom = Math.min(Math.max(0.1, currentZoom - e.deltaY * zoomIntensity * Math.log2(currentZoom + 1)), 3);
+        const scaleRatio = newZoom / currentZoom;
+        
+        // Calculate zoom-to-mouse position
+        const rect = contentEl.getBoundingClientRect();
+        const relativeMouseX = e.clientX - rect.left;
+        const relativeMouseY = e.clientY - rect.top;
+        const contentMousePosX = (relativeMouseX - currentPanX) / rect.width;
+        const contentMousePosY = (relativeMouseY - currentPanY) / rect.height;
+        
+        const newPanX = relativeMouseX - contentMousePosX * (rect.width * scaleRatio);
+        const newPanY = relativeMouseY - contentMousePosY * (rect.height * scaleRatio);
+        
+        // Apply transform
+        layer.style.transform = `translate(${newPanX}px, ${newPanY}px) scale(${newZoom})`;
+        
+        // Update grid
+        const gridElement = document.querySelector('[data-type="editor"] > div:first-child');
+        if (gridElement instanceof HTMLElement) {
+            gridElement.style.backgroundPosition = `${newPanX}px ${newPanY}px`;
+            gridElement.style.backgroundSize = `
+                ${GRID_SIZE * newZoom}px ${GRID_SIZE * newZoom}px, 
+                ${GRID_SIZE * newZoom}px ${GRID_SIZE * newZoom}px, 
+                ${(GRID_SIZE*5) * newZoom}px ${(GRID_SIZE*5) * newZoom}px, 
+                ${(GRID_SIZE*5) * newZoom}px ${(GRID_SIZE*5) * newZoom}px
+            `;
+        }
+        
+        // Sync to store after short delay
+        setTimeout(() => {
+            if (!isDOMZooming.current) return;
+            useEditorStore.getState().setZoomFactorForVersion(newZoom);
+            useEditorStore.getState().setPanPositionForVersion({ x: newPanX, y: newPanY });
+            isDOMZooming.current = false;
+            
+            // Re-enable useEditorTransform after sync
+            setTimeout(() => {
+                isDOMActive.current = false;
+            }, 50);
+        }, 150);
+    };
 
-    // Custom hooks for separated concerns
-    const { transformLayerRef } = useEditorTransform();
+    // Custom hooks for separated concerns  
+    const { transformLayerRef } = useEditorTransform(isDOMActive);
     const {
         isMouseDown,
         handleMouseDownDispatch,
@@ -37,7 +186,7 @@ export default function Editor() {
         handleMouseUpDispatch,
         handleMouseLeaveDispatch,
         handleContextMenu
-    } = useEditorEventHandlers(contentRef);
+    } = useEditorEventHandlers(contentRef, { disableWheel: false }); // Re-enable normal wheel
     const { handleConfirmDelete, handleCancelDelete } = useEditorKeyBindings();
     const {
         // isInteracted,
@@ -62,15 +211,45 @@ export default function Editor() {
     useAutoUpdateScheduleNodes();
     useAutoFitNodes(contentRef, nodesToRender, 40, activeVersionId);
     useExecutionTabSwitcher();
+    
+    // // DOM wheel event listener - DISABLED for now
+    // useEffect(() => {
+    //     const element = contentRef.current;
+    //     if (!element) return;
+        
+    //     element.addEventListener('wheel', handleDOMWheel, { passive: false });
+    //     return () => element.removeEventListener('wheel', handleDOMWheel);
+    // }, []);
 
     return (
         <div
             data-type="editor"
             className={containerClass}
-            onMouseDown={handleMouseDownDispatch}
-            onMouseMove={handleMouseMoveDispatch}
-            onMouseUp={handleMouseUpDispatch}
-            onMouseLeave={handleMouseLeaveDispatch}
+            onMouseDown={(e) => {
+                handleDOMMouseDown(e);
+                if (!isDOMPanning.current) {
+                    handleMouseDownDispatch(e);
+                }
+            }}
+            onMouseMove={(e) => {
+                const result = handleDOMMouseMove(e);
+                if (result !== undefined) return; // DOM handled it
+                if (!isDOMPanning.current) {
+                    handleMouseMoveDispatch(e);
+                }
+            }}
+            onMouseUp={(e) => {
+                handleDOMMouseUp();
+                if (!isDOMPanning.current) {
+                    handleMouseUpDispatch(e);
+                }
+            }}
+            onMouseLeave={(e) => {
+                handleDOMMouseUp();
+                if (!isDOMPanning.current) {
+                    handleMouseLeaveDispatch(e);
+                }
+            }}
             onContextMenu={handleContextMenu}
             ref={contentRef}
         >

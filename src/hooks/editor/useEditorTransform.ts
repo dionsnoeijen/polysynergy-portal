@@ -1,11 +1,17 @@
 import { useEffect, useRef } from 'react';
 import useEditorStore, { EditorState } from '@/stores/editorStore';
 
-export const useEditorTransform = () => {
+export const useEditorTransform = (isDOMActiveRef?: React.RefObject<boolean>) => {
     const transformLayerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const applyTransform = (state: EditorState) => {
+            // Skip if DOM operations are active
+            if (isDOMActiveRef?.current) {
+                console.log('⚠️ Skipping useEditorTransform - DOM active');
+                return;
+            }
+            
             const pan = state.getPanPositionForVersion();
             const zoom = state.getZoomFactorForVersion();
 
@@ -35,7 +41,7 @@ export const useEditorTransform = () => {
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [isDOMActiveRef]);
 
     return {
         transformLayerRef

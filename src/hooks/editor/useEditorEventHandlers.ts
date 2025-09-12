@@ -5,7 +5,10 @@ import { usePan } from './usePan';
 import { useZoom } from './useZoom';
 import { useDeselectOnClickOutside } from './nodes/useDeselectOnClickOutside';
 
-export const useEditorEventHandlers = (contentRef: React.RefObject<HTMLDivElement>) => {
+export const useEditorEventHandlers = (
+    contentRef: React.RefObject<HTMLDivElement>,
+    options?: { disableWheel?: boolean }
+) => {
     const mousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
     const [isSpacePressed, setIsSpacePressed] = useState(false);
     const [isMouseDown, setIsMouseDown] = useState(false);
@@ -123,8 +126,10 @@ export const useEditorEventHandlers = (contentRef: React.RefObject<HTMLDivElemen
         };
     }, []);
 
-    // Global wheel handling for zoom
+    // Global wheel handling for zoom (conditionally disabled)
     useEffect(() => {
+        if (options?.disableWheel) return; // Skip if disabled
+        
         const handleWheelGlobal = (e: WheelEvent) => {
             const contentEl = contentRef.current;
             if (!contentEl) return;
@@ -136,7 +141,7 @@ export const useEditorEventHandlers = (contentRef: React.RefObject<HTMLDivElemen
         };
         window.addEventListener('wheel', handleWheelGlobal, { passive: false });
         return () => window.removeEventListener('wheel', handleWheelGlobal);
-    }, [handleZoom, contentRef]);
+    }, [handleZoom, contentRef, options?.disableWheel]);
 
     return {
         mousePositionRef,

@@ -15,6 +15,7 @@ export type ChatViewMessage = {
 type ChatViewState = {
     activeSessionId: string | null;
     messagesBySession: Record<string, ChatViewMessage[]>;
+    bubbleMessagesBySession: Record<string, ChatViewMessage[]>;
 
     setActiveSession: (sessionId: string | null) => void;
     getActiveSessionId: () => string | null;
@@ -43,6 +44,7 @@ type ChatViewState = {
     // Clear functions to replace chatStore functionality
     clearSession: (sessionId?: string) => void;
     clearAllSessions: () => void;
+    clearBubbles: () => void;
 };
 
 const MERGE_WINDOW_MS = 5000; // iets ruimer voor streaming
@@ -50,6 +52,7 @@ const MERGE_WINDOW_MS = 5000; // iets ruimer voor streaming
 const useChatViewStore = create<ChatViewState>((set, get) => ({
     activeSessionId: null,
     messagesBySession: {},
+    bubbleMessagesBySession: {},
 
     setActiveSession: (sessionId) => set({activeSessionId: sessionId}),
     getActiveSessionId: () => get().activeSessionId,
@@ -102,7 +105,31 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 msg.text = parts.map((p) => p.text).join(""); // of "\n" als je paragraph breaks wilt
                 msg.timestamp = now;
                 merged[merged.length - 1] = msg;
-                return {messagesBySession: {...s.messagesBySession, [sessionId]: merged}};
+                
+                // Update bubbles store with same logic
+                const bubblePrev = s.bubbleMessagesBySession[sessionId] ?? [];
+                const bubbleLast = bubblePrev[bubblePrev.length - 1];
+                const bubbleMerged = [...bubblePrev];
+                if (bubbleLast && bubbleLast.sender === "agent" && 
+                    (bubbleLast.node_id ?? null) === (nodeId ?? null) &&
+                    (bubbleLast.run_id ?? null) === (runId ?? null)) {
+                    const bubbleMsg = {...bubbleLast};
+                    const bubbleParts = bubbleMsg.parts ? [...bubbleMsg.parts] : [];
+                    bubbleParts.push({seq, ts: now, text});
+                    bubbleParts.sort((a, b) => {
+                        if (a.seq != null && b.seq != null && a.seq !== b.seq) return a.seq - b.seq;
+                        return a.ts - b.ts;
+                    });
+                    bubbleMsg.parts = bubbleParts;
+                    bubbleMsg.text = bubbleParts.map((p) => p.text).join("");
+                    bubbleMsg.timestamp = now;
+                    bubbleMerged[bubbleMerged.length - 1] = bubbleMsg;
+                }
+                
+                return {
+                    messagesBySession: {...s.messagesBySession, [sessionId]: merged},
+                    bubbleMessagesBySession: {...s.bubbleMessagesBySession, [sessionId]: bubbleMerged}
+                };
             }
 
             const next: ChatViewMessage = {
@@ -114,10 +141,18 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 run_id: runId ?? null,
                 parts: [{seq, ts: now, text}],
             };
+            
+            // Also add to bubbles store
+            const bubblePrev = s.bubbleMessagesBySession[sessionId] ?? [];
+            
             return {
                 messagesBySession: {
                     ...s.messagesBySession,
                     [sessionId]: [...prev, next],
+                },
+                bubbleMessagesBySession: {
+                    ...s.bubbleMessagesBySession,
+                    [sessionId]: [...bubblePrev, next],
                 },
             };
         }),
@@ -125,7 +160,10 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
     finalizeAgentMessage: () => ({}),
 
     replaceHistory: (sessionId, messages) =>
-        set((s) => ({messagesBySession: {...s.messagesBySession, [sessionId]: messages}})),
+        set((s) => ({
+            messagesBySession: {...s.messagesBySession, [sessionId]: messages}
+            // Don't update bubbleMessagesBySession - bubbles only show live streaming content
+        })),
 
     getMessages: () => {
         const {activeSessionId, messagesBySession} = get();
@@ -171,11 +209,13 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 // If no sessionId provided, clear active session
                 const activeId = s.activeSessionId;
                 if (!activeId) return s;
-                const {[activeId]: _removed, ...remaining} = s.messagesBySession;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const {[activeId]: _, ...remaining} = s.messagesBySession;
                 return {messagesBySession: remaining};
             } else {
                 // Clear specific session
-                const {[sessionId]: _removed, ...remaining} = s.messagesBySession;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const {[sessionId]: _, ...remaining} = s.messagesBySession;
                 return {messagesBySession: remaining};
             }
         }),
@@ -183,7 +223,13 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
     clearAllSessions: () => 
         set(() => ({
             activeSessionId: null,
-            messagesBySession: {}
+            messagesBySession: {},
+            bubbleMessagesBySession: {}
+        })),
+        
+    clearBubbles: () => 
+        set(() => ({
+            bubbleMessagesBySession: {}
         })),
 }));
 

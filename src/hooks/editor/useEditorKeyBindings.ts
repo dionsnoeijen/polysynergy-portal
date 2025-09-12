@@ -10,6 +10,7 @@ export const useEditorKeyBindings = () => {
     const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
     const copySelectedNodes = useEditorStore((state) => state.copySelectedNodes);
     const pasteNodes = useEditorStore((state) => state.pasteNodes);
+    const chatMode = useEditorStore((state) => state.chatMode);
 
     const { handleDeleteSelectedNodes } = useDeleteNode();
     const { createGroup } = useGrouping();
@@ -45,9 +46,11 @@ export const useEditorKeyBindings = () => {
         },
         'a': {
             handler: () => setShowAddingNode(true),
+            condition: () => !chatMode
         },
         'shift+a': {
             handler: () => setShowAddingNode(true),
+            condition: () => !chatMode
         },
         'ctrl+shift+g': {
             handler: () => console.log('DEGROUP'),

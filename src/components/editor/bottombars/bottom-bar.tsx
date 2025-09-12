@@ -8,11 +8,12 @@ import Files from "@/components/editor/bottombars/files";
 
 const BottomBar: React.FC = (): React.ReactElement => {
     const bottomBarView = useEditorStore((state) => state.bottomBarView);
+    const chatMode = useEditorStore((state) => state.chatMode);
 
     return (
         <>
-            <BottomBarMenu />
-            <div className="ml-10 h-full border-t border-l border-sky-500/50 dark:border-white/20 bg-white dark:bg-zinc-800">
+            {!chatMode && <BottomBarMenu />}
+            <div className={`h-full border-t ${!chatMode ? 'ml-10 border-l' : ''} border-sky-500/50 dark:border-white/20 bg-white dark:bg-zinc-800`}>
                 {bottomBarView === BottomBarView.Debug && <Debug />}
                 {bottomBarView === BottomBarView.Output && <Output />}
                 {bottomBarView === BottomBarView.Info && <Info />}

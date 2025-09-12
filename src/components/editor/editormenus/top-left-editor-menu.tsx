@@ -20,7 +20,7 @@ const TopLeftEditorMenu: React.FC = () => {
     const setShowAddingNode = useEditorStore((state) => state.setShowAddingNode);
     const editorMode = useEditorStore((state) => state.editorMode);
     const setEditorMode = useEditorStore((state) => state.setEditorMode);
-    const clearAllSessions = useChatViewStore((state) => state.clearAllSessions);
+    const clearBubbles = useChatViewStore((state) => state.clearBubbles);
     const clearAccordionAndMockData = useEditorStore((state) => state.clearAccordionAndMockData);
     
     // History store hooks
@@ -60,7 +60,7 @@ const TopLeftEditorMenu: React.FC = () => {
         'c': {
             handler: () => {
                 clearAccordionAndMockData();
-                clearAllSessions();
+                clearBubbles();
             },
         },
         'b': {

@@ -89,26 +89,28 @@ const Output: React.FC = (): React.ReactElement => {
                 <div
                     className="border-b border-sky-500/50 dark:border-white/10 px-2 py-1 flex items-center justify-between">
                     <h3 className="text-sky-500 dark:text-white/80 text-sm">Logs</h3>
-                    <div className="flex items-center gap-1">
-                        {mode !== "logs" && (
-                            <button
-                                className="text-xs px-2 py-1 rounded border border-sky-500/40 text-sky-600 dark:text-sky-300 hover:bg-sky-500/10"
-                                onClick={() => setMode("logs")}
-                                title="Expand logs"
-                            >
-                                <ChevronRightIcon className={'w-4 h-4'} />
-                            </button>
-                        )}
-                        {mode !== "split" && (
-                            <button
-                                className="text-xs px-2 py-1 rounded border border-slate-400/40 text-slate-600 dark:text-slate-200 hover:bg-white/5"
-                                onClick={() => setMode("split")}
-                                title="Split"
-                            >
-                                <ChevronLeftIcon className={'w-4 h-4'} />
-                            </button>
-                        )}
-                    </div>
+                    {!chatMode && (
+                        <div className="flex items-center gap-1">
+                            {mode !== "logs" && (
+                                <button
+                                    className="text-xs px-2 py-1 rounded border border-sky-500/40 text-sky-600 dark:text-sky-300 hover:bg-sky-500/10"
+                                    onClick={() => setMode("logs")}
+                                    title="Expand logs"
+                                >
+                                    <ChevronRightIcon className={'w-4 h-4'} />
+                                </button>
+                            )}
+                            {mode !== "split" && (
+                                <button
+                                    className="text-xs px-2 py-1 rounded border border-slate-400/40 text-slate-600 dark:text-slate-200 hover:bg-white/5"
+                                    onClick={() => setMode("split")}
+                                    title="Split"
+                                >
+                                    <ChevronLeftIcon className={'w-4 h-4'} />
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <div className="flex-1 overflow-hidden">
                     <Logs/>
@@ -137,26 +139,28 @@ const Output: React.FC = (): React.ReactElement => {
                 <div
                     className="border-b border-sky-500/50 dark:border-white/10 px-2 py-1 flex items-center justify-between">
                     <h3 className="text-sky-500 dark:text-white/80 text-sm">Chat</h3>
-                    <div className="flex items-center gap-1">
-                        {mode !== "chat" && (
-                            <button
-                                className="text-xs px-2 py-1 rounded border border-sky-500/40 text-sky-600 dark:text-sky-300 hover:bg-sky-500/10"
-                                onClick={() => setMode("chat")}
-                                title="Expand chat (C)"
-                            >
-                                <ChevronLeftIcon className={'w-4 h-4'} />
-                            </button>
-                        )}
-                        {mode !== "split" && (
-                            <button
-                                className="text-xs px-2 py-1 rounded border border-slate-400/40 text-slate-600 dark:text-slate-200 hover:bg-white/5"
-                                onClick={() => setMode("split")}
-                                title="Split (S)"
-                            >
-                                <ChevronRightIcon className={'w-4 h-4'} />
-                            </button>
-                        )}
-                    </div>
+                    {!chatMode && (
+                        <div className="flex items-center gap-1">
+                            {mode !== "chat" && (
+                                <button
+                                    className="text-xs px-2 py-1 rounded border border-sky-500/40 text-sky-600 dark:text-sky-300 hover:bg-sky-500/10"
+                                    onClick={() => setMode("chat")}
+                                    title="Expand chat (C)"
+                                >
+                                    <ChevronLeftIcon className={'w-4 h-4'} />
+                                </button>
+                            )}
+                            {mode !== "split" && (
+                                <button
+                                    className="text-xs px-2 py-1 rounded border border-slate-400/40 text-slate-600 dark:text-slate-200 hover:bg-white/5"
+                                    onClick={() => setMode("split")}
+                                    title="Split (S)"
+                                >
+                                    <ChevronRightIcon className={'w-4 h-4'} />
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <div className="flex-1 overflow-auto text-sm text-white/80">
                     <Chat/>

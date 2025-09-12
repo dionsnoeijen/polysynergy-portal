@@ -10,7 +10,7 @@ const NodeChatBubble: React.FC<Props> = ({nodeId}) => {
 
     const sessionMessages = useChatViewStore(
         useCallback(
-            (s) => (activeSessionId ? s.messagesBySession[activeSessionId] ?? EMPTY : EMPTY),
+            (s) => (activeSessionId ? s.bubbleMessagesBySession[activeSessionId] ?? EMPTY : EMPTY),
             [activeSessionId]
         )
     );

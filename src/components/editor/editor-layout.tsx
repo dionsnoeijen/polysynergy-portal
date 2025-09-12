@@ -15,6 +15,7 @@ import TopLeftEditorMenu from "@/components/editor/editormenus/top-left-editor-m
 import TopRightEditorListener from "@/components/editor/editormenus/top-right-editor-listener";
 import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
 import BottomLeftPlayMenu from "@/components/editor/editormenus/bottom-left-play-menu";
+import ChatModeToggle from "@/components/editor/editormenus/chat-mode-toggle";
 import ItemManagerIntroTour from "@/components/guidedtour/item-manager-intro-tour";
 import AutosaveIndicator from "@/components/AutosaveIndicator";
 
@@ -85,7 +86,7 @@ const EditorLayout = ({
     // Chat mode and execution state for glow
     const chatMode = useEditorStore(s => s.chatMode);
     const setChatMode = useEditorStore(s => s.setChatMode);
-    const isExecuting = useEditorStore(s => s.isExecuting);
+    // const isExecuting = useEditorStore(s => s.isExecuting);
     
     // Chat Mode functions - moved here where layout panels are available
     const enterChatMode = useCallback(() => {
@@ -194,11 +195,28 @@ const EditorLayout = ({
                     updateEditorPosition();
                 }, 200);
             }
+            
+            // Check for 'Shift+C' key for Chat Mode toggle
+            if (event.key.toLowerCase() === 'c' && event.shiftKey && !event.ctrlKey && !event.metaKey) {
+                event.preventDefault();
+                
+                // Toggle Chat Mode
+                if (chatMode) {
+                    exitChatMode();
+                } else {
+                    enterChatMode();
+                }
+                
+                // Update editor position after toggle
+                setTimeout(() => {
+                    updateEditorPosition();
+                }, 200);
+            }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [chatMode, exitChatMode, toggleFullscreen, updateEditorPosition]);
+    }, [chatMode, exitChatMode, enterChatMode, toggleFullscreen, updateEditorPosition]);
 
     // Enhanced toggle functions with editor position updates
     const handleToggleItemManager = () => {
@@ -272,6 +290,11 @@ const EditorLayout = ({
                                                     <AutosaveIndicator />
                                                 </div>
                                             </>
+                                        )}
+                                        
+                                        {/* Chat Mode Toggle - visible when all panels closed (fullscreen) or in chat mode */}
+                                        {(chatMode || (itemManagerClosed && dockClosed && outputClosed)) && (
+                                            <ChatModeToggle />
                                         )}
                                     </>
                                 ) : (

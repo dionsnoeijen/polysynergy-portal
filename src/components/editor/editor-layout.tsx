@@ -15,7 +15,6 @@ import TopLeftEditorMenu from "@/components/editor/editormenus/top-left-editor-m
 import TopRightEditorListener from "@/components/editor/editormenus/top-right-editor-listener";
 import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
 import BottomLeftPlayMenu from "@/components/editor/editormenus/bottom-left-play-menu";
-import ChatModeToggle from "@/components/editor/editormenus/chat-mode-toggle";
 import ItemManagerIntroTour from "@/components/guidedtour/item-manager-intro-tour";
 import AutosaveIndicator from "@/components/AutosaveIndicator";
 
@@ -287,6 +286,18 @@ const EditorLayout = ({
                                     <>
                                         <DrawingLayer />
                                         <Editor key={'editor-' + activeVersionId}/>
+                                        
+                                        {/* Output panel toggle button - centered relative to editor area */}
+                                        {(outputClosed || chatMode) && (
+                                            <button
+                                                type="button"
+                                                onClick={toggleCloseOutput}
+                                                className="absolute z-10 bottom-2 left-1/2 -translate-x-1/2 p-3 radius-bl-0"
+                                            >
+                                                <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/>
+                                            </button>
+                                        )}
+                                        
                                         {!chatMode && (
                                             <>
                                                 <BottomDrawToolbar/>
@@ -302,10 +313,6 @@ const EditorLayout = ({
                                             </>
                                         )}
                                         
-                                        {/* Chat Mode Toggle - visible when all panels closed (fullscreen) or in chat mode */}
-                                        {(chatMode || (itemManagerClosed && dockClosed && outputClosed)) && (
-                                            <ChatModeToggle />
-                                        )}
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">
@@ -365,11 +372,13 @@ const EditorLayout = ({
                     className="absolute left-0 bottom-0 right-0" data-panel="bottom"
                     style={{height: windowHeight - height.horizontalEditorLayout}}
                 >
-                    <button
-                        type="button"
-                        onClick={toggleCloseOutput}
-                        className={`absolute z-10 top-1 left-2 p-3 radius-bl-0`}
-                    ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/></button>
+                    {!chatMode && (
+                        <button
+                            type="button"
+                            onClick={toggleCloseOutput}
+                            className={`absolute z-10 top-1 left-0.5 p-3 radius-bl-0`}
+                        ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/></button>
+                    )}
                     <button
                         onMouseDown={() => startResizing(ResizeWhat.Output)}
                         type="button"
@@ -377,20 +386,11 @@ const EditorLayout = ({
                     />
                     <div
                         className="absolute top-0 left-0 right-0 bottom-0">
-                        <BottomBar/>
+                        <BottomBar />
                     </div>
                 </div>
             )}
 
-            {outputClosed && (
-                <button
-                    type="button"
-                    onClick={toggleCloseOutput}
-                    className="absolute z-10 bottom-2 left-1/2 -translate-x-1/2 p-3 radius-bl-0"
-                >
-                    <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/>
-                </button>
-            )}
 
             <ContextMenu/>
         </div>

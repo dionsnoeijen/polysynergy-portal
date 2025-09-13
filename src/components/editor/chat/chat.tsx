@@ -9,6 +9,7 @@ import Messages from "@/components/editor/chat/components/messages";
 import SessionUserManager from "@/components/editor/chat/components/session-user-manager";
 import {TransparencyMonitor} from "@/components/editor/chat/components/transparency-monitor";
 import AIComplianceIndicator from "@/components/editor/chat/components/ai-compliance-indicator";
+import TeamMemberIndicators from "@/components/editor/chat/components/team-member-indicators";
 import {traceStorageConfiguration} from "@/utils/chatHistoryUtils";
 import {NodeVariable} from "@/types/types";
 
@@ -146,6 +147,9 @@ const Chat: React.FC = () => {
                 />
                 <AIComplianceIndicator />
             </div>
+            
+            {/* Team Member Activity Indicators */}
+            <TeamMemberIndicators />
             
             {/* Storage Warnings */}
             {!hasStorage && (

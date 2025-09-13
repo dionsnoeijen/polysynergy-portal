@@ -24,7 +24,6 @@ const IsExecuting: React.FC<IsExecutingProps> = ({ connectionStatus }) => {
                     </div>
                 </div>
             )}
-
         </>
     )
 };

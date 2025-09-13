@@ -12,16 +12,35 @@ export type ChatViewMessage = {
     parts?: Array<{ seq?: number; ts: number; text: string }>;
 };
 
+export type TeamMember = {
+    id: string;
+    name: string;
+    avatar?: string;
+    isActive: boolean;
+    lastActivityTime: number;
+    memberIndex?: number;
+};
+
 type ChatViewState = {
     activeSessionId: string | null;
     messagesBySession: Record<string, ChatViewMessage[]>;
     bubbleMessagesBySession: Record<string, ChatViewMessage[]>;
+    activeTeamMembers: Record<string, TeamMember>;
 
     setActiveSession: (sessionId: string | null) => void;
     getActiveSessionId: () => string | null;
 
     appendUser: (sessionId: string, text: string) => void;
     appendAgentChunk: (
+        sessionId: string,
+        nodeId: string | undefined,
+        text: string,
+        ts?: number,
+        seq?: number,
+        runId?: string | null
+    ) => void;
+    
+    appendAgentChunkBubbleOnly: (
         sessionId: string,
         nodeId: string | undefined,
         text: string,
@@ -45,6 +64,11 @@ type ChatViewState = {
     clearSession: (sessionId?: string) => void;
     clearAllSessions: () => void;
     clearBubbles: () => void;
+    
+    // Team member activity tracking
+    setTeamMemberActive: (memberId: string, memberName: string, memberIndex?: number) => void;
+    setTeamMemberInactive: (memberId: string) => void;
+    clearTeamMembers: () => void;
 };
 
 const MERGE_WINDOW_MS = 5000; // iets ruimer voor streaming
@@ -53,6 +77,7 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
     activeSessionId: null,
     messagesBySession: {},
     bubbleMessagesBySession: {},
+    activeTeamMembers: {},
 
     setActiveSession: (sessionId) => set({activeSessionId: sessionId}),
     getActiveSessionId: () => get().activeSessionId,
@@ -157,6 +182,58 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
             };
         }),
 
+    appendAgentChunkBubbleOnly: (sessionId, nodeId, text, ts, seq, runId) =>
+        set((s) => {
+            const now = ts ?? Date.now();
+            const bubblePrev = s.bubbleMessagesBySession[sessionId] ?? [];
+            const bubbleLast = bubblePrev[bubblePrev.length - 1];
+
+            const sameAgentThread =
+                bubbleLast?.sender === "agent" &&
+                (bubbleLast.node_id ?? null) === (nodeId ?? null) &&
+                (bubbleLast.run_id ?? null) === (runId ?? null);
+
+            const withinWindow = bubbleLast ? now - bubbleLast.timestamp <= MERGE_WINDOW_MS : false;
+
+            if (sameAgentThread && withinWindow) {
+                // Merge with existing bubble message
+                const bubbleMerged = [...bubblePrev];
+                const bubbleMsg = {...bubbleLast};
+                const bubbleParts = bubbleMsg.parts ? [...bubbleMsg.parts] : [];
+                bubbleParts.push({seq, ts: now, text});
+                bubbleParts.sort((a, b) => {
+                    if (a.seq != null && b.seq != null && a.seq !== b.seq) return a.seq - b.seq;
+                    return a.ts - b.ts;
+                });
+                bubbleMsg.parts = bubbleParts;
+                bubbleMsg.text = bubbleParts.map((p) => p.text).join("");
+                bubbleMsg.timestamp = now;
+                bubbleMerged[bubbleMerged.length - 1] = bubbleMsg;
+                
+                return {
+                    bubbleMessagesBySession: {...s.bubbleMessagesBySession, [sessionId]: bubbleMerged}
+                };
+            }
+
+            // Create new bubble message
+            const next: ChatViewMessage = {
+                id: `agent-bubble-${now}-${Math.random().toString(36).slice(2, 7)}`,
+                sender: "agent",
+                text,
+                timestamp: now,
+                node_id: nodeId ?? null,
+                run_id: runId ?? null,
+                parts: [{seq, ts: now, text}],
+            };
+            
+            return {
+                bubbleMessagesBySession: {
+                    ...s.bubbleMessagesBySession,
+                    [sessionId]: [...bubblePrev, next],
+                },
+            };
+        }),
+
     finalizeAgentMessage: () => ({}),
 
     replaceHistory: (sessionId, messages) =>
@@ -230,6 +307,38 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
     clearBubbles: () => 
         set(() => ({
             bubbleMessagesBySession: {}
+        })),
+    
+    // Team member activity tracking
+    setTeamMemberActive: (memberId, memberName, memberIndex) => 
+        set((s) => ({
+            activeTeamMembers: {
+                ...s.activeTeamMembers,
+                [memberId]: {
+                    id: memberId,
+                    name: memberName,
+                    isActive: true,
+                    lastActivityTime: Date.now(),
+                    memberIndex
+                }
+            }
+        })),
+        
+    setTeamMemberInactive: (memberId) =>
+        set((s) => ({
+            activeTeamMembers: {
+                ...s.activeTeamMembers,
+                [memberId]: {
+                    ...s.activeTeamMembers[memberId],
+                    isActive: false,
+                    lastActivityTime: Date.now()
+                }
+            }
+        })),
+        
+    clearTeamMembers: () =>
+        set(() => ({
+            activeTeamMembers: {}
         })),
 }));
 

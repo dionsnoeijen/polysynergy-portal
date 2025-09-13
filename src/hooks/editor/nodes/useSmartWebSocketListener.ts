@@ -21,6 +21,11 @@ type ExecutionMessage = {
     sequence_id?: number;
     microtime?: number;
     message_id?: string;
+    // New member/main agent metadata
+    agent_role?: "single" | "leader" | "member";
+    is_member_agent?: boolean;
+    parent_team_id?: string;
+    member_index?: number;
 };
 
 const groupStates = new Map<string, { count: number, remaining: number }>();
@@ -32,7 +37,7 @@ const pendingAnimations = new Map<string, NodeJS.Timeout>();
 const toolExecutionTracker = new Map<string, { startTime: number; startEvent: any }>();
 
 // Tool visualization tracker - ensures minimum display time
-const toolVisualizationTracker = new Map<string, { timeoutId: NodeJS.Timeout; displayStartTime: number }>();
+const toolVisualizationTracker = new Map<string, { timeoutId: NodeJS.Timeout | null; displayStartTime: number }>();
 
 export function useSmartWebSocketListener(flowId: string) {
     const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
@@ -70,14 +75,49 @@ export function useSmartWebSocketListener(flowId: string) {
                     const tsMs =
                         typeof message.microtime === "number" ? Math.round(message.microtime * 1000) : Date.now();
 
-                    chatView.appendAgentChunk(
-                        sessionId,
-                        message.node_id,
-                        message.content,
-                        tsMs,
-                        message.sequence_id,
-                        message.run_id ?? null
-                    );
+                    // Smart streaming: Route based on agent role
+                    if (message.is_member_agent === true) {
+                        // Member agent responses -> Only to node bubbles, NOT to main chat
+                        console.log(`[Smart Streaming] Member agent response routed to node bubble: ${message.node_id}`);
+                        
+                        // Update team member activity status
+                        if (message.parent_team_id && message.node_id) {
+                            // Get the actual member name from the team node configuration
+                            // const teamNode = nodesStore.nodes.find(n => n.id === message.parent_team_id);
+                            const memberNode = nodesStore.nodes.find(n => n.id === message.node_id);
+                            
+                            let memberName = `Member ${(message.member_index || 0) + 1}`;
+                            
+                            if (memberNode) {
+                                // Use the node's handle or name variable if available
+                                const nameVar = memberNode.variables?.find(v => v.handle === 'name');
+                                const displayName = nameVar?.value ? String(nameVar.value) : memberNode.handle;
+                                memberName = displayName || memberNode.handle || memberName;
+                            }
+                            
+                            chatView.setTeamMemberActive(message.node_id, memberName, message.member_index);
+                        }
+                        
+                        // Member agents: Only update bubbles, NOT main chat
+                        chatView.appendAgentChunkBubbleOnly(
+                            sessionId,
+                            message.node_id,
+                            message.content,
+                            tsMs,
+                            message.sequence_id,
+                            message.run_id ?? null
+                        );
+                    } else {
+                        // Main agent (single/leader) responses -> Stream to main chat window
+                        chatView.appendAgentChunk(
+                            sessionId,
+                            message.node_id,
+                            message.content,
+                            tsMs,
+                            message.sequence_id,
+                            message.run_id ?? null
+                        );
+                    }
                 }
             }
 
@@ -110,7 +150,7 @@ export function useSmartWebSocketListener(flowId: string) {
                     
                     // Store visualization info for minimum display time
                     toolVisualizationTracker.set(trackingKey, {
-                        timeoutId: null as any, // Will be set when end_tool arrives
+                        timeoutId: null, // Will be set when end_tool arrives
                         displayStartTime: performance.now()
                     });
                 } else {
@@ -173,6 +213,9 @@ export function useSmartWebSocketListener(flowId: string) {
                 const sessionId = chatView.getActiveSessionId();
                 if (sessionId) {
                     chatView.finalizeAgentMessage(sessionId);
+                    
+                    // Clear team member activity when run ends
+                    chatView.clearTeamMembers();
                     
                     // Sync with backend to get correct run_id after streaming completes
                     try {

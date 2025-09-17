@@ -47,7 +47,7 @@ export const useEditorState = (isMouseDown?: boolean) => {
 
     // Main container class
     const containerClass = useMemo(() => clsx(
-        "relative w-full h-full rounded-md",
+        "relative w-full h-full",
         isFormOpen() ? 'overflow-scroll' : 'overflow-hidden',
         cursorClass
     ), [isFormOpen, cursorClass]);

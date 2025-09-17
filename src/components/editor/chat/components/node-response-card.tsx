@@ -20,9 +20,9 @@ const NodeResponseCard: React.FC<{
     .toUpperCase();
 
   return (
-    <div className="border border-slate-300/60 dark:border-slate-600/60 rounded-xl bg-white/60 dark:bg-slate-800/40 shadow-sm">
+    <div className="border border-sky-500/60 dark:border-slate-600/80 rounded-xl bg-white/60 dark:bg-slate-800/40 shadow-sm">
       {/* Header met avatar + naam */}
-      <div className="px-3 py-2 border-b border-slate-200/60 dark:border-slate-700/60 text-xs font-medium text-slate-700 dark:text-slate-200">
+      <div className="px-3 py-2 border-b border-sky-500/40 dark:border-slate-700/80 text-xs font-medium text-slate-700 dark:text-slate-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {agentAvatar ? (
@@ -56,7 +56,7 @@ const NodeResponseCard: React.FC<{
 
       {/* Transparency Expansion - Moved to top under header */}
       {showTransparency && runId && (
-        <div className="border-b border-slate-200 dark:border-slate-700 px-3 py-3 bg-slate-50 dark:bg-slate-900/50">
+        <div className="border-b border-sky-500/40 dark:border-slate-700/80 px-3 py-3 bg-slate-50 dark:bg-slate-900/50">
           <TransparencyDetails runId={runId} />
         </div>
       )}

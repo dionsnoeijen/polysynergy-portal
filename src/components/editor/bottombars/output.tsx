@@ -24,10 +24,10 @@ const Output: React.FC = (): React.ReactElement => {
         return m === "logs" || m === "chat" || m === "split" ? m : "split";
     });
     
-    // Auto-switch to chat mode when Chat Mode is enabled
+    // Auto-switch to logs mode when Chat Mode is enabled (chat is now in left panel)
     useEffect(() => {
         if (chatMode) {
-            setMode("chat");
+            setMode("logs");
         }
     }, [chatMode]);
 
@@ -162,7 +162,7 @@ const Output: React.FC = (): React.ReactElement => {
                         </div>
                     )}
                 </div>
-                <div className="flex-1 overflow-auto text-sm text-white/80">
+                <div className="flex-1 overflow-auto text-sm text-zinc-800 dark:text-white/80">
                     <Chat/>
                 </div>
             </div>

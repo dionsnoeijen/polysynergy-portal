@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {PlusIcon, TrashIcon, CheckIcon, XMarkIcon, PencilIcon, ChatBubbleLeftEllipsisIcon, MagnifyingGlassIcon} from "@heroicons/react/24/outline";
+import {PlusIcon, TrashIcon, CheckIcon, XMarkIcon, PencilIcon, ChatBubbleLeftEllipsisIcon} from "@heroicons/react/24/outline";
 import useNodesStore from "@/stores/nodesStore";
 import useEditorStore from "@/stores/editorStore";
 import {Input} from "@/components/input";
@@ -10,17 +10,13 @@ interface SessionUserManagerProps {
     hasStorage: boolean;
     onEnterChatMode?: () => void;
     onExitChatMode?: () => void;
-    onShowTransparency?: () => void;
-    showTransparency?: boolean;
 }
 
 const SessionUserManager: React.FC<SessionUserManagerProps> = ({
     promptNodeId,
     hasStorage,
     onEnterChatMode,
-    onExitChatMode,
-    onShowTransparency,
-    showTransparency
+    onExitChatMode
 }) => {
     const updateNodeVariable = useNodesStore(s => s.updateNodeVariable);
     const getNode = useNodesStore(s => s.getNode);
@@ -360,21 +356,6 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
                         >
                             <ChatBubbleLeftEllipsisIcon className="w-4 h-4" />
                         </button>
-                        
-                        {/* Transparency Button - only show when has storage and active session */}
-                        {hasStorage && activeSessionVar?.value && onShowTransparency && (
-                            <button
-                                onClick={onShowTransparency}
-                                title={showTransparency ? "Return to Chat" : "View AI Transparency Data"}
-                                className={`p-1.5 rounded transition-colors ${
-                                    showTransparency 
-                                        ? 'bg-sky-500 text-white' 
-                                        : 'text-sky-500 hover:text-white dark:text-white hover:bg-sky-300 dark:hover:bg-zinc-600 bg-transparent'
-                                }`}
-                            >
-                                <MagnifyingGlassIcon className="w-4 h-4" />
-                            </button>
-                        )}
                     </div>
                     </>
                 )}

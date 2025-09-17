@@ -1,5 +1,6 @@
 import React from "react";
 import useEditorStore from "@/stores/editorStore";
+import useDrawingStore from "@/stores/drawingStore";
 import {
     CursorArrowRaysIcon,
     PaintBrushIcon,
@@ -22,6 +23,10 @@ const TopLeftEditorMenu: React.FC = () => {
     const setEditorMode = useEditorStore((state) => state.setEditorMode);
     const clearBubbles = useChatViewStore((state) => state.clearBubbles);
     const clearAccordionAndMockData = useEditorStore((state) => state.clearAccordionAndMockData);
+    
+    // Drawing store
+    const setCurrentTool = useDrawingStore((state) => state.setCurrentTool);
+    const setSelectedObject = useDrawingStore((state) => state.setSelectedObject);
     
     // History store hooks
     const undo = useHistoryStore((state) => state.undo);
@@ -71,8 +76,13 @@ const TopLeftEditorMenu: React.FC = () => {
         'd': {
             handler: () => {
                 if (editorMode === EditorMode.Draw) {
+                    // Exit draw mode: deselect objects and go to select mode
+                    setSelectedObject(null);
                     setEditorMode(EditorMode.Select);
                 } else {
+                    // Enter draw mode: activate select tool and deselect objects
+                    setCurrentTool('select');
+                    setSelectedObject(null);
                     setEditorMode(EditorMode.Draw);
                 }
             },
@@ -139,8 +149,13 @@ const TopLeftEditorMenu: React.FC = () => {
                         className={`w-full text-lg font-semibold rounded p-2 ${editorMode === EditorMode.Draw ? 'bg-sky-500 text-white' : 'text-sky-500 hover:text-white dark:text-white hover:bg-sky-300 dark:hover:bg-zinc-600 bg-transparent'}`}
                         onMouseDown={() => {
                             if (editorMode === EditorMode.Draw) {
+                                // Exit draw mode: deselect objects and go to select mode
+                                setSelectedObject(null);
                                 setEditorMode(EditorMode.Select);
                             } else {
+                                // Enter draw mode: activate select tool and deselect objects
+                                setCurrentTool('select');
+                                setSelectedObject(null);
                                 setEditorMode(EditorMode.Draw);
                             }
                         }}

@@ -100,7 +100,7 @@ export default function Logs() {
 
     return (
         <div className="flex h-full">
-            <div className="flex-1 border-r dark:border-white/10 h-full flex flex-col">
+            <div className="flex-1 border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col">
                 <div
                     className="flex-1 overflow-auto text-sm font-mono bg-transparent dark:bg-black text-sky-500 dark:text-white relative max-w-full break-words">
                     {!activeVersionId ? (

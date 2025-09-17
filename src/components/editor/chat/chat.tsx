@@ -7,7 +7,6 @@ import PromptField from "@/components/editor/chat/components/prompt-field";
 import ChatTabs from "@/components/editor/chat/components/chat-tabs";
 import Messages from "@/components/editor/chat/components/messages";
 import SessionUserManager from "@/components/editor/chat/components/session-user-manager";
-import {TransparencyMonitor} from "@/components/editor/chat/components/transparency-monitor";
 import AIComplianceIndicator from "@/components/editor/chat/components/ai-compliance-indicator";
 import TeamMemberIndicators from "@/components/editor/chat/components/team-member-indicators";
 import {traceStorageConfiguration} from "@/utils/chatHistoryUtils";
@@ -19,8 +18,6 @@ const Chat: React.FC = () => {
     // Select stable primitive data from stores
     const nodes = useNodesStore(s => s.nodes);
     
-    // Transparency monitor state
-    const [showTransparency, setShowTransparency] = useState(false);
     
     
     // Memoize prompt nodes calculation
@@ -67,25 +64,6 @@ const Chat: React.FC = () => {
         return (activeUserVar?.value as string) || '';
     }, [selectedPromptNodeId, nodes]);
     
-    // Get storage configuration for transparency
-    const storageConfig = useMemo(() => {
-        if (!selectedPromptNodeId) return null;
-        return traceStorageConfiguration(selectedPromptNodeId);
-    }, [selectedPromptNodeId]);
-    
-    // Get active session name from prompt node
-    const activeSessionName = useMemo(() => {
-        if (!selectedPromptNodeId || !activeSession) return '';
-        const promptNode = nodes.find(n => n.id === selectedPromptNodeId);
-        const sessionVar = promptNode?.variables?.find(v => v.handle === 'session');
-        
-        if (sessionVar?.value && Array.isArray(sessionVar.value)) {
-            const sessionVariables = sessionVar.value as NodeVariable[];
-            const sessionObj = sessionVariables.find(v => v.handle === activeSession);
-            return sessionObj?.value as string || '';
-        }
-        return '';
-    }, [selectedPromptNodeId, activeSession, nodes]);
 
     // ✅ session activeren zodra we ‘m kennen (of fallback op nodeId)
     const setActiveSession = useChatViewStore(s => s.setActiveSession);
@@ -126,7 +104,6 @@ const Chat: React.FC = () => {
                 <SessionUserManager
                     promptNodeId={selectedPromptNodeId}
                     hasStorage={hasStorage}
-                    showTransparency={showTransparency}
                     onEnterChatMode={() => {
                     // Chat Mode is handled in editor-layout.tsx where layout panels are available
                     const editorLayout = document.querySelector('[data-panel="top"]');
@@ -143,7 +120,6 @@ const Chat: React.FC = () => {
                         window.dispatchEvent(new CustomEvent('exitChatMode'));
                     }
                 }}
-                onShowTransparency={() => setShowTransparency(!showTransparency)}
                 />
                 <AIComplianceIndicator />
             </div>
@@ -192,27 +168,11 @@ const Chat: React.FC = () => {
                 </div>
             )}
             
-            {/* Conditional rendering: Transparency Monitor or Chat Interface */}
-            {showTransparency ? (
-                storageConfig && activeSession && (
-                    <TransparencyMonitor
-                        projectId={activeProjectId}
-                        sessionId={activeSession}
-                        sessionName={activeSessionName}
-                        storageConfig={storageConfig}
-                        userId={activeUser || undefined}
-                        onClose={() => setShowTransparency(false)}
-                    />
-                )
-            ) : (
-                <>
-                    <Messages />
-                    <PromptField
-                        promptNodes={promptNodes}
-                        selectedPromptNodeId={selectedPromptNodeId}
-                    />
-                </>
-            )}
+            <Messages />
+            <PromptField
+                promptNodes={promptNodes}
+                selectedPromptNodeId={selectedPromptNodeId}
+            />
         </div>
     );
 };

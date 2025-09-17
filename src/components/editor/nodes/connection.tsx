@@ -17,9 +17,13 @@ const Connection: React.FC<Props> = ({ connection }) => {
     const [middle, setMiddle] = useState({ x: 0, y: 0 });
 
     const setDeleteConnectionDialogOpen = useEditorStore(s => s.setDeleteConnectionDialogOpen);
+    const chatMode = useEditorStore(s => s.chatMode);
 
     const handleConnectionClick = (e: React.MouseEvent) => {
         e.stopPropagation();
+        // Don't allow connection deletion in chat mode
+        if (chatMode) return;
+        
         // Open delete confirmation dialog instead of immediate deletion
         setDeleteConnectionDialogOpen(true, connection.id);
     };
@@ -96,10 +100,10 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     strokeWidth={Math.max(width, 8)} // Make it easier to click
                     fill="none"
                     strokeDasharray={dashArray}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: chatMode ? 'default' : 'pointer' }}
                     onClick={handleConnectionClick}
                 >
-                    <title>Click to delete connection {connection.id}</title>
+                    <title>{chatMode ? `Connection ${connection.id} (read-only in chat mode)` : `Click to delete connection ${connection.id}`}</title>
                 </path>
                 {window.debugMode && (
                     <text

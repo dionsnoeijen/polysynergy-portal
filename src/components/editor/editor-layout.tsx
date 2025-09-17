@@ -17,6 +17,7 @@ import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolb
 import BottomLeftPlayMenu from "@/components/editor/editormenus/bottom-left-play-menu";
 import ItemManagerIntroTour from "@/components/guidedtour/item-manager-intro-tour";
 import AutosaveIndicator from "@/components/AutosaveIndicator";
+import Chat from "@/components/editor/chat/chat";
 
 import { useLayoutPanels } from "@/hooks/editor/useLayoutPanels";
 import { useLayoutResizing } from "@/hooks/editor/useLayoutResizing";
@@ -56,9 +57,11 @@ const EditorLayout = ({
         itemManagerClosed,
         dockClosed,
         outputClosed,
+        chatPanelOpen,
         toggleCloseItemManager,
         toggleCloseDock,
         toggleCloseOutput,
+        toggleChatPanel,
         toggleFullscreen,
         setWindowDimensions,
         setWidth,
@@ -93,8 +96,7 @@ const EditorLayout = ({
     
     // Chat Mode functions - moved here where layout panels are available
     const enterChatMode = useCallback(() => {
-        // Hide sidebars only (not output panel)
-        // Check if they're already closed to avoid unnecessary state updates
+        // Hide sidebars and output panel for clean vertical split
         let needsUpdate = false;
         if (!itemManagerClosed) {
             toggleCloseItemManager();
@@ -104,8 +106,16 @@ const EditorLayout = ({
             toggleCloseDock();
             needsUpdate = true;
         }
+        if (!outputClosed) {
+            toggleCloseOutput();
+            needsUpdate = true;
+        }
         
-        // Keep output panel open but set to chat mode (will handle in bottom bar)
+        // Open chat panel and set chat mode
+        if (!chatPanelOpen) {
+            toggleChatPanel();
+            needsUpdate = true;
+        }
         setChatMode(true);
         
         // Update editor position after panel changes
@@ -114,18 +124,27 @@ const EditorLayout = ({
                 updateEditorPosition();
             }, 200);
         }
-    }, [itemManagerClosed, dockClosed, toggleCloseItemManager, toggleCloseDock, setChatMode, updateEditorPosition]);
+    }, [itemManagerClosed, dockClosed, outputClosed, chatPanelOpen, toggleCloseItemManager, toggleCloseDock, toggleCloseOutput, toggleChatPanel, setChatMode, updateEditorPosition]);
     
     const exitChatMode = useCallback(() => {
-        // Restore sidebars
-        // Check if they're closed to avoid unnecessary state updates
+        // Close chat panel and restore normal layout
         let needsUpdate = false;
+        if (chatPanelOpen) {
+            toggleChatPanel();
+            needsUpdate = true;
+        }
+        
+        // Restore sidebars
         if (itemManagerClosed) {
             toggleCloseItemManager();
             needsUpdate = true;
         }
         if (dockClosed) {
             toggleCloseDock();
+            needsUpdate = true;
+        }
+        if (outputClosed) {
+            toggleCloseOutput();
             needsUpdate = true;
         }
         
@@ -137,7 +156,7 @@ const EditorLayout = ({
                 updateEditorPosition();
             }, 200);
         }
-    }, [itemManagerClosed, dockClosed, toggleCloseItemManager, toggleCloseDock, setChatMode, updateEditorPosition]);
+    }, [chatPanelOpen, itemManagerClosed, dockClosed, outputClosed, toggleChatPanel, toggleCloseItemManager, toggleCloseDock, toggleCloseOutput, setChatMode, updateEditorPosition]);
     
 
     // Listen for Chat Mode events from child components
@@ -255,26 +274,42 @@ const EditorLayout = ({
                         <div className="absolute inset-0">
                             <ItemManagerTabs toggleClose={handleToggleItemManager}/>
                         </div>
-                        <button
-                            onMouseDown={() => startResizing(ResizeWhat.ItemManager)}
-                            type="button"
-                            className="absolute top-0 right-0 bottom-0 w-[8px] cursor-col-resize"
-                        />
+                        {!chatMode && (
+                            <button
+                                onMouseDown={() => startResizing(ResizeWhat.ItemManager)}
+                                type="button"
+                                className="absolute top-0 right-0 bottom-0 w-[8px] cursor-col-resize"
+                            />
+                        )}
                     </div>
                 )}
 
-                {itemManagerClosed && (<button
+                {itemManagerClosed && !chatMode && (<button
                     type="button"
                     onClick={handleToggleItemManager}
                     className="absolute z-10 top-1/2 -translate-y-1/2 left-0 p-3 radius-tl-0"
                 ><ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/></button>)}
 
+                {/* Chat Panel - Left Side */}
+                {chatPanelOpen && (
+                    <div style={{width: width.chatPanel}} className="absolute top-0 left-0 bottom-0 bg-white dark:bg-zinc-800 border-r border-gray-200 dark:border-gray-700" data-panel="chat">
+                        <div className="absolute inset-0">
+                            <Chat/>
+                        </div>
+                        <button
+                            onMouseDown={() => startResizing(ResizeWhat.ChatPanel)}
+                            type="button"
+                            className="absolute top-0 right-0 bottom-0 w-[8px] cursor-col-resize hover:bg-gray-300 dark:hover:bg-gray-600"
+                        />
+                    </div>
+                )}
+
                 <main className="absolute top-0 bottom-0" data-panel="main" style={{
-                    left: itemManagerClosed ? 0 : width.itemManager,
+                    left: chatPanelOpen ? width.chatPanel : (itemManagerClosed ? 0 : width.itemManager),
                     right: dockClosed ? 0 : width.dock
                 }}>
                     <div
-                        className={`absolute top-0 left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border-l border-r border-black ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
+                        className={`absolute top-0 left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border-l border-r border-sky-500/50 dark:border-white/10 ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {showForm ? (
                             <Form/>
@@ -288,7 +323,7 @@ const EditorLayout = ({
                                         <Editor key={'editor-' + activeVersionId}/>
                                         
                                         {/* Output panel toggle button - centered relative to editor area */}
-                                        {(outputClosed || chatMode) && (
+                                        {outputClosed && !chatMode && (
                                             <button
                                                 type="button"
                                                 onClick={toggleCloseOutput}
@@ -347,16 +382,18 @@ const EditorLayout = ({
                             <div className="absolute inset-0">
                                 <DockTabs toggleClose={toggleCloseDock}/>
                             </div>
-                            <button
-                                onMouseDown={() => startResizing(ResizeWhat.Dock)}
-                                type="button"
-                                className="absolute top-0 left-0 bottom-0 w-[8px] cursor-col-resize"
-                            />
+                            {!chatMode && (
+                                <button
+                                    onMouseDown={() => startResizing(ResizeWhat.Dock)}
+                                    type="button"
+                                    className="absolute top-0 left-0 bottom-0 w-[8px] cursor-col-resize"
+                                />
+                            )}
                         </div>
                     </>
                 )}
 
-                {dockClosed && (
+                {dockClosed && !chatMode && (
                     <button
                         type="button"
                         onClick={toggleCloseDock}
@@ -367,18 +404,16 @@ const EditorLayout = ({
                 )}
             </div>
 
-            {!outputClosed && (
+            {!outputClosed && !chatMode && (
                 <div
                     className="absolute left-0 bottom-0 right-0" data-panel="bottom"
                     style={{height: windowHeight - height.horizontalEditorLayout}}
                 >
-                    {!chatMode && (
-                        <button
-                            type="button"
-                            onClick={toggleCloseOutput}
-                            className={`absolute z-10 top-1 left-0.5 p-3 radius-bl-0`}
-                        ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/></button>
-                    )}
+                    <button
+                        type="button"
+                        onClick={toggleCloseOutput}
+                        className={`absolute z-10 top-1 left-0.5 p-3 radius-bl-0`}
+                    ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/></button>
                     <button
                         onMouseDown={() => startResizing(ResizeWhat.Output)}
                         type="button"

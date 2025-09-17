@@ -20,3 +20,36 @@ export const runMockApi = async (
         }
     );
 }
+
+// New fire-and-forget execution API
+export const startExecutionApi = async (
+    projectId: string,
+    activeVersionId: string,
+    mockNodeId: string,
+    stage: string,
+    subStage: string
+) => {
+    const idToken = getIdToken();
+    const response = await fetch(
+        `${config.LOCAL_API_URL}/execution/${activeVersionId}/start/?project_id=${projectId}`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({
+                node_id: mockNodeId,
+                stage,
+                sub_stage: subStage
+            })
+        }
+    );
+    
+    if (!response.ok) {
+        throw new Error(`Failed to start execution: ${response.statusText}`);
+    }
+    
+    return response.json(); // Returns { run_id, status, started_at }
+}

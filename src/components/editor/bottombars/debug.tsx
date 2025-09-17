@@ -45,7 +45,7 @@ const Debug: React.FC = (): React.ReactElement => {
     return (
         <div className="flex h-full">
             <div className="w-1/3 min-w-[300px] border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col">
-                <div className="border-b border-white/10 p-2">
+                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
                     <h3 className="text-sky-500 dark:text-white/70">Nodes</h3>
                 </div>
                 <div className="flex-1 overflow-auto">
@@ -59,7 +59,7 @@ const Debug: React.FC = (): React.ReactElement => {
                 </div>
             </div>
             <div className="w-1/3 min-w-[300px] border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col">
-                <div className="border-b border-white/10 p-2">
+                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
                     <h3 className="text-sky-500 dark:text-white/70">Connections</h3>
                 </div>
                 <div className="flex-1 overflow-auto">
@@ -73,7 +73,7 @@ const Debug: React.FC = (): React.ReactElement => {
                 </div>
             </div>
             <div className="w-1/3 min-w-[300px] border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col">
-                <div className="border-b border-white/10 p-2">
+                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
                     <h3 className="text-sky-500 dark:text-white/70">Editor</h3>
                 </div>
                 <div className="flex-1 overflow-auto">

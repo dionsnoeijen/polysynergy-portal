@@ -6,45 +6,42 @@ import type Konva from 'konva'
 import useEditorStore from '@/stores/editorStore'
 import useDrawingStore from '@/stores/drawingStore'
 import {EditorMode} from '@/types/types'
-import Note from './note'
+import { useRealtimeTransform } from '@/hooks/editor/useRealtimeTransform'
 import FreeDrawing from './free-drawing'
 import DrawingImageComponent from './drawing-image'
+import DrawingShapeComponent from './drawing-shape'
+import ShapePropertiesPanel from './shape-properties-panel'
 import { createImageFromFile } from '@/utils/imageUtils'
 
 export default function DrawingLayer() {
     const editorMode = useEditorStore((state) => state.editorMode)
-    const panPosition = useEditorStore((state) => state.getPanPositionForVersion())
-    const zoomFactor = useEditorStore((state) => state.getZoomFactorForVersion())
     const activeVersionId = useEditorStore((state) => state.activeVersionId)
+    const transform = useRealtimeTransform()
     const [canvasSize, setCanvasSize] = useState({width: 0, height: 0})
     const containerRef = useRef<HTMLDivElement>(null)
     const stageRef = useRef<Konva.Stage>(null)
     
     // Drawing store
-    const allNotes = useDrawingStore((state) => state.notes)
     const allPaths = useDrawingStore((state) => state.paths)
     const allImages = useDrawingStore((state) => state.images)
+    const allShapes = useDrawingStore((state) => state.shapes)
     const selectedObjectId = useDrawingStore((state) => state.selectedObjectId)
     const currentColor = useDrawingStore((state) => state.currentColor)
     const currentTool = useDrawingStore((state) => state.currentTool)
     const strokeWidth = useDrawingStore((state) => state.strokeWidth)
-    const addNote = useDrawingStore((state) => state.addNote)
-    const updateNote = useDrawingStore((state) => state.updateNote)
-    const deleteNote = useDrawingStore((state) => state.deleteNote)
     const addPath = useDrawingStore((state) => state.addPath)
     const deletePath = useDrawingStore((state) => state.deletePath)
     const addImage = useDrawingStore((state) => state.addImage)
     const updateImage = useDrawingStore((state) => state.updateImage)
     const deleteImage = useDrawingStore((state) => state.deleteImage)
+    const addShape = useDrawingStore((state) => state.addShape)
+    const updateShape = useDrawingStore((state) => state.updateShape)
+    const deleteShape = useDrawingStore((state) => state.deleteShape)
     const setSelectedObject = useDrawingStore((state) => state.setSelectedObject)
     const setCurrentTool = useDrawingStore((state) => state.setCurrentTool)
     const setIsDrawing = useDrawingStore((state) => state.setIsDrawing)
     
-    // Memoized filtered notes and paths to prevent infinite loops
-    const notes = useMemo(() => {
-        return allNotes.filter(note => note.versionId === (activeVersionId || ''))
-    }, [allNotes, activeVersionId])
-    
+    // Memoized filtered objects to prevent infinite loops
     const paths = useMemo(() => {
         return allPaths.filter(path => path.versionId === (activeVersionId || ''))
     }, [allPaths, activeVersionId])
@@ -53,10 +50,19 @@ export default function DrawingLayer() {
         return allImages.filter(image => image.versionId === (activeVersionId || ''))
     }, [allImages, activeVersionId])
     
+    const shapes = useMemo(() => {
+        return allShapes.filter(shape => shape.versionId === (activeVersionId || ''))
+    }, [allShapes, activeVersionId])
+    
     // Drawing state
     const [currentPath, setCurrentPath] = useState<number[]>([])
     const [isDrawingPath, setIsDrawingPath] = useState(false)
     const [isEditingText, setIsEditingText] = useState(false)
+    
+    // Shape drawing state
+    const [isDrawingShape, setIsDrawingShape] = useState(false)
+    const [shapeStart, setShapeStart] = useState<{x: number, y: number} | null>(null)
+    const [currentShapePreview, setCurrentShapePreview] = useState<{x: number, y: number, width: number, height: number} | null>(null)
 
     useEffect(() => {
         const updateSize = () => {
@@ -90,23 +96,20 @@ export default function DrawingLayer() {
                 } else if (e.key === 'e' || e.key === 'E') {
                     e.preventDefault()
                     setCurrentTool('eraser')
-                } else if (e.key === 'n' || e.key === 'N') {
-                    e.preventDefault()
-                    setCurrentTool('note')
                 }
                 
                 // Delete selected objects
                 if (selectedObjectId && (e.key === 'Delete' || e.key === 'Backspace')) {
                     e.preventDefault()
-                    // Try to delete note, path, or image
-                    const note = notes.find(n => n.id === selectedObjectId)
+                    // Try to delete path, shape, or image
                     const path = paths.find(p => p.id === selectedObjectId)
+                    const shape = shapes.find(s => s.id === selectedObjectId)
                     const image = images.find(i => i.id === selectedObjectId)
                     
-                    if (note) {
-                        deleteNote(selectedObjectId)
-                    } else if (path) {
+                    if (path) {
                         deletePath(selectedObjectId)
+                    } else if (shape) {
+                        deleteShape(selectedObjectId)
                     } else if (image) {
                         deleteImage(selectedObjectId)
                     }
@@ -117,83 +120,110 @@ export default function DrawingLayer() {
 
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [editorMode, selectedObjectId, notes, paths, images, deleteNote, deletePath, deleteImage, setSelectedObject, setCurrentTool, isEditingText])
+    }, [editorMode, selectedObjectId, paths, shapes, images, deletePath, deleteShape, deleteImage, setSelectedObject, setCurrentTool, isEditingText])
 
-    const handleStageDoubleClick = (e: unknown) => {
-        if (editorMode !== EditorMode.Draw || currentTool !== 'note') return
-        
-        const target = e as { target: { getStage: () => unknown, getPointerPosition?: () => { x: number, y: number } | null } }
-        const clickedOnEmpty = target.target === target.target.getStage()
-        if (clickedOnEmpty) {
-            const stage = target.target as { getPointerPosition: () => { x: number, y: number } | null }
-            const pointer = stage.getPointerPosition()
-            if (pointer) {
-                // Adjust for pan and zoom
-                const x = (pointer.x - panPosition.x) / zoomFactor
-                const y = (pointer.y - panPosition.y) / zoomFactor
-                
-                addNote({
-                    x,
-                    y,
-                    width: 200,
-                    height: 100,
-                    rotation: 0,
-                    text: 'Double click to edit...',
-                    color: currentColor,
-                    fontSize: 14,
-                    versionId: activeVersionId || ''
-                })
-            }
-        }
+    const handleStageDoubleClick = () => {
+        // Double click functionality can be added here later if needed
+        return;
     }
 
     const handleStageMouseDown = (e: unknown) => {
         if (editorMode !== EditorMode.Draw) return
         
+        const konvaEvent = e as { evt: MouseEvent; cancelBubble?: boolean }
+        const nativeEvent = konvaEvent.evt as MouseEvent
+        
+        // Allow middle mouse button for panning, or Cmd/Ctrl+click - stop event from being handled by Konva
+        if (nativeEvent.button === 1 || (nativeEvent.button === 0 && (nativeEvent.metaKey || nativeEvent.ctrlKey))) {
+            // Stop Konva from handling this event, let it bubble to editor
+            konvaEvent.cancelBubble = false
+            return // Let the editor handle panning
+        }
+        
         const target = e as { target: { getStage: () => unknown, getPointerPosition?: () => { x: number, y: number } | null } }
         const clickedOnEmpty = target.target === target.target.getStage()
+        
+        // If we clicked on an object (not empty stage), don't start drawing
+        if (!clickedOnEmpty) {
+            return;
+        }
+        
         if (clickedOnEmpty) {
             setSelectedObject(null)
             
-            // Start drawing with pen or erasing with eraser
-            if (currentTool === 'pen' || currentTool === 'eraser') {
-                setIsDrawingPath(true)
-                setIsDrawing(true)
-                const stage = target.target as { getPointerPosition: () => { x: number, y: number } | null }
-                const pointer = stage.getPointerPosition()
+            // Only start drawing if we're using a drawing tool, not select tool
+            if (currentTool !== 'select' && stageRef.current) {
+                const pointer = stageRef.current.getPointerPosition()
                 if (pointer) {
-                    const x = (pointer.x - panPosition.x) / zoomFactor
-                    const y = (pointer.y - panPosition.y) / zoomFactor
-                    setCurrentPath([x, y])
+                    // Convert global screen coordinates to local stage coordinates
+                    const stageEl = stageRef.current
+                    const transform = stageEl.getAbsoluteTransform().copy()
+                    transform.invert()
+                    const localPos = transform.point(pointer)
+                    const x = localPos.x
+                    const y = localPos.y
                     
-                    // If erasing, check for paths to remove at start position
-                    if (currentTool === 'eraser') {
-                        checkForErasure(x, y)
+                    // Start drawing with pen or erasing with eraser
+                    if (currentTool === 'pen' || currentTool === 'eraser') {
+                        setIsDrawingPath(true)
+                        setIsDrawing(true)
+                        setCurrentPath([x, y])
+                        
+                        // If erasing, check for paths to remove at start position
+                        if (currentTool === 'eraser') {
+                            checkForErasure(x, y)
+                        }
+                    }
+                    // Start drawing shapes
+                    else if (['rectangle', 'circle', 'triangle', 'line'].includes(currentTool)) {
+                        setIsDrawingShape(true)
+                        setIsDrawing(true)
+                        setShapeStart({ x, y })
+                        setCurrentShapePreview({ x, y, width: 0, height: 0 })
                     }
                 }
             }
         }
     }
 
-    const handleStageMouseMove = (e: unknown) => {
-        if (!isDrawingPath || (currentTool !== 'pen' && currentTool !== 'eraser')) return
-        
-        const target = e as { target: { getPointerPosition: () => { x: number, y: number } | null } }
-        const stage = target.target
-        const pointer = stage.getPointerPosition()
-        if (pointer) {
-            const x = (pointer.x - panPosition.x) / zoomFactor
-            const y = (pointer.y - panPosition.y) / zoomFactor
-            setCurrentPath([...currentPath, x, y])
-            
-            // If erasing, check for paths to remove at current position
-            if (currentTool === 'eraser') {
-                checkForErasure(x, y)
+    const handleStageMouseMove = () => {
+        if (stageRef.current) {
+            const pointer = stageRef.current.getPointerPosition()
+            if (pointer) {
+                // Convert global screen coordinates to local stage coordinates
+                const stageEl = stageRef.current
+                const transform = stageEl.getAbsoluteTransform().copy()
+                transform.invert()
+                const localPos = transform.point(pointer)
+                const x = localPos.x
+                const y = localPos.y
+
+                // Handle path drawing (pen/eraser)
+                if (isDrawingPath && (currentTool === 'pen' || currentTool === 'eraser')) {
+                    setCurrentPath([...currentPath, x, y])
+                    
+                    // If erasing, check for paths to remove at current position
+                    if (currentTool === 'eraser') {
+                        checkForErasure(x, y)
+                    }
+                }
+                // Handle shape drawing
+                else if (isDrawingShape && shapeStart) {
+                    const width = x - shapeStart.x
+                    const height = y - shapeStart.y
+                    setCurrentShapePreview({
+                        x: Math.min(shapeStart.x, x),
+                        y: Math.min(shapeStart.y, y),
+                        width: Math.abs(width),
+                        height: Math.abs(height)
+                    })
+                }
             }
         }
     }
 
     const handleStageMouseUp = () => {
+        // Handle path drawing completion
         if (isDrawingPath && currentPath.length > 2 && currentTool === 'pen') {
             // Only add path if using pen tool (not eraser)
             addPath({
@@ -203,9 +233,31 @@ export default function DrawingLayer() {
                 versionId: activeVersionId || ''
             })
         }
+        
+        // Handle shape drawing completion
+        if (isDrawingShape && currentShapePreview && shapeStart) {
+            const minSize = 5 // Minimum size for shapes
+            if (currentShapePreview.width >= minSize && currentShapePreview.height >= minSize) {
+                addShape({
+                    type: currentTool as 'rectangle' | 'circle' | 'triangle' | 'line',
+                    x: currentShapePreview.x,
+                    y: currentShapePreview.y,
+                    width: currentShapePreview.width,
+                    height: currentShapePreview.height,
+                    color: currentColor,
+                    strokeWidth: strokeWidth,
+                    versionId: activeVersionId || ''
+                })
+            }
+        }
+        
+        // Reset all drawing states
         setIsDrawingPath(false)
+        setIsDrawingShape(false)
         setIsDrawing(false)
         setCurrentPath([])
+        setShapeStart(null)
+        setCurrentShapePreview(null)
     }
 
     // Eraser functionality - check if eraser position intersects with any paths
@@ -244,8 +296,8 @@ export default function DrawingLayer() {
         if (!rect) return
 
         // Calculate drop position
-        const x = (e.clientX - rect.left - panPosition.x) / zoomFactor
-        const y = (e.clientY - rect.top - panPosition.y) / zoomFactor
+        const x = (e.clientX - rect.left - transform.x) / transform.zoom
+        const y = (e.clientY - rect.top - transform.y) / transform.zoom
 
         // Process first image file
         const file = imageFiles[0]
@@ -266,9 +318,30 @@ export default function DrawingLayer() {
         <div
             data-type="drawing-layer"
             ref={containerRef}
-            className={`absolute top-0 left-0 w-full h-full z-20 ${
-                editorMode !== EditorMode.Draw ? 'pointer-events-none' : ''
+            className={`absolute top-0 left-0 w-full h-full ${
+                editorMode === EditorMode.Draw ? 'z-10' : 'z-5'
             }`}
+            style={{
+                // Allow all events to reach the Stage
+                pointerEvents: editorMode === EditorMode.Draw ? 'auto' : 'none'
+            }}
+            onWheel={(e) => {
+                // Forward wheel events to the editor for zoom handling
+                if (!isDrawingPath && !isDrawingShape) {
+                    const editorElement = document.querySelector('[data-type="editor"]');
+                    if (editorElement) {
+                        const wheelEvent = new WheelEvent('wheel', {
+                            deltaY: e.deltaY,
+                            deltaX: e.deltaX,
+                            clientX: e.clientX,
+                            clientY: e.clientY,
+                            bubbles: true,
+                            cancelable: true
+                        });
+                        editorElement.dispatchEvent(wheelEvent);
+                    }
+                }
+            }}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
         >
@@ -276,14 +349,16 @@ export default function DrawingLayer() {
                 ref={stageRef}
                 width={canvasSize.width}
                 height={canvasSize.height}
-                scaleX={zoomFactor}
-                scaleY={zoomFactor}
-                x={panPosition.x}
-                y={panPosition.y}
+                scaleX={transform.zoom}
+                scaleY={transform.zoom}
+                x={transform.x}
+                y={transform.y}
                 onMouseDown={handleStageMouseDown}
                 onMouseMove={handleStageMouseMove}
                 onMouseUp={handleStageMouseUp}
                 onDblClick={handleStageDoubleClick}
+                onWheel={() => {}} // Disable Konva's wheel handling
+                listening={editorMode === EditorMode.Draw}
             >
                 <Layer>
                     {/* Render completed paths */}
@@ -320,6 +395,35 @@ export default function DrawingLayer() {
                         />
                     )}
                     
+                    {/* Render shapes */}
+                    {shapes.map((shape) => (
+                        <DrawingShapeComponent
+                            key={shape.id}
+                            shape={shape}
+                            isSelected={selectedObjectId === shape.id}
+                            onSelect={() => setSelectedObject(shape.id)}
+                            onUpdate={(updates) => updateShape(shape.id, updates)}
+                        />
+                    ))}
+
+                    {/* Render shape preview while drawing */}
+                    {isDrawingShape && currentShapePreview && (
+                        <DrawingShapeComponent
+                            shape={{
+                                id: 'preview',
+                                type: currentTool as 'rectangle' | 'circle' | 'triangle' | 'line',
+                                x: currentShapePreview.x,
+                                y: currentShapePreview.y,
+                                width: currentShapePreview.width,
+                                height: currentShapePreview.height,
+                                color: currentColor,
+                                strokeWidth: strokeWidth,
+                                versionId: activeVersionId || ''
+                            }}
+                            isSelected={false}
+                        />
+                    )}
+                    
                     {/* Render images */}
                     {images.map((image) => (
                         <DrawingImageComponent
@@ -330,20 +434,17 @@ export default function DrawingLayer() {
                             onUpdate={(updates) => updateImage(image.id, updates)}
                         />
                     ))}
-                    
-                    {/* Render notes */}
-                    {notes.map((note) => (
-                        <Note
-                            key={note.id}
-                            note={note}
-                            isSelected={selectedObjectId === note.id}
-                            onSelect={() => setSelectedObject(note.id)}
-                            onUpdate={(updates) => updateNote(note.id, updates)}
-                            onEditingChange={setIsEditingText}
-                        />
-                    ))}
                 </Layer>
             </Stage>
+            
+            {/* Shape Properties Panel */}
+            {selectedObjectId && shapes.find(shape => shape.id === selectedObjectId) && (
+                <ShapePropertiesPanel
+                    shape={shapes.find(shape => shape.id === selectedObjectId)!}
+                    onUpdate={(updates) => updateShape(selectedObjectId, updates)}
+                    onClose={() => setSelectedObject(null)}
+                />
+            )}
         </div>
     )
 }

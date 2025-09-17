@@ -15,13 +15,29 @@ export interface DrawingNote {
 
 export interface DrawingShape {
     id: string;
-    type: 'rectangle' | 'circle' | 'line';
+    type: 'rectangle' | 'circle' | 'triangle' | 'line';
     x: number;
     y: number;
     width: number;
     height: number;
-    color: string;
+    rotation?: number; // in degrees
+    // Stroke properties
+    color: string; // stroke color
     strokeWidth: number;
+    strokeStyle?: 'solid' | 'dashed' | 'dotted';
+    // Fill properties
+    fillColor?: string;
+    fillOpacity?: number; // 0-1
+    // Shape specific properties
+    cornerRadius?: number; // for rectangles
+    // Text properties
+    text?: string;
+    textColor?: string;
+    fontSize?: number;
+    fontFamily?: string;
+    textAlign?: 'left' | 'center' | 'right';
+    textVerticalAlign?: 'top' | 'middle' | 'bottom';
+    textPadding?: number;
     versionId: string;
 }
 
@@ -53,9 +69,12 @@ interface DrawingState {
     images: DrawingImage[];
     selectedObjectId: string | null;
     currentColor: string;
-    currentTool: 'select' | 'note' | 'pen' | 'eraser' | 'rectangle' | 'circle' | 'image';
+    currentTool: 'select' | 'note' | 'pen' | 'eraser' | 'rectangle' | 'circle' | 'triangle' | 'line' | 'image';
     strokeWidth: number;
     isDrawing: boolean;
+    
+    // Panel positioning
+    propertiesPanelPosition: { x: number | null; y: number | null };
     
     // Note actions
     addNote: (note: Omit<DrawingNote, 'id'>) => void;
@@ -81,12 +100,15 @@ interface DrawingState {
     setSelectedObject: (id: string | null) => void;
     
     // Tool and settings
-    setCurrentTool: (tool: 'select' | 'note' | 'pen' | 'eraser' | 'rectangle' | 'circle' | 'image') => void;
+    setCurrentTool: (tool: 'select' | 'note' | 'pen' | 'eraser' | 'rectangle' | 'circle' | 'triangle' | 'line' | 'image') => void;
     setCurrentColor: (color: string) => void;
     setStrokeWidth: (width: number) => void;
     
     // Drawing state
     setIsDrawing: (isDrawing: boolean) => void;
+    
+    // Panel positioning
+    setPropertiesPanelPosition: (position: { x: number | null; y: number | null }) => void;
     
 }
 
@@ -100,6 +122,8 @@ const useDrawingStore = create<DrawingState>((set) => ({
     currentTool: 'select',
     strokeWidth: 2,
     isDrawing: false,
+    
+    propertiesPanelPosition: { x: null, y: null },
     
     addNote: (noteData) => {
         const note: DrawingNote = {
@@ -219,6 +243,10 @@ const useDrawingStore = create<DrawingState>((set) => ({
     
     setIsDrawing: (isDrawing) => {
         set({ isDrawing });
+    },
+    
+    setPropertiesPanelPosition: (position) => {
+        set({ propertiesPanelPosition: position });
     }
 }));
 

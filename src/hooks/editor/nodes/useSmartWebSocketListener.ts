@@ -123,7 +123,16 @@ export function useSmartWebSocketListener(flowId: string) {
 
             // ---- RUN START ----
             if (eventType === 'run_start') {
+                console.log('🚀 [WebSocket] Received run_start event for run_id:', message.run_id);
                 cleanupExecutionGlow();
+                
+                // Auto-start log polling for fire-and-forget executions
+                console.log('📊 [WebSocket] Auto-starting log polling for run_start');
+                window.dispatchEvent(new CustomEvent('restart-log-polling'));
+                
+                // Also switch to output tab to show logs
+                window.dispatchEvent(new CustomEvent('switch-to-output-tab'));
+                
                 return;
             }
 
@@ -210,6 +219,7 @@ export function useSmartWebSocketListener(flowId: string) {
 
             // ---- RUN END ----
             if (eventType === 'run_end') {
+                console.log('🏁 [WebSocket] Received run_end event for run_id:', message.run_id);
                 const sessionId = chatView.getActiveSessionId();
                 if (sessionId) {
                     chatView.finalizeAgentMessage(sessionId);
@@ -256,6 +266,17 @@ export function useSmartWebSocketListener(flowId: string) {
                     groupStates.clear();
                     nodeExecutionState.clear();
                     processedEvents.clear();
+
+                    // Clear editor execution lock state for fire-and-forget executions
+                    // Only unlock if this run_end matches the currently active run_id
+                    const currentActiveRunId = editorStore.activeRunId;
+                    if (currentActiveRunId === message.run_id) {
+                        console.log('🔓 Editor unlocked for completed run_id:', message.run_id);
+                        editorStore.setIsExecuting(null);
+                        editorStore.setActiveRunId(null);
+                    } else {
+                        console.log('⏸️ Ignoring run_end for different run_id:', message.run_id, 'vs active:', currentActiveRunId);
+                    }
 
                     const activeVersionId = editorStore.activeVersionId as string;
                     const data = await getConnectionExecutionDetails(activeVersionId, message.run_id as string);

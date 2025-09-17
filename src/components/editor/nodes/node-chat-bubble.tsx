@@ -64,7 +64,7 @@ const NodeChatBubble: React.FC<Props> = ({nodeId}) => {
                 </div>
 
                 <div
-                    className="bg-white dark:bg-neutral-800/80 text-gray-900 dark:text-gray-100 text-sm px-3 py-2 rounded-xl shadow border border-slate-300 dark:border-sky-600 max-w-[400px] whitespace-pre-wrap"
+                    className="bg-white dark:bg-neutral-800/80 text-zinc-800 dark:text-gray-100 text-sm px-3 py-2 rounded-xl shadow border border-sky-500/60 dark:border-sky-600 max-w-[400px] whitespace-pre-wrap"
                     // let op: geen overflow-hidden hier
                 >
                     <div
@@ -72,7 +72,7 @@ const NodeChatBubble: React.FC<Props> = ({nodeId}) => {
                         className="overflow-y-auto max-h-[200px] pr-1 space-y-2"
                         onWheel={(e) => e.stopPropagation()}
                     >
-                        <div className="text-gray-900 dark:text-gray-100 text-xs">
+                        <div className="text-zinc-800 dark:text-gray-100 text-xs">
                             {aggregateText}
                         </div>
                     </div>

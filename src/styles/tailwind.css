@@ -239,8 +239,8 @@ html {
 }
 
 .chat-mode {
-    /* Static blue glow without animation */
-    box-shadow: inset 0 0 12px 4px rgba(59, 130, 246, 0.35);
+    /* Static sky glow without animation */
+    box-shadow: inset 0 0 12px 4px rgba(14, 165, 233, 0.35);
 }
 
 /* In je globale css (optioneel) */

@@ -166,9 +166,11 @@ const PublishedVariables: React.FC<Props> = ({
                 await createProjectSecretAPI(activeProjectId!, secretKey, value, stage);
             }
             await fetchSecretsWithRetry(fetchSecrets);
+            console.log('🔓 [published-variables] Secret stored - clearing isExecuting');
             setIsExecuting(null);
         } catch (err) {
             console.error("Failed to store secret:", err);
+            console.log('🔓 [published-variables] Secret error - clearing isExecuting');
             setIsExecuting(null);
         }
     };

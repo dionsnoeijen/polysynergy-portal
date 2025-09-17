@@ -5,11 +5,12 @@ export enum ResizeWhat {
     ItemManager = 'itemManager',
     Dock = 'dock',
     Output = 'output',
+    ChatPanel = 'chatPanel',
 }
 
 interface ResizeConfig {
     updateEditorPosition: () => void;
-    setWidth: React.Dispatch<React.SetStateAction<{itemManager: number, dock: number}>>;
+    setWidth: React.Dispatch<React.SetStateAction<{itemManager: number, dock: number, chatPanel: number}>>;
     setHeight: React.Dispatch<React.SetStateAction<{horizontalEditorLayout: number}>>;
 }
 
@@ -44,6 +45,11 @@ export const useLayoutResizing = ({ updateEditorPosition, setWidth, setHeight }:
                 } else if (resizing === ResizeWhat.Output) {
                     flushSync(() => {
                         setHeight((prev) => ({...prev, horizontalEditorLayout: Math.max(newHeight, 100)}));
+                    });
+                } else if (resizing === ResizeWhat.ChatPanel) {
+                    updateEditorPosition();
+                    flushSync(() => {
+                        setWidth((prev) => ({...prev, chatPanel: Math.max(newWidth, 200)}));
                     });
                 }
             }

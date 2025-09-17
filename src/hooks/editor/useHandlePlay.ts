@@ -1,4 +1,4 @@
-import { runMockApi } from "@/api/runApi";
+import { runMockApi, startExecutionApi } from "@/api/runApi";
 import useEditorStore from "@/stores/editorStore";
 import useMockStore from "@/stores/mockStore";
 import useNodesStore from "@/stores/nodesStore";
@@ -51,8 +51,12 @@ export const useHandlePlay = () => {
             alert(`WebSocket not ready! Status: ${websocketStatusStore.connectionStatus}. Cannot execute without live connection.`);
         }
 
+        // Declare flag at function scope so finally block can access it
+        let useFireAndForget = false;
+        
         try {
             clearMockStore();
+            console.log('🔒 [useHandlePlay] Setting isExecuting to Running...');
             setIsExecuting('Running...');
 
             const setListenerActive = useListenerStore.getState().setListenerState;
@@ -82,40 +86,80 @@ export const useHandlePlay = () => {
                 alert('Error activating WebSocket listener. Execution may not show live feedback.');
             }
 
-            const response = await runMockApi(
-                activeProjectId,
-                activeVersionId,
-                nodeId,
-                'mock',
-                subStage
-            );
-            
-            const data = await response.json();
-            console.log('🚀 EXECUTION API DATA:', data);
-            
-            // Handle error responses where result might be undefined
-            if (!data.result) {
-                console.error('PLAY ERROR - Execution failed, no result:', data);
-                return;
+            // Try new fire-and-forget API first
+            try {
+                console.log('🚀 Attempting new fire-and-forget execution...');
+                const executionResult = await startExecutionApi(
+                    activeProjectId,
+                    activeVersionId,
+                    nodeId,
+                    'mock',
+                    subStage
+                );
+                
+                console.log('🚀 EXECUTION STARTED (fire-and-forget):', executionResult);
+                console.log('✅ Real-time updates will come via WebSocket');
+                
+                // Store the run_id to track this specific execution
+                const runId = executionResult.run_id;
+                if (runId) {
+                    // Store run_id in editor store to track the active execution
+                    useEditorStore.getState().setActiveRunId(runId);
+                    console.log('🔒 Editor locked for run_id:', runId);
+                }
+                
+                // Flag that we used fire-and-forget so finally block doesn't clear state
+                useFireAndForget = true;
+                console.log('🔒 Fire-and-forget successful - editor will stay locked until WebSocket run_end');
+                return; // Early return - finally block will check useFireAndForget flag
+                
+            } catch (startError) {
+                console.warn('⚠️ New execution API failed, falling back to blocking method:', startError);
+                
+                // Fallback to old blocking method
+                const response = await runMockApi(
+                    activeProjectId,
+                    activeVersionId,
+                    nodeId,
+                    'mock',
+                    subStage
+                );
+                
+                const data = await response.json();
+                console.log('🚀 EXECUTION API DATA (fallback):', data);
+                
+                // Handle error responses where result might be undefined
+                if (!data.result) {
+                    console.error('PLAY ERROR - Execution failed, no result:', data);
+                    return;
+                }
+                
+                const result = data.result.body ? JSON.parse(data.result.body) : data.result;
+
+                const lastNode = result.nodes_order[result.nodes_order.length - 1];
+                const executeResult = await getNodeExecutionDetails(
+                    activeVersionId as string,
+                    result.run_id,
+                    lastNode.id,
+                    lastNode.order,
+                    'mock',
+                    subStage
+                );
+
+                setMockResultForNode(nodeId, executeResult);
             }
-            
-            const result = data.result.body ? JSON.parse(data.result.body) : data.result;
-
-            const lastNode = result.nodes_order[result.nodes_order.length - 1];
-            const executeResult = await getNodeExecutionDetails(
-                activeVersionId as string,
-                result.run_id,
-                lastNode.id,
-                lastNode.order,
-                'mock',
-                subStage
-            );
-
-            setMockResultForNode(nodeId, executeResult);
         } catch (err) {
             console.error("Play failed", err);
-        } finally {
+            console.log('🔓 [useHandlePlay] Error - clearing isExecuting');
             setIsExecuting(null);
+        } finally {
+            // Only clear execution state if we didn't use fire-and-forget
+            if (!useFireAndForget) {
+                console.log('🔓 [useHandlePlay] Finally block - clearing isExecuting (fallback method only)');
+                setIsExecuting(null);
+            } else {
+                console.log('⏸️ [useHandlePlay] Finally block - NOT clearing isExecuting (fire-and-forget mode)');
+            }
         }
     };
 };

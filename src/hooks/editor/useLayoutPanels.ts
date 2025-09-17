@@ -1,7 +1,11 @@
 import { useState, useCallback } from 'react';
 
 export const useLayoutPanels = () => {
-    const [width, setWidth] = useState({ itemManager: 256, dock: 512 });
+    const [width, setWidth] = useState({ 
+        itemManager: 256, 
+        dock: 512, 
+        chatPanel: typeof window !== 'undefined' ? Math.floor(window.innerWidth * 0.5) : 600 
+    });
     const [height, setHeight] = useState({ horizontalEditorLayout: 0 });
     const [windowHeight, setWindowHeight] = useState(0);
 
@@ -9,6 +13,7 @@ export const useLayoutPanels = () => {
     const [itemManagerClosed, setItemManagerClosed] = useState(false);
     const [dockClosed, setDockClosed] = useState(false);
     const [outputClosed, setOutputClosed] = useState(false);
+    const [chatPanelOpen, setChatPanelOpen] = useState(false);
 
     const toggleCloseItemManager = useCallback(() => {
         setItemManagerClosed(prev => !prev);
@@ -20,6 +25,10 @@ export const useLayoutPanels = () => {
 
     const toggleCloseOutput = useCallback(() => {
         setOutputClosed(prev => !prev);
+    }, []);
+
+    const toggleChatPanel = useCallback(() => {
+        setChatPanelOpen(prev => !prev);
     }, []);
 
     const toggleFullscreen = useCallback(() => {
@@ -60,11 +69,13 @@ export const useLayoutPanels = () => {
         itemManagerClosed,
         dockClosed,
         outputClosed,
+        chatPanelOpen,
         
         // Actions
         toggleCloseItemManager,
         toggleCloseDock,
         toggleCloseOutput,
+        toggleChatPanel,
         toggleFullscreen,
         updatePanelDimensions,
         setWindowDimensions,

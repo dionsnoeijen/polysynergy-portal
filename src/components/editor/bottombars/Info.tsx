@@ -38,7 +38,7 @@ const Info: React.FC = (): React.ReactElement => {
 
     return (
         <div className="flex h-full">
-            <div className="w-1/2 min-w-[300px] border-r border-white/10 h-full flex flex-col">
+            <div className="w-1/2 min-w-[300px] border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col">
                 <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
                     <h3 className="text-sky-500 dark:text-white/80">Info</h3>
                 </div>
@@ -50,7 +50,7 @@ const Info: React.FC = (): React.ReactElement => {
                     </div>
 
                     {activeItem && (
-                        <section className="mb-4 rounded-md border border-white/10 p-4">
+                        <section className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4">
                             <span className={'font-bold'}>Route</span><br/>
                             {stages.map((stage) => {
                                 const basePath = `https://${activeProjectId}{{stage}}`;

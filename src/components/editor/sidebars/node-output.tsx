@@ -312,13 +312,13 @@ const NodeOutput: React.FC = (): React.ReactElement => {
 
     const getStatusIcon = (run: Run) => {
         if (run.status === 'error') {
-            return <XCircleIcon className="w-4 h-4 text-red-400" />;
+            return <XCircleIcon className="w-4 h-4 text-red-500 dark:text-red-400" />;
         } else if (run.status === 'success') {
-            return <CheckCircleIcon className="w-4 h-4 text-green-400" />;
+            return <CheckCircleIcon className="w-4 h-4 text-green-500 dark:text-green-400" />;
         } else if (run.status === 'provided') {
-            return <CheckCircleIcon className="w-4 h-4 text-purple-400" />;
+            return <CheckCircleIcon className="w-4 h-4 text-purple-500 dark:text-purple-400" />;
         } else {
-            return <ClockIcon className="w-4 h-4 text-white dark:text-white" />;
+            return <ClockIcon className="w-4 h-4 text-sky-500 dark:text-amber-400" />;
         }
     };
 
@@ -404,11 +404,11 @@ const NodeOutput: React.FC = (): React.ReactElement => {
         <div className="h-full flex flex-col">
             {/* Header with clear button */}
             {allRuns.length > 0 && (
-                <div className="flex justify-between items-center p-2 border-b border-zinc-700">
-                    <span className="text-xs text-zinc-400 font-medium">Execution History</span>
+                <div className="flex justify-between items-center p-2 border-b border-sky-500/50 dark:border-zinc-700">
+                    <span className="text-xs text-sky-700 dark:text-zinc-400 font-medium">Execution History</span>
                     <button
                         onClick={() => setShowClearModal(true)}
-                        className="text-zinc-400 hover:text-red-400 transition-colors"
+                        className="text-sky-600 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                         title="Clear all runs"
                     >
                         <TrashIcon className="w-4 h-4" />
@@ -434,48 +434,48 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                         const runNodes = getNodesForRun(run.run_id);
                         
                         return (
-                            <div key={run.run_id} className="border-b border-zinc-700 last:border-b-0">
+                            <div key={run.run_id} className="border-b border-sky-300/50 dark:border-zinc-700 last:border-b-0">
                                 {/* Run Header */}
                                 <button
                                     onClick={() => toggleRun(run.run_id)}
                                     disabled={globalIsExecuting !== null && run.run_id !== currentRunId}
                                     className={`w-full p-2 text-left transition-colors flex items-center justify-between ${
-                                        isSelected ? 'bg-zinc-700' : ''
+                                        isSelected ? 'bg-sky-50 dark:bg-zinc-700' : ''
                                     } ${
                                         globalIsExecuting !== null && run.run_id !== currentRunId 
                                             ? 'opacity-50 cursor-not-allowed' 
-                                            : 'hover:bg-zinc-700/50'
+                                            : 'hover:bg-sky-100 dark:hover:bg-zinc-700/50'
                                     }`}
                                 >
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
                                         {isExpanded ? (
-                                            <ChevronDownIcon className="w-3 h-3 text-zinc-400 flex-shrink-0" />
+                                            <ChevronDownIcon className="w-3 h-3 text-sky-600 dark:text-zinc-400 flex-shrink-0" />
                                         ) : (
-                                            <ChevronRightIcon className="w-3 h-3 text-zinc-400 flex-shrink-0" />
+                                            <ChevronRightIcon className="w-3 h-3 text-sky-600 dark:text-zinc-400 flex-shrink-0" />
                                         )}
                                         {getStatusIcon(run)}
                                         <div className="min-w-0 flex-1">
-                                            <div className="text-xs text-white font-medium flex items-center gap-2">
+                                            <div className="text-xs text-sky-700 dark:text-white font-medium flex items-center gap-2">
                                                 Run #{run.run_number || (allRuns.length - index)}
                                                 {isCurrent && (
-                                                    <span className="text-green-400 text-xs">• Live</span>
+                                                    <span className="text-green-500 dark:text-green-400 text-xs">• Live</span>
                                                 )}
                                             </div>
-                                            <div className="text-xs text-zinc-400 truncate">
+                                            <div className="text-xs text-sky-500 dark:text-zinc-400 truncate">
                                                 {formatTimestamp(run.timestamp)}
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="text-xs text-zinc-500 font-mono">
+                                    <div className="text-xs text-sky-500 dark:text-zinc-500 font-mono">
                                         {run.run_id.substring(0, 8)}...
                                     </div>
                                 </button>
 
                                 {/* Run Content - Node List */}
                                 {isExpanded && (
-                                    <div className="bg-zinc-800/30">
+                                    <div className="bg-sky-50 dark:bg-zinc-800/30">
                                         {runNodes.length === 0 ? (
-                                            <div className="p-4 text-center text-zinc-500 text-xs">
+                                            <div className="p-4 text-center text-sky-600 dark:text-zinc-500 text-xs">
                                                 {isCurrent ? "Waiting for execution..." : "No execution data"}
                                             </div>
                                         ) : (
@@ -484,18 +484,18 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                                                 const isOpen = !!expandedNodes[nodeKey];
                                                 
                                                 return (
-                                                    <div key={nodeKey} className="border-b border-zinc-600/50 last:border-b-0">
+                                                    <div key={nodeKey} className="border-b border-sky-200/50 dark:border-zinc-600/50 last:border-b-0">
                                                         <div className="p-2">
                                                             <div
-                                                                className="flex justify-between items-center cursor-pointer hover:bg-white/5 rounded"
+                                                                className="flex justify-between items-center cursor-pointer hover:bg-sky-100/50 dark:hover:bg-white/5 rounded"
                                                                 onClick={() => toggleNode(node, run.run_id)}
                                                             >
                                                                 <span className="inline-flex items-center gap-2">
                                                                     <span className="flex items-center justify-center w-6 h-6 rounded-full bg-sky-500 text-white text-xs">
                                                                         {node.order + 1}
                                                                     </span>
-                                                                    <span className="text-xs font-medium">{node.type}</span>:
-                                                                    <span className="text-xs font-light text-zinc-400">{node.handle}</span>
+                                                                    <span className="text-xs font-medium text-sky-700 dark:text-white">{node.type}</span>:
+                                                                    <span className="text-xs font-light text-sky-500 dark:text-zinc-400">{node.handle}</span>
                                                                 </span>
                                                                 <ChevronLeftIcon
                                                                     className={`w-3 h-3 transition-transform ${isOpen ? "-rotate-90" : ""} text-sky-500 dark:text-white/80`}

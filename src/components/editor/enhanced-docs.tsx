@@ -146,21 +146,34 @@ const EnhancedDocs: React.FC = () => {
         fetchDocument,
         clearSearch,
         clearCurrentDocument,
-        clearError,
-        updateGuides
+        clearError
     } = useDocumentationStore();
 
     const loadAllDocumentCounts = useCallback(async () => {
         try {
             const response = await fetchAllDocumentationAPI();
             console.log('Loaded all documentation for counts:', response);
-            // The response should have guides with documents, update the store
+            // The response should have both categories and guides, update the store completely
             const updatedGuides = response.guides || {};
-            updateGuides(updatedGuides);
+            const categories = response.categories || [];
+            
+            // Use the store's internal update to set all data and mark as loaded
+            useDocumentationStore.setState({
+                categories: categories,
+                guides: updatedGuides,
+                hasInitialFetched: true,
+                isLoading: false,
+                error: null
+            });
         } catch (error) {
             console.error('Failed to load document counts:', error);
+            // Set error state and stop loading
+            useDocumentationStore.setState({
+                isLoading: false,
+                error: error instanceof Error ? error.message : 'Failed to load documentation'
+            });
         }
-    }, [updateGuides]);
+    }, []);
 
     useEffect(() => {
         const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -169,13 +182,15 @@ const EnhancedDocs: React.FC = () => {
 
     useEffect(() => {
         if (documentationType === 'general') {
-            fetchCategories();
-            // Load document counts for all categories
-            loadAllDocumentCounts();
+            // Only load the full documentation (which includes categories)
+            // Don't call fetchCategories separately to avoid race conditions
+            if (!hasInitialFetched) {
+                loadAllDocumentCounts();
+            }
         } else if (documentationType === 'node' && !hasInitialFetched) {
             fetchAvailableNodes();
         }
-    }, [documentationType, fetchCategories, fetchAvailableNodes, hasInitialFetched, loadAllDocumentCounts]);
+    }, [documentationType, fetchAvailableNodes, hasInitialFetched, loadAllDocumentCounts]);
 
     // Auto-select node when docsNodeId is set and we're on node tab
     useEffect(() => {
@@ -221,15 +236,6 @@ const EnhancedDocs: React.FC = () => {
         fetchDocument(category, docId);
     };
 
-    const stripFrontmatter = (content: string): string => {
-        if (content.startsWith('---\n')) {
-            const endMatch = content.indexOf('\n---\n', 4);
-            if (endMatch !== -1) {
-                return content.substring(endMatch + 5); // +5 for "\n---\n"
-            }
-        }
-        return content;
-    };
 
     const renderNodeDocs = () => {
         console.log('Total availableNodes:', availableNodes.length);

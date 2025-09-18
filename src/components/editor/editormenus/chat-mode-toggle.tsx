@@ -16,7 +16,7 @@ const ChatModeToggle: React.FC = () => {
     };
 
     return (
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-[50]">
             <button
                 onClick={handleToggle}
                 title={chatMode ? "Exit Chat Mode (Shift+C)" : "Enter Chat Mode (Shift+C)"}

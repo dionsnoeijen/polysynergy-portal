@@ -79,7 +79,6 @@ export default function Logs() {
     // Listen for prompt submission to restart log polling
     useEffect(() => {
         const handleRestartPolling = () => {
-            console.log('Restarting log polling due to prompt submission');
             setPaused(false);
             setInactiveCount(0);
             // Don't set loading=true for incremental fetches - keep existing logs visible

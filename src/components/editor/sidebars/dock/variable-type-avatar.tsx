@@ -39,19 +39,29 @@ const VariableTypeAvatar: React.FC<Props> = ({
     const updateNodeVariable = useNodesStore(state => state.updateNodeVariable);
     const getNodeVariable = useNodesStore(state => state.getNodeVariable);
 
-    const onEdit = async (nodeId: string) => {
+    const onEdit = (nodeId: string) => {
+        // Start generation state immediately for instant UI feedback
         startGenerating(nodeId);
-        try {
-            const name = getNodeVariable(nodeId, 'name')?.value as string || "";
-            const instructions = getNodeVariable(nodeId, 'instructions')?.value as string || "";
+        
+        // Fire-and-forget async generation to prevent UI blocking
+        (async () => {
+            try {
+                const name = getNodeVariable(nodeId, 'name')?.value as string || "";
+                const instructions = getNodeVariable(nodeId, 'instructions')?.value as string || "";
 
-            const result = await fetchGenerateAvatar(nodeId, name, instructions);
-            updateNodeVariable(nodeId, variable.handle, `${result}?v=${Date.now()}`);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            stopGenerating(nodeId);
-        }
+                console.log('🎨 [Avatar] Starting background avatar generation for node:', nodeId);
+                const result = await fetchGenerateAvatar(nodeId, name, instructions);
+                
+                // Update with cache-busting timestamp for immediate visual refresh
+                updateNodeVariable(nodeId, variable.handle, `${result}?v=${Date.now()}`);
+                console.log('✅ [Avatar] Avatar generation completed for node:', nodeId);
+            } catch (e) {
+                console.error('❌ [Avatar] Generation failed for node:', nodeId, e);
+                // Could add user notification here
+            } finally {
+                stopGenerating(nodeId);
+            }
+        })(); // IIFE to run async function immediately without blocking
     };
 
     return (

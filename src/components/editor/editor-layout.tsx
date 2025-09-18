@@ -342,7 +342,7 @@ const EditorLayout = ({
                                                 <BottomLeftPlayMenu/>
                                                 
                                                 {/* Floating AutosaveIndicator - centered relative to menu height */}
-                                                <div className="absolute bottom-1 right-2 z-[9999] pointer-events-none flex items-center" style={{height: '52px'}}>
+                                                <div className="absolute bottom-1 right-2 z-[120] pointer-events-none flex items-center" style={{height: '52px'}}>
                                                     <AutosaveIndicator />
                                                 </div>
                                             </>

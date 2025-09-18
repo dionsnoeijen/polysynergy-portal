@@ -101,7 +101,7 @@ export default function BottomLeftPlayMenu() {
                             
                             {/* Dropdown Menu */}
                             {showDropdown && (
-                                <div className="absolute bottom-full mb-2 left-0 bg-white dark:bg-zinc-800 border border-sky-500/60 dark:border-white/25 rounded-md shadow-lg min-w-48 py-1 z-50">
+                                <div className="absolute bottom-full mb-2 left-0 bg-white dark:bg-zinc-800 border border-sky-500/60 dark:border-white/25 rounded-md shadow-lg min-w-48 py-1 z-[60]">
                                     {allPlayableNodes.map((node) => (
                                         <button
                                             key={node.id}

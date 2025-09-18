@@ -225,9 +225,85 @@ The chat component no longer automatically detects when storage is connected to 
 - ✅ **MUST** debounce/throttle storage checks if needed
 
 **Investigation Priority:**
-- Check if storage detection worked before fire-and-forget changes
+- Check if storage detection worked before fire-and-force changes
 - Identify minimal set of store changes needed for reactivity
 - Ensure solution doesn't impact editor performance
+
+---
+
+#### 7. Editor Menu Z-Index Issues [UI/UX]
+**Problem Description:**
+Editor menus and dropdowns appear behind overlays like delete dialogs, making them unusable when overlays are present.
+
+**Symptoms:**
+- Context menus disappear behind modal dialogs
+- Dropdown menus not visible when overlays are active
+- Delete confirmation dialogs cover essential UI elements
+- Navigation becomes impossible when modal states overlap
+
+**Technical Context:**
+- CSS z-index hierarchy conflicts between editor menus and overlays
+- Modal/overlay components may not properly manage z-index stacking
+- Editor menus need higher z-index than overlays
+- Possible Tailwind CSS z-index class conflicts
+
+**Implementation Requirements:**
+- ✅ **MUST** establish proper z-index hierarchy (menus > overlays > content)
+- ✅ **MUST** ensure all editor functionality remains accessible
+- ✅ **MUST** maintain visual consistency across light/dark modes
+- ❌ **MUST NOT** break existing overlay functionality
+
+---
+
+#### 8. Light Mode Overlay Styling Inconsistencies
+**Problem Description:**  
+Loading overlays and other overlay components still use gray styling in light mode instead of the sky color theme, breaking visual consistency.
+
+**Symptoms:**
+- Loading spinners appear gray instead of sky-themed
+- Modal overlays have gray backgrounds instead of sky tints
+- Overlay text and borders don't match sky color scheme
+- Inconsistent theming breaks user experience continuity
+
+**Technical Context:**
+- Components still use `gray-*` Tailwind classes instead of `sky-*` equivalents
+- Loading overlays may be using hard-coded gray colors
+- Missing light/dark mode conditional styling for overlays
+- Possible component library defaults overriding theme colors
+
+**Implementation Requirements:**
+- ✅ **MUST** use sky color palette for light mode overlays
+- ✅ **MUST** maintain proper contrast for accessibility
+- ✅ **MUST** ensure consistent theming across all overlay types
+- ✅ **MUST** preserve dark mode functionality
+
+---
+
+#### 9. Light Mode Dock Button Icon Visibility Issues
+**Problem Description:**
+Button icons in the dock (such as avatar generation buttons) appear white in light mode, making them invisible against light backgrounds.
+
+**Symptoms:**
+- Avatar generation button icon not visible in light mode
+- Other dock action button icons appear white/invisible
+- Poor contrast between white icons and light backgrounds
+- Users cannot see available actions in dock panels
+
+**Technical Context:**
+- Icons using fixed white color classes instead of theme-aware colors
+- Missing light/dark mode conditional icon styling
+- Heroicons or custom icons need theme-specific color classes
+- Dock components not applying proper icon color themes
+
+**Implementation Requirements:**
+- ✅ **MUST** use theme-aware icon colors (dark icons for light mode, light icons for dark mode)
+- ✅ **MUST** ensure sufficient contrast for accessibility
+- ✅ **MUST** apply consistent icon theming across all dock components
+- ✅ **MUST** test visibility in both light and dark modes
+
+**Related Components:**
+- `variable-type-avatar.tsx` - Avatar generation button icons
+- Other dock variable type components with action buttons
 
 ---
 

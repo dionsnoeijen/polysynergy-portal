@@ -80,7 +80,7 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({
                         className="w-full bg-white/5 hover:cursor-pointer rounded-tr-none rounded-tl-none after:rounded-tl-none after:rounded-tr-none p-0 !px-0 !py-0"
                         onClick={() => onEdit(nodeId)}
                     >
-                        <PencilIcon className="w-4 h-4 inline text-slate-400"/>
+                        <PencilIcon className="w-4 h-4 inline text-zinc-600 dark:text-slate-400"/>
                     </Button>
                 </div>
             </div>

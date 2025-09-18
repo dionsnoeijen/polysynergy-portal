@@ -24,6 +24,7 @@ export const useDeleteNode = () => {
                 if (!node) return;
                 if (node?.type === NodeType.Group) {
                     deleteGroup(nodeId);
+                    return; // Group deletion already handles removing the group node and its connections
                 }
                 const groupId = isNodeInGroup(nodeId);
                 if (groupId) {

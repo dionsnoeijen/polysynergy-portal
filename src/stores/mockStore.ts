@@ -24,7 +24,7 @@ export type MockNode = {
     runId: string;
     started: boolean;
     variables: NodeVariables;
-    status?: 'executing' | 'success' | 'error' | 'killed';
+    status?: 'executing' | 'success' | 'error' | 'killed' | 'provided';
 }
 
 type MockState = {
@@ -37,6 +37,14 @@ type MockState = {
     clearMockStore: () => void;
     setHasMockData: (hasMockData: boolean) => void;
     hasMockData: boolean;
+
+    // New run-based filtering functions
+    getMockNodesForRun: (runId: string) => MockNode[];
+    getMockNodesForActiveRun: (activeRunId: string | null) => MockNode[];
+    clearMockNodesForRun: (runId: string) => void;
+    
+    // Get mock node filtered by active run
+    getActiveMockNode: (nodeId: string, activeRunId: string | null) => MockNode | undefined;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockResultsByNodeId: Record<string, any>;
@@ -92,6 +100,27 @@ const useMockStore = create<MockState>((set, get) => ({
     })),
     clearMockResults: () => set({ mockResultsByNodeId: {} }),
     getMockResultForNode: (nodeId) => get().mockResultsByNodeId[nodeId] || undefined,
+
+    // New run-based filtering implementations
+    getMockNodesForRun: (runId) => {
+        return get().mockNodes.filter(node => node.runId === runId);
+    },
+    getMockNodesForActiveRun: (activeRunId) => {
+        if (!activeRunId) return [];
+        return get().mockNodes.filter(node => node.runId === activeRunId);
+    },
+    clearMockNodesForRun: (runId) => {
+        set({
+            mockNodes: get().mockNodes.filter(node => node.runId !== runId)
+        });
+        console.log(`[MockStore] Cleared nodes for run: ${runId}`);
+    },
+    getActiveMockNode: (nodeId, activeRunId) => {
+        if (!activeRunId) return undefined;
+        return get().mockNodes.find((node) => 
+            node.id.replace(/-\d+$/, '') === nodeId && node.runId === activeRunId
+        );
+    },
 }));
 
 export default useMockStore;

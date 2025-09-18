@@ -2,6 +2,7 @@ import { runMockApi, startExecutionApi } from "@/api/runApi";
 import useEditorStore from "@/stores/editorStore";
 import useMockStore from "@/stores/mockStore";
 import useNodesStore from "@/stores/nodesStore";
+import { useRunsStore } from "@/stores/runsStore";
 // import { NodeVariable } from "@/types/types";
 import React from "react";
 import {getNodeExecutionDetails} from "@/api/executionApi";
@@ -103,9 +104,18 @@ export const useHandlePlay = () => {
                 // Store the run_id to track this specific execution
                 const runId = executionResult.run_id;
                 if (runId) {
-                    // Store run_id in editor store to track the active execution
-                    useEditorStore.getState().setActiveRunId(runId);
+                    // Store run_id in runs store to track the active execution
+                    useRunsStore.getState().setActiveRunId(runId);
                     console.log('🔒 Editor locked for run_id:', runId);
+                    
+                    // Add the new run to the runs store
+                    useRunsStore.getState().addNewRun({
+                        run_id: runId,
+                        timestamp: new Date().toISOString(),
+                        status: 'running',
+                        startTime: Date.now(),
+                        lastEventTime: Date.now()
+                    });
                 }
                 
                 // Flag that we used fire-and-forget so finally block doesn't clear state

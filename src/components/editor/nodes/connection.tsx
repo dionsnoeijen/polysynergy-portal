@@ -5,6 +5,7 @@ import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 
 import useMockStore from "@/stores/mockStore";
 import useEditorStore from "@/stores/editorStore";
+import {useRunsStore} from "@/stores/runsStore";
 
 type Props = { connection: ConnectionProps; };
 
@@ -29,9 +30,25 @@ const Connection: React.FC<Props> = ({ connection }) => {
     };
 
     const { theme } = useTheme();
-    const mockConnection = useMockStore(
+    const rawMockConnection = useMockStore(
         (state) => state.getMockConnection(connection.id)
     );
+    
+    // Hide connection visual feedback for background runs
+    const backgroundedRunIds = useRunsStore((state) => state.backgroundedRunIds);
+    const mockConnection = React.useMemo(() => {
+        if (!rawMockConnection) return undefined;
+        
+        // Check if this connection belongs to a backgrounded run
+        // Since connections don't have runId directly, we need to check if the mockConnection
+        // belongs to a run that has been backgrounded. For now, we'll use a simpler approach:
+        // if ANY run is backgrounded, hide connection visual feedback to be safe.
+        if (backgroundedRunIds.size > 0) {
+            return undefined;
+        }
+        
+        return rawMockConnection;
+    }, [rawMockConnection, backgroundedRunIds]);
 
     useEffect(() => {
         updateConnectionsDirectly([connection]);

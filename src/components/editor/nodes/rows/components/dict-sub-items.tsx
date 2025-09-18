@@ -66,17 +66,17 @@ const DictSubItems: React.FC<DictSubItemsProps> = ({ logic }) => {
                         )}
                         
                         {/* Sub-item Content */}
-                        <div className="flex items-center truncate text-sky-200 dark:text-white" title={`${variable.handle}.${item.handle}`}>
+                        <div className="flex items-center truncate" title={`${variable.handle}.${item.handle}`}>
                             {/* Tree connector visual */}
-                            <span className={categoryMainTextColor}>
+                            <span className={categorySubTextColor}>
                                 {index === (variable.value as NodeVariable[]).length - 1 ? (
                                     <div className={"w-4 h-4"}>
-                                        <div className="w-2 h-2 border-l border-b border-dotted border-white"></div>
+                                        <div className={`w-2 h-2 border-l border-b border-dotted ${categoryMainTextColor.replace('text-', 'border-')}`}></div>
                                     </div>
                                 ) : (
                                     <div className={"w-4 h-4"}>
-                                        <div className="w-2 h-2 border-l border-b border-dotted border-white"></div>
-                                        <div className="w-2 h-2 border-l border-dotted border-white"></div>
+                                        <div className={`w-2 h-2 border-l border-b border-dotted ${categoryMainTextColor.replace('text-', 'border-')}`}></div>
+                                        <div className={`w-2 h-2 border-l border-dotted ${categoryMainTextColor.replace('text-', 'border-')}`}></div>
                                     </div>
                                 )}
                             </span>

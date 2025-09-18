@@ -252,6 +252,8 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
         try {
             const api = createAgnoChatHistoryApi(projectId);
             const data: ChatHistory = await api.getSessionHistory(storageConfig, sessionId, userId, limit);
+            
+            console.log("[chat-sync] Received chat history data:", data);
 
             // Als backend niks terug geeft (geen storage of empty), niet forceren
             if (!data || !Array.isArray(data.messages)) return;
@@ -262,6 +264,22 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                     typeof m.timestamp === "string"
                         ? new Date(m.timestamp).getTime()
                         : (m.timestamp as unknown as number);
+                
+                // Debug S3 URLs in message text
+                if (m.text && m.text.includes('s3.amazonaws.com')) {
+                    console.log(`[S3-Debug] Message ${i} contains S3 URLs:`, m.text.substring(0, 200));
+                    
+                    // Look for presigned URL signatures to see if refresh is working
+                    const hasPresignedParams = m.text.includes('X-Amz-Signature') || m.text.includes('X-Amz-Algorithm');
+                    console.log(`[S3-Debug] Message ${i} has presigned parameters:`, hasPresignedParams);
+                    
+                    // Extract and log actual URLs
+                    const s3UrlMatch = m.text.match(/https:\/\/[^\/]+\.s3\.amazonaws\.com\/[^\s\)]+/g);
+                    if (s3UrlMatch) {
+                        console.log(`[S3-Debug] Extracted URLs from message ${i}:`, s3UrlMatch);
+                    }
+                }
+                
                 return {
                     id: `srv-${data.session_id}-${i}-${tsMs || Date.now()}`,
                     sender: m.sender === "user" ? "user" : "agent",

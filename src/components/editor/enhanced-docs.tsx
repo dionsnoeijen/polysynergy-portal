@@ -152,7 +152,6 @@ const EnhancedDocs: React.FC = () => {
     const loadAllDocumentCounts = useCallback(async () => {
         try {
             const response = await fetchAllDocumentationAPI();
-            console.log('Loaded all documentation for counts:', response);
             // The response should have both categories and guides, update the store completely
             const updatedGuides = response.guides || {};
             const categories = response.categories || [];
@@ -194,19 +193,9 @@ const EnhancedDocs: React.FC = () => {
 
     // Auto-select node when docsNodeId is set and we're on node tab
     useEffect(() => {
-        console.log('Auto-select effect triggered:', {
-            documentationType,
-            docsNodeId,
-            availableNodesCount: availableNodes.length,
-            selectedNodeDoc,
-            hasInitialFetched
-        });
-        
         if (docsNodeId && availableNodes.length > 0 && selectedNodeDoc !== docsNodeId) {
-            console.log('Auto-selecting node with ID:', docsNodeId);
             const matchingNode = availableNodes.find(node => node.id === docsNodeId);
             if (matchingNode) {
-                console.log('Found matching node:', matchingNode.name, matchingNode.id);
                 setSelectedNodeDoc(docsNodeId);
                 // Also ensure we're on the node tab
                 if (documentationType !== 'node') {

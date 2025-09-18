@@ -20,6 +20,8 @@ export type ContextMenu = {
     items: Array<{ label: string; action: () => void }>;
 };
 
+// Background execution moved to runsStore.ts
+
 export type EditorState = {
     zoomFactor: number;
     setZoomFactor: (factor: number) => void;
@@ -160,8 +162,8 @@ export type EditorState = {
 
     isExecuting: string | null;
     setIsExecuting: (isExecuting: string | null) => void;
-    activeRunId: string | null;
-    setActiveRunId: (runId: string | null) => void;
+    
+    // Note: activeRunId moved to runsStore.ts for better separation of concerns
 
     chatMode: boolean;
     setChatMode: (chatMode: boolean) => void;
@@ -183,8 +185,6 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
     isExecuting: null,
     setIsExecuting: (isExecuting) => set({isExecuting: isExecuting}),
-    activeRunId: null,
-    setActiveRunId: (runId) => set({activeRunId: runId}),
     
     chatMode: false,
     setChatMode: (chatMode) => set({chatMode: chatMode}),

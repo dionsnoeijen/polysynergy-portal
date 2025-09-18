@@ -37,7 +37,7 @@ const AIComplianceIndicator: React.FC = () => {
         title="AI Act Compliance Status"
       >
         <ShieldCheckIcon className="w-3.5 h-3.5" />
-        <span>AI Act Transparent</span>
+        <span>AI Act</span>
       </button>
 
       {/* Compliance Details Popup */}

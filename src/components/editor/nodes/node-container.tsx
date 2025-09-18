@@ -3,6 +3,7 @@ import {Node} from '@/types/types';
 import useEditorStore from '@/stores/editorStore';
 import useNodePlacement from '@/hooks/editor/nodes/useNodePlacement';
 import useResizable from '@/hooks/editor/nodes/useResizable';
+import { useNodeExecutionClasses } from '@/hooks/editor/nodes/useNodeExecutionState';
 
 interface NodeContainerProps {
     node: Node;
@@ -35,6 +36,9 @@ const NodeContainer: React.FC<NodeContainerProps> = ({
     const zoomFactor = useEditorStore((state) => state.getZoomFactorForVersion());
     const isPanning = useEditorStore((state) => state.isPanning);
     const isZooming = useEditorStore((state) => state.isZooming);
+    
+    // Get execution classes from store-based hook
+    const executionClasses = useNodeExecutionClasses(node.id);
 
     useLayoutEffect(() => {
         if (ref.current && !shouldSuspendRendering) {
@@ -54,8 +58,8 @@ const NodeContainer: React.FC<NodeContainerProps> = ({
     const collapsedStyle = baseStyle;
 
     const finalClassName = isCollapsed 
-        ? `${className} p-[0.86rem] w-auto inline-block items-center justify-center cursor-pointer`
-        : `${className} pb-5`;
+        ? `${className} p-[0.86rem] w-auto inline-block items-center justify-center cursor-pointer ${executionClasses}`
+        : `${className} pb-5 ${executionClasses}`;
 
     return (
         <div

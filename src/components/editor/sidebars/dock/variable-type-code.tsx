@@ -55,7 +55,7 @@ const VariableTypeCode: React.FC<Props> = ({
                             className="text-slate-500 hover:text-slate-600 w-full pb-1 ring-1 ring-white/20 rounded-md"
                             onClick={() => onEdit(nodeId)}
                         >
-                            <PencilIcon className="w-4 h-4 inline text-slate-300"/>
+                            <PencilIcon className="w-4 h-4 inline text-zinc-600 dark:text-slate-300"/>
                         </button>
                     </Field>
                 </Fieldset>

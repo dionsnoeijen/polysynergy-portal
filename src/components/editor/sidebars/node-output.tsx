@@ -1,11 +1,12 @@
 import React, {useState, useEffect, useRef, useCallback} from "react";
-import {ChevronLeftIcon, ChevronDownIcon, ChevronRightIcon, ClockIcon, CheckCircleIcon, XCircleIcon, TrashIcon} from "@heroicons/react/24/outline";
+import {ChevronLeftIcon, ChevronDownIcon, ChevronRightIcon, ClockIcon, CheckCircleIcon, XCircleIcon, TrashIcon, ArrowUpRightIcon, PlayIcon} from "@heroicons/react/24/outline";
 import {getNodeExecutionDetails, getAvailableRuns, getAllNodesForRun, clearAllRuns, getMockNodesForRun} from "@/api/executionApi";
 
 
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import useMockStore, { MockNode } from "@/stores/mockStore";
+import { useRunsStore } from "@/stores/runsStore";
 import { Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle } from "@/components/dialog";
 import { Button } from "@/components/button";
 import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
@@ -25,6 +26,14 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     const loadHistoricalRunData = useEditorStore((state) => state.loadHistoricalRunData);
     const globalIsExecuting = useEditorStore((state) => state.isExecuting);
     const mockNodes = useMockStore((state) => state.mockNodes);
+    
+    // Background execution store hooks
+    const activeRunId = useRunsStore((state) => state.activeRunId);
+    const makeRunActive = useRunsStore((state) => state.makeRunActive);
+    const moveActiveRunToBackground = useRunsStore((state) => state.moveActiveRunToBackground);
+    const getRunDuration = useRunsStore((state) => state.getRunDuration);
+    const runsStoreRuns = useRunsStore((state) => state.runs);
+    const fetchRunsFromStore = useRunsStore((state) => state.fetchRuns);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [expandedNodes, setExpandedNodes] = useState<Record<string, any>>({});
@@ -87,11 +96,18 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     // Detect current run from mockNodes and manage accordion state
     useEffect(() => {
         // Detect new execution start: mockNodes length goes from >0 to 0 (cleared)
+        // IMPORTANT: Only clear run output UI state for the ACTIVE run
+        // Background runs should not clear the UI when they complete
         if (previousMockNodesLength.current > 0 && mockNodes.length === 0) {
-            setExpandedNodes({});
-            setNodeDataCache({});
-            // Don't clear currentRunId yet - wait for new nodes to appear
-            setIsExecuting(true); // Execution is starting
+            // Only clear run output state if this was the active run ending
+            if (currentRunId === activeRunId) {
+                setExpandedNodes({});
+                setNodeDataCache({});
+                // Don't clear currentRunId yet - wait for new nodes to appear
+                setIsExecuting(true); // Execution is starting
+            }
+            // For background runs: node visuals are already cleared by WebSocket,
+            // but run output should remain visible
         }
         
         // Detect execution start: mockNodes start populating (first node appears)
@@ -127,7 +143,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
         }
         
         previousMockNodesLength.current = mockNodes.length;
-    }, [mockNodes.length, currentRunId]);
+    }, [mockNodes.length, currentRunId, activeRunId]);
 
     const sortedNodes = [...mockNodes]
         .sort((a, b) => a.order - b.order)
@@ -137,8 +153,24 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     const allRuns = React.useMemo(() => {
         const combinedRuns = [...runs];
         
+        // Merge with runs store to get correct status for active/background runs
+        runsStoreRuns.forEach(storeRun => {
+            const existingRun = combinedRuns.find(r => r.run_id === storeRun.run_id);
+            if (existingRun) {
+                // Update existing run with store data (which has correct status)
+                existingRun.status = storeRun.status;
+            } else if (storeRun.status === 'running') {
+                // Add running runs from store that aren't in API yet
+                combinedRuns.push({
+                    run_id: storeRun.run_id,
+                    timestamp: storeRun.timestamp,
+                    status: storeRun.status
+                });
+            }
+        });
+        
         // Add current run if it exists and isn't already in the runs list
-        if (currentRunId && !runs.some(r => r.run_id === currentRunId)) {
+        if (currentRunId && !combinedRuns.some(r => r.run_id === currentRunId)) {
             combinedRuns.push({
                 run_id: currentRunId,
                 timestamp: new Date().toISOString(),
@@ -150,7 +182,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
         combinedRuns.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         
         return combinedRuns;
-    }, [runs, currentRunId]);
+    }, [runs, currentRunId, runsStoreRuns]);
 
     // Get nodes for a specific run (current or historical)
     const getNodesForRun = (runId: string) => {
@@ -431,22 +463,25 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                         const isExpanded = expandedRuns.has(run.run_id);
                         const isSelected = selectedRunId === run.run_id;
                         const isCurrent = run.run_id === currentRunId && globalIsExecuting !== null;
+                        const isActive = activeRunId === run.run_id;
+                        const isBackground = run.status === 'running' && !isActive;
                         const runNodes = getNodesForRun(run.run_id);
-                        
+
                         return (
                             <div key={run.run_id} className="border-b border-sky-300/50 dark:border-zinc-700 last:border-b-0">
                                 {/* Run Header */}
-                                <button
-                                    onClick={() => toggleRun(run.run_id)}
-                                    disabled={globalIsExecuting !== null && run.run_id !== currentRunId}
-                                    className={`w-full p-2 text-left transition-colors flex items-center justify-between ${
-                                        isSelected ? 'bg-sky-50 dark:bg-zinc-700' : ''
-                                    } ${
-                                        globalIsExecuting !== null && run.run_id !== currentRunId 
-                                            ? 'opacity-50 cursor-not-allowed' 
-                                            : 'hover:bg-sky-100 dark:hover:bg-zinc-700/50'
-                                    }`}
-                                >
+                                <div className={`flex items-center ${isActive ? 'bg-amber-50 dark:bg-amber-900/20' : isBackground ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}>
+                                    <button
+                                        onClick={() => toggleRun(run.run_id)}
+                                        disabled={globalIsExecuting !== null && run.run_id !== currentRunId && !isActive && !isBackground}
+                                        className={`flex-1 p-2 text-left transition-colors flex items-center justify-between ${
+                                            isSelected ? 'bg-sky-50 dark:bg-zinc-700' : ''
+                                        } ${
+                                            globalIsExecuting !== null && run.run_id !== currentRunId && !isActive && !isBackground
+                                                ? 'opacity-50 cursor-not-allowed' 
+                                                : 'hover:bg-sky-100 dark:hover:bg-zinc-700/50'
+                                        }`}
+                                    >
                                     <div className="flex items-center gap-2 min-w-0 flex-1">
                                         {isExpanded ? (
                                             <ChevronDownIcon className="w-3 h-3 text-sky-600 dark:text-zinc-400 flex-shrink-0" />
@@ -460,6 +495,16 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                                                 {isCurrent && (
                                                     <span className="text-green-500 dark:text-green-400 text-xs">• Live</span>
                                                 )}
+                                                {isActive && (
+                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-800/50 dark:text-amber-200">
+                                                        Active
+                                                    </span>
+                                                )}
+                                                {isBackground && (
+                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800/50 dark:text-blue-200">
+                                                        Background
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="text-xs text-sky-500 dark:text-zinc-400 truncate">
                                                 {formatTimestamp(run.timestamp)}
@@ -470,6 +515,36 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                                         {run.run_id.substring(0, 8)}...
                                     </div>
                                 </button>
+                                
+                                {/* Action buttons */}
+                                {run.status === 'running' && (
+                                    <div className="flex items-center gap-1 px-2">
+                                        {isActive ? (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    moveActiveRunToBackground();
+                                                }}
+                                                className="p-1 text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200 transition-colors"
+                                                title="Move to background"
+                                            >
+                                                <ArrowUpRightIcon className="w-3 h-3" />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    makeRunActive(run.run_id);
+                                                }}
+                                                className="p-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 transition-colors"
+                                                title="Make active"
+                                            >
+                                                <PlayIcon className="w-3 h-3" />
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
 
                                 {/* Run Content - Node List */}
                                 {isExpanded && (

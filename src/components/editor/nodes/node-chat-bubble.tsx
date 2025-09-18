@@ -53,8 +53,8 @@ const NodeChatBubble: React.FC<Props> = ({nodeId}) => {
     if (!activeSessionId || !latestForNode || !aggregateText) return null;
 
     return (
-        <div className="relative" style={{zIndex: 999999}}>
-            <div className="absolute top-0 right-[-420px]" style={{zIndex: 999999}}>
+        <div className="relative" style={{zIndex: 100}}>
+            <div className="absolute top-0 right-[-420px]" style={{zIndex: 100}}>
                 {/* Tail */}
                 <div className="absolute left-[-8px] top-3">
                     <div

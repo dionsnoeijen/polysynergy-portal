@@ -106,7 +106,9 @@ export const useFileVariableLogic = ({
             fileListProps: {
                 variable,
                 nodeId,
-                categorySubTextColor
+                categorySubTextColor,
+                categoryMainTextColor,
+                textColor
             }
         };
     }, [

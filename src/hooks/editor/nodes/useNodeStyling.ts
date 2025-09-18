@@ -46,7 +46,7 @@ export const useNodeStyling = (node: Node, options: NodeStylingOptions) => {
         const stateClasses = node.view.disabled 
             ? ['z-1', 'select-none', 'opacity-30']
             : isSelected 
-                ? ['z-50', 'cursor-move'] // Higher z-index for selected nodes to show chat bubbles
+                ? ['z-30', 'cursor-move'] // Higher z-index for selected nodes to show chat bubbles
                 : ['z-20', 'cursor-move'];
 
         const addingClasses = node.view.adding 

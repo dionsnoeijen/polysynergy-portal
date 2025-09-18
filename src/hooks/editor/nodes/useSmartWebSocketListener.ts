@@ -4,6 +4,7 @@ import useNodesStore from "@/stores/nodesStore";
 import useMockStore, {MockNode} from '@/stores/mockStore';
 import {getConnectionExecutionDetails} from "@/api/executionApi";
 import useEditorStore from "@/stores/editorStore";
+import { useRunsStore } from "@/stores/runsStore";
 import {websocketStatusStore} from '@/hooks/editor/useHandlePlay';
 import globalWebSocketSingleton from '@/utils/GlobalWebSocketManager';
 import {ConnectionStatus} from '@/utils/WebSocketManager';
@@ -28,16 +29,124 @@ type ExecutionMessage = {
     member_index?: number;
 };
 
-const groupStates = new Map<string, { count: number, remaining: number }>();
-const nodeExecutionState = new Map<string, { started: boolean; ended: boolean; status?: string }>();
 const processedEvents = new Set<string>();
-const pendingAnimations = new Map<string, NodeJS.Timeout>();
 
 // Tool execution timing tracker
-const toolExecutionTracker = new Map<string, { startTime: number; startEvent: any }>();
+const toolExecutionTracker = new Map<string, { startTime: number; startEvent: unknown }>();
 
 // Tool visualization tracker - ensures minimum display time
 const toolVisualizationTracker = new Map<string, { timeoutId: NodeJS.Timeout | null; displayStartTime: number }>();
+
+// Run-aware group execution state tracker: runId -> groupId -> state
+const groupStatesByRun = new Map<string, Map<string, { count: number, remaining: number }>>();
+
+// Run-aware node execution state tracker: runId -> nodeId -> state
+const nodeExecutionStateByRun = new Map<string, Map<string, { started: boolean; ended: boolean; status?: string }>>();
+
+// Run-aware pending animations tracker: runId -> nodeId -> timeout
+const pendingAnimationsByRun = new Map<string, Map<string, NodeJS.Timeout>>();
+
+// Track completed runs to prevent late execution classes
+const completedRunIds = new Set<string>();
+
+// Helper functions for run-aware state management
+function getGroupStatesForRun(runId: string): Map<string, { count: number, remaining: number }> {
+    if (!groupStatesByRun.has(runId)) {
+        groupStatesByRun.set(runId, new Map());
+    }
+    return groupStatesByRun.get(runId)!;
+}
+
+function getNodeExecutionStateForRun(runId: string): Map<string, { started: boolean; ended: boolean; status?: string }> {
+    if (!nodeExecutionStateByRun.has(runId)) {
+        nodeExecutionStateByRun.set(runId, new Map());
+    }
+    return nodeExecutionStateByRun.get(runId)!;
+}
+
+function getPendingAnimationsForRun(runId: string): Map<string, NodeJS.Timeout> {
+    if (!pendingAnimationsByRun.has(runId)) {
+        pendingAnimationsByRun.set(runId, new Map());
+    }
+    return pendingAnimationsByRun.get(runId)!;
+}
+
+// Function to restore visual state when making a background run active
+export function restoreVisualStateForRun(runId: string) {
+    const nodeStates = nodeExecutionStateByRun.get(runId);
+    const groupStates = groupStatesByRun.get(runId);
+    
+    if (!nodeStates) return;
+    
+    console.log(`🎯 [WebSocket] Restoring visual state for run: ${runId}`);
+    
+    // Clear all current visual states first
+    document.querySelectorAll('.executing, .executed-success, .executed-error, .executed-killed').forEach(el => {
+        el.classList.remove('executing', 'executed-success', 'executed-error', 'executed-killed');
+    });
+    
+    // Restore node states
+    for (const [nodeId, state] of nodeStates.entries()) {
+        const el = document.querySelector(`[data-node-id="${nodeId}"]`) as HTMLElement;
+        if (el) {
+            if (state.started && !state.ended) {
+                // Node is still executing
+                el.classList.add('executing');
+            } else if (state.ended && state.status) {
+                // Node is completed
+                el.classList.add(`executed-${state.status}`);
+            }
+        }
+    }
+    
+    // Restore group states
+    if (groupStates) {
+        for (const [groupId, groupState] of groupStates.entries()) {
+            const groupEl = document.querySelector(`[data-node-id="${groupId}"]`) as HTMLElement;
+            if (groupEl) {
+                if (groupState.remaining > 0) {
+                    // Group is still executing
+                    groupEl.classList.add('executing');
+                } else {
+                    // Group is completed - determine status from member nodes
+                    const groupNodeStates = Array.from(nodeStates.values());
+                    const hasErrors = groupNodeStates.some(state => state.status === 'error');
+                    const hasKilled = groupNodeStates.some(state => state.status === 'killed');
+                    
+                    if (hasErrors) {
+                        groupEl.classList.add('executed-error');
+                    } else if (hasKilled) {
+                        groupEl.classList.add('executed-killed');
+                    } else {
+                        groupEl.classList.add('executed-success');
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Function to cleanup state for completed runs
+export function cleanupStateForRun(runId: string) {
+    console.log(`🧹 [WebSocket] Cleaning up state for completed run: ${runId}`);
+    
+    // Clear pending animations for this run
+    const pendingAnimations = pendingAnimationsByRun.get(runId);
+    if (pendingAnimations) {
+        for (const timeout of pendingAnimations.values()) {
+            clearTimeout(timeout);
+        }
+        pendingAnimationsByRun.delete(runId);
+    }
+    
+    // Clear group states for this run
+    groupStatesByRun.delete(runId);
+    
+    // Clear node execution states for this run
+    nodeExecutionStateByRun.delete(runId);
+    
+    console.log(`✅ [WebSocket] State cleaned up for run: ${runId}`);
+}
 
 export function useSmartWebSocketListener(flowId: string) {
     const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
@@ -65,7 +174,7 @@ export function useSmartWebSocketListener(flowId: string) {
             const chatView = useChatViewStore.getState();
 
             const eventType = message.event;
-            let node_id = message.node_id;
+            const node_id = message.node_id;
 
             // ---- STREAM CONTENT ----
             if ((eventType === "RunContent" || eventType === "TeamRunContent")
@@ -125,6 +234,19 @@ export function useSmartWebSocketListener(flowId: string) {
             if (eventType === 'run_start') {
                 console.log('🚀 [WebSocket] Received run_start event for run_id:', message.run_id);
                 cleanupExecutionGlow();
+                
+                // Update runs store - this might be from a different source than useHandlePlay
+                const runsStore = useRunsStore.getState();
+                const existingRun = runsStore.runs.find(r => r.run_id === message.run_id);
+                if (!existingRun) {
+                    runsStore.addNewRun({
+                        run_id: message.run_id,
+                        timestamp: new Date().toISOString(),
+                        status: 'running',
+                        startTime: Date.now(),
+                        lastEventTime: Date.now()
+                    });
+                }
                 
                 // Auto-start log polling for fire-and-forget executions
                 console.log('📊 [WebSocket] Auto-starting log polling for run_start');
@@ -220,6 +342,28 @@ export function useSmartWebSocketListener(flowId: string) {
             // ---- RUN END ----
             if (eventType === 'run_end') {
                 console.log('🏁 [WebSocket] Received run_end event for run_id:', message.run_id);
+                
+                // Mark this run as completed to prevent late execution classes
+                if (message.run_id) {
+                    completedRunIds.add(message.run_id);
+                    console.log(`🔒 [WebSocket] Marked run ${message.run_id} as completed - no more execution classes will be added`);
+                }
+                
+                // Clear ALL executed status classes when run ends
+                const elementsToClean = document.querySelectorAll('.executed-success, .executed-error, .executed-killed, .executing');
+                console.log(`🧹 [WebSocket] Found ${elementsToClean.length} elements with execution status to clear`);
+                elementsToClean.forEach(el => {
+                    const nodeId = el.getAttribute('data-node-id');
+                    console.log(`  - Clearing execution classes from node: ${nodeId}`);
+                    el.classList.remove('executed-success', 'executed-error', 'executed-killed', 'executing');
+                });
+                console.log('✅ [WebSocket] Cleared all execution status classes at run_end');
+                
+                // NEVER clear mock data at run_end - this removes run output from NodeOutput panel
+                // The purple glow issue will need to be fixed elsewhere
+                console.log(`📋 [WebSocket] Preserving ALL mock data for run: ${message.run_id}`);
+                
+                
                 const sessionId = chatView.getActiveSessionId();
                 if (sessionId) {
                     chatView.finalizeAgentMessage(sessionId);
@@ -252,30 +396,31 @@ export function useSmartWebSocketListener(flowId: string) {
                 }
 
                 setTimeout(async () => {
-                    // Cancel all pending animation timeouts
-                    pendingAnimations.forEach((timeoutId) => clearTimeout(timeoutId));
-                    pendingAnimations.clear();
-                    
-                    // Remove all execution-related classes from all nodes
-                    document.querySelectorAll('[data-node-id]').forEach((el) => {
-                        el.classList.remove('executing', 'executing-tool');
-                        el.classList.forEach((cls) => {
-                            if (cls.startsWith('executed-')) el.classList.remove(cls);
-                        });
-                    });
-                    groupStates.clear();
-                    nodeExecutionState.clear();
+                    // Clear only the processed events set
                     processedEvents.clear();
 
                     // Clear editor execution lock state for fire-and-forget executions
                     // Only unlock if this run_end matches the currently active run_id
-                    const currentActiveRunId = editorStore.activeRunId;
+                    const runsStore = useRunsStore.getState();
+                    const currentActiveRunId = runsStore.activeRunId;
                     if (currentActiveRunId === message.run_id) {
                         console.log('🔓 Editor unlocked for completed run_id:', message.run_id);
                         editorStore.setIsExecuting(null);
-                        editorStore.setActiveRunId(null);
+                        runsStore.setActiveRunId(null);
+                        
+                        // Update run status to completed
+                        runsStore.updateRunFromWebSocket(message.run_id, {
+                            status: 'success',
+                            duration: Date.now() - (runsStore.runs.find(r => r.run_id === message.run_id)?.startTime || Date.now())
+                        });
                     } else {
                         console.log('⏸️ Ignoring run_end for different run_id:', message.run_id, 'vs active:', currentActiveRunId);
+                        
+                        // Still update background run status to completed
+                        runsStore.updateRunFromWebSocket(message.run_id, {
+                            status: 'success',
+                            duration: Date.now() - (runsStore.runs.find(r => r.run_id === message.run_id)?.startTime || Date.now())
+                        });
                     }
 
                     const activeVersionId = editorStore.activeVersionId as string;
@@ -297,13 +442,22 @@ export function useSmartWebSocketListener(flowId: string) {
 
             const isViewingHistoricalRun = editorStore.isViewingHistoricalRun;
             const selectedRunId = editorStore.selectedRunId;
-            const forCurrentView = !isViewingHistoricalRun && (!selectedRunId || message.run_id === selectedRunId);
+            const runsStore = useRunsStore.getState();
+            const currentActiveRunId = runsStore.activeRunId;
+            
+            // For visual node updates: Show for active run, but NOT for backgrounded runs
+            const isBackgroundedRun = runsStore.backgroundedRunIds.has(message.run_id);
+            const forActiveRunOnly = !isViewingHistoricalRun && message.run_id === currentActiveRunId;
+            const forVisualUpdates = !isViewingHistoricalRun && !isBackgroundedRun;
+            
+            // For mock store updates (runs panel): Update for active run or selected historical run
+            const forCurrentView = !isViewingHistoricalRun && (!selectedRunId || message.run_id === selectedRunId || message.run_id === currentActiveRunId);
 
-            let el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement | null;
+            const el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement | null;
             const nodeFlowNode = nodesStore.getNode(node_id);
             const type = typeof nodeFlowNode?.path === 'undefined' ? 'GroupNode' : nodeFlowNode?.path.split(".").pop();
 
-            if ((eventType === 'start_node' || eventType === 'end_node') && forCurrentView) {
+            if (eventType === 'start_node' || eventType === 'end_node') {
                 // Create unique event ID to prevent processing duplicates
                 const eventId = `${eventType}-${node_id}-${message.run_id}-${message.order}`;
                 if (processedEvents.has(eventId)) {
@@ -311,72 +465,188 @@ export function useSmartWebSocketListener(flowId: string) {
                 }
                 processedEvents.add(eventId);
 
-                mockStore.addOrUpdateMockNode({
-                    id: `${node_id}-${message.order || 0}`,
-                    handle: nodeFlowNode?.handle,
-                    runId: message.run_id,
-                    killed: message.status === 'killed',
-                    type,
-                    started: eventType === 'start_node',
-                    variables: {},
-                    status: eventType === 'start_node' ? 'executing' : (message.status || 'killed'),
-                } as MockNode);
+                // Always update runs store with execution progress (for all runs)
+                runsStore.updateRunFromWebSocket(message.run_id, {
+                    lastEventTime: Date.now(),
+                    nodeId: node_id,
+                    nodeName: nodeFlowNode?.handle || `Node ${message.order}`
+                });
+
+                // Always update mock store for runs panel (for all runs)
+                if (forCurrentView) {
+                    mockStore.addOrUpdateMockNode({
+                        id: `${node_id}-${message.order || 0}`,
+                        handle: nodeFlowNode?.handle,
+                        runId: message.run_id,
+                        killed: message.status === 'killed',
+                        type,
+                        started: eventType === 'start_node',
+                        variables: {},
+                        status: eventType === 'start_node' ? 'executing' : (message.status || 'killed'),
+                    } as MockNode);
+                }
             }
 
-            if (!el) {
-                if (forCurrentView) {
-                    const groupInfo = nodesStore.findNearestVisibleGroupWithCount?.(node_id);
-                    if (!groupInfo) return;
-                    node_id = groupInfo.groupId;
-                    el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement | null;
-                    if (!el) return;
+            // ENHANCED: Run-aware visual feedback - always track state, only show visuals for active run
+            if (el && message.run_id) {
+                const runId = message.run_id;
+                const nodeStates = getNodeExecutionStateForRun(runId);
+                const groupStates = getGroupStatesForRun(runId);
+                const nodeState = nodeStates.get(node_id) || { started: false, ended: false };
 
-                    const {groupId} = groupInfo;
-                    const current = groupStates.get(groupId) || {count: groupInfo.count, remaining: 0};
-                    if (eventType === 'start_node') {
-                        current.remaining += 1;
-                        groupStates.set(groupId, current);
-                        if (current.remaining === 1) el.classList.add('executing');
-                    } else {
-                        current.remaining = Math.max(0, current.remaining - 1);
-                        if (current.remaining === 0) {
-                            el.classList.remove('executing');
-                            el.classList.add(`executed-${message.status || 'killed'}`);
-                            groupStates.delete(groupId);
-                        } else groupStates.set(groupId, current);
+                if (eventType === 'start_node') {
+                    nodeState.started = true;
+                    nodeState.ended = false;
+                    nodeStates.set(node_id, nodeState);
+
+                    // Handle group execution states (always track, regardless of active run)
+                    const groupNodeId = nodesStore.isNodeInGroup(node_id);
+                    if (groupNodeId) {
+                        let groupState = groupStates.get(groupNodeId);
+                        if (!groupState) {
+                            const groupNodesInRun = mockStore.getMockNodesForRun(runId).filter(mockNode => {
+                                const originalNodeId = mockNode.id.replace(/-\d+$/, '');
+                                return nodesStore.isNodeInGroup(originalNodeId) === groupNodeId;
+                            });
+                            groupState = { count: groupNodesInRun.length, remaining: groupNodesInRun.length };
+                            groupStates.set(groupNodeId, groupState);
+                            console.log(`🏷️ [WebSocket] Created group state for ${groupNodeId}: ${groupState.count} nodes`);
+                        }
+
+                        // Apply visual classes for non-backgrounded runs
+                        if (forVisualUpdates) {
+                            const groupEl = document.querySelector(`[data-node-id="${groupNodeId}"]`);
+                            if (groupEl && !groupEl.classList.contains('executing')) {
+                                groupEl.classList.add('executing');
+                            }
+                        }
+                    }
+
+                    // Apply visual classes for non-backgrounded runs
+                    // But only if node is NOT in a group (let groups handle their own status)
+                    const nodeGroupId = nodesStore.isNodeInGroup(node_id);
+                    if (forVisualUpdates && !nodeGroupId) {
+                        el.classList.add('executing');
+                        el.classList.remove('executed-success', 'executed-error', 'executed-killed');
                     }
                 }
-                return;
+
+                if (eventType === 'end_node') {
+                    nodeState.ended = true;
+                    nodeState.status = message.status;
+                    nodeStates.set(node_id, nodeState);
+
+                    // Skip execution classes if run has already ended
+                    if (completedRunIds.has(message.run_id)) {
+                        console.log(`⏰ [WebSocket] Skipping end_node execution classes for node ${node_id} - run ${message.run_id} already completed`);
+                        return;
+                    }
+
+                    // Handle animations for non-backgrounded runs
+                    if (forVisualUpdates) {
+                        const pendingAnimations = getPendingAnimationsForRun(runId);
+                        
+                        // Clear any pending animation for this node
+                        const pendingTimeout = pendingAnimations.get(node_id);
+                        if (pendingTimeout) {
+                            clearTimeout(pendingTimeout);
+                            pendingAnimations.delete(node_id);
+                        }
+
+                        // Schedule end animation with minimum display time
+                        const animationTimeout = setTimeout(() => {
+                            // Skip execution classes if run has already ended
+                            if (completedRunIds.has(message.run_id)) {
+                                console.log(`⏰ [WebSocket] Skipping delayed execution classes for node ${node_id} - run ${message.run_id} already completed`);
+                                pendingAnimations.delete(node_id);
+                                return;
+                            }
+
+                            const currentEl = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement;
+                            const nodeGroupId = nodesStore.isNodeInGroup(node_id);
+                            
+                            // Only apply execution status to nodes NOT in groups (groups handle their own status)
+                            if (currentEl && !nodeGroupId) {
+                                console.log(`🔄 [WebSocket] Removing executing class for node: ${node_id}, status: ${message.status}`);
+                                currentEl.classList.remove('executing');
+                                if (message.status) {
+                                    currentEl.classList.add(`executed-${message.status}`);
+                                }
+                            } else if (!currentEl) {
+                                console.warn(`⚠️ [WebSocket] Element not found for node cleanup: ${node_id}`);
+                            } else {
+                                console.log(`🏷️ [WebSocket] Skipping individual node status for ${node_id} - in group ${nodeGroupId}`);
+                            }
+
+                            // Handle group state completion - bubble to outer-most group
+                            let groupNodeId = nodesStore.isNodeInGroup(node_id);
+                            // Find the outer-most group (for nested groups)
+                            while (groupNodeId) {
+                                const parentGroupId = nodesStore.isNodeInGroup(groupNodeId);
+                                if (parentGroupId) {
+                                    groupNodeId = parentGroupId;
+                                } else {
+                                    break;
+                                }
+                            }
+                            
+                            if (groupNodeId) {
+                                const groupState = groupStates.get(groupNodeId);
+                                if (groupState) {
+                                    groupState.remaining--;
+                                    console.log(`🏷️ [WebSocket] Group ${groupNodeId}: node ${node_id} completed, remaining: ${groupState.remaining}/${groupState.count}`);
+                                    if (groupState.remaining <= 0) {
+                                        const groupEl = document.querySelector(`[data-node-id="${groupNodeId}"]`);
+                                        if (groupEl) {
+                                            groupEl.classList.remove('executing');
+                                            // Apply group status based on member results
+                                            const hasErrors = Array.from(nodeStates.values()).some(state => state.status === 'error');
+                                            const hasKilled = Array.from(nodeStates.values()).some(state => state.status === 'killed');
+                                            
+                                            if (hasErrors) {
+                                                groupEl.classList.add('executed-error');
+                                            } else if (hasKilled) {
+                                                groupEl.classList.add('executed-killed');
+                                            } else {
+                                                groupEl.classList.add('executed-success');
+                                            }
+                                        }
+                                        console.log(`🏷️ [WebSocket] Group ${groupNodeId} completed - deleting state`);
+                                        groupStates.delete(groupNodeId);
+                                    }
+                                }
+                            }
+
+                            pendingAnimations.delete(node_id);
+                        }, 500); // Minimum 500ms display time
+
+                        pendingAnimations.set(node_id, animationTimeout);
+                    }
+                }
             }
 
-            if (forCurrentView) {
-                const state = nodeExecutionState.get(node_id) || {
-                    started: false,
-                    ended: false as boolean,
-                    status: 'success' as string | undefined
-                };
-                if (eventType === 'start_node') {
-                    state.started = true;
-                    nodeExecutionState.set(node_id, state);
-                    el.classList.add('executing');
-                    if (state.ended) {
-                        el.classList.remove('executing');
-                        el.classList.add(`executed-${state.status || 'success'}`);
-                        nodeExecutionState.delete(node_id);
-                    }
-                } else {
-                    state.ended = true;
-                    state.status = message.status || 'success';
-                    nodeExecutionState.set(node_id, state);
-                    if (state.started) {
-                        // Ensure the blue bounce animation is visible for at least 500ms
-                        const timeoutId = setTimeout(() => {
-                            el.classList.remove('executing');
-                            el.classList.add(`executed-${state.status}`);
-                            pendingAnimations.delete(node_id);
-                        }, 500);
-                        pendingAnimations.set(node_id, timeoutId);
-                        nodeExecutionState.delete(node_id);
+            // Fallback: Handle cases where direct node element not found but group exists
+            // Apply visuals for non-backgrounded runs, but still track state for all runs
+            if (forVisualUpdates && !el && message.run_id) {
+                const groupNodeId = nodesStore.isNodeInGroup(node_id);
+                if (groupNodeId) {
+                    const groupEl = document.querySelector(`[data-node-id="${groupNodeId}"]`) as HTMLElement;
+                    if (groupEl) {
+                        if (eventType === 'start_node') {
+                            groupEl.classList.add('executing');
+                        } else if (eventType === 'end_node') {
+                            // Skip execution classes if run has already ended
+                            if (completedRunIds.has(message.run_id)) {
+                                console.log(`⏰ [WebSocket] Skipping group end_node execution classes for node ${node_id} - run ${message.run_id} already completed`);
+                                return;
+                            }
+                            setTimeout(() => {
+                                groupEl.classList.remove('executing');
+                                if (message.status) {
+                                    groupEl.classList.add(`executed-${message.status}`);
+                                }
+                            }, 500);
+                        }
                     }
                 }
             }
@@ -404,19 +674,37 @@ export function useSmartWebSocketListener(flowId: string) {
     }, [flowId]);
 
     function cleanupExecutionGlow() {
-        // Cancel all pending animation timeouts
-        pendingAnimations.forEach((timeoutId) => clearTimeout(timeoutId));
-        pendingAnimations.clear();
-        
-        document.querySelectorAll('[data-node-id]').forEach((el) => {
-            el.classList.remove('executing', 'executing-tool');
-            el.classList.forEach((cls) => {
-                if (cls.startsWith('executed-')) el.classList.remove(cls);
-            });
-        });
-        groupStates.clear();
-        nodeExecutionState.clear();
+        // ENHANCED: Clear all run-aware state trackers and pending animations
         processedEvents.clear();
+        
+        // Clear all pending animations for all runs
+        for (const runAnimations of pendingAnimationsByRun.values()) {
+            for (const timeout of runAnimations.values()) {
+                clearTimeout(timeout);
+            }
+            runAnimations.clear();
+        }
+        pendingAnimationsByRun.clear();
+        
+        // Clear group states for all runs
+        groupStatesByRun.clear();
+        
+        // Clear node execution states for all runs
+        nodeExecutionStateByRun.clear();
+        
+        // Clear completed runs tracker
+        completedRunIds.clear();
+        
+        // Clear tool execution and visualization trackers
+        toolExecutionTracker.clear();
+        for (const tracker of toolVisualizationTracker.values()) {
+            if (tracker.timeoutId) {
+                clearTimeout(tracker.timeoutId);
+            }
+        }
+        toolVisualizationTracker.clear();
+        
+        console.log('🧹 [WebSocket] Cleared all run-aware execution state trackers and pending animations');
     }
 
     return {connectionStatus, isConnected};

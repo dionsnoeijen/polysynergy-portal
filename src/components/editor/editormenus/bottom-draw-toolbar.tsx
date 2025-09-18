@@ -110,7 +110,7 @@ const BottomDrawToolbar: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 26 }}
-          className="absolute bottom-2 left-1/2 z-40 bg-zinc-800/90 border border-white/25 rounded-lg shadow-lg"
+          className="absolute bottom-2 left-1/2 z-[50] bg-zinc-800/90 border border-white/25 rounded-lg shadow-lg"
           style={{ translateX: "-50%" }}
           onClick={(e) => {
             // Close dropdowns when clicking outside

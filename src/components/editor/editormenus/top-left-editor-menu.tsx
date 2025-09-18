@@ -90,7 +90,7 @@ const TopLeftEditorMenu: React.FC = () => {
     });
 
     return (
-        <div className={`absolute z-auto left-2 top-2`}>
+        <div className={`absolute z-[50] left-2 top-2`}>
             <div
                 className="bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 p-2 rounded-lg flex flex-col items-center justify-center">
 

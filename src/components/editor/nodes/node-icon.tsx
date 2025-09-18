@@ -2,6 +2,7 @@ import React from "react";
 import clsx from "clsx";
 
 const isSimpleSvg = (svg: string): boolean => {
+    // Only mark as complex if it has features we can't safely convert
     const complexityIndicators = [
         /<style[\s\S]*?>[\s\S]*?<\/style>/,
         /<defs[\s\S]*?>[\s\S]*?<\/defs>/,
@@ -13,8 +14,7 @@ const isSimpleSvg = (svg: string): boolean => {
         /filter="/,
         /font-family="/,
         /class="/,
-        /fill="/,
-        /stroke="/,
+        // Remove fill and stroke from complexity check - we can replace those
         /stop-color=/,
         /stop-opacity=/,
     ];
@@ -31,9 +31,13 @@ const normalizeSvg = (raw: string, preserveColor: boolean = false): string => {
         .replace(/color="[^"]*"/g, "");
 
     if (!preserveColor) {
+        // More aggressive color replacement for light mode compatibility
         svg = svg
-            .replace(/fill="(?!none)[^"]*"/g, 'fill="currentColor"')
-            .replace(/stroke="(?!none)[^"]*"/g, 'stroke="currentColor"');
+            .replace(/fill="(?!none|transparent)[^"]*"/g, 'fill="currentColor"')
+            .replace(/stroke="(?!none|transparent)[^"]*"/g, 'stroke="currentColor"')
+            // Also handle fill/stroke without quotes
+            .replace(/fill='(?!none|transparent)[^']*'/g, "fill='currentColor'")
+            .replace(/stroke='(?!none|transparent)[^']*'/g, "stroke='currentColor'");
     }
 
     const hasViewBox = /viewBox="[^"]*"/.test(svg);
@@ -42,7 +46,8 @@ const normalizeSvg = (raw: string, preserveColor: boolean = false): string => {
     svg = svg.replace(svgOpenTagRegex, (_match, attrs) => {
         const viewBoxAttr = hasViewBox ? "" : ' viewBox="0 0 256 256"';
         const styleAttr = ' style="width: 100%; height: 100%; object-fit: contain;"';
-        const colorAttrs = preserveColor ? "" : ' fill="currentColor" stroke="currentColor"';
+        // Only add fill/stroke to root SVG if not preserving colors
+        const colorAttrs = preserveColor ? "" : ' fill="currentColor"';
         return `<svg${attrs}${viewBoxAttr}${styleAttr}${colorAttrs}>`;
     });
 

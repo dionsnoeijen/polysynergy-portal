@@ -53,12 +53,12 @@ export const useEditorEventHandlers = (
         );
     }, [openContextMenu, setShowAddingNode]);
 
-    const handleMouseDownDispatch = useCallback((e: React.MouseEvent) => {
+    const handleMouseDownDispatch = useCallback(() => {
         setIsMouseDown(true);
         
         switch (editorMode) {
             case EditorMode.Pan:
-                handlePanMouseDown(e);
+                handlePanMouseDown();
                 break;
             case EditorMode.Select:
                 handleEditorMouseDown();
@@ -75,7 +75,7 @@ export const useEditorEventHandlers = (
     const handleMouseMoveDispatch = useCallback((e: React.MouseEvent) => {
         handleMousePositionUpdate(e);
         if (isDragging || isPasting) return;
-        handleMouseMove(e);
+        handleMouseMove();
     }, [handleMousePositionUpdate, isDragging, isPasting, handleMouseMove]);
 
     const handleMouseUpDispatch = useCallback(() => {

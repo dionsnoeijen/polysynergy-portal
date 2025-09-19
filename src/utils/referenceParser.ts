@@ -28,13 +28,13 @@ export function parseMessageReferences(messageText: string): ParsedMessage {
 
     // Try to find and extract JSON arrays containing meta_data - more flexible approach
     // Look for patterns starting with [ and containing "meta_data"
-    const jsonMatches = messageText.match(/\[[^[]*?"meta_data"[^[]*?\]/gs);
+    const jsonMatches = messageText.match(/\[[^[]*?"meta_data"[^[]*?\]/g);
     
     if (jsonMatches) {
         for (const match of jsonMatches) {
             try {
                 // Clean up the match to make it valid JSON
-                let jsonString = match.trim();
+                const jsonString = match.trim();
                 
                 // Try to parse as JSON
                 const parsed = JSON.parse(jsonString);
@@ -54,11 +54,11 @@ export function parseMessageReferences(messageText: string): ParsedMessage {
                         cleanText = cleanText.replace(match, '').trim();
                     }
                 }
-            } catch (error) {
+            } catch {
                 // If that fails, try a more aggressive approach to find the JSON boundaries
                 try {
                     // Find the start of the array
-                    let startIdx = messageText.indexOf('[');
+                    const startIdx = messageText.indexOf('[');
                     if (startIdx === -1) continue;
                     
                     // Find the matching closing bracket by counting brackets
@@ -100,9 +100,9 @@ export function parseMessageReferences(messageText: string): ParsedMessage {
 
     // Clean up any leftover formatting issues and reference wrapper
     cleanText = cleanText
-        .replace(/<references>\s*<\/references>/gs, '') // Remove empty reference tags
-        .replace(/<references>\s*/gs, '') // Remove opening reference tag
-        .replace(/\s*<\/references>/gs, '') // Remove closing reference tag
+        .replace(/<references>[\s\S]*?<\/references>/g, '') // Remove empty reference tags
+        .replace(/<references>[\s\S]*/g, '') // Remove opening reference tag
+        .replace(/[\s\S]*?<\/references>/g, '') // Remove closing reference tag
         .replace(/Use the following references from the knowledge base if it helps:/g, '')
         .replace(/[ \t]+/g, ' ') // Multiple spaces/tabs to single space, but preserve newlines
         .replace(/\n\s*\n\s*\n/g, '\n\n') // Triple+ newlines to double newlines

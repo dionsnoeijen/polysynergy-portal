@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Rect, Circle, Line, Transformer, Text, Group } from 'react-konva';
 import { DrawingShape } from '@/stores/drawingStore';
+import Konva from 'konva';
 
 interface DrawingShapeComponentProps {
     shape: DrawingShape;
@@ -15,14 +16,17 @@ const DrawingShapeComponent: React.FC<DrawingShapeComponentProps> = ({
     onSelect,
     onUpdate
 }) => {
-    const shapeRef = useRef<unknown>();
-    const transformerRef = useRef<unknown>();
+    const shapeRef = useRef<Konva.Group>(null);
+    const transformerRef = useRef<Konva.Transformer>(null);
 
     useEffect(() => {
         if (isSelected && transformerRef.current && shapeRef.current) {
             // Attach transformer to the selected shape
             transformerRef.current.nodes([shapeRef.current]);
-            transformerRef.current.getLayer().batchDraw();
+            const layer = transformerRef.current.getLayer();
+            if (layer) {
+                layer.batchDraw();
+            }
         }
     }, [isSelected]);
 
@@ -69,8 +73,8 @@ const DrawingShapeComponent: React.FC<DrawingShapeComponentProps> = ({
         }
 
         // Reset scale to 1 after applying to width/height
-        node.scaleX(1);
-        node.scaleY(1);
+        (node as unknown as {scaleX: (val: number) => void}).scaleX(1);
+        (node as unknown as {scaleY: (val: number) => void}).scaleY(1);
     };
 
     // Helper function to get stroke dash array
@@ -88,24 +92,24 @@ const DrawingShapeComponent: React.FC<DrawingShapeComponentProps> = ({
         y: shape.y,
         rotation: shape.rotation || 0,
         draggable: true,
-        onClick: (e) => {
+        onClick: (e: Konva.KonvaEventObject<MouseEvent>) => {
             e.cancelBubble = true;
             if (onSelect) onSelect();
         },
-        onTap: (e) => {
+        onTap: (e: Konva.KonvaEventObject<TouchEvent>) => {
             e.cancelBubble = true;
             if (onSelect) onSelect();
         },
         onDragEnd: handleDragEnd,
         onTransformEnd: handleTransformEnd,
         // Cursor feedback
-        onMouseEnter: (e) => {
+        onMouseEnter: (e: Konva.KonvaEventObject<MouseEvent>) => {
             const stage = e.target.getStage();
             if (stage) {
                 stage.container().style.cursor = 'pointer';
             }
         },
-        onMouseLeave: (e) => {
+        onMouseLeave: (e: Konva.KonvaEventObject<MouseEvent>) => {
             const stage = e.target.getStage();
             if (stage) {
                 stage.container().style.cursor = 'default';

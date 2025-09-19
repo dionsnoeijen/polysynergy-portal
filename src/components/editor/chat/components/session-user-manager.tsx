@@ -66,7 +66,7 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
                 users = [];
             }
         } else if (Array.isArray(userVar.value)) {
-            users = userVar.value;
+            users = userVar.value as string[];
         }
     }
     

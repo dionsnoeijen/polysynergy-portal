@@ -386,7 +386,10 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
                 onAssignSelectedFiles={handleAssignSelectedFiles}
                 onEditMetadata={() => {
                     if (state.selectedFiles.length === 1) {
-                        handleEditMetadata(state.selectedFiles[0]);
+                        const selectedFile = directoryContents.files.find(f => f.path === state.selectedFiles[0]);
+                        if (selectedFile) {
+                            handleEditMetadata(selectedFile);
+                        }
                     }
                 }}
                 onDeleteSelected={() => {

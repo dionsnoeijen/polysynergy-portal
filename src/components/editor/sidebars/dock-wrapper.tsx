@@ -2,7 +2,7 @@ import React from "react";
 
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-import useDocumentationStore from "@/stores/documentationStore";
+// import useDocumentationStore from "@/stores/documentationStore";
 import { fetchNodeDocumentationAPI } from "@/api/documentationApi";
 
 import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
@@ -76,7 +76,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
     const nodes = useNodesStore((state) => state.nodes);
     const openDocs = useEditorStore((state) => state.openDocs);
     const setGroupNameOverride = useNodesStore((state) => state.setGroupNameOverride);
-    const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
+    // const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
 
 
     const node: Node | null | undefined = selectedNodes.length === 1 ?

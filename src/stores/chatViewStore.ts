@@ -285,8 +285,8 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                     sender: m.sender === "user" ? "user" : "agent",
                     text: m.text ?? "",
                     timestamp: tsMs || Date.now(),
-                    node_id: (m as unknown).node_id || null,  // Use node_id from backend (team_id/agent_id)
-                    run_id: (m as unknown).run_id || null,  // Use run_id from backend if available
+                    node_id: (m as {node_id?: string}).node_id || null,  // Use node_id from backend (team_id/agent_id)
+                    run_id: (m as {run_id?: string}).run_id || null,  // Use run_id from backend if available
                 };
             });
 

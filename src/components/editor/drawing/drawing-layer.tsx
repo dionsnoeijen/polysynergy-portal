@@ -57,7 +57,7 @@ export default function DrawingLayer() {
     // Drawing state
     const [currentPath, setCurrentPath] = useState<number[]>([])
     const [isDrawingPath, setIsDrawingPath] = useState(false)
-    const [isEditingText, setIsEditingText] = useState(false)
+    const [isEditingText] = useState(false) // setIsEditingText is currently unused
     
     // Shape drawing state
     const [isDrawingShape, setIsDrawingShape] = useState(false)

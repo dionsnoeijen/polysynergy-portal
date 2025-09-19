@@ -68,7 +68,7 @@ export const useRunsStore = create<RunsStore>((set, get) => ({
             // Merge with existing runs to preserve WebSocket updates and frontend-only data
             const state = get();
             const existingRuns = state.runs;
-            const mergedRuns = newRuns.map(apiRun => {
+            const mergedRuns = newRuns.map((apiRun: Run) => {
                 const existingRun = existingRuns.find(r => r.run_id === apiRun.run_id);
                 // Preserve frontend-only fields when merging
                 return existingRun ? { 
@@ -81,7 +81,7 @@ export const useRunsStore = create<RunsStore>((set, get) => ({
             
             // Add any runs that exist locally but not in API (recent WebSocket runs)
             existingRuns.forEach(existingRun => {
-                if (!newRuns.find(apiRun => apiRun.run_id === existingRun.run_id)) {
+                if (!newRuns.find((apiRun: Run) => apiRun.run_id === existingRun.run_id)) {
                     mergedRuns.unshift(existingRun);
                 }
             });

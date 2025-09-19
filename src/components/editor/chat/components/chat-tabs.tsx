@@ -53,13 +53,15 @@ const ChatTabs: React.FC<ChatTabsProps> = ({
         setLoading(true);
         (async () => {
             try {
-                await syncSessionFromBackend({
-                    projectId: activeProjectId,
-                    storageConfig: storageNow,
-                    sessionId: sid,
-                    userId: uid as string | undefined,
-                    limit: 200,
-                });
+                if (storageNow) {
+                    await syncSessionFromBackend({
+                        projectId: activeProjectId,
+                        storageConfig: storageNow as {type: "LocalAgentStorage" | "DynamoDBAgentStorage" | "LocalDb" | "DynamoDb"},
+                        sessionId: sid,
+                        userId: uid as string | undefined,
+                        limit: 200,
+                    });
+                }
             } catch (e) {
                 // Niet fataal; UI blijft lokale stream tonen.
                 console.warn("[tabs-sync] failed:", e);

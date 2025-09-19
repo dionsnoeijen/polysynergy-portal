@@ -1,11 +1,13 @@
 import React from 'react';
-import {Node, NodeCollapsedConnector} from '@/types/types';
+import {Node, NodeCollapsedConnector, NodeVariableType} from '@/types/types';
 import {MockNode} from '@/stores/mockStore';
 import {ChevronUpIcon, GlobeAltIcon} from '@heroicons/react/24/outline';
 import Connector from '@/components/editor/nodes/connector';
 import NodeIcon from '@/components/editor/nodes/node-icon';
 import PlayButton from '@/components/editor/nodes/rows/play-button';
 import ExecutionOrder from '@/components/editor/nodes/execution-order';
+import AvatarVariable from '@/components/editor/nodes/rows/avatar-variable';
+import interpretNodeVariableType from '@/utils/interpretNodeVariableType';
 
 interface CollapsedNodeProps {
     node: Node;
@@ -24,6 +26,13 @@ const CollapsedNode: React.FC<CollapsedNodeProps> = ({
     styles,
     onCollapse
 }) => {
+    // Find avatar variables to show in collapsed state
+    const avatarVariables = node.variables.filter(variable => {
+        const interpretedType = interpretNodeVariableType(variable);
+        return interpretedType.baseType === NodeVariableType.Avatar;
+    });
+    
+
     return (
         <>
             {mockNode && <ExecutionOrder mockNode={mockNode} centered={false}/>}
@@ -63,6 +72,22 @@ const CollapsedNode: React.FC<CollapsedNodeProps> = ({
                     <ChevronUpIcon className={`w-6 h-6 ${styles.mainText}`}/>
                 </button>
             </div>
+            
+            {/* Show avatar variables if present - more padding to avoid overlap with header */}
+            {avatarVariables.length > 0 && (
+                <div className={`-m-4 px-1 pb-1 pt-6 ${node.view.disabled && 'select-none opacity-0'}`}>
+                    {avatarVariables.map((variable) => (
+                        <AvatarVariable
+                            key={variable.handle}
+                            variable={variable}
+                            nodeId={node.id}
+                            disabled={node.view.disabled}
+                            categoryMainTextColor={styles.mainText}
+                            categorySubTextColor={styles.subText}
+                        />
+                    ))}
+                </div>
+            )}
             
             <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
         </>

@@ -232,11 +232,11 @@ export function getSessionInfo(promptNodeId: string): { sessionId?: string; user
         if (sessionId && sessionVar?.value) {
             if (Array.isArray(sessionVar.value)) {
                 // Session is a NodeVariable array
-                const sessionItem = sessionVar.value.find((v: any) => v.handle === sessionId);
-                sessionName = sessionItem?.value as string;
+                const sessionItem = sessionVar.value.find((v: unknown) => (v as {handle: string}).handle === sessionId);
+                sessionName = (sessionItem as {value?: string} | undefined)?.value;
             } else if (typeof sessionVar.value === 'object') {
                 // Session is a dict
-                sessionName = (sessionVar.value as any)[sessionId];
+                sessionName = (sessionVar.value as Record<string, unknown>)[sessionId] as string;
             }
         }
         

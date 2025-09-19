@@ -133,7 +133,7 @@ export default function RunHistoryAccordion() {
                             const isSelected = selectedRunId === run.run_id;
                             const isActive = activeRunId === run.run_id;
                             const isBackground = run.status === 'running' && !isActive;
-                            const isCompleted = run.status === 'success' || run.status === 'error';
+                            // const isCompleted = run.status === 'success' || run.status === 'error';
                             
                             // Debug logging
                             console.log(`[RunHistory] Run ${run.run_id.substring(0, 8)}: status=${run.status}, isActive=${isActive}, activeRunId=${activeRunId}`);

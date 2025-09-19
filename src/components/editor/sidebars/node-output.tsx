@@ -15,6 +15,7 @@ interface Run {
     run_id: string;
     timestamp: string;
     status?: 'success' | 'error' | 'running' | 'provided';
+    run_number?: number;
 }
 
 const NodeOutput: React.FC = (): React.ReactElement => {
@@ -31,9 +32,9 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     const activeRunId = useRunsStore((state) => state.activeRunId);
     const makeRunActive = useRunsStore((state) => state.makeRunActive);
     const moveActiveRunToBackground = useRunsStore((state) => state.moveActiveRunToBackground);
-    const getRunDuration = useRunsStore((state) => state.getRunDuration);
+    // const getRunDuration = useRunsStore((state) => state.getRunDuration);
     const runsStoreRuns = useRunsStore((state) => state.runs);
-    const fetchRunsFromStore = useRunsStore((state) => state.fetchRuns);
+    // const fetchRunsFromStore = useRunsStore((state) => state.fetchRuns);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [expandedNodes, setExpandedNodes] = useState<Record<string, any>>({});

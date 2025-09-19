@@ -187,8 +187,8 @@ export default function Editor() {
         }
         
         // Debounced store sync - shorter delay to minimize visual jump
-        clearTimeout((window as any)._domZoomTimeout);
-        (window as any)._domZoomTimeout = setTimeout(() => {
+        clearTimeout((window as unknown as {_domZoomTimeout: ReturnType<typeof setTimeout>})._domZoomTimeout);
+        (window as unknown as {_domZoomTimeout: ReturnType<typeof setTimeout>})._domZoomTimeout = setTimeout(() => {
             useEditorStore.getState().setZoomFactorForVersion(newZoom);
             useEditorStore.getState().setPanPositionForVersion({ x: newPanX, y: newPanY });
             
@@ -252,7 +252,7 @@ export default function Editor() {
             onMouseDown={(e) => {
                 handleDOMMouseDown(e);
                 if (!isDOMPanning.current) {
-                    handleMouseDownDispatch(e);
+                    handleMouseDownDispatch();
                 }
             }}
             onMouseMove={(e) => {
@@ -262,16 +262,16 @@ export default function Editor() {
                     handleMouseMoveDispatch(e);
                 }
             }}
-            onMouseUp={(e) => {
+            onMouseUp={() => {
                 handleDOMMouseUp();
                 if (!isDOMPanning.current) {
-                    handleMouseUpDispatch(e);
+                    handleMouseUpDispatch();
                 }
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={() => {
                 handleDOMMouseUp();
                 if (!isDOMPanning.current) {
-                    handleMouseLeaveDispatch(e);
+                    handleMouseLeaveDispatch();
                 }
             }}
             onContextMenu={handleContextMenu}

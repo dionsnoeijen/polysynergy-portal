@@ -211,9 +211,20 @@ const TransparencyDetails: React.FC<TransparencyDetailsProps> = ({ runId }) => {
             Team Member Responses ({runDetails.member_responses.length})
           </div>
           <div className="space-y-3">
-            {(runDetails.member_responses as any[]).map((member: any, index: number) => {
-              const isExpanded = expanded.memberResponses[index];
+            {(runDetails.member_responses as unknown[]).map((member: unknown, index: number) => {
+              const isExpanded: boolean = expanded.memberResponses[index] || false;
               const toolCallKey = `member-${index}`;
+              const memberData = member as {
+                agent_name?: string;
+                model?: string;
+                content?: string;
+                metrics?: {
+                  duration?: number;
+                  input_tokens?: number;
+                  output_tokens?: number;
+                };
+                tools?: unknown[];
+              };
               
               return (
                 <div key={index} className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3">
@@ -224,39 +235,34 @@ const TransparencyDetails: React.FC<TransparencyDetailsProps> = ({ runId }) => {
                     >
                       {isExpanded ? <ChevronDownIcon className="w-3 h-3" /> : <ChevronRightIcon className="w-3 h-3" />}
                       <span className="text-xs font-medium text-slate-800 dark:text-slate-100">
-                        {member.agent_name || 'Team Member'}
+                        {memberData.agent_name || 'Team Member'}
                       </span>
                       <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
-                        {member.model}
+                        {memberData.model}
                       </span>
                     </button>
-                    {member.metrics?.duration && (
+                    {memberData.metrics?.duration && (
                       <span className="text-[10px] text-slate-600 dark:text-slate-400">
-                        {formatDuration(member.metrics.duration)}
+                        {formatDuration(memberData.metrics.duration)}
                       </span>
                     )}
                   </div>
                   
                   {/* Member Response Content */}
                   <div className="text-xs text-slate-700 dark:text-slate-200 mb-2 whitespace-pre-wrap">
-                    {isExpanded ? member.content : (
-                      <>
-                        {member.content.substring(0, 200)}
-                        {member.content.length > 200 && '...'}
-                      </>
-                    )}
+                    {memberData.content || ''}
                   </div>
                   
                   {/* Member Metrics */}
-                  {member.metrics && (
+                  {memberData.metrics && (
                     <div className="flex gap-4 text-[10px] text-slate-600 dark:text-slate-400">
-                      <span>Input: {member.metrics.input_tokens} tokens</span>
-                      <span>Output: {member.metrics.output_tokens} tokens</span>
+                      <span>Input: {memberData.metrics.input_tokens} tokens</span>
+                      <span>Output: {memberData.metrics.output_tokens} tokens</span>
                     </div>
                   )}
                   
                   {/* Tool Calls - Expandable */}
-                  {member.tools && member.tools.length > 0 && (
+                  {memberData.tools && memberData.tools.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
                       <button
                         onClick={() => toggleToolExpanded(toolCallKey)}
@@ -264,33 +270,43 @@ const TransparencyDetails: React.FC<TransparencyDetailsProps> = ({ runId }) => {
                       >
                         {expanded.toolCalls[toolCallKey] ? <ChevronDownIcon className="w-3 h-3" /> : <ChevronRightIcon className="w-3 h-3" />}
                         <WrenchIcon className="w-3 h-3" />
-                        {member.tools.length} Tool Call{member.tools.length > 1 ? 's' : ''}
+                        {memberData.tools.length} Tool Call{memberData.tools.length > 1 ? 's' : ''}
                       </button>
                       
                       {expanded.toolCalls[toolCallKey] && (
                         <div className="space-y-2">
-                          {member.tools.map((tool: any, toolIndex: number) => (
-                            <div key={toolIndex} className="bg-slate-50 dark:bg-slate-900 rounded p-2">
-                              <div className="text-[10px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                {tool.tool_name}
-                              </div>
-                              {tool.tool_args && (
-                                <div className="text-[10px] text-slate-600 dark:text-slate-400 mb-1">
-                                  Args: <code className="bg-slate-200 dark:bg-slate-800 px-1 rounded">
-                                    {JSON.stringify(tool.tool_args)}
-                                  </code>
+                          {memberData.tools.map((tool: unknown, toolIndex: number) => {
+                            const toolData = tool as {
+                              tool_name?: string;
+                              name?: string;
+                              tool_args?: unknown;
+                              arguments?: string;
+                              result?: unknown;
+                            };
+                            
+                            return (
+                              <div key={toolIndex} className="bg-slate-50 dark:bg-slate-900 rounded p-2 text-[10px]">
+                                <div className="font-medium text-slate-800 dark:text-slate-200 mb-1">
+                                  {toolData.tool_name || toolData.name || 'Unknown Tool'}
                                 </div>
-                              )}
-                              {tool.result && (
-                                <div className="text-[10px] text-slate-600 dark:text-slate-400 mt-1">
-                                  <div className="font-medium mb-1">Result:</div>
-                                  <div className="bg-white dark:bg-slate-800 p-2 rounded max-h-32 overflow-y-auto whitespace-pre-wrap">
-                                    {typeof tool.result === 'string' ? tool.result : JSON.stringify(tool.result, null, 2)}
+                                {Boolean(toolData.tool_args) && (
+                                  <div className="text-slate-600 dark:text-slate-400 font-mono">
+                                    <strong>Args:</strong> {JSON.stringify(toolData.tool_args, null, 2)}
                                   </div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
+                                )}
+                                {Boolean(toolData.arguments) && (
+                                  <div className="text-slate-600 dark:text-slate-400 font-mono">
+                                    <strong>Args:</strong> {JSON.stringify(JSON.parse(toolData.arguments!), null, 2)}
+                                  </div>
+                                )}
+                                {Boolean(toolData.result) && (
+                                  <div className="text-slate-600 dark:text-slate-400 mt-1">
+                                    <strong>Result:</strong> {typeof toolData.result === 'string' ? toolData.result : JSON.stringify(toolData.result, null, 2)}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>

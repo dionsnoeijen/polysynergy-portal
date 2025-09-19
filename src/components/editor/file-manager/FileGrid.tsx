@@ -89,7 +89,7 @@ const GridItem: React.FC<GridItemProps> = memo(({
 
     // Refresh expired URL
     const refreshImageUrl = useCallback(async () => {
-        if (!fileInfo.url || !projectId || isRefreshing || isDirectory) return;
+        if (isDirectory || !('url' in fileInfo) || !fileInfo.url || !projectId || isRefreshing) return;
         
         const s3Path = extractS3Path(fileInfo.url);
         if (!s3Path) {
@@ -112,9 +112,9 @@ const GridItem: React.FC<GridItemProps> = memo(({
         } finally {
             setIsRefreshing(false);
         }
-    }, [fileInfo.url, projectId, extractS3Path, isRefreshing, isDirectory]);
+    }, [('url' in fileInfo) ? fileInfo.url : null, projectId, extractS3Path, isRefreshing, isDirectory]);
     
-    const imageUrl = refreshedUrl || fileInfo.url;
+    const imageUrl = refreshedUrl || (('url' in fileInfo) ? fileInfo.url : null);
 
     return (
         <div
@@ -136,7 +136,7 @@ const GridItem: React.FC<GridItemProps> = memo(({
                 if (!isDirectory) {
                     e.dataTransfer.setData('application/json', JSON.stringify({
                         filePaths: [item.path],
-                        fileUrls: [item.url || item.path] // Include URL for full file access
+                        fileUrls: [(('url' in item) ? item.url : null) || item.path] // Include URL for full file access
                     }));
                 }
             }}

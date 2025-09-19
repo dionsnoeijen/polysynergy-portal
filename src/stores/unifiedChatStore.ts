@@ -234,7 +234,7 @@ export const useUnifiedChatStore = create<UnifiedChatStore>((set, get) => ({
     },
 
     // Stream management
-    startStream: (conversationId, nodeId) => {
+    startStream: (/* conversationId, nodeId */) => {
         const streamId = uuidv4();
 
         set((state) => ({

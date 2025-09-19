@@ -62,8 +62,8 @@ export const getCategoryPlaneBackgroundColor = (
                 : "bg-yellow-200/60 dark:bg-yellow-700/70";
         case NodeType.Group:
             return highOpacity
-                ? "bg-green-400/20 dark:bg-green-700/70"
-                : "bg-green-400/10 dark:bg-green-700/70";
+                ? "bg-green-400/60 dark:bg-green-700/70"
+                : "bg-green-400/40 dark:bg-green-700/70";
         case NodeType.Flow:
         case NodeType.Jump:
             return highOpacity
@@ -89,7 +89,7 @@ export const getCategoryGradientBackgroundColor = (
         case NodeType.Note:
             return "bg-gradient-to-t to-transparent from-yellow-500/20";
         case NodeType.Group:
-            return "bg-gradient-to-t to-transparent from-green-400/20";
+            return "bg-gradient-to-t to-transparent from-green-400/50 dark:from-green-400/20";
         case NodeType.Flow:
         case NodeType.Jump:
             return "bg-gradient-to-t to-transparent from-pink-700/20";

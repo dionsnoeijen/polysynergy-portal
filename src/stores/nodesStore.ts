@@ -92,7 +92,7 @@ export type NodesStore = {
     getNodeVarString: (nodeId: string | null, handle: string) => string | null;
     getSessionIdForAgentNode: (agentNodeId: string | null) => string | null;
     getLiveContextForPrompt: (promptNodeId: string | null) => {
-        storageNow: any | null;
+        storageNow: unknown | null;
         sid: string | null;
         uid: string | null;
         agentNodeId: string | null;

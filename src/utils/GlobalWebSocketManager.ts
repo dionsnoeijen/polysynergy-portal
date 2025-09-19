@@ -23,8 +23,6 @@ class GlobalWebSocketSingleton {
 
         const manager = new WebSocketManager(websocketUrl, {
             debug: true,
-            enabled: true,
-            autoConnect: true,
             heartbeatInterval: 30000,
             pingTimeout: 5000,
             maxReconnectAttempts: 10,

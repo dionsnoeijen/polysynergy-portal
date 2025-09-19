@@ -119,7 +119,6 @@ const EnhancedDocumentationContent: React.FC<{ nodeType?: string }> = ({ nodeTyp
 
 const EnhancedDocs: React.FC = () => {
     const docsMarkdown = useEditorStore((state) => state.docsMarkdown);
-    const docsNodeId = useEditorStore((state) => state.docsNodeId);
     const closeDocs = useEditorStore((state) => state.closeDocs);
     const [editorTheme, setEditorTheme] = useState<"vs-dark" | "vs-light">("vs-dark");
     
@@ -191,21 +190,6 @@ const EnhancedDocs: React.FC = () => {
         }
     }, [documentationType, fetchAvailableNodes, hasInitialFetched, loadAllDocumentCounts]);
 
-    // Auto-select node when docsNodeId is set and we're on node tab
-    useEffect(() => {
-        if (docsNodeId && availableNodes.length > 0 && selectedNodeDoc !== docsNodeId) {
-            const matchingNode = availableNodes.find(node => node.id === docsNodeId);
-            if (matchingNode) {
-                setSelectedNodeDoc(docsNodeId);
-                // Also ensure we're on the node tab
-                if (documentationType !== 'node') {
-                    setDocumentationType('node');
-                }
-            } else {
-                console.log('No matching node found for docsNodeId:', docsNodeId, 'Available nodes:', availableNodes.map(n => n.id));
-            }
-        }
-    }, [documentationType, docsNodeId, availableNodes, selectedNodeDoc, hasInitialFetched, setDocumentationType]);
 
     const handleTabChange = (type: DocumentationType) => {
         setDocumentationType(type);
@@ -269,9 +253,9 @@ const EnhancedDocs: React.FC = () => {
                                 <strong>Category:</strong> {selectedNode.category || 'General'}
                             </div>
                             
-                            {selectedNode.description && (
+                            {(selectedNode as {description?: string}).description && (
                                 <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                                    <strong>Description:</strong> {selectedNode.description}
+                                    <strong>Description:</strong> {(selectedNode as {description?: string}).description}
                                 </div>
                             )}
                         </div>

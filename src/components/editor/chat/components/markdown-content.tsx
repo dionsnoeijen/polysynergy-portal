@@ -69,13 +69,13 @@ const Li: Components["li"] = ({ children }) => {
     if (typeof child === "string") {
       return child.trim().length > 0 || idx !== 0;
     }
-    if (isValidElement(child) && (child.type as any) === "br" && idx === 0) return false;
+    if (isValidElement(child) && (child.type as unknown) === "br" && idx === 0) return false;
     return true;
   });
 
   // 2) unwrap enkel <p>
-  if (trimmed.length === 1 && isValidElement(trimmed[0]) && (trimmed[0] as any).type === "p") {
-    return <li className="m-0">{(trimmed[0] as any).props.children}</li>;
+  if (trimmed.length === 1 && isValidElement(trimmed[0]) && (trimmed[0] as unknown as {type: string}).type === "p") {
+    return <li className="m-0">{(trimmed[0] as unknown as {props: {children: React.ReactNode}}).props.children}</li>;
   }
 
   return <li className="m-0">{trimmed}</li>;

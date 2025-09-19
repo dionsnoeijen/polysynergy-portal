@@ -1,7 +1,7 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo} from "react";
 import useNodesStore from "@/stores/nodesStore";
 import useChatViewStore from "@/stores/chatViewStore";
-import useEditorStore from "@/stores/editorStore";
+// import useEditorStore from "@/stores/editorStore";
 
 import PromptField from "@/components/editor/chat/components/prompt-field";
 import ChatTabs from "@/components/editor/chat/components/chat-tabs";
@@ -10,7 +10,7 @@ import SessionUserManager from "@/components/editor/chat/components/session-user
 import AIComplianceIndicator from "@/components/editor/chat/components/ai-compliance-indicator";
 import TeamMemberIndicators from "@/components/editor/chat/components/team-member-indicators";
 import {traceStorageConfiguration} from "@/utils/chatHistoryUtils";
-import {NodeVariable} from "@/types/types";
+// import {NodeVariable} from "@/types/types";
 
 const PROMPT_NODE_PATH = 'polysynergy_nodes.play.prompt.Prompt';
 
@@ -40,7 +40,7 @@ const Chat: React.FC = () => {
     const {sid} = getLiveContextForPrompt(selectedPromptNodeId);
     
     // Get project ID from editor store
-    const activeProjectId = useEditorStore(s => s.activeProjectId);
+    // const activeProjectId = useEditorStore(s => s.activeProjectId);
 
     // Check for storage configuration - reactive to both nodes AND connections
     const hasStorage = useMemo(() => {
@@ -57,12 +57,12 @@ const Chat: React.FC = () => {
     }, [selectedPromptNodeId, nodes]);
     
     // Get active user from prompt node  
-    const activeUser = useMemo(() => {
-        if (!selectedPromptNodeId) return '';
-        const promptNode = nodes.find(n => n.id === selectedPromptNodeId);
-        const activeUserVar = promptNode?.variables?.find(v => v.handle === 'active_user');
-        return (activeUserVar?.value as string) || '';
-    }, [selectedPromptNodeId, nodes]);
+    // const activeUser = useMemo(() => {
+    //     if (!selectedPromptNodeId) return '';
+    //     const promptNode = nodes.find(n => n.id === selectedPromptNodeId);
+    //     const activeUserVar = promptNode?.variables?.find(v => v.handle === 'active_user');
+    //     return (activeUserVar?.value as string) || '';
+    // }, [selectedPromptNodeId, nodes]);
     
 
     // ✅ session activeren zodra we ‘m kennen (of fallback op nodeId)

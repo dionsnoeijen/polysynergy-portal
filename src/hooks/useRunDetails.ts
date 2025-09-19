@@ -57,7 +57,7 @@ export function useRunDetails(runId: string | null) {
         const details = await api.getRunDetail(runId);
         
         console.log('[useRunDetails] Successfully fetched run details:', details);
-        setRunDetails(details);
+        setRunDetails(details as RunDetails);
       } catch (err) {
         console.error('[useRunDetails] Failed to fetch run details:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch run details');

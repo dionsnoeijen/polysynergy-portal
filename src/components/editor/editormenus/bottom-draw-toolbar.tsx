@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { PencilIcon, PhotoIcon, RectangleGroupIcon, CursorArrowRaysIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, PhotoIcon, CursorArrowRaysIcon } from "@heroicons/react/24/outline";
 import { BackspaceIcon } from "@heroicons/react/24/solid";
 import useEditorStore from "@/stores/editorStore";
 import useDrawingStore from "@/stores/drawingStore";
 import { EditorMode } from "@/types/types";
-import clsx from "clsx";
+// import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 
 const BottomDrawToolbar: React.FC = () => {
@@ -24,7 +24,7 @@ const BottomDrawToolbar: React.FC = () => {
   const setCurrentColor = useDrawingStore((state) => state.setCurrentColor);
   const setCurrentTool = useDrawingStore((state) => state.setCurrentTool);
   const setStrokeWidth = useDrawingStore((state) => state.setStrokeWidth);
-  const addNote = useDrawingStore((state) => state.addNote);
+  // const addNote = useDrawingStore((state) => state.addNote);
 
 
   const strokeWidths = [1, 2, 4, 6, 8, 12];
@@ -59,22 +59,22 @@ const BottomDrawToolbar: React.FC = () => {
     }
   }, [showToolbar]);
 
-  const handleAddNote = () => {
-    setCurrentTool('note');
-    if (activeVersionId) {
-      addNote({
-        x: 100,
-        y: 100,
-        width: 200,
-        height: 100,
-        rotation: 0,
-        text: 'Double click to edit...',
-        color: currentColor,
-        fontSize: 14,
-        versionId: activeVersionId
-      });
-    }
-  };
+  // const handleAddNote = () => {
+  //   setCurrentTool('note');
+  //   if (activeVersionId) {
+  //     addNote({
+  //       x: 100,
+  //       y: 100,
+  //       width: 200,
+  //       height: 100,
+  //       rotation: 0,
+  //       text: 'Double click to edit...',
+  //       color: currentColor,
+  //       fontSize: 14,
+  //       versionId: activeVersionId
+  //     });
+  //   }
+  // };
 
   const handleSelectTool = (tool: 'select' | 'note' | 'pen' | 'eraser' | 'rectangle' | 'circle' | 'image') => {
     setCurrentTool(tool);
@@ -161,7 +161,7 @@ const BottomDrawToolbar: React.FC = () => {
                         key={shape.id}
                         className={`w-full flex items-center space-x-2 p-2 rounded hover:bg-zinc-700 text-left transition-colors ${currentTool === shape.id ? 'bg-sky-500' : ''}`}
                         onClick={() => {
-                          setCurrentTool(shape.id as any);
+                          setCurrentTool(shape.id as unknown as 'select' | 'note' | 'pen' | 'eraser' | 'rectangle' | 'circle' | 'image');
                           setShowShapes(false);
                         }}
                       >

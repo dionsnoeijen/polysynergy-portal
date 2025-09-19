@@ -240,7 +240,7 @@ export function useSmartWebSocketListener(flowId: string) {
                 const existingRun = runsStore.runs.find(r => r.run_id === message.run_id);
                 if (!existingRun) {
                     runsStore.addNewRun({
-                        run_id: message.run_id,
+                        run_id: message.run_id!,
                         timestamp: new Date().toISOString(),
                         status: 'running',
                         startTime: Date.now(),
@@ -382,7 +382,7 @@ export function useSmartWebSocketListener(flowId: string) {
                                 console.log('[sync] Syncing session after streaming completion...');
                                 await chatView.syncSessionFromBackend({
                                     projectId: activeProjectId,
-                                    storageConfig: context.storageNow,
+                                    storageConfig: context.storageNow as {type: "LocalAgentStorage" | "DynamoDBAgentStorage" | "LocalDb" | "DynamoDb"},
                                     sessionId: context.sid,
                                     userId: context.uid as string | undefined,
                                     limit: 200,
@@ -409,7 +409,7 @@ export function useSmartWebSocketListener(flowId: string) {
                         runsStore.setActiveRunId(null);
                         
                         // Update run status to completed
-                        runsStore.updateRunFromWebSocket(message.run_id, {
+                        runsStore.updateRunFromWebSocket(message.run_id!, {
                             status: 'success',
                             duration: Date.now() - (runsStore.runs.find(r => r.run_id === message.run_id)?.startTime || Date.now())
                         });
@@ -417,7 +417,7 @@ export function useSmartWebSocketListener(flowId: string) {
                         console.log('⏸️ Ignoring run_end for different run_id:', message.run_id, 'vs active:', currentActiveRunId);
                         
                         // Still update background run status to completed
-                        runsStore.updateRunFromWebSocket(message.run_id, {
+                        runsStore.updateRunFromWebSocket(message.run_id!, {
                             status: 'success',
                             duration: Date.now() - (runsStore.runs.find(r => r.run_id === message.run_id)?.startTime || Date.now())
                         });
@@ -447,7 +447,7 @@ export function useSmartWebSocketListener(flowId: string) {
             
             // For visual node updates: Show for active run, but NOT for backgrounded runs
             const isBackgroundedRun = runsStore.backgroundedRunIds.has(message.run_id);
-            const forActiveRunOnly = !isViewingHistoricalRun && message.run_id === currentActiveRunId;
+            // const forActiveRunOnly = !isViewingHistoricalRun && message.run_id === currentActiveRunId;
             const forVisualUpdates = !isViewingHistoricalRun && !isBackgroundedRun;
             
             // For mock store updates (runs panel): Update for active run or selected historical run
@@ -537,7 +537,7 @@ export function useSmartWebSocketListener(flowId: string) {
                     nodeStates.set(node_id, nodeState);
 
                     // Skip execution classes if run has already ended
-                    if (completedRunIds.has(message.run_id)) {
+                    if (message.run_id && completedRunIds.has(message.run_id)) {
                         console.log(`⏰ [WebSocket] Skipping end_node execution classes for node ${node_id} - run ${message.run_id} already completed`);
                         return;
                     }
@@ -556,7 +556,7 @@ export function useSmartWebSocketListener(flowId: string) {
                         // Schedule end animation with minimum display time
                         const animationTimeout = setTimeout(() => {
                             // Skip execution classes if run has already ended
-                            if (completedRunIds.has(message.run_id)) {
+                            if (message.run_id && completedRunIds.has(message.run_id)) {
                                 console.log(`⏰ [WebSocket] Skipping delayed execution classes for node ${node_id} - run ${message.run_id} already completed`);
                                 pendingAnimations.delete(node_id);
                                 return;
@@ -636,7 +636,7 @@ export function useSmartWebSocketListener(flowId: string) {
                             groupEl.classList.add('executing');
                         } else if (eventType === 'end_node') {
                             // Skip execution classes if run has already ended
-                            if (completedRunIds.has(message.run_id)) {
+                            if (message.run_id && completedRunIds.has(message.run_id)) {
                                 console.log(`⏰ [WebSocket] Skipping group end_node execution classes for node ${node_id} - run ${message.run_id} already completed`);
                                 return;
                             }

@@ -29,7 +29,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
         setDeleteConnectionDialogOpen(true, connection.id);
     };
 
-    const { theme } = useTheme();
+    const { theme, resolvedTheme } = useTheme();
     const rawMockConnection = useMockStore(
         (state) => state.getMockConnection(connection.id)
     );
@@ -56,7 +56,10 @@ const Connection: React.FC<Props> = ({ connection }) => {
 
     let color = connection.collapsed ? "#cccccc" : "#ffffff";
 
-    if (theme === "light") {
+    // Use resolvedTheme to handle system theme correctly
+    const currentTheme = theme === 'system' ? resolvedTheme : theme;
+
+    if (currentTheme === "light") {
         color = connection.collapsed
             ? "rgb(7, 89, 133)"
             : "rgb(14, 165, 233)";

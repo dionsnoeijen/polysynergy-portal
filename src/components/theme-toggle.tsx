@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes';
 import { MoonIcon, SunIcon, ComputerDesktopIcon } from "@heroicons/react/24/outline";
 
 export default function ThemeToggle() {
-    const { theme, setTheme, systemTheme, resolvedTheme } = useTheme();
+    const { theme, setTheme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {

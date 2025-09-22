@@ -3,10 +3,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
+import { MoonIcon, SunIcon, ComputerDesktopIcon } from "@heroicons/react/24/outline";
 
 export default function ThemeToggle() {
-    const { theme, setTheme } = useTheme();
+    const { theme, setTheme, systemTheme, resolvedTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -14,7 +14,19 @@ export default function ThemeToggle() {
     }, []);
 
     const toggleTheme = () => {
-        setTheme(theme === 'dark' ? 'light' : 'dark');
+        if (theme === 'system') {
+            // If currently system, switch to opposite of current resolved theme
+            setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+        } else {
+            // If explicitly set, cycle through: light -> dark -> system
+            if (theme === 'light') {
+                setTheme('dark');
+            } else if (theme === 'dark') {
+                setTheme('system');
+            } else {
+                setTheme('light');
+            }
+        }
     };
 
     if (!mounted) {
@@ -40,13 +52,22 @@ export default function ThemeToggle() {
     return (
         <button
             onClick={toggleTheme}
-            aria-label="Toggle Dark Mode"
+            aria-label="Toggle Theme"
             className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            title={
+                theme === 'system'
+                    ? `Auto (${resolvedTheme})`
+                    : theme === 'dark'
+                        ? 'Dark mode'
+                        : 'Light mode'
+            }
         >
-            {theme === 'dark' ? (
+            {theme === 'system' ? (
+                <ComputerDesktopIcon className="w-5 h-5" />
+            ) : theme === 'dark' ? (
                 <SunIcon className="w-5 h-5" />
             ) : (
-                <MoonIcon className={`w-5 h-5`} />
+                <MoonIcon className="w-5 h-5" />
             )}
         </button>
     );

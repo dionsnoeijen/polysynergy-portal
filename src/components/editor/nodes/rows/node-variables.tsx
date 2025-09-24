@@ -20,6 +20,7 @@ import NodeVariablePlaceholder from "@/components/editor/nodes/rows/node-variabl
 import TemplateVariable from "@/components/editor/nodes/rows/template-variable";
 import AvatarVariable from "@/components/editor/nodes/rows/avatar-variable";
 import ImageVariable from "@/components/editor/nodes/rows/image-variable";
+import OAuthVariable from "@/components/editor/nodes/rows/oauth-variable";
 
 type Props = {
     node: Node;
@@ -159,6 +160,8 @@ const getVariableComponent = (
             return <AvatarVariable key={key} {...commonProps} />;
         case NodeVariableType.Image:
             return <ImageVariable key={key} {...commonProps} />;
+        case NodeVariableType.OAuth:
+            return <OAuthVariable key={key} {...commonProps} />;
         case NodeVariableType.Boolean:
         case NodeVariableType.TruePath:
         case NodeVariableType.FalsePath:

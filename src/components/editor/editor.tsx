@@ -13,6 +13,7 @@ import AddNode from "@/components/editor/add-node";
 import PointZeroIndicator from "@/components/editor/point-zero-indicator";
 import EditorIntroTour from "@/components/guidedtour/editor-intro-tour";
 import IsExecuting from "@/components/editor/is-executing";
+import OAuthPopup from "@/components/oauth/oauth-popup";
 
 import { useEditorTransform } from "@/hooks/editor/useEditorTransform";
 import { useEditorEventHandlers } from "@/hooks/editor/useEditorEventHandlers";
@@ -350,6 +351,9 @@ export default function Editor() {
             
             {/* Minimap in top-right corner */}
             <Minimap />
+
+            {/* OAuth Authorization Popup */}
+            <OAuthPopup />
         </div>
     );
 }

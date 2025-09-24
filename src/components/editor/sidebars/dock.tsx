@@ -38,6 +38,7 @@ import {
     NodeSubType
 } from "@/hooks/editor/nodes/useNodeColor";
 import VariableTypeAvatar from "@/components/editor/sidebars/dock/variable-type-avatar";
+import VariableTypeOAuth from "@/components/editor/sidebars/dock/variable-type-oauth";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -66,6 +67,7 @@ export const VariableTypeComponents = {
     [NodeVariableType.Template]: VariableTypeTemplate,
     [NodeVariableType.Avatar]: VariableTypeAvatar,
     [NodeVariableType.Image]: VariableTypeImage,
+    [NodeVariableType.OAuth]: VariableTypeOAuth,
     [NodeVariableType.Node]: null,
 };
 
@@ -202,14 +204,19 @@ const Dock: React.FC<Props> = ({toggleClose, ...restProps}) => {
                         <>
                             {node.variables.map((variable: NodeVariable) => {
                                 // For math nodes, show all input variables, otherwise only dock variables
-                                const shouldShow = node.category === 'math' ? 
-                                    (variable.has_in === true && variable.node !== false) : 
+                                const shouldShow = node.category === 'math' ?
+                                    (variable.has_in === true && variable.node !== false) :
                                     variable.has_dock;
-                                    
+
                                 if (!shouldShow) return null;
-                                
+
                                 const {baseType} = interpretNodeVariableType(variable);
+                                console.log('🔑 [DEBUG] Dock variable:', variable.handle, 'type:', variable.type, 'baseType:', baseType, 'has_dock:', variable.has_dock);
                                 const VariableComponent = VariableTypeComponents[baseType];
+
+                                if (!VariableComponent) {
+                                    console.log('🔑 [DEBUG] No VariableComponent found for baseType:', baseType);
+                                }
 
                                 return VariableComponent ? (
                                     <div key={node.id + '-' + variable.handle}>

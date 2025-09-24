@@ -69,8 +69,12 @@ const NodeChatBubble: React.FC<Props> = ({nodeId}) => {
                 >
                     <div
                         ref={scrollContainerRef}
-                        className="overflow-y-auto max-h-[200px] pr-1 space-y-2"
-                        onWheel={(e) => e.stopPropagation()}
+                        className="overflow-y-scroll max-h-[200px] pr-1 space-y-2"
+                        style={{ scrollbarWidth: 'thin' }}
+                        onWheel={(e) => {
+                            // Stop propagation to prevent editor zoom
+                            e.stopPropagation();
+                        }}
                     >
                         <div className="text-zinc-800 dark:text-gray-100 text-xs">
                             {aggregateText}

@@ -11,6 +11,7 @@ import {ConnectionStatus} from '@/utils/WebSocketManager';
 
 // ⬇️ NIEUW
 import useChatViewStore from '@/stores/chatViewStore';
+import useInteractionStore, { InteractionEvent } from '@/stores/interactionStore';
 
 type ExecutionMessage = {
     node_id?: string;
@@ -172,6 +173,24 @@ export function useSmartWebSocketListener(flowId: string) {
 
             // ⬇️ chat-view store ophalen
             const chatView = useChatViewStore.getState();
+
+            // ⬇️ interaction store ophalen
+            const interactionStore = useInteractionStore.getState();
+
+            // ---- INTERACTION EVENTS ----
+            // Handle interaction events (e.g. OAuth authorization required)
+            if ('interaction_type' in message && (message as unknown as { type: string }).type === 'interaction_event') {
+                const interactionEvent = message as unknown as InteractionEvent;
+                console.log('🔑 [WebSocket] Received interaction event:', interactionEvent.interaction_type, 'for node:', interactionEvent.node_id);
+
+                // Handle OAuth authorization required
+                if (interactionEvent.interaction_type === 'oauth_authorization_required') {
+                    console.log('🔑 [WebSocket] OAuth authorization required:', interactionEvent.data);
+                    interactionStore.openOAuthPopup(interactionEvent);
+                }
+
+                return; // Early return for interaction events
+            }
 
             const eventType = message.event;
             const node_id = message.node_id;

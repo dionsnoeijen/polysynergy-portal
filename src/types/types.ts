@@ -114,6 +114,7 @@ export enum NodeVariableType {
     Float = 'float',
     Avatar = 'avatar',
     Image = 'image',
+    OAuth = 'oauth',
 }
 
 export enum NodeType {

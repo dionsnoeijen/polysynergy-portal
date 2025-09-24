@@ -58,6 +58,14 @@ const ServiceForm: React.FC = () => {
         [handle: string]: { variables: NodeVariable[]; nodeIds: string[] }
     }>({});
     const [nodeNames, setNodeNames] = useState<{ [nodeId: string]: string }>({});
+    const [tempService, setTempService] = useState<{
+        id: string;
+        handle: string;
+        variant: number;
+        name: string;
+        description: string;
+        category: string;
+    } | null>(null);
 
     let node = undefined;
 
@@ -94,6 +102,19 @@ const ServiceForm: React.FC = () => {
         setIcon(node.icon || "");
         setDescription(node.service?.description || "");
         setNodeNames({[node.id]: node.name});
+
+        // Als we een nieuwe service aanmaken, maak een tijdelijke service object
+        if (formType === FormType.AddService && !node.service) {
+            setTempService({
+                id: "temp-id",
+                handle: uniqueNamesGenerator({dictionaries: [adjectives, animals, colors]}),
+                variant: 1,
+                name: "",
+                description: "",
+                category: "",
+            });
+        }
+
         if (node.type === NodeType.Group) {
             const nodesInGroup = getNodesInGroup(node.id);
             const nodesByIds = getNodesByIds(nodesInGroup);
@@ -108,7 +129,7 @@ const ServiceForm: React.FC = () => {
             const {variablesByHandle} = findPublishedVariables([node]);
             setPublishedVariables(variablesByHandle);
         }
-    }, [getNodesByIds, getNodesInGroup, node]);
+    }, [getNodesByIds, getNodesInGroup, node, formType]);
 
     if (formType === FormType.AddService) {
         if (selectedNodes.length > 1) {
@@ -135,26 +156,21 @@ const ServiceForm: React.FC = () => {
         return null;
     }
 
-    if (!node.service) {
-        node.service = {
-            id: "temp-id",
-            handle: uniqueNamesGenerator({dictionaries: [adjectives, animals, colors]}),
-            variant: 1,
-            name: "",
-            description: "",
-            category: "",
-        };
-    }
+    // Gebruik tempService voor nieuwe services (geen directe node mutatie)
+    const currentService = node.service || tempService;
 
     const handleCancel = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Reset icon bij cancel van nieuwe service
         if (formType === FormType.AddService) {
-            delete node.service;
             node.icon = undefined;
         }
+
         setSelectedNodes([]);
         clearTempNodes();
         clearTempConnections();
+        setTempService(null); // Reset lokale temp service state
         closeForm();
     };
 
@@ -243,8 +259,11 @@ const ServiceForm: React.FC = () => {
 
     const handleNameChange = (newName: string) => {
         setName(newName);
-        if (!node.service) return;
-        node.service.name = newName;
+
+        // Update tempService als we een nieuwe service maken
+        if (formType === FormType.AddService && tempService) {
+            setTempService(prev => prev ? {...prev, name: newName} : null);
+        }
 
         if (newName.trim()) {
             setNameError(false);
@@ -253,14 +272,20 @@ const ServiceForm: React.FC = () => {
 
     const handleDescriptionChange = (newDescription: string) => {
         setDescription(newDescription);
-        if (!node.service) return;
-        node.service.description = newDescription;
+
+        // Update tempService als we een nieuwe service maken
+        if (formType === FormType.AddService && tempService) {
+            setTempService(prev => prev ? {...prev, description: newDescription} : null);
+        }
     };
 
     const handleCategoryChange = (newCategory: string) => {
         setCategory(newCategory);
-        if (!node.service) return;
-        node.service.category = newCategory;
+
+        // Update tempService als we een nieuwe service maken
+        if (formType === FormType.AddService && tempService) {
+            setTempService(prev => prev ? {...prev, category: newCategory} : null);
+        }
 
         if (newCategory.trim()) {
             setCategoryError(false);
@@ -401,7 +426,11 @@ const ServiceForm: React.FC = () => {
                     <Text>Service preview</Text>
                 </div>
                 <div className="flex justify-end">
-                    <Node node={node} preview={true}/>
+                    <Node node={{
+                        ...node,
+                        service: currentService || undefined,
+                        icon: icon || node.icon
+                    }} preview={true}/>
                 </div>
             </section>
 

@@ -37,6 +37,7 @@ import {
     NodeSubType
 } from "@/hooks/editor/nodes/useNodeColor";
 import VariableTypeAvatar from "@/components/editor/sidebars/dock/variable-type-avatar";
+import VariableTypeOAuth from "@/components/editor/sidebars/dock/variable-type-oauth";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
@@ -65,6 +66,7 @@ export const VariableTypeComponents = {
     [NodeVariableType.Template]: VariableTypeTemplate,
     [NodeVariableType.Avatar]: VariableTypeAvatar,
     [NodeVariableType.Image]: VariableTypeImage,
+    [NodeVariableType.OAuth]: VariableTypeOAuth,
     [NodeVariableType.Node]: null,
 };
 

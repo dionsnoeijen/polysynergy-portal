@@ -26,6 +26,11 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         return { baseType: NodeVariableType.Avatar, validationType: NodeVariableType.Avatar, containsNone };
     }
 
+    // Check for OAuth authorization button metadata
+    if ((variable.metadata as { button?: string })?.button === 'oauth_authorize') {
+        return { baseType: NodeVariableType.OAuth, validationType: NodeVariableType.OAuth, containsNone };
+    }
+
     if (types.includes('true_path')) {
         return { baseType: NodeVariableType.TruePath, validationType: types.join(','), containsNone };
     } else if (types.includes('false_path')) {

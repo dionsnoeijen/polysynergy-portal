@@ -2,72 +2,27 @@ import React from "react";
 
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
-// import useDocumentationStore from "@/stores/documentationStore";
 import { fetchNodeDocumentationAPI } from "@/api/documentationApi";
 
-import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
-import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";
-import VariableTypeDict from "@/components/editor/sidebars/dock/variable-type-dict";
-import VariableTypeBoolean from "@/components/editor/sidebars/dock/variable-type-boolean";
 import GroupName from "@/components/editor/sidebars/dock/group-name";
 import VariableGroup from "@/components/editor/sidebars/dock/variable-group";
 import useVariablesForGroup from "@/hooks/editor/nodes/useVariablesForGroup";
-import VariableTypeList from "@/components/editor/sidebars/dock/variable-type-list";
-import VariableTypeBytes from "@/components/editor/sidebars/dock/variable-type-bytes";
-import VariableTypeRichTextArea from "@/components/editor/sidebars/dock/variable-type-rich-text-area";
-import VariableTypeSecretString from "@/components/editor/sidebars/dock/variable-type-secret-string";
-import VariableTypeTextArea from "@/components/editor/sidebars/dock/variable-type-text-area";
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
-import VariableTypeCode from "@/components/editor/sidebars/dock/variable-type-code";
 import NodeHandle from "@/components/editor/sidebars/dock/node-handle";
-import VariableTypeJson from "@/components/editor/sidebars/dock/variable-type-json";
-import VariableTypeFiles from "@/components/editor/sidebars/dock/variable-type-files";
-import VariableTypeImage from "@/components/editor/sidebars/dock/variable-type-image";
-
-import {Node, NodeVariable, NodeVariableType} from "@/types/types";
+import {Node, NodeVariable, NodeVariableType, VariableTypeComponents} from "@/types/types";
 import {Button} from "@/components/button";
 import {InformationCircleIcon} from "@heroicons/react/24/outline";
-import VariableTypeTemplate from "@/components/editor/sidebars/dock/variable-type-template";
 import {Input} from "@/components/input";
 import {Field, Fieldset, Label} from "@/components/fieldset";
 import {
     getCategoryGradientBackgroundColor,
-    getCategoryBorderColor, // getCategoryPlaneBackgroundColor,
+    getCategoryBorderColor,
     getCategoryTextColor,
     NodeSubType
 } from "@/hooks/editor/nodes/useNodeColor";
-import VariableTypeAvatar from "@/components/editor/sidebars/dock/variable-type-avatar";
-import VariableTypeOAuth from "@/components/editor/sidebars/dock/variable-type-oauth";
 
 type Props = React.ComponentPropsWithoutRef<"div"> & {
     toggleClose: () => void;
-};
-
-export const VariableTypeComponents = {
-    [NodeVariableType.String]: VariableTypeString,
-    [NodeVariableType.Bytes]: VariableTypeBytes,
-    [NodeVariableType.Number]: VariableTypeNumber,
-    [NodeVariableType.Int]: VariableTypeNumber,
-    [NodeVariableType.Float]: VariableTypeNumber,
-    [NodeVariableType.Dict]: VariableTypeDict,
-    [NodeVariableType.Boolean]: VariableTypeBoolean,
-    [NodeVariableType.List]: VariableTypeList,
-    [NodeVariableType.DateTime]: VariableTypeString,
-    [NodeVariableType.TruePath]: null,
-    [NodeVariableType.FalsePath]: null,
-    [NodeVariableType.Unknown]: null,
-    [NodeVariableType.Dependency]: null,
-    [NodeVariableType.SecretString]: VariableTypeSecretString,
-    [NodeVariableType.TextArea]: VariableTypeTextArea,
-    [NodeVariableType.RichTextArea]: VariableTypeRichTextArea,
-    [NodeVariableType.Code]: VariableTypeCode,
-    [NodeVariableType.Json]: VariableTypeJson,
-    [NodeVariableType.Files]: VariableTypeFiles,
-    [NodeVariableType.Template]: VariableTypeTemplate,
-    [NodeVariableType.Avatar]: VariableTypeAvatar,
-    [NodeVariableType.Image]: VariableTypeImage,
-    [NodeVariableType.OAuth]: VariableTypeOAuth,
-    [NodeVariableType.Node]: null,
 };
 
 // This is a wrapper version of Dock without absolute positioning for use in tabs
@@ -107,6 +62,10 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
 
 
     for (const node of nodes) {
+        // Add node-level override for targetHandle === 'node'
+        const nodeKey = `${node.id}::node`;
+        groupNameOverrides[nodeKey] = node.group_name_override ?? '';
+
         for (const variable of node.variables) {
             if (!variable.handle) continue;
 
@@ -199,6 +158,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
                             if (!variable.has_dock) return null;
                             const {baseType} = interpretNodeVariableType(variable);
                             const VariableComponent = VariableTypeComponents[baseType];
+
 
                             return VariableComponent ? (
                                 <div key={node.id + '-' + variable.handle} className="min-w-0 overflow-hidden">

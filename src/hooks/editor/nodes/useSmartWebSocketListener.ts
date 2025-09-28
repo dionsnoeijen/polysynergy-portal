@@ -167,6 +167,16 @@ export function useSmartWebSocketListener(flowId: string) {
                 return;
             }
 
+            console.log('🔍 [DEBUG] WebSocket message received:', {
+                event: message.event,
+                node_id: message.node_id,
+                run_id: message.run_id,
+                status: message.status,
+                order: message.order,
+                timestamp: new Date().toISOString(),
+                fullMessage: message
+            });
+
             const editorStore = useEditorStore.getState();
             const nodesStore = useNodesStore.getState();
             const mockStore = useMockStore.getState();
@@ -194,6 +204,14 @@ export function useSmartWebSocketListener(flowId: string) {
 
             const eventType = message.event;
             const node_id = message.node_id;
+
+            // Special debug for run_start event
+            if (eventType === 'run_start') {
+                console.log('🚀 [DEBUG] RUN_START event received:', {
+                    run_id: message.run_id,
+                    timestamp: new Date().toISOString()
+                });
+            }
 
             // ---- STREAM CONTENT ----
             if ((eventType === "RunContent" || eventType === "TeamRunContent")
@@ -253,7 +271,7 @@ export function useSmartWebSocketListener(flowId: string) {
             if (eventType === 'run_start') {
                 console.log('🚀 [WebSocket] Received run_start event for run_id:', message.run_id);
                 cleanupExecutionGlow();
-                
+
                 // Update runs store - this might be from a different source than useHandlePlay
                 const runsStore = useRunsStore.getState();
                 const existingRun = runsStore.runs.find(r => r.run_id === message.run_id);
@@ -266,15 +284,16 @@ export function useSmartWebSocketListener(flowId: string) {
                         lastEventTime: Date.now()
                     });
                 }
-                
+
                 // Auto-start log polling for fire-and-forget executions
                 console.log('📊 [WebSocket] Auto-starting log polling for run_start');
                 window.dispatchEvent(new CustomEvent('restart-log-polling'));
-                
+
                 // Also switch to output tab to show logs
                 window.dispatchEvent(new CustomEvent('switch-to-output-tab'));
-                
-                return;
+
+                // Don't return here - continue processing other events
+                console.log('🔍 [DEBUG] run_start processed, continuing with other event processing...');
             }
 
             // ---- TOOLS UI ----
@@ -446,6 +465,63 @@ export function useSmartWebSocketListener(flowId: string) {
                     const data = await getConnectionExecutionDetails(activeVersionId, message.run_id as string);
                     mockStore.setMockConnections(data);
                     mockStore.setHasMockData(true);
+
+                    // Fetch results for the last executed node (for play button executions)
+                    const mockNodes = mockStore.getMockNodesForRun(message.run_id!);
+                    if (mockNodes.length > 0) {
+                        // Find the node with highest order (last executed)
+                        const lastNode = mockNodes.reduce((prev, curr) =>
+                            curr.order > prev.order ? curr : prev
+                        );
+
+                        // Import getNodeExecutionDetails dynamically to avoid circular dependency
+                        const { getNodeExecutionDetails } = await import('@/api/executionApi');
+
+                        // Get the original node ID (without order suffix)
+                        const originalNodeId = lastNode.id.replace(/-\d+$/, '');
+
+                        try {
+                            const executeResult = await getNodeExecutionDetails(
+                                activeVersionId,
+                                message.run_id!,
+                                originalNodeId,
+                                lastNode.order,
+                                'mock',
+                                'mock' // Default to mock substage, could be enhanced
+                            );
+
+                            // Store the result for the last executed node
+                            mockStore.setMockResultForNode(originalNodeId, executeResult);
+                            console.log('💾 [WebSocket] Stored execution result for last node:', originalNodeId);
+
+                            // ALSO update the real node variables with execution results (only for image nodes/variables)
+                            if (executeResult && executeResult.variables) {
+                                const node = nodesStore.nodes.find(n => n.id === originalNodeId);
+                                if (node) {
+                                    // Use imageNodeUtils to determine which variables should be updated
+                                    const { getUpdatableVariableHandles } = await import('@/utils/imageNodeUtils');
+                                    const updatableHandles = getUpdatableVariableHandles(node, executeResult.variables);
+
+                                    for (const variableHandle of updatableHandles) {
+                                        const variableValue = executeResult.variables[variableHandle];
+                                        // Update the real node variable so it shows in the UI
+                                        nodesStore.updateNodeVariable(originalNodeId, variableHandle, variableValue);
+                                        console.log('🖼️ [WebSocket] Updated image variable:', originalNodeId, variableHandle, typeof variableValue === 'object' ? '[Object]' : variableValue);
+                                    }
+                                }
+                            }
+
+                            // Also store for play button nodes if this was initiated by one
+                            const playNodes = nodesStore.nodes.filter(n => n.has_play_button);
+                            for (const playNode of playNodes) {
+                                // Store result for all play nodes (they can access the last node's result)
+                                mockStore.setMockResultForNode(playNode.id, executeResult);
+                                console.log('💾 [WebSocket] Stored execution result for play node:', playNode.id);
+                            }
+                        } catch (error) {
+                            console.error('[WebSocket] Failed to fetch node execution details:', error);
+                        }
+                    }
                 }, 100);
                 return;
             }
@@ -468,9 +544,21 @@ export function useSmartWebSocketListener(flowId: string) {
             const isBackgroundedRun = runsStore.backgroundedRunIds.has(message.run_id);
             // const forActiveRunOnly = !isViewingHistoricalRun && message.run_id === currentActiveRunId;
             const forVisualUpdates = !isViewingHistoricalRun && !isBackgroundedRun;
-            
+
             // For mock store updates (runs panel): Update for active run or selected historical run
             const forCurrentView = !isViewingHistoricalRun && (!selectedRunId || message.run_id === selectedRunId || message.run_id === currentActiveRunId);
+
+            console.log('🔍 [DEBUG] Event filtering check:', {
+                event: eventType,
+                message_run_id: message.run_id,
+                currentActiveRunId,
+                selectedRunId,
+                isViewingHistoricalRun,
+                isBackgroundedRun,
+                forVisualUpdates,
+                forCurrentView,
+                backgroundedRunIds: Array.from(runsStore.backgroundedRunIds)
+            });
 
             const el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement | null;
             const nodeFlowNode = nodesStore.getNode(node_id);
@@ -493,7 +581,7 @@ export function useSmartWebSocketListener(flowId: string) {
 
                 // Always update mock store for runs panel (for all runs)
                 if (forCurrentView) {
-                    mockStore.addOrUpdateMockNode({
+                    const mockNodeData = {
                         id: `${node_id}-${message.order || 0}`,
                         handle: nodeFlowNode?.handle,
                         runId: message.run_id,
@@ -502,7 +590,12 @@ export function useSmartWebSocketListener(flowId: string) {
                         started: eventType === 'start_node',
                         variables: {},
                         status: eventType === 'start_node' ? 'executing' : (message.status || 'killed'),
-                    } as MockNode);
+                    } as MockNode;
+
+                    console.log('🔍 [DEBUG] Adding mock node to store:', mockNodeData);
+                    mockStore.addOrUpdateMockNode(mockNodeData);
+                } else {
+                    console.log('🔍 [DEBUG] Skipping mock store update - forCurrentView is false');
                 }
             }
 

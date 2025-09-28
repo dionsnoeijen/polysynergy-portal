@@ -1,6 +1,7 @@
 import React from 'react';
 import useEditorStore from "@/stores/editorStore";
 import {FormType} from "@/types/types";
+import {useSmartWebSocketListener} from "@/hooks/editor/nodes/useSmartWebSocketListener";
 import DynamicRouteForm from "@/components/editor/forms/dynamic-route-form";
 import ScheduleForm from "@/components/editor/forms/schedule-form";
 import ServiceForm from "@/components/editor/forms/service-form";
@@ -22,6 +23,15 @@ import PlayButtonsForm from "@/components/editor/forms/play-buttons-form";
 
 const Form: React.FC = () => {
     const formType = useEditorStore((state) => state.formType);
+    const activeVersionId = useEditorStore((state) => state.activeVersionId);
+
+    // Initialize WebSocket at form level to persist across form navigation
+    const { connectionStatus, isConnected } = useSmartWebSocketListener(activeVersionId as string);
+
+    // Log WebSocket status for debugging
+    React.useEffect(() => {
+        console.log('🔍 [Form] WebSocket status:', { isConnected, connectionStatus, activeVersionId });
+    }, [isConnected, connectionStatus, activeVersionId]);
 
     return (
         <div>

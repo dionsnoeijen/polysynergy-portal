@@ -29,7 +29,7 @@ const VariableGroup: React.FC<Props> = ({
     return (
         <div className={`border-t border-b ${categoryBorderColor} ${categoryBackgroundColor} shadow-sm relative`}>
             {isService && (
-                <div className={`absolute inset-0 bg-white/40 dark:bg-black/40 z-10`}>
+                <div className={`absolute inset-0 bg-sky-50/60 dark:bg-black/40 z-10`}>
                 </div>
             )}
             <div

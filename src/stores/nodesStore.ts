@@ -517,7 +517,9 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                 type: NodeVariableType.Node,
                 value: null,
                 published: false,
-                has_in: true
+                has_in: true,
+                has_dock: true,
+                group_name_override: node.group_name_override
             }
         }
 
@@ -744,6 +746,14 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         set((state) => ({
             nodes: state.nodes.map((node) => {
                 if (node.id !== nodeId) return node;
+
+                // Node-level override (targetHandle === 'node')
+                if (variableHandle === 'node') {
+                    return {
+                        ...node,
+                        group_name_override: name,
+                    };
+                }
 
                 // Subvariabele (bijv. dict.subHandle)
                 if (variableHandle.includes('.')) {

@@ -130,7 +130,7 @@ export const unpublishNodeSetupScheduleVersionAPI = (
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/schedules/${versionId}/unpublish/?project_id=${projectId}`,
+        `${config.LOCAL_API_URL}/schedules/${versionId}/unpublish/?project_id=${projectId}`,
         {
             method: "POST",
             headers: {
@@ -150,9 +150,9 @@ export const updateNodeSetupScheduleVersionAPI = (
 ): Promise<Response> => {
     const idToken = getIdToken();
     return fetch(
-        `${config.API_URL}/schedules/${scheduleId}/update-stage/?project_id=${projectId}`,
+        `${config.LOCAL_API_URL}/schedules/${scheduleId}/?project_id=${projectId}`,
         {
-            method: "POST",
+            method: "PATCH",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
@@ -173,7 +173,7 @@ export const createNodeSetupVersionDraftAPI = async (
     const idToken = getIdToken();
 
     const response = await fetch(
-        `${config.API_URL}/node-setup/${type}/${setupId}/version/${versionId}/${projectId}/`,
+        `${config.LOCAL_API_URL}/node-setup/${type}/${setupId}/version/${versionId}/${projectId}/`,
         {
             method: "POST",
             headers: {

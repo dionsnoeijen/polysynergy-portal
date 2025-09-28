@@ -21,7 +21,8 @@ export const useImageVariableLogic = (props: Props) => {
 
     // Image-specific logic can be added here
     const getImageData = () => {
-        const value = interpretedLogic.valueText;
+        // Use raw variable.value instead of processed valueText for image parsing
+        const value = props.variable.value;
         
         // Handle string values (URLs or base64)
         if (typeof value === 'string') {
@@ -51,7 +52,8 @@ export const useImageVariableLogic = (props: Props) => {
     };
 
     const getImageMetadata = () => {
-        const value = interpretedLogic.valueText;
+        // Use raw variable.value instead of processed valueText for metadata parsing
+        const value = props.variable.value;
         let imageData = null;
         
         // Try to extract metadata from the value itself
@@ -64,7 +66,7 @@ export const useImageVariableLogic = (props: Props) => {
             } catch {
                 // Not JSON, use variable metadata
             }
-        } else if (value && typeof value === 'object') {
+        } else if (value && typeof value === 'object' && !Array.isArray(value)) {
             imageData = value as Record<string, unknown>;
         }
         

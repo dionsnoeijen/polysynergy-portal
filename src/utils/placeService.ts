@@ -6,8 +6,10 @@ import {
 import {
     globalToLocal
 } from "@/utils/positionUtils";
-import {uniqueNamesGenerator, adjectives, animals, colors} from "unique-names-generator";
 import {unpackNode} from "@/utils/packageGroupNode";
+
+// No conflict detection needed - we WANT duplicate handles to exist
+// The node_runner backwards lookup will find the right one in the flow
 
 type PlaceCtx = {
     service: Service;
@@ -22,8 +24,23 @@ type PlaceCtx = {
 
 export default function placeService(ctx: PlaceCtx) {
     const {service} = ctx;
+
+    // Defensive checks for service structure
+    if (!service.node_setup) {
+        console.error('Service node_setup is null:', service);
+        return;
+    }
+
+    if (!service.node_setup.versions || service.node_setup.versions.length === 0) {
+        console.error('Service has no versions:', service);
+        return;
+    }
+
     const pkg = service.node_setup.versions[0].content;
-    if (!pkg) return;
+    if (!pkg) {
+        console.error('Service version has no content:', service);
+        return;
+    }
 
     const {nodes: pkgNodes, connections} = unpackNode(pkg); // bestaande helper
 
@@ -56,7 +73,7 @@ export default function placeService(ctx: PlaceCtx) {
         const copy: Node = {
             ...n,
             temp: undefined,
-            handle: uniqueNamesGenerator({dictionaries: [adjectives, animals, colors]}),
+            handle: n.handle, // KEEP ORIGINAL HANDLE - no refresh!
             view: {
                 ...n.view,
                 x: n.view.x + pos.x,

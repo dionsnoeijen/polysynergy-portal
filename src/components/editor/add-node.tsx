@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import useEditorStore from "@/stores/editorStore";
 import { Input, InputGroup } from "@/components/input";
-import { ChevronRightIcon, MagnifyingGlassIcon, FolderIcon } from "@heroicons/react/24/outline";
+import { ChevronRightIcon, ChevronDownIcon, MagnifyingGlassIcon, FolderIcon } from "@heroicons/react/24/outline";
 import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useNodesStore from "@/stores/nodesStore";
 import { globalToLocal } from "@/utils/positionUtils";
@@ -25,9 +25,13 @@ const AddNode: React.FC = () => {
     const setSearchPhrase = useAvailableNodeStore((state) => state.setSearchPhrase);
     const getAvailableNodeById = useAvailableNodeStore((state) => state.getAvailableNodeById);
     const searchPhrase = useAvailableNodeStore((state) => state.searchPhrase);
-    const categories = useAvailableNodeStore((state) => state.categories);
+    const categories = useAvailableNodeStore((state) => state.categories); // Keep for compatibility
+    const hierarchicalCategories = useAvailableNodeStore((state) => state.hierarchicalCategories);
     const selectedCategory = useAvailableNodeStore((state) => state.selectedCategory);
+    const selectedParentCategory = useAvailableNodeStore((state) => state.selectedParentCategory);
     const setSelectedCategory = useAvailableNodeStore((state) => state.setSelectedCategory);
+    const setSelectedParentCategory = useAvailableNodeStore((state) => state.setSelectedParentCategory);
+    const toggleCategoryExpanded = useAvailableNodeStore((state) => state.toggleCategoryExpanded);
 
     const addNode = useNodesStore((state) => state.addNode);
     const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
@@ -93,8 +97,12 @@ const AddNode: React.FC = () => {
 
     const handleCategorySelect = useCallback((category: string | null) => {
         setSelectedCategory(category);
+        // Only clear parent selection if we actually have a parent selection
+        if (selectedParentCategory !== null) {
+            setSelectedParentCategory(null);
+        }
         setSelectedNodeIndex(0);
-    }, [setSelectedCategory, setSelectedNodeIndex]);
+    }, [setSelectedCategory, setSelectedParentCategory, setSelectedNodeIndex, selectedParentCategory]);
 
     // Scroll selected item into view
     const scrollItemIntoView = useCallback((element: HTMLElement | null, container: HTMLElement | null) => {
@@ -221,6 +229,7 @@ const AddNode: React.FC = () => {
                 setSearchPhrase("");
                 resetSelectedNodeIndex();
                 setSelectedCategory(null);
+                setSelectedParentCategory(null);
             }
         };
 
@@ -246,11 +255,12 @@ const AddNode: React.FC = () => {
         handleCategorySelect,
         setShowAddingNode,
         setSearchPhrase,
-        setSelectedCategory
+        setSelectedCategory,
+        setSelectedParentCategory
     ]);
 
-    // Calculate total node count
-    const totalNodeCount = categories.reduce((sum, cat) => sum + cat.count, 0);
+    // Calculate total node count from hierarchical categories
+    const totalNodeCount = hierarchicalCategories.reduce((sum, cat) => sum + cat.count, 0);
 
     // Only render portal if we're in the browser (client-side)
     if (typeof window === 'undefined') {
@@ -263,7 +273,7 @@ const AddNode: React.FC = () => {
                 <>
                     {/* Backdrop */}
                     <div 
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
+                        className="fixed inset-0 bg-sky-50/30 dark:bg-black/50 backdrop-blur-sm z-[9998]"
                         onClick={() => setShowAddingNode(false)}
                     />
                     
@@ -315,13 +325,15 @@ const AddNode: React.FC = () => {
                             <div
                                 ref={el => { categoryItemRefs.current[0] = el; }}
                                 onClick={() => {
+                                    // Clear all selections to show all nodes
                                     handleCategorySelect(null);
+                                    setSelectedParentCategory(null);
                                     setFocusedPanel('nodes');
                                 }}
                                 className={`cursor-pointer p-2 rounded-md flex items-center justify-between mb-1 transition-colors ${
                                     focusedPanel === 'categories' && selectedCategoryIndex === 0 && hasNavigated
                                         ? "bg-sky-200 text-sky-800 dark:bg-zinc-700 dark:text-white"
-                                        : selectedCategory === null
+                                        : (selectedCategory === null && selectedParentCategory === null)
                                         ? "bg-sky-100 dark:bg-zinc-800"
                                         : "hover:bg-sky-100 dark:hover:bg-zinc-800"
                                 }`}
@@ -335,27 +347,80 @@ const AddNode: React.FC = () => {
                                 </span>
                             </div>
                             
-                            {/* Category list */}
-                            {categories.map((category, index) => (
-                                <div
-                                    key={category.name}
-                                    ref={el => { categoryItemRefs.current[index + 1] = el; }}
-                                    onClick={() => {
-                                        handleCategorySelect(category.name);
-                                        setFocusedPanel('nodes');
-                                    }}
-                                    className={`cursor-pointer p-2 rounded-md flex items-center justify-between mb-1 transition-colors ${
-                                        focusedPanel === 'categories' && selectedCategoryIndex === index + 1 && hasNavigated
-                                            ? "bg-sky-200 text-sky-800 dark:bg-zinc-700 dark:text-white"
-                                            : selectedCategory === category.name
-                                            ? "bg-sky-100 dark:bg-zinc-800"
-                                            : "hover:bg-sky-100 dark:hover:bg-zinc-800"
-                                    }`}
-                                >
-                                    <span className="capitalize">{category.name}</span>
-                                    <span className="text-xs bg-sky-100 dark:bg-zinc-900 px-2 py-0.5 rounded">
-                                        {category.count}
-                                    </span>
+                            {/* Hierarchical Category list */}
+                            {hierarchicalCategories.map((category, index) => (
+                                <div key={category.name}>
+                                    {/* Parent Category */}
+                                    <div
+                                        ref={el => { categoryItemRefs.current[index + 1] = el; }}
+                                        onClick={() => {
+                                            if (category.isFlat) {
+                                                // Flat category - direct selection and filter
+                                                handleCategorySelect(category.name);
+                                                setFocusedPanel('nodes');
+                                            } else {
+                                                // Hierarchical category - toggle expansion and handle filtering
+                                                toggleCategoryExpanded(category.name);
+
+                                                if (!category.expanded) {
+                                                    // Expanding: filter to this parent category
+                                                    setSelectedParentCategory(category.name);
+                                                    setSelectedCategory(null);
+                                                } else {
+                                                    // Collapsing: clear parent filter
+                                                    setSelectedParentCategory(null);
+                                                    setSelectedCategory(null);
+                                                }
+                                                setFocusedPanel('nodes');
+                                            }
+                                        }}
+                                        className={`cursor-pointer p-2 rounded-md flex items-center justify-between mb-1 transition-colors ${
+                                            focusedPanel === 'categories' && selectedCategoryIndex === index + 1 && hasNavigated
+                                                ? "bg-sky-200 text-sky-800 dark:bg-zinc-700 dark:text-white"
+                                                : selectedParentCategory === category.name
+                                                ? "bg-sky-100 border-l-4 border-sky-500 dark:bg-zinc-800 dark:border-sky-400"
+                                                : selectedCategory === category.name
+                                                ? "bg-sky-100 dark:bg-zinc-800"
+                                                : "hover:bg-sky-100 dark:hover:bg-zinc-800"
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            {!category.isFlat && (
+                                                category.expanded
+                                                    ? <ChevronDownIcon className="h-4 w-4 text-sky-600 dark:text-gray-400" />
+                                                    : <ChevronRightIcon className="h-4 w-4 text-sky-600 dark:text-gray-400" />
+                                            )}
+                                            <span className="capitalize font-medium">{category.name}</span>
+                                        </div>
+                                        <span className="text-xs bg-sky-100 dark:bg-zinc-900 px-2 py-0.5 rounded">
+                                            {category.count}
+                                        </span>
+                                    </div>
+
+                                    {/* Child Categories (shown when expanded) */}
+                                    {!category.isFlat && category.expanded && (
+                                        <div className="ml-6 mb-2">
+                                            {category.children.map((child) => (
+                                                <div
+                                                    key={child.originalCategory}
+                                                    onClick={() => {
+                                                        handleCategorySelect(child.originalCategory);
+                                                        setFocusedPanel('nodes');
+                                                    }}
+                                                    className={`cursor-pointer p-2 rounded-md flex items-center justify-between mb-1 transition-colors text-sm ${
+                                                        selectedCategory === child.originalCategory
+                                                            ? "bg-sky-50 text-sky-700 dark:bg-zinc-700 dark:text-sky-300"
+                                                            : "hover:bg-sky-50 text-sky-600 dark:hover:bg-zinc-700 dark:text-gray-400"
+                                                    }`}
+                                                >
+                                                    <span className="capitalize">{child.name}</span>
+                                                    <span className="text-xs bg-sky-50 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+                                                        {child.count}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -374,7 +439,11 @@ const AddNode: React.FC = () => {
                                     ? 'text-sky-700 dark:text-sky-400'
                                     : 'text-gray-500 dark:text-gray-400'
                             }`}>
-                                {selectedCategory ? `${selectedCategory} Nodes` : 'All Nodes'} 
+                                {selectedCategory
+                                    ? `${selectedCategory.replace('_', ' > ')} Nodes`
+                                    : selectedParentCategory
+                                    ? `${selectedParentCategory} Nodes`
+                                    : 'All Nodes'}
                                 {searchPhrase && ` (filtered)`}
                             </div>
                             

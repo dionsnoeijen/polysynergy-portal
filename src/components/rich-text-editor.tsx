@@ -97,7 +97,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <div
             className={`relative border ${categoryBorder} bg-transparent dark:bg-white/5 p-3 min-h-52 rounded-md`}>
             {disabled && (
-                <div className="absolute inset-0 bg-white/40 dark:bg-black/40 rounded-md z-10 pointer-events-none"/>
+                <div className="absolute inset-0 bg-sky-50/60 dark:bg-black/40 rounded-md z-10 pointer-events-none"/>
             )}
             <div className="flex gap-2 mb-3">
                 <button

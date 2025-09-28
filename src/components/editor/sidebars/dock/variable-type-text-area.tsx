@@ -11,6 +11,7 @@ const VariableTypeTextArea: React.FC<VariableTypeProps> = ({
     nodeId,
     variable,
     publishedButton = true,
+    onChange,
     inDock = true,
     // categoryBorder = 'border border-sky-200 dark:border-zinc-700',
     // eslint-disable-next-line
@@ -24,7 +25,11 @@ const VariableTypeTextArea: React.FC<VariableTypeProps> = ({
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
     const handleChange = (newValue: string) => {
-        updateNodeVariable(nodeId, variable.handle, newValue);
+        if (onChange) {
+            onChange(newValue);
+        } else {
+            updateNodeVariable(nodeId, variable.handle, newValue);
+        }
     };
 
     const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));

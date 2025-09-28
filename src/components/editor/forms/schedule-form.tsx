@@ -86,6 +86,9 @@ const ScheduleForm: React.FC = () => {
             setActiveScheduleId(result.id as string);
             setIsExecuting("Loading Schedule");
             router.push(`/project/${params.projectUuid}/schedule/${result.id || formEditRecordId}`);
+
+            // Clear executing state after navigation completes
+            setTimeout(() => setIsExecuting(null), 100);
         }
     };
 
@@ -96,6 +99,9 @@ const ScheduleForm: React.FC = () => {
         setShowDeleteAlert(false);
         setIsExecuting("Deleting Schedule");
         router.push(`/project/${params.projectUuid}`);
+
+        // Clear executing state after navigation completes
+        setTimeout(() => setIsExecuting(null), 100);
     };
 
     return (

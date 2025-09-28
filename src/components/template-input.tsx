@@ -34,13 +34,24 @@ export const TemplateInput = forwardRef(function TemplateInput(
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
-  
+  const timeoutRef = useRef<NodeJS.Timeout>();
+
   // Forward the ref to the input element
   useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
-  
+
+
   useEffect(() => {
     setEditValue(value);
   }, [value]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   // Parse template variables from text
   const parseVariables = (text: string): VariableChip[] => {
@@ -62,7 +73,16 @@ export const TemplateInput = forwardRef(function TemplateInput(
 
   const removeVariable = (variable: VariableChip) => {
     const newValue = value.slice(0, variable.startPos) + value.slice(variable.endPos);
-    onChange(newValue);
+
+    // Clear existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Debounce the onChange call (same pattern as template-textarea)
+    timeoutRef.current = setTimeout(() => {
+      onChange(newValue);
+    }, 300);
   };
 
   const handleEditBlur = () => {
@@ -192,7 +212,22 @@ export const TemplateInput = forwardRef(function TemplateInput(
           ref={inputRef}
           type={type}
           value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
+          onChange={(e) => {
+            const newValue = e.target.value;
+
+            // Update local state immediately for responsive UI
+            setEditValue(newValue);
+
+            // Clear existing timeout
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+
+            // Debounce the onChange call (same pattern as template-textarea)
+            timeoutRef.current = setTimeout(() => {
+              onChange(newValue);
+            }, 300);
+          }}
           onBlur={handleEditBlur}
           onKeyDown={handleEditKeyDown}
           placeholder={placeholder}

@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import {Node, NodeVariable, NodeVariableType} from "@/types/types";
-
+import {Node, NodeVariable, NodeVariableType, VariableTypeComponents} from "@/types/types";
 
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
-
 import EditDictVariable from "@/components/editor/forms/variable/edit-dict-variable";
 
 import {Subheading} from "@/components/heading";
@@ -13,17 +11,14 @@ import {Divider} from "@/components/divider";
 import {LinkIcon} from "@heroicons/react/24/outline";
 import {Input} from "@/components/input";
 
-import {VariableTypeComponents} from "@/components/editor/sidebars/dock";
-
 import useNodesStore from "@/stores/nodesStore";
 import useStagesStore from "@/stores/stagesStore";
 import useProjectSecretsStore from "@/stores/projectSecretsStore";
-
 import useEditorStore from "@/stores/editorStore";
+import useEnvVarsStore from "@/stores/envVarsStore";
 
 import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
 import {createProjectSecretAPI, updateProjectSecretAPI} from "@/api/secretsApi";
-import useEnvVarsStore from "@/stores/envVarsStore";
 import IsExecuting from "@/components/editor/is-executing";
 
 type VariableIdentifier = {
@@ -31,6 +26,15 @@ type VariableIdentifier = {
     nodeId: string;
     nodeServiceHandle?: string;
     nodeServiceVariant?: number;
+    // Metadata for grouped secrets
+    secretMetadata?: {
+        secretKey: string;
+        nodeInstances: {nodeId: string; nodeName?: string; source?: 'node' | 'inline'; variableHandle?: string}[];
+    };
+    envMetadata?: {
+        envKey: string;
+        nodeInstances: {nodeId: string; nodeName?: string; source?: 'node' | 'inline'; variableHandle?: string}[];
+    };
 }
 
 type Props = { nodes: Node[]; };
@@ -71,6 +75,7 @@ const PublishedVariables: React.FC<Props> = ({
 
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
+
 
     const [publishedVariables, setPublishedVariables] = useState<VariableIdentifier[]>([]);
     const [dictVariables, setDictVariables] = useState<{ [nodeId: string]: { [handle: string]: NodeVariable[] } }>({});
@@ -290,37 +295,230 @@ const PublishedVariables: React.FC<Props> = ({
             configTab.group.variables.push(pv);
         }
 
-        // Put ALL secrets in the secrets tab
+        // Put ALL secrets in the secrets tab - deduplicated by secret key
+        // Support dual secret detection: 1) Secret nodes, 2) Inline <secret:KEY> patterns
         const secretNodes = getSecretNodes();
+        const secretGroups = new Map<string, {
+            variable: NodeVariable;
+            nodeInstances: {nodeId: string; nodeName?: string; source: 'node' | 'inline'; variableHandle?: string}[];
+            exists: boolean;
+        }>();
+
+        // Helper function to extract inline secrets from text
+        const extractInlineSecrets = (text: string): string[] => {
+            const regex = /<secret:([^>]+)>/g;
+            const matches = [];
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+                matches.push(match[1].trim());
+            }
+            return matches;
+        };
+
+        // First pass: Process secret nodes
         secretNodes.forEach((node) => {
             node.variables.forEach((variable: NodeVariable) => {
-                const exists = secrets.find((s) => s.key === variable.value);
-                const secretVar = {
-                    variable: variable,
-                    nodeId: node.id,
-                    nodeServiceHandle: SECRET_IDENTIFIER,
-                    nodeServiceVariant: exists ? SECRET_EXISTS : SECRET_MUST_BE_CREATED,
-                };
-                secretsTab.group.variables.push(secretVar);
+                const secretKey = variable.value as string;
+                if (!secretKey) return;
+
+                const exists = secrets.find((s) => s.key === secretKey);
+
+                if (secretGroups.has(secretKey)) {
+                    // Add this node instance to existing group
+                    const group = secretGroups.get(secretKey)!;
+                    group.nodeInstances.push({
+                        nodeId: node.id,
+                        nodeName: node.name,
+                        source: 'node'
+                    });
+                } else {
+                    // Create new group for this secret key
+                    secretGroups.set(secretKey, {
+                        variable: variable,
+                        nodeInstances: [{
+                            nodeId: node.id,
+                            nodeName: node.name,
+                            source: 'node'
+                        }],
+                        exists: !!exists
+                    });
+                }
             });
         });
 
-        // Put ALL environment variables in the configuration tab
+        // Second pass: Scan all node variables for inline secret patterns
+        nodes.forEach((node) => {
+            node.variables.forEach((variable) => {
+                const value = variable.value;
+                if (typeof value === 'string' && value.includes('<secret:')) {
+                    const inlineSecrets = extractInlineSecrets(value);
+
+                    inlineSecrets.forEach((secretKey) => {
+                        const exists = secrets.find((s) => s.key === secretKey);
+
+                        if (secretGroups.has(secretKey)) {
+                            // Add this inline instance to existing group
+                            const group = secretGroups.get(secretKey)!;
+                            group.nodeInstances.push({
+                                nodeId: node.id,
+                                nodeName: node.name,
+                                source: 'inline',
+                                variableHandle: variable.handle
+                            });
+                        } else {
+                            // Create new group for this inline secret
+                            // Create a synthetic variable for the inline secret
+                            const syntheticVariable: NodeVariable = {
+                                ...variable,
+                                handle: secretKey,
+                                value: secretKey,
+                                type: NodeVariableType.SecretString
+                            };
+
+                            secretGroups.set(secretKey, {
+                                variable: syntheticVariable,
+                                nodeInstances: [{
+                                    nodeId: node.id,
+                                    nodeName: node.name,
+                                    source: 'inline',
+                                    variableHandle: variable.handle
+                                }],
+                                exists: !!exists
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // Convert grouped secrets to VariableIdentifier format
+        secretGroups.forEach((group, secretKey) => {
+            const secretVar = {
+                variable: group.variable,
+                nodeId: group.nodeInstances[0].nodeId, // Use first instance as representative
+                nodeServiceHandle: SECRET_IDENTIFIER,
+                nodeServiceVariant: group.exists ? SECRET_EXISTS : SECRET_MUST_BE_CREATED,
+                // Add metadata about all instances
+                secretMetadata: {
+                    secretKey: secretKey,
+                    nodeInstances: group.nodeInstances
+                }
+            };
+            secretsTab.group.variables.push(secretVar);
+        });
+
+        // Put ALL environment variables in the configuration tab - deduplicated by env key
+        // Support dual environment detection: 1) Environment nodes, 2) Inline <environment:KEY> patterns
         const environmentVariableNodes = getEnvironmentVariableNodes();
+        const envGroups = new Map<string, {
+            variable: NodeVariable;
+            nodeInstances: {nodeId: string; nodeName?: string; source: 'node' | 'inline'; variableHandle?: string}[];
+            exists: boolean;
+        }>();
+
+        // Helper function to extract inline environment variables from text
+        const extractInlineEnvVars = (text: string): string[] => {
+            const regex = /<environment:([^>]+)>/g;
+            const matches = [];
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+                matches.push(match[1].trim());
+            }
+            return matches;
+        };
+
+        // First pass: Process environment variable nodes
         environmentVariableNodes.forEach((node) => {
             node.variables.forEach((variable: NodeVariable) => {
-                const matching = envVars.find((v) => v.key === variable.value);
+                const envKey = variable.value as string;
+                if (!envKey) return;
 
-                if (!matching) return;
+                const exists = envVars.find((v) => v.key === envKey);
+                if (!exists) return; // Only show existing env vars
 
-                const envVarItem: VariableIdentifier = {
-                    variable,
-                    nodeId: node.id,
-                    nodeServiceHandle: ENV_IDENTIFIER,
-                    nodeServiceVariant: 0,
-                };
-                configTab.group.variables.push(envVarItem);
+                if (envGroups.has(envKey)) {
+                    // Add this node instance to existing group
+                    const group = envGroups.get(envKey)!;
+                    group.nodeInstances.push({
+                        nodeId: node.id,
+                        nodeName: node.name,
+                        source: 'node'
+                    });
+                } else {
+                    // Create new group for this env key
+                    envGroups.set(envKey, {
+                        variable: variable,
+                        nodeInstances: [{
+                            nodeId: node.id,
+                            nodeName: node.name,
+                            source: 'node'
+                        }],
+                        exists: !!exists
+                    });
+                }
             });
+        });
+
+        // Second pass: Scan all node variables for inline environment patterns
+        nodes.forEach((node) => {
+            node.variables.forEach((variable) => {
+                const value = variable.value;
+                if (typeof value === 'string' && value.includes('<environment:')) {
+                    const inlineEnvVars = extractInlineEnvVars(value);
+
+                    inlineEnvVars.forEach((envKey) => {
+                        const exists = envVars.find((v) => v.key === envKey);
+                        if (!exists) return; // Only show existing env vars
+
+                        if (envGroups.has(envKey)) {
+                            // Add this inline instance to existing group
+                            const group = envGroups.get(envKey)!;
+                            group.nodeInstances.push({
+                                nodeId: node.id,
+                                nodeName: node.name,
+                                source: 'inline',
+                                variableHandle: variable.handle
+                            });
+                        } else {
+                            // Create new group for this inline env var
+                            // Create a synthetic variable for the inline env var
+                            const syntheticVariable: NodeVariable = {
+                                ...variable,
+                                handle: envKey,
+                                value: envKey,
+                                type: variable.type
+                            };
+
+                            envGroups.set(envKey, {
+                                variable: syntheticVariable,
+                                nodeInstances: [{
+                                    nodeId: node.id,
+                                    nodeName: node.name,
+                                    source: 'inline',
+                                    variableHandle: variable.handle
+                                }],
+                                exists: !!exists
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // Convert grouped environment variables to VariableIdentifier format
+        envGroups.forEach((group, envKey) => {
+            const envVarItem: VariableIdentifier = {
+                variable: group.variable,
+                nodeId: group.nodeInstances[0].nodeId, // Use first instance as representative
+                nodeServiceHandle: ENV_IDENTIFIER,
+                nodeServiceVariant: 0,
+                // Add metadata about all instances
+                envMetadata: {
+                    envKey: envKey,
+                    nodeInstances: group.nodeInstances
+                }
+            };
+            configTab.group.variables.push(envVarItem);
         });
 
         tabItems.push(configTab);
@@ -379,7 +577,7 @@ const PublishedVariables: React.FC<Props> = ({
                     No published variables
                 </div>
             ) : (
-                activeTab?.group.variables.map(({variable, nodeId, nodeServiceHandle, nodeServiceVariant}) => {
+                activeTab?.group.variables.map(({variable, nodeId, nodeServiceHandle, nodeServiceVariant, secretMetadata, envMetadata}) => {
                     if (variable.parentHandle) return null;
                     const {baseType} = interpretNodeVariableType(variable);
                     const syncKey = `${nodeServiceHandle}::${nodeServiceVariant ?? 1}::${variable.handle}`;
@@ -390,14 +588,54 @@ const PublishedVariables: React.FC<Props> = ({
                     }
 
                     if (nodeServiceHandle === SECRET_IDENTIFIER) {
+                        const secretKey = secretMetadata?.secretKey || (variable.value as string);
+                        const nodeInstances = secretMetadata?.nodeInstances || [{nodeId, nodeName: undefined}];
+                        const nodeCount = nodeInstances.length;
+
+                        const nodeSources = nodeInstances.filter(n => n.source === 'node');
+                        const inlineSources = nodeInstances.filter(n => n.source === 'inline');
+                        const hasMultipleSources = nodeSources.length > 0 && inlineSources.length > 0;
+
                         return (
-                            <div key={nodeId + "-" + variable.handle}>
+                            <div key={secretKey}>
                                 <div className={'border rounded-md border-sky-500/50 dark:border-white/10 p-5'}>
                                     <Subheading>
                                         <span className="inline-flex items-center gap-2 mb-2">
-                                            Secret: {variable.value as string}
+                                            Secret: {secretKey}
+                                            {nodeCount > 1 && (
+                                                <span
+                                                    className="text-xs bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-200 px-2 py-1 rounded"
+                                                    title={`Used in ${nodeCount} nodes: ${nodeInstances.map(n => n.nodeName || `Node ${n.nodeId.slice(0,8)}`).join(', ')}`}
+                                                >
+                                                    {nodeCount} nodes
+                                                </span>
+                                            )}
+                                            {hasMultipleSources && (
+                                                <span
+                                                    className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-2 py-1 rounded"
+                                                    title="Used via both secret nodes and inline patterns"
+                                                >
+                                                    dual sources
+                                                </span>
+                                            )}
                                         </span>
                                     </Subheading>
+                                    {nodeCount > 1 && (
+                                        <div className="mb-3 text-sm text-zinc-600 dark:text-zinc-400">
+                                            <div className="space-y-1">
+                                                {nodeSources.length > 0 && (
+                                                    <div>
+                                                        <strong>Secret nodes:</strong> {nodeSources.map(n => n.nodeName || `Node ${n.nodeId.slice(0,8)}`).join(', ')}
+                                                    </div>
+                                                )}
+                                                {inlineSources.length > 0 && (
+                                                    <div>
+                                                        <strong>Inline usage:</strong> {inlineSources.map(n => `${n.nodeName || `Node ${n.nodeId.slice(0,8)}`}${n.variableHandle ? `.${n.variableHandle}` : ''}`).join(', ')}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="space-y-3">
                                         {stages.map((stage) => {
                                             const localSecret = secretVariables.find(
@@ -457,14 +695,52 @@ const PublishedVariables: React.FC<Props> = ({
                             </div>
                         );
                     } else if (nodeServiceHandle === ENV_IDENTIFIER) {
+                        const envKey = envMetadata?.envKey || (variable.value as string);
+                        const nodeInstances = envMetadata?.nodeInstances || [{nodeId, nodeName: undefined}];
+                        const nodeCount = nodeInstances.length;
+
+                        const nodeSources = nodeInstances.filter(n => n.source === 'node');
+                        const inlineSources = nodeInstances.filter(n => n.source === 'inline');
+                        const hasMultipleSources = nodeSources.length > 0 && inlineSources.length > 0;
+
                         return (
-                            <div key={`env-${nodeId}-${variable.handle}`}>
+                            <div key={envKey}>
                                 <div className="border rounded-md border-sky-500/50 dark:border-white/10 p-5">
                                     <Subheading>
                                         <span className="inline-flex items-center gap-2 mb-2">
-                                            Environment: {variable.value as string}
+                                            Environment: {envKey}
+                                            <span
+                                                className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-2 py-1 rounded"
+                                                title={`Used in ${nodeCount} node${nodeCount === 1 ? '' : 's'}: ${nodeInstances.map(n => n.nodeName || `Node ${n.nodeId.slice(0,8)}`).join(', ')}`}
+                                            >
+                                                {nodeCount} node{nodeCount === 1 ? '' : 's'}
+                                            </span>
+                                            {hasMultipleSources && (
+                                                <span
+                                                    className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 px-2 py-1 rounded"
+                                                    title="Used via both environment nodes and inline patterns"
+                                                >
+                                                    dual sources
+                                                </span>
+                                            )}
                                         </span>
                                     </Subheading>
+                                    {(nodeCount > 1 || hasMultipleSources) && (
+                                        <div className="mb-3 text-sm text-zinc-600 dark:text-zinc-400">
+                                            <div className="space-y-1">
+                                                {nodeSources.length > 0 && (
+                                                    <div>
+                                                        <strong>Environment nodes:</strong> {nodeSources.map(n => n.nodeName || `Node ${n.nodeId.slice(0,8)}`).join(', ')}
+                                                    </div>
+                                                )}
+                                                {inlineSources.length > 0 && (
+                                                    <div>
+                                                        <strong>Inline usage:</strong> {inlineSources.map(n => `${n.nodeName || `Node ${n.nodeId.slice(0,8)}`}${n.variableHandle ? `.${n.variableHandle}` : ''}`).join(', ')}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="space-y-3">
                                         {stages.map((stage) => {
                                             const existing = envVars.find(
@@ -570,6 +846,7 @@ const PublishedVariables: React.FC<Props> = ({
                     }
                 })
             )}
+
         </div>
     );
 };

@@ -5,6 +5,7 @@ import useConnectionsStore from "@/stores/connectionsStore";
 import {gatherAllIds, replaceIdsInJsonString, unpackNode} from "@/utils/packageGroupNode";
 import { getConnectionExecutionDetails } from "@/api/executionApi";
 import useMockStore from "@/stores/mockStore";
+// import usePendingChangesStore from "@/stores/pendingChangesStore";
 
 export enum BottomBarView {
     Output = 'Output',
@@ -325,7 +326,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
     activeProjectVariableId: '',
     setActiveProjectVariableId: (projectVariableId: string) => set({activeProjectVariableId: projectVariableId}),
 
-    treeOpen: [Fundamental.Route, Fundamental.Schedule],
+    treeOpen: [Fundamental.Route, Fundamental.Schedule, Fundamental.Blueprint],
     openTree: (tree) => set((state) => {
         if (state.treeOpen.includes(tree)) {
             return state;
@@ -531,7 +532,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
         copiedPackage = unpackNode(copiedPackage);
 
         copiedPackage.nodes.forEach((node: Node) => {
-            useNodesStore.getState().addNode(node, true);
+            useNodesStore.getState().addNode(node, false);
         });
 
         if (copiedPackage.connections) {

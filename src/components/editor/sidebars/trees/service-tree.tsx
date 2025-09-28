@@ -8,6 +8,7 @@ import findTopLevelGroup from "@/utils/findTopLevelGroup";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import placeService from "@/utils/placeService";
+import { fetchServiceById } from "@/api/servicesApi";
 
 export default function ServiceTree(): ReactElement {
     const services = useServicesStore((state) => state.services);
@@ -65,24 +66,38 @@ export default function ServiceTree(): ReactElement {
         return () => window.removeEventListener("mousemove", handler);
     }, []);
 
-    const placeServiceHandler = (serviceId: string) => {
-        const service = services.find((s) => s.id === serviceId);
-        if (!service) return;
+    const placeServiceHandler = async (serviceId: string) => {
+        try {
+            const activeProjectId = useEditorStore.getState().activeProjectId;
+            if (!activeProjectId) {
+                console.error("No active project ID");
+                return;
+            }
 
-        placeService({
-            service,
-            mouseScreenXY: mousePos.current,
-            addNode,
-            addConnection,
-            getNodesByServiceHandleAndVariant,
-            openedGroup,
-            addNodeToGroup,
-        });
+            // Fetch full service details with node_setup data
+            const serviceWithDetails = await fetchServiceById(serviceId, activeProjectId);
+            if (!serviceWithDetails) {
+                console.error("Failed to fetch service details");
+                return;
+            }
 
-        // eventueel UI-state resetten
-        clearTempNodes();
-        clearTempConnections();
-        setSelectedNodes([]);
+            placeService({
+                service: serviceWithDetails,
+                mouseScreenXY: mousePos.current,
+                addNode,
+                addConnection,
+                getNodesByServiceHandleAndVariant,
+                openedGroup,
+                addNodeToGroup,
+            });
+
+            // eventueel UI-state resetten
+            clearTempNodes();
+            clearTempConnections();
+            setSelectedNodes([]);
+        } catch (error) {
+            console.error("Failed to place service:", error);
+        }
     };
 
     return (

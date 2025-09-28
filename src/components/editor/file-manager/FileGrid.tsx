@@ -157,8 +157,8 @@ const GridItem: React.FC<GridItemProps> = memo(({
                             {fileInfo.content_type.startsWith('image/') && imageUrl && !imageError && (
                                 <div className="absolute inset-0 rounded overflow-hidden">
                                     {isRefreshing && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
-                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        <div className="absolute inset-0 flex items-center justify-center bg-sky-50/20 dark:bg-black/20 z-10">
+                                            <div className="w-4 h-4 border-2 border-sky-600 dark:border-white border-t-transparent rounded-full animate-spin" />
                                         </div>
                                     )}
                                     <img

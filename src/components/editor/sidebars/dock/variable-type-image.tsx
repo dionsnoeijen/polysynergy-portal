@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { VariableTypeProps } from "@/types/types";
 import { Field, FieldGroup, Fieldset } from "@/components/fieldset";
 import { Text } from "@/components/text";
@@ -17,10 +17,71 @@ const VariableTypeImage: React.FC<VariableTypeProps> = ({
     categoryMainTextColor = 'text-sky-500 dark:text-white/70',
     // categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
 }) => {
-    const [previewUrl, setPreviewUrl] = useState<string | null>(
-        typeof variable.value === 'string' && variable.value ? variable.value : null
-    );
-    
+    const [previewUrl, setPreviewUrl] = useState<string | null>(() => {
+        // Initialize with the same logic as the useEffect
+        let imageUrl = null;
+
+        if (typeof variable.value === 'string' && variable.value) {
+            if (variable.value.startsWith('data:image/') || variable.value.startsWith('http')) {
+                imageUrl = variable.value;
+            } else {
+                try {
+                    const parsed = JSON.parse(variable.value);
+                    if (parsed && typeof parsed === 'object' && parsed.url) {
+                        imageUrl = parsed.url;
+                    }
+                } catch {
+                    imageUrl = variable.value;
+                }
+            }
+        } else if (variable.value && typeof variable.value === 'object' && 'url' in variable.value) {
+            const obj = variable.value as { url?: unknown };
+            if (typeof obj.url === 'string') {
+                imageUrl = obj.url;
+            }
+        }
+
+        return imageUrl;
+    });
+
+    // Sync previewUrl with variable.value changes (e.g., from image generation)
+    useEffect(() => {
+        let imageUrl = null;
+
+        // Handle string values (URLs or base64)
+        if (typeof variable.value === 'string' && variable.value) {
+            if (variable.value.startsWith('data:image/') || variable.value.startsWith('http')) {
+                imageUrl = variable.value;
+            } else {
+                // Try to parse as JSON in case it's a stringified object
+                try {
+                    const parsed = JSON.parse(variable.value);
+                    if (parsed && typeof parsed === 'object' && parsed.url) {
+                        imageUrl = parsed.url;
+                    }
+                } catch {
+                    // Not JSON, use as-is
+                    imageUrl = variable.value;
+                }
+            }
+        }
+        // Handle object values (Image dict structure)
+        else if (variable.value && typeof variable.value === 'object' && 'url' in variable.value) {
+            const obj = variable.value as { url?: unknown };
+            if (typeof obj.url === 'string') {
+                imageUrl = obj.url;
+            }
+        }
+
+        // Force update by comparing the actual URL, not just the value reference
+        setPreviewUrl(prevUrl => {
+            if (prevUrl !== imageUrl) {
+                return imageUrl;
+            }
+            return prevUrl;
+        });
+    }, [variable.value, variable.metadata]);
+
     const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
 
     const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

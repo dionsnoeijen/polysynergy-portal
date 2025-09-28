@@ -117,7 +117,7 @@ const ImagePreview: React.FC<Props> = ({ logic }) => {
                 {/* Image preview - full width like avatar component */}
                 <div className="w-full flex justify-center items-center bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden relative">
                     {isRefreshing && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/10 z-10">
+                        <div className="absolute inset-0 flex items-center justify-center bg-sky-50/40 dark:bg-black/10 z-10">
                             <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
                         </div>
                     )}

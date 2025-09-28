@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {Node, NodeVariable, NodeVariableType} from "@/types/types";
+import {Node, NodeVariable, NodeVariableType, VariableTypeComponents} from "@/types/types";
 
 
 import interpretNodeVariableType from "@/utils/interpretNodeVariableType";
@@ -14,13 +14,16 @@ import {PlayIcon, XMarkIcon, ArrowLeftIcon} from "@heroicons/react/24/outline";
 import {Input} from "@/components/input";
 import {useHandlePlay} from "@/hooks/editor/useHandlePlay";
 
-import {VariableTypeComponents} from "@/components/editor/sidebars/dock";
 
 import useNodesStore from "@/stores/nodesStore";
 import useStagesStore from "@/stores/stagesStore";
 import useProjectSecretsStore from "@/stores/projectSecretsStore";
+import useMockStore from "@/stores/mockStore";
 
 import useEditorStore from "@/stores/editorStore";
+import useConnectionsStore from "@/stores/connectionsStore";
+import {updateNodeSetupVersionAPI} from "@/api/nodeSetupsApi";
+import {Fundamental} from "@/types/types";
 
 import {fetchSecretsWithRetry} from "@/utils/filesSecretsWithRetry";
 import {createProjectSecretAPI, updateProjectSecretAPI} from "@/api/secretsApi";
@@ -28,7 +31,7 @@ import {Select} from "@/components/select";
 import useEnvVarsStore from "@/stores/envVarsStore";
 import IsExecuting from "@/components/editor/is-executing";
 import {Heading} from "@/components/heading";
-// import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
+import FormattedNodeOutput from "@/components/editor/bottombars/formatted-node-output";
 
 type VariableIdentifier = {
     variable: NodeVariable;
@@ -44,14 +47,20 @@ const SECRET_MUST_BE_CREATED = 1;
 
 const PlayButtonsForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
+    const nodes = useNodesStore((state) => state.nodes);
     const getNodes = useNodesStore((state) => state.getNodes);
     const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
     const getSecretNodes = useNodesStore((state) => state.getSecretNodes);
     const getEnvironmentVariableNodes = useNodesStore((state) => state.getEnvironmentVariableNodes);
     const leadsToPlayConfig = useNodesStore((state) => state.leadsToPlayConfig);
     const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
+    const activeRouteId = useEditorStore((state) => state.activeRouteId);
+    const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
+    const activeBlueprintId = useEditorStore((state) => state.activeBlueprintId);
+    const activeConfigId = useEditorStore((state) => state.activeConfigId);
+    const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const secrets = useProjectSecretsStore((state) => state.secrets);
-    // const getMockResultForNode = useMockStore((state) => state.getMockResultForNode);
+    const mockResults = useMockStore((state) => state.mockResultsByNodeId);
     const handlePlay = useHandlePlay();
 
     const stages = useStagesStore((state) => state.stages);
@@ -70,6 +79,42 @@ const PlayButtonsForm: React.FC = () => {
     const [secretVariables, setSecretVariables] = useState<{ key: string, value: string }[]>([]);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [envVariables, setEnvVariables] = useState<{ key: string; value: string }[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const manualSave = async () => {
+        if (!activeVersionId || !activeProjectId) return;
+
+        setIsSaving(true);
+
+        const getCurrentFundamental = (): [string | undefined, Fundamental | null] => {
+            if (activeRouteId) return [activeRouteId, Fundamental.Route];
+            if (activeScheduleId) return [activeScheduleId, Fundamental.Schedule];
+            if (activeBlueprintId) return [activeBlueprintId, Fundamental.Blueprint];
+            if (activeConfigId) return [activeConfigId, Fundamental.Config];
+            return [undefined, null];
+        };
+
+        const [fundamentalId, type] = getCurrentFundamental();
+        if (!fundamentalId || !type) {
+            setIsSaving(false);
+            return;
+        }
+
+        try {
+            const {nodes: currentNodes, groupStack, openedGroup} = useNodesStore.getState();
+            const {connections: currentConnections} = useConnectionsStore.getState();
+            const payload = {nodes: currentNodes, connections: currentConnections, groups: {groupStack, openedGroup}};
+
+            await updateNodeSetupVersionAPI(fundamentalId, activeVersionId, activeProjectId, payload, type);
+
+            // Small delay to ensure backend has processed the save
+            await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (error) {
+            console.error('Manual save failed:', error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     useEffect(() => {
         fetchSecretsWithRetry(fetchSecrets);
@@ -129,27 +174,45 @@ const PlayButtonsForm: React.FC = () => {
     };
 
     const handleSimpleVariableChange = (nodeId: string, handle: string, value: string) => {
+
         const syncKey = publishedVariables.find(
             (pv) => pv.nodeId === nodeId && pv.variable.handle === handle
         );
 
-        if (!syncKey?.nodeServiceHandle) return;
 
-        const key = `${syncKey.nodeServiceHandle}::${syncKey.nodeServiceVariant ?? 1}::${handle}`;
-        const synced = syncMap.get(key) || [{nodeId, handle}];
+        // Handle synchronization if this is a service variable
+        if (syncKey?.nodeServiceHandle) {
+            const key = `${syncKey.nodeServiceHandle}::${syncKey.nodeServiceVariant ?? 1}::${handle}`;
+            const synced = syncMap.get(key) || [{nodeId, handle}];
 
-        for (const {nodeId, handle} of synced) {
+            for (const {nodeId: syncNodeId, handle: syncHandle} of synced) {
+                updateNodeVariable(syncNodeId, syncHandle, value);
+            }
+
+            setSimpleVariables((prev) => {
+                const updated = {...prev};
+                for (const {nodeId: syncNodeId, handle: syncHandle} of synced) {
+                    if (!updated[syncNodeId]) updated[syncNodeId] = {};
+                    updated[syncNodeId][syncHandle] = value;
+                }
+                return updated;
+            });
+        } else {
+            // For non-service variables, update store and local state
             updateNodeVariable(nodeId, handle, value);
-        }
 
-        setSimpleVariables((prev) => {
-            const updated = {...prev};
-            for (const {nodeId, handle} of synced) {
+            // Manual save to backend
+            manualSave().catch((error) => {
+                console.error('Manual save failed:', error);
+            });
+
+            setSimpleVariables((prev) => {
+                const updated = {...prev};
                 if (!updated[nodeId]) updated[nodeId] = {};
                 updated[nodeId][handle] = value;
-            }
-            return updated;
-        });
+                return updated;
+            });
+        }
     };
 
     const handleSecretCreation = async (key: string, value: string) => {
@@ -376,7 +439,6 @@ const PlayButtonsForm: React.FC = () => {
     const title = getNodeVariable(selectedPlayButton.id, "title")?.value as string;
     const fallbackTitle = `Play ${selectedPlayButton.handle}`;
     const displayTitle = title?.trim() || fallbackTitle;
-    // const result = getMockResultForNode?.(selectedPlayButton.id);
 
     return (
         <div className="flex flex-col gap-4 relative p-10">
@@ -409,7 +471,12 @@ const PlayButtonsForm: React.FC = () => {
             ) : (
                 publishedVariables.map(({variable, nodeId, nodeServiceHandle, /* nodeServiceVariant */}) => {
                     if (variable.parentHandle) return null;
-                    const {baseType} = interpretNodeVariableType(variable);
+
+                    // Get the current variable from the nodes store
+                    const currentNode = nodes.find(n => n.id === nodeId);
+                    const currentVariable = currentNode?.variables.find(v => v.handle === variable.handle) || variable;
+
+                    const {baseType} = interpretNodeVariableType(currentVariable);
 
                     if (nodeServiceHandle === SECRET_IDENTIFIER) {
                         return (
@@ -557,7 +624,7 @@ const PlayButtonsForm: React.FC = () => {
                         const VariableComponent = VariableTypeComponents[baseType];
 
                         return VariableComponent ? (
-                            <div key={nodeId + "-" + variable.handle}>
+                            <div key={`${nodeId}-${variable.handle}-${currentVariable.value ?? 'empty'}`}>
                                 <Subheading>
                                     <span className="inline-flex items-center gap-2">
                                     {variable.published_title}
@@ -570,11 +637,11 @@ const PlayButtonsForm: React.FC = () => {
                                 )}
                                 <VariableComponent
                                     nodeId={nodeId}
-                                    variable={variable}
+                                    variable={currentVariable}
                                     publishedButton={false}
                                     // @ts-expect-error value is ambiguous
-                                    onChange={(value) => handleSimpleVariableChange(nodeId, variable.handle, value)}
-                                    currentValue={simpleVariables[nodeId]?.[variable.handle]}
+                                    onChange={(value) => handleSimpleVariableChange(nodeId, currentVariable.handle, value)}
+                                    currentValue={simpleVariables[nodeId]?.[currentVariable.handle]}
                                     inDock={false}
                                 />
                                 <Divider className="my-10" soft bleed/>
@@ -604,23 +671,25 @@ const PlayButtonsForm: React.FC = () => {
 
                 <Button
                     color="sky"
+                    disabled={isSaving}
                     onClick={(e: React.MouseEvent) => handlePlay(e, selectedPlayButton.id, selectedStage)}
                     className="flex items-center gap-2"
                 >
                     <PlayIcon className="w-4 h-4" />
-                    Play
+                    {isSaving ? 'Saving...' : 'Play'}
                 </Button>
+
             </div>
 
             {/* Show results for executed play button */}
-            {/* {result?.variables && (
+            {selectedPlayButton && mockResults[selectedPlayButton.id] && (
                 <div className="mb-4 rounded-md border border-sky-500/50 dark:border-white/10 p-4 bg-sky-50 dark:bg-white/5">
                     <div className="mb-2 text-sky-500 dark:text-white font-semibold text-sm">
                         Result from {displayTitle}
                     </div>
-                    <FormattedNodeOutput variables={result.variables}/>
+                    <FormattedNodeOutput variables={mockResults[selectedPlayButton.id].variables}/>
                 </div>
-            )} */}
+            )}
         </div>
     );
 };

@@ -95,16 +95,19 @@ const ServiceForm: React.FC = () => {
         };
     }, [showDeleteAlert, handleDelete, setShowDeleteAlert]);
 
+    // Initialize form values only once when component mounts or formType changes
     useEffect(() => {
         if (!node) return;
-        setName(node.service?.name || "");
-        setCategory(node.service?.category || "");
-        setIcon(node.icon || "");
-        setDescription(node.service?.description || "");
+
+        // Only set initial values, not on every node update
+        setName(prev => prev || node.service?.name || "");
+        setCategory(prev => prev || node.service?.category || "");
+        setIcon(prev => prev || node.icon || "");
+        setDescription(prev => prev || node.service?.description || "");
         setNodeNames({[node.id]: node.name});
 
         // Als we een nieuwe service aanmaken, maak een tijdelijke service object
-        if (formType === FormType.AddService && !node.service) {
+        if (formType === FormType.AddService && !node.service && !tempService) {
             setTempService({
                 id: "temp-id",
                 handle: uniqueNamesGenerator({dictionaries: [adjectives, animals, colors]}),
@@ -114,6 +117,11 @@ const ServiceForm: React.FC = () => {
                 category: "",
             });
         }
+    }, [formType, node?.id]); // Only depend on formType and node id, not the entire node object
+
+    // Separate effect for published variables that need to update when nodes change
+    useEffect(() => {
+        if (!node) return;
 
         if (node.type === NodeType.Group) {
             const nodesInGroup = getNodesInGroup(node.id);
@@ -129,7 +137,7 @@ const ServiceForm: React.FC = () => {
             const {variablesByHandle} = findPublishedVariables([node]);
             setPublishedVariables(variablesByHandle);
         }
-    }, [getNodesByIds, getNodesInGroup, node, formType]);
+    }, [getNodesByIds, getNodesInGroup, node]);
 
     if (formType === FormType.AddService) {
         if (selectedNodes.length > 1) {

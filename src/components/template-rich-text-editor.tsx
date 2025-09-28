@@ -399,7 +399,7 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
                     </div>
 
                     {disabled && (
-                        <div className="absolute inset-0 bg-white/40 dark:bg-black/40 rounded-md z-10 pointer-events-none"/>
+                        <div className="absolute inset-0 bg-sky-50/60 dark:bg-black/40 rounded-md z-10 pointer-events-none"/>
                     )}
                 </div>
             ) : (

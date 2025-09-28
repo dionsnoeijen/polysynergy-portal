@@ -13,8 +13,6 @@ interface FormattedNodeOutputProps {
 const RenderValue = ({label, value}: { label: string; value: unknown }) => {
     const {theme} = useTheme();
     
-    // Debug logging to see what values we're receiving
-    console.log('RenderValue DEBUG:', { label, value, type: typeof value });
 
     const isProbablyHtml = (value: string) => {
         const htmlTagRegex = /<\/?[a-z][^>]*>/i;

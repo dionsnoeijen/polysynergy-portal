@@ -27,10 +27,20 @@ export const TemplateTextarea: React.FC<TemplateTextareaProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+  const timeoutRef = useRef<NodeJS.Timeout>();
+
   useEffect(() => {
     setEditValue(value);
   }, [value]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
 
   // Parse template variables from text
@@ -160,7 +170,22 @@ export const TemplateTextarea: React.FC<TemplateTextareaProps> = ({
         <textarea
           ref={textareaRef}
           value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
+          onChange={(e) => {
+            const newValue = e.target.value;
+
+            // Update local state immediately for responsive UI
+            setEditValue(newValue);
+
+            // Clear existing timeout
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+
+            // Debounce the onChange call (same pattern as group-name.tsx)
+            timeoutRef.current = setTimeout(() => {
+              onChange(newValue);
+            }, 300);
+          }}
           onBlur={handleEditBlur}
           onKeyDown={handleEditKeyDown}
           placeholder={placeholder}

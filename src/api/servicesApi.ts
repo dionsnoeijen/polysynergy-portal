@@ -75,8 +75,20 @@ export const storeService = async (
 ) => {
     try {
         const idToken = getIdToken();
+        const payload = {
+            id,
+            name,
+            meta: { category, description },
+            node_setup_content: {
+                nodes: packagedData.nodes,
+                connections: packagedData.connections
+            },
+            project_ids: projectIds,
+        };
+
+
         const response = await fetch(
-            `${config.LOCAL_API_URL}/services/`,
+            `${config.LOCAL_API_URL}/services/?project_id=${projectIds[0]}`,
             {
                 method: 'POST',
                 headers: {
@@ -84,16 +96,7 @@ export const storeService = async (
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${idToken}`,
                 },
-                body: JSON.stringify({
-                    id,
-                    name,
-                    meta: { category, description },
-                    node_setup_content: {
-                        nodes: packagedData.nodes,
-                        connections: packagedData.connections
-                    },
-                    project_ids: projectIds,
-                }),
+                body: JSON.stringify(payload),
             }
         );
 
@@ -119,9 +122,36 @@ export const fetchServices = async (projectId: string) => {
             },
         });
 
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(`Failed to fetch services: ${response.status} ${errorMessage}`);
+        }
+
         return await response.json();
     } catch (error) {
         console.error("Error fetching services:", error);
+        throw error;
+    }
+};
+
+export const fetchServiceById = async (serviceId: string, projectId: string) => {
+    try {
+        const idToken = getIdToken();
+        const response = await fetch(`${config.LOCAL_API_URL}/services/${serviceId}/?project_id=${projectId}`, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+        });
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(`Failed to fetch service: ${response.status} ${errorMessage}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error fetching service by id:", error);
         throw error;
     }
 };

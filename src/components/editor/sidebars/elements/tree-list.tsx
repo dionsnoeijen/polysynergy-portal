@@ -66,7 +66,7 @@ export default function TreeList<T extends ListItemWithId>({
     return items.length > 0 ? (
         <div className="relative">
             {isFormOpen && (
-                <div className="absolute inset-0 z-10 bg-white/80 dark:bg-black/40 cursor-not-allowed"/>
+                <div className="absolute inset-0 z-10 bg-sky-50/80 dark:bg-black/40 cursor-not-allowed"/>
             )}
             <div className="mt-[10px]">
                 <div
@@ -125,7 +125,7 @@ export default function TreeList<T extends ListItemWithId>({
     ) : (
         <div className="relative">
             {isFormOpen && (
-                <div className="absolute inset-0 z-10  bg-white/80 dark:bg-black/40 cursor-not-allowed"/>
+                <div className="absolute inset-0 z-10  bg-sky-50/80 dark:bg-black/40 cursor-not-allowed"/>
             )}
             <div className="mt-[10px]">
                 {addButtonClick && (

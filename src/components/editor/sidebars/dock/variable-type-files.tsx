@@ -30,7 +30,7 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({
     return (
         <div className={'relative'}>
             {variable?.dock?.enabled === false || (variable.published && inDock) && (
-                <div className="absolute inset-0 bg-black/40 rounded-md z-10 pointer-events-none"/>
+                <div className="absolute inset-0 bg-sky-50/60 dark:bg-black/40 rounded-md z-10 pointer-events-none"/>
             )}
             {isValueConnected ? (
                  <ValueConnected variable={variable} />

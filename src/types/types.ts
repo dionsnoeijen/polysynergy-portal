@@ -1,3 +1,19 @@
+import VariableTypeString from "@/components/editor/sidebars/dock/variable-type-string";
+import VariableTypeBytes from "@/components/editor/sidebars/dock/variable-type-bytes";
+import VariableTypeNumber from "@/components/editor/sidebars/dock/variable-type-number";
+import VariableTypeDict from "@/components/editor/sidebars/dock/variable-type-dict";
+import VariableTypeBoolean from "@/components/editor/sidebars/dock/variable-type-boolean";
+import VariableTypeList from "@/components/editor/sidebars/dock/variable-type-list";
+import VariableTypeSecretString from "@/components/editor/sidebars/dock/variable-type-secret-string";
+import VariableTypeTextArea from "@/components/editor/sidebars/dock/variable-type-text-area";
+import VariableTypeRichTextArea from "@/components/editor/sidebars/dock/variable-type-rich-text-area";
+import VariableTypeCode from "@/components/editor/sidebars/dock/variable-type-code";
+import VariableTypeJson from "@/components/editor/sidebars/dock/variable-type-json";
+import VariableTypeFiles from "@/components/editor/sidebars/dock/variable-type-files";
+import VariableTypeTemplate from "@/components/editor/sidebars/dock/variable-type-template";
+import VariableTypeAvatar from "@/components/editor/sidebars/dock/variable-type-avatar";
+import VariableTypeImage from "@/components/editor/sidebars/dock/variable-type-image";
+import VariableTypeOAuth from "@/components/editor/sidebars/dock/variable-type-oauth";
 
 declare global {
     interface Window {
@@ -52,9 +68,6 @@ export enum FormType {
     AddProjectSecret = 'addProjectSecret',
     EditProjectSecret = 'editProjectSecret',
     ProjectPublish = 'projectPublish',
-    EditConfig = 'editConfig',
-    AddConfig = 'addConfig',
-    PlaceConfig = 'placeConfig',
     PublishedVariableForm = 'publishedVariableForm',
     PublishedVariableSettings = 'publishedVariableSettings',
     EditTemplate = 'editTemplate',
@@ -274,6 +287,8 @@ export type Node = {
     // Temporary added for service editing
     temp?: boolean;
     version?: number;
+    // Group name override for node-level connections (targetHandle === 'node')
+    group_name_override?: string;
 };
 
 export interface NodeProps {
@@ -563,4 +578,31 @@ export type UploadProgress = {
     progress: number;
     status: 'uploading' | 'completed' | 'error';
     error?: string;
+};
+
+export const VariableTypeComponents = {
+    [NodeVariableType.String]: VariableTypeString,
+    [NodeVariableType.Bytes]: VariableTypeBytes,
+    [NodeVariableType.Number]: VariableTypeNumber,
+    [NodeVariableType.Int]: VariableTypeNumber,
+    [NodeVariableType.Float]: VariableTypeNumber,
+    [NodeVariableType.Dict]: VariableTypeDict,
+    [NodeVariableType.Boolean]: VariableTypeBoolean,
+    [NodeVariableType.List]: VariableTypeList,
+    [NodeVariableType.DateTime]: VariableTypeString,
+    [NodeVariableType.TruePath]: null,
+    [NodeVariableType.FalsePath]: null,
+    [NodeVariableType.Unknown]: null,
+    [NodeVariableType.Dependency]: null,
+    [NodeVariableType.SecretString]: VariableTypeSecretString,
+    [NodeVariableType.TextArea]: VariableTypeTextArea,
+    [NodeVariableType.RichTextArea]: VariableTypeRichTextArea,
+    [NodeVariableType.Code]: VariableTypeCode,
+    [NodeVariableType.Json]: VariableTypeJson,
+    [NodeVariableType.Files]: VariableTypeFiles,
+    [NodeVariableType.Template]: VariableTypeTemplate,
+    [NodeVariableType.Avatar]: VariableTypeAvatar,
+    [NodeVariableType.Image]: VariableTypeImage,
+    [NodeVariableType.OAuth]: VariableTypeOAuth,
+    [NodeVariableType.Node]: null,
 };

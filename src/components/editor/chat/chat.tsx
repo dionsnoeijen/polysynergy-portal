@@ -1,7 +1,8 @@
-import React, {useEffect, useMemo} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import useNodesStore from "@/stores/nodesStore";
 import useChatViewStore from "@/stores/chatViewStore";
-// import useEditorStore from "@/stores/editorStore";
+import useEditorStore from "@/stores/editorStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 
 import PromptField from "@/components/editor/chat/components/prompt-field";
 import ChatTabs from "@/components/editor/chat/components/chat-tabs";
@@ -10,13 +11,19 @@ import SessionUserManager from "@/components/editor/chat/components/session-user
 import AIComplianceIndicator from "@/components/editor/chat/components/ai-compliance-indicator";
 import TeamMemberIndicators from "@/components/editor/chat/components/team-member-indicators";
 import {traceStorageConfiguration} from "@/utils/chatHistoryUtils";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 // import {NodeVariable} from "@/types/types";
 
 const PROMPT_NODE_PATH = 'polysynergy_nodes.play.prompt.Prompt';
 
 const Chat: React.FC = () => {
+    // State for team response collapse controls
+    const [teamResponsesCollapsed, setTeamResponsesCollapsed] = useState(true);
+
     // Select stable primitive data from stores
     const nodes = useNodesStore(s => s.nodes);
+    const connections = useConnectionsStore(s => s.connections);
+    const activeTeamMembers = useChatViewStore(s => s.activeTeamMembers);
     
     
     
@@ -38,15 +45,15 @@ const Chat: React.FC = () => {
     const ensurePromptSelected = useNodesStore(s => s.ensurePromptSelected);
     const selectedPromptNodeId = useNodesStore(s => s.selectedPromptNodeId);
     const {sid} = getLiveContextForPrompt(selectedPromptNodeId);
-    
+
     // Get project ID from editor store
-    // const activeProjectId = useEditorStore(s => s.activeProjectId);
+    const activeProjectId = useEditorStore(s => s.activeProjectId);
 
     // Check for storage configuration - reactive to both nodes AND connections
     const hasStorage = useMemo(() => {
         if (!selectedPromptNodeId) return false;
         return !!traceStorageConfiguration(selectedPromptNodeId);
-    }, [selectedPromptNodeId]);
+    }, [selectedPromptNodeId, connections]);
     
     // Get active session from prompt node
     const activeSession = useMemo(() => {
@@ -76,6 +83,35 @@ const Chat: React.FC = () => {
     useEffect(() => {
         ensurePromptSelected();
     }, [promptNodes.length, ensurePromptSelected]);
+
+    // Auto-sync when storage becomes available (e.g., when connecting storage node to agent)
+    const syncSessionFromBackend = useChatViewStore(s => s.syncSessionFromBackend);
+    useEffect(() => {
+        if (!hasStorage || !selectedPromptNodeId || !activeProjectId) return;
+
+        const context = getLiveContextForPrompt(selectedPromptNodeId);
+        const {storageNow, sid, uid, hasMemory} = context;
+
+        if (!hasMemory || !storageNow || !sid) return;
+
+        console.log('[chat] Storage detected, auto-syncing session...');
+
+        // Trigger sync when storage becomes available
+        (async () => {
+            try {
+                await syncSessionFromBackend({
+                    projectId: activeProjectId,
+                    storageConfig: storageNow as {type: "LocalAgentStorage" | "DynamoDBAgentStorage" | "LocalDb" | "DynamoDb"},
+                    sessionId: sid,
+                    userId: uid as string | undefined,
+                    limit: 200,
+                });
+                console.log('[chat] Auto-sync completed');
+            } catch (e) {
+                console.warn('[chat] Auto-sync failed:', e);
+            }
+        })();
+    }, [hasStorage, selectedPromptNodeId, activeProjectId, getLiveContextForPrompt, syncSessionFromBackend]);
 
     // Show inactive state when no prompt nodes available
     if (!chatWindowVisible) {
@@ -126,7 +162,30 @@ const Chat: React.FC = () => {
             
             {/* Team Member Activity Indicators */}
             <TeamMemberIndicators />
-            
+
+            {/* Team Response Controls */}
+            {Object.keys(activeTeamMembers).length > 0 && (
+                <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Team Responses</span>
+                    <button
+                        onClick={() => setTeamResponsesCollapsed(!teamResponsesCollapsed)}
+                        className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                    >
+                        {teamResponsesCollapsed ? (
+                            <>
+                                <ChevronDownIcon className="w-3 h-3" />
+                                Expand All
+                            </>
+                        ) : (
+                            <>
+                                <ChevronUpIcon className="w-3 h-3" />
+                                Collapse All
+                            </>
+                        )}
+                    </button>
+                </div>
+            )}
+
             {/* Storage Warnings */}
             {!hasStorage && (
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md mx-3 my-2 p-3">
@@ -168,7 +227,7 @@ const Chat: React.FC = () => {
                 </div>
             )}
             
-            <Messages />
+            <Messages teamResponsesCollapsed={teamResponsesCollapsed} />
             <PromptField
                 promptNodes={promptNodes}
                 selectedPromptNodeId={selectedPromptNodeId}

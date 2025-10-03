@@ -5,6 +5,7 @@ import NodeIcon from '@/components/editor/nodes/node-icon';
 import ServiceHeading from '@/components/editor/nodes/rows/service-heading';
 import NodeVariables from '@/components/editor/nodes/rows/node-variables';
 import {ConfirmAlert} from '@/components/confirm-alert';
+import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
 
 interface ExpandedGroupProps {
     node: Node;
@@ -39,6 +40,9 @@ const ExpandedGroup: React.FC<ExpandedGroupProps> = ({
 }) => {
     return (
         <>
+            {/* Notes Display - Always visible at top */}
+            <NodeNotesDisplay node={node} />
+
             {/* Header */}
             <div className={`flex items-center border-b ${styles.border} ${styles.background} p-2 w-full overflow-visible relative pl-5 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>
                 {node?.icon && (

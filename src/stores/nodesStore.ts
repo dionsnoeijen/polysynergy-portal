@@ -43,6 +43,7 @@ export type NodesStore = {
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => void;
     toggleNodeVariablePublished: (nodeId: string, variableHandle: string) => void;
     updateNodeHandle: (nodeId: string, handle: string) => void;
+    updateNodeNotes: (nodeId: string, notes: string) => void;
     getTrackedNode: () => Node | null;
     initNodes: (nodes: Node[]) => void;
     isNodeInService: (nodeIds: string[]) => boolean;
@@ -686,6 +687,20 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     ? {
                         ...node,
                         handle,
+                    }
+                    : node
+            ),
+        }));
+    },
+
+    updateNodeNotes: (nodeId: string, notes: string) => {
+        nodesByIdsCache.clear();
+        set((state) => ({
+            nodes: state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        notes,
                     }
                     : node
             ),

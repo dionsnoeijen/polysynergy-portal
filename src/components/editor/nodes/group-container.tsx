@@ -37,7 +37,9 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
     const autoResizeRef = useAutoResize(node);
     const measureRef = useRef<HTMLDivElement>(null);
     const [height, setHeight] = useState(0);
-    
+    const lastWidthRef = useRef<number>(node.view.width);
+    const lastHeightRef = useRef<number>(0);
+
     const position = useNodePlacement(node);
     const updateNodeWidth = useNodesStore((state) => state.updateNodeWidth);
     const zoomFactor = useEditorStore((state) => state.getZoomFactorForVersion());
@@ -49,9 +51,15 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
             const newHeight = rect.height / zoomFactor;
             const newWidth = rect.width / zoomFactor;
 
-            setHeight(newHeight);
+            // Only update height if it changed significantly (> 1px difference)
+            if (Math.abs(newHeight - lastHeightRef.current) > 1) {
+                lastHeightRef.current = newHeight;
+                setHeight(newHeight);
+            }
 
-            if (Math.abs(newWidth - node.view.width) > 1) {
+            // Only update width if it changed significantly and differs from last update
+            if (Math.abs(newWidth - lastWidthRef.current) > 1 && Math.abs(newWidth - node.view.width) > 1) {
+                lastWidthRef.current = newWidth;
                 updateNodeWidth(node.id, newWidth);
             }
         }
@@ -62,7 +70,9 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
         if (!node.view.collapsed && measureRef.current && !isPanning && !isZooming) {
             const rect = measureRef.current.getBoundingClientRect();
             const newWidth = rect.width / zoomFactor;
-            if (Math.abs(newWidth - node.view.width) > 1) {
+            // Only update if it differs from both current width AND our last recorded width
+            if (Math.abs(newWidth - lastWidthRef.current) > 1 && Math.abs(newWidth - node.view.width) > 1) {
+                lastWidthRef.current = newWidth;
                 updateNodeWidth(node.id, newWidth);
             }
         }

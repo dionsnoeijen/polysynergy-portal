@@ -109,7 +109,10 @@ interface DrawingState {
     
     // Panel positioning
     setPropertiesPanelPosition: (position: { x: number | null; y: number | null }) => void;
-    
+
+    // Clear all drawings (for version switching)
+    clearAllDrawings: () => void;
+
 }
 
 const useDrawingStore = create<DrawingState>((set) => ({
@@ -247,6 +250,16 @@ const useDrawingStore = create<DrawingState>((set) => ({
     
     setPropertiesPanelPosition: (position) => {
         set({ propertiesPanelPosition: position });
+    },
+
+    clearAllDrawings: () => {
+        set({
+            notes: [],
+            shapes: [],
+            paths: [],
+            images: [],
+            selectedObjectId: null
+        });
     }
 }));
 

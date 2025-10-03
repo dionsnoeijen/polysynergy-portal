@@ -4,6 +4,7 @@ import {ChevronUpIcon, GlobeAltIcon} from '@heroicons/react/24/outline';
 import Connector from '@/components/editor/nodes/connector';
 import NodeIcon from '@/components/editor/nodes/node-icon';
 import {ConfirmAlert} from '@/components/confirm-alert';
+import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
 
 interface CollapsedGroupProps {
     node: Node;
@@ -28,8 +29,11 @@ const CollapsedGroup: React.FC<CollapsedGroupProps> = ({
 }) => {
     return (
         <>
+            {/* Notes Display - Always visible at top even when collapsed */}
+            <NodeNotesDisplay node={node} isCollapsed={true} />
+
             <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
-            
+
             <div className="flex items-center gap-2">
                 {node?.icon ? (
                     <NodeIcon

@@ -48,13 +48,13 @@ const DrawingShapeComponent: React.FC<DrawingShapeComponentProps> = ({
     };
 
     const handleTransformEnd = (e: unknown) => {
-        const target = e as { target: { 
-            x: () => number; 
-            y: () => number; 
-            width: () => number; 
-            height: () => number; 
-            scaleX: () => number; 
-            scaleY: () => number; 
+        const target = e as { target: {
+            x: () => number;
+            y: () => number;
+            width: () => number;
+            height: () => number;
+            scaleX: () => number;
+            scaleY: () => number;
             rotation: () => number;
         } };
         const node = target.target;
@@ -63,11 +63,12 @@ const DrawingShapeComponent: React.FC<DrawingShapeComponentProps> = ({
         const rotation = node.rotation();
 
         if (onUpdate) {
+            // Use the shape's current width/height (from props), not node dimensions
             onUpdate({
                 x: node.x(),
                 y: node.y(),
-                width: Math.max(5, node.width() * scaleX),
-                height: Math.max(5, node.height() * scaleY),
+                width: Math.max(5, shape.width * scaleX),
+                height: Math.max(5, shape.height * scaleY),
                 rotation: rotation,
             });
         }

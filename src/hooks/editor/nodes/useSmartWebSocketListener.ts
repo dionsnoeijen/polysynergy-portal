@@ -223,28 +223,28 @@ export function useSmartWebSocketListener(flowId: string) {
 
                     // Smart streaming: Route based on agent role
                     if (message.is_member_agent === true) {
-                        // Member agent responses -> Only to node bubbles, NOT to main chat
-                        console.log(`[Smart Streaming] Member agent response routed to node bubble: ${message.node_id}`);
-                        
+                        // Member agent responses -> Now to BOTH node bubbles AND main chat
+                        console.log(`[Smart Streaming] Member agent response routed to both bubble and chat: ${message.node_id}`);
+
                         // Update team member activity status
                         if (message.parent_team_id && message.node_id) {
                             // Get the actual member name from the team node configuration
                             // const teamNode = nodesStore.nodes.find(n => n.id === message.parent_team_id);
                             const memberNode = nodesStore.nodes.find(n => n.id === message.node_id);
-                            
+
                             let memberName = `Member ${(message.member_index || 0) + 1}`;
-                            
+
                             if (memberNode) {
                                 // Use the node's handle or name variable if available
                                 const nameVar = memberNode.variables?.find(v => v.handle === 'name');
                                 const displayName = nameVar?.value ? String(nameVar.value) : memberNode.handle;
                                 memberName = displayName || memberNode.handle || memberName;
                             }
-                            
+
                             chatView.setTeamMemberActive(message.node_id, memberName, message.member_index);
                         }
-                        
-                        // Member agents: Only update bubbles, NOT main chat
+
+                        // Member agents: Update BOTH bubbles AND main chat (for collapsible display)
                         chatView.appendAgentChunkBubbleOnly(
                             sessionId,
                             message.node_id,
@@ -252,6 +252,19 @@ export function useSmartWebSocketListener(flowId: string) {
                             tsMs,
                             message.sequence_id,
                             message.run_id ?? null
+                        );
+
+                        // ALSO append to main chat for the collapsible team response view
+                        chatView.appendAgentChunk(
+                            sessionId,
+                            message.node_id,
+                            message.content,
+                            tsMs,
+                            message.sequence_id,
+                            message.run_id ?? null,
+                            true, // isTeamMember
+                            message.parent_team_id, // parentTeamId
+                            message.member_index // memberIndex
                         );
                     } else {
                         // Main agent (single/leader) responses -> Stream to main chat window

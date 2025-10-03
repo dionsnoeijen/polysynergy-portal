@@ -92,16 +92,6 @@ export type Position = {
     y: number;
 };
 
-export enum Fundamental {
-    Route = 'route',
-    Schedule = 'schedule',
-    Service = 'service',
-    Blueprint = 'blueprint',
-    Config = 'config',
-    Secret = 'secret',
-    Variable = 'variable',
-    EnvVar = 'envVar',
-}
 
 export enum NodeVariableType {
     String = 'str',
@@ -289,6 +279,8 @@ export type Node = {
     version?: number;
     // Group name override for node-level connections (targetHandle === 'node')
     group_name_override?: string;
+    // User notes for documenting/explaining the node
+    notes?: string;
 };
 
 export interface NodeProps {
@@ -362,6 +354,62 @@ export interface NodeSetupVersion {
         groups: {
             groupStack: string[],
             openedGroup: string|null,
+        },
+        drawings?: {
+            paths: Array<{
+                id: string;
+                points: number[];
+                color: string;
+                strokeWidth: number;
+                versionId: string;
+            }>,
+            shapes: Array<{
+                id: string;
+                type: 'rectangle' | 'circle' | 'triangle' | 'line';
+                x: number;
+                y: number;
+                width: number;
+                height: number;
+                rotation?: number;
+                color: string;
+                strokeWidth: number;
+                strokeStyle?: 'solid' | 'dashed' | 'dotted';
+                fillColor?: string;
+                fillOpacity?: number;
+                cornerRadius?: number;
+                text?: string;
+                textColor?: string;
+                fontSize?: number;
+                fontFamily?: string;
+                textAlign?: 'left' | 'center' | 'right';
+                textVerticalAlign?: 'top' | 'middle' | 'bottom';
+                textPadding?: number;
+                versionId: string;
+            }>,
+            images: Array<{
+                id: string;
+                x: number;
+                y: number;
+                width: number;
+                height: number;
+                rotation: number;
+                src: string;
+                originalWidth: number;
+                originalHeight: number;
+                versionId: string;
+            }>,
+            notes: Array<{
+                id: string;
+                x: number;
+                y: number;
+                width: number;
+                height: number;
+                rotation: number;
+                text: string;
+                color: string;
+                fontSize: number;
+                versionId: string;
+            }>
         }
     };
     published: boolean;
@@ -394,11 +442,7 @@ export type Route = ListItemWithId & {
     versions?: { id: string, version_number: number, published: boolean, draft: boolean }[];
 };
 
-export enum Roles {
-    Admin = 'admin',
-    Editor = 'editor',
-    Viewer = 'viewer',
-}
+export {Roles, AccessLevel, Fundamental} from './enums';
 
 export type Tenant = {
     id: string;
@@ -429,6 +473,11 @@ export type Account = {
     active: boolean;
     memberships: Membership[];
     tenants: Tenant[];
+    // Visual-only fields for UI demo (not persisted to backend)
+    access_level?: AccessLevel;
+    allowed_flows?: string[];
+    chat_only_mode?: boolean;
+    permissions?: string[];
 }
 
 export type LoggedInAccount = Account;

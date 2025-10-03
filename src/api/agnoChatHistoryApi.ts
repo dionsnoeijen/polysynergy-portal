@@ -16,6 +16,15 @@ export interface ChatMessage {
     text: string;
     timestamp: string;
     user_id?: string;
+    run_id?: string;
+    node_id?: string;
+    is_team_member?: boolean;
+    parent_team_id?: string;
+    member_index?: number;
+    images?: Array<{
+        id: string;
+        filepath: string;
+    }>;
 }
 
 export interface SessionInfo {

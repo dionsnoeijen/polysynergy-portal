@@ -25,15 +25,10 @@ const ContextMenu: React.FC = () => {
     return (
         <div
             ref={menuRef}
+            className="absolute z-50 bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded shadow-lg"
             style={{
-                position: "absolute",
                 top: `${contextMenu.y}px`,
                 left: `${contextMenu.x}px`,
-                zIndex: 50,
-                background: "white",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)"
             }}
             onClick={(e) => e.stopPropagation()}
         >
@@ -44,7 +39,7 @@ const ContextMenu: React.FC = () => {
                         item.action();
                         closeContextMenu();
                     }}
-                    className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                    className="block w-full px-4 py-2 text-left text-zinc-700 dark:text-white hover:bg-sky-100 dark:hover:bg-zinc-600"
                 >
                     {item.label}
                 </button>

@@ -31,8 +31,12 @@ export default function VersionPublishedMenu() {
 
     const handleOpenDocs = async () => {
         setDocumentationType('general');
-        await fetchCategories();
-        openDocs('# Documentation\n\nLoading documentation...');
+        openDocs(''); // Open with empty content to trigger EnhancedDocs
+        try {
+            await fetchCategories();
+        } catch (error) {
+            console.error('Failed to load documentation categories:', error);
+        }
     };
 
     return (

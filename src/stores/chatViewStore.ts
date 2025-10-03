@@ -10,6 +10,14 @@ export type ChatViewMessage = {
     node_id?: string | null;
     run_id?: string | null;
     parts?: Array<{ seq?: number; ts: number; text: string }>;
+    // Team member metadata
+    is_team_member?: boolean;
+    parent_team_id?: string;
+    member_index?: number;
+    images?: Array<{
+        id: string;
+        filepath: string;
+    }>;
 };
 
 export type TeamMember = {
@@ -37,7 +45,10 @@ type ChatViewState = {
         text: string,
         ts?: number,
         seq?: number,
-        runId?: string | null
+        runId?: string | null,
+        isTeamMember?: boolean,
+        parentTeamId?: string,
+        memberIndex?: number
     ) => void;
     
     appendAgentChunkBubbleOnly: (
@@ -103,7 +114,7 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
             return {messagesBySession: {...s.messagesBySession, [sessionId]: [...prev, next]}};
         }),
 
-    appendAgentChunk: (sessionId, nodeId, text, ts, seq, runId) =>
+    appendAgentChunk: (sessionId, nodeId, text, ts, seq, runId, isTeamMember, parentTeamId, memberIndex) =>
         set((s) => {
             const now = ts ?? Date.now(); // verwacht ms
             const prev = s.messagesBySession[sessionId] ?? [];
@@ -112,7 +123,8 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
             const sameAgentThread =
                 last?.sender === "agent" &&
                 (last.node_id ?? null) === (nodeId ?? null) &&
-                (last.run_id ?? null) === (runId ?? null);
+                (last.run_id ?? null) === (runId ?? null) &&
+                (last.is_team_member ?? false) === (isTeamMember ?? false);
 
             const withinWindow = last ? now - last.timestamp <= MERGE_WINDOW_MS : false;
 
@@ -165,6 +177,9 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 node_id: nodeId ?? null,
                 run_id: runId ?? null,
                 parts: [{seq, ts: now, text}],
+                is_team_member: isTeamMember,
+                parent_team_id: parentTeamId,
+                member_index: memberIndex,
             };
             
             // Also add to bubbles store
@@ -258,13 +273,19 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
             // Als backend niks terug geeft (geen storage of empty), niet forceren
             if (!data || !Array.isArray(data.messages)) return;
 
+
             // Map naar ChatViewMessage (timestamps naar ms, id stabiel genoeg)
             const mapped: ChatViewMessage[] = data.messages.map((m: ChatMessage, i) => {
                 const tsMs =
                     typeof m.timestamp === "string"
                         ? new Date(m.timestamp).getTime()
                         : (m.timestamp as unknown as number);
-                
+
+                // Debug images in messages
+                if (m.images && m.images.length > 0) {
+                    console.log(`[Images-Debug] Message ${i} has ${m.images.length} images:`, m.images);
+                }
+
                 // Debug S3 URLs in message text
                 if (m.text && m.text.includes('s3.amazonaws.com')) {
                     console.log(`[S3-Debug] Message ${i} contains S3 URLs:`, m.text.substring(0, 200));
@@ -285,12 +306,63 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                     sender: m.sender === "user" ? "user" : "agent",
                     text: m.text ?? "",
                     timestamp: tsMs || Date.now(),
-                    node_id: (m as {node_id?: string}).node_id || null,  // Use node_id from backend (team_id/agent_id)
-                    run_id: (m as {run_id?: string}).run_id || null,  // Use run_id from backend if available
+                    node_id: m.node_id || null,
+                    run_id: m.run_id || null,
+                    is_team_member: m.is_team_member || false,
+                    parent_team_id: m.parent_team_id || undefined,
+                    images: m.images || undefined,
+                    member_index: m.member_index || undefined,
                 };
             });
 
-            get().replaceHistory(sessionId, mapped);
+            // Group messages by conversation flows and fix team member order
+            const conversationGroups: ChatViewMessage[][] = [];
+            let currentGroup: ChatViewMessage[] = [];
+
+            mapped.forEach(msg => {
+                if (msg.sender === 'user') {
+                    // Start new conversation group
+                    if (currentGroup.length > 0) {
+                        conversationGroups.push(currentGroup);
+                    }
+                    currentGroup = [msg];
+                } else {
+                    // Add agent response to current group
+                    currentGroup.push(msg);
+                }
+            });
+
+            // Don't forget the last group
+            if (currentGroup.length > 0) {
+                conversationGroups.push(currentGroup);
+            }
+
+            // Sort each conversation group: User → Team Members → Team Manager
+            const sortedMapped: ChatViewMessage[] = [];
+
+            conversationGroups.forEach(group => {
+                const sorted = group.sort((a, b) => {
+                    // Users first
+                    if (a.sender === 'user' && b.sender === 'agent') return -1;
+                    if (a.sender === 'agent' && b.sender === 'user') return 1;
+
+                    // Both agents: team members BEFORE team managers
+                    if (a.sender === 'agent' && b.sender === 'agent') {
+                        const aIsTeam = a.is_team_member || false;
+                        const bIsTeam = b.is_team_member || false;
+
+                        if (aIsTeam && !bIsTeam) return -1; // Team member first
+                        if (!aIsTeam && bIsTeam) return 1;  // Team manager after
+                    }
+
+                    return 0;
+                });
+
+                sortedMapped.push(...sorted);
+            });
+
+
+            get().replaceHistory(sessionId, sortedMapped);
         } catch (e) {
             // Niet fatal voor UI: log en laat lokale state staan
             console.warn("[chat-sync] failed to fetch session history", e);

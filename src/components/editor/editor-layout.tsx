@@ -287,8 +287,8 @@ const EditorLayout = ({
                 {itemManagerClosed && !chatMode && (<button
                     type="button"
                     onClick={handleToggleItemManager}
-                    className="absolute z-10 top-1/2 -translate-y-1/2 left-0 p-3 radius-tl-0"
-                ><ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/></button>)}
+                    className="absolute z-10 top-1/2 -translate-y-1/2 left-0 p-3 radius-tl-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                ><ArrowRightEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/></button>)}
 
                 {/* Chat Panel - Left Side */}
                 {chatPanelOpen && (
@@ -327,9 +327,9 @@ const EditorLayout = ({
                                             <button
                                                 type="button"
                                                 onClick={toggleCloseOutput}
-                                                className="absolute z-10 bottom-2 left-1/2 -translate-x-1/2 p-3 radius-bl-0"
+                                                className="absolute z-10 bottom-2 left-1/2 -translate-x-1/2 p-3 radius-bl-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm"
                                             >
-                                                <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-white"/>
+                                                <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/>
                                             </button>
                                         )}
                                         
@@ -393,13 +393,13 @@ const EditorLayout = ({
                     </>
                 )}
 
-                {dockClosed && !chatMode && (
+                {dockClosed && (
                     <button
                         type="button"
                         onClick={toggleCloseDock}
-                        className="absolute z-10 top-1/2 -translate-y-1/2 right-0 p-3 radius-tr-0"
+                        className="absolute z-10 top-1/2 -translate-y-1/2 right-0 p-3 radius-tr-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm"
                     >
-                        <ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/>
+                        <ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/>
                     </button>
                 )}
             </div>
@@ -412,8 +412,8 @@ const EditorLayout = ({
                     <button
                         type="button"
                         onClick={toggleCloseOutput}
-                        className={`absolute z-10 top-1 left-0.5 p-3 radius-bl-0`}
-                    ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-white"/></button>
+                        className={`absolute z-10 top-1 left-0.5 p-3 radius-bl-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm`}
+                    ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/></button>
                     <button
                         onMouseDown={() => startResizing(ResizeWhat.Output)}
                         type="button"

@@ -9,6 +9,7 @@ import ServiceHeading from '@/components/editor/nodes/rows/service-heading';
 import NodeVariables from '@/components/editor/nodes/rows/node-variables';
 import PlayButton from '@/components/editor/nodes/rows/play-button';
 import ExecutionOrder from '@/components/editor/nodes/execution-order';
+import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
 
 interface ExpandedNodeProps {
     node: Node;
@@ -37,7 +38,10 @@ const ExpandedNode: React.FC<ExpandedNodeProps> = ({
     return (
         <>
             {mockNode && <ExecutionOrder mockNode={mockNode} centered={false}/>}
-            
+
+            {/* Notes Display - Always visible at top */}
+            <NodeNotesDisplay node={node} />
+
             {/* Header */}
             <div className={`flex items-center border-b ${styles.border} ${styles.background} p-[0.86rem] w-full overflow-visible relative pl-5 ${node.view.disabled && 'select-none opacity-0'}`}>
                 {node.has_enabled_switch && (

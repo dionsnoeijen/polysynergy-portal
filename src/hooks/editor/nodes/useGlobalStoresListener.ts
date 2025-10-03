@@ -2,6 +2,7 @@ import {useCallback, useEffect, useRef} from 'react';
 import useNodesStore from '@/stores/nodesStore';
 import useConnectionsStore from '@/stores/connectionsStore';
 import useEditorStore from '@/stores/editorStore';
+import useDrawingStore from '@/stores/drawingStore';
 import {updateNodeSetupVersionAPI} from '@/api/nodeSetupsApi';
 import {Fundamental} from '@/types/types';
 
@@ -76,7 +77,13 @@ export default function useGlobalStoreListenersWithImmediateSave() {
         try {
             const {nodes, groupStack, openedGroup} = useNodesStore.getState();
             const {connections} = useConnectionsStore.getState();
-            const payload = {nodes, connections, groups: {groupStack, openedGroup}};
+            const {paths, shapes, images, notes} = useDrawingStore.getState();
+            const payload = {
+                nodes,
+                connections,
+                groups: {groupStack, openedGroup},
+                drawings: {paths, shapes, images, notes}
+            };
             await updateNodeSetupVersionAPI(fundamentalId, activeVersionId, activeProjectId, payload, type);
             lastSaveTimeRef.current = Date.now();
         } catch (err) {
@@ -184,9 +191,24 @@ export default function useGlobalStoreListenersWithImmediateSave() {
             }
         });
 
+        const unsubDrawings = useDrawingStore.subscribe((state, prev) => {
+            // Only save drawing changes when NOT actively drawing
+            // This prevents saving on every mouse move during pen drawing
+            const drawingContentChanged =
+                state.notes !== prev.notes ||
+                state.shapes !== prev.shapes ||
+                state.paths !== prev.paths ||
+                state.images !== prev.images;
+
+            if (drawingContentChanged && !state.isDrawing) {
+                setTimeout(() => saveNodeSetup(), 0);
+            }
+        });
+
         return () => {
             unsubNodes();
             unsubConns();
+            unsubDrawings();
             cancelPendingSave();
         };
     }, [saveNodeSetup, cancelPendingSave]);

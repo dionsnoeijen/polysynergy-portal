@@ -14,6 +14,7 @@ type Props = React.ComponentPropsWithoutRef<"div"> & {
 
 const DockTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
     const isExecuting = useEditorStore((state) => state.isExecuting);
+    const chatMode = useEditorStore((state) => state.chatMode);
     const [selectedIndex, setSelectedIndex] = useState(0); // Always default to Variables tab (index 0)
 
     // Listen for execution start event to switch to Output tab
@@ -27,7 +28,14 @@ const DockTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
         return () => window.removeEventListener('switch-to-output-tab', handleSwitchToOutput);
     }, []);
 
-    const tabs = [
+    // In chat mode, auto-select Output tab and only show Output
+    useEffect(() => {
+        if (chatMode) {
+            setSelectedIndex(0); // Will be the only tab (Output) in chat mode
+        }
+    }, [chatMode]);
+
+    const allTabs = [
         {
             name: "Variables",
             component: <div className="h-full flex flex-col"><DockWrapper toggleClose={toggleClose} /></div>,
@@ -39,6 +47,9 @@ const DockTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
             disabled: false
         }
     ];
+
+    // Filter tabs based on chat mode
+    const tabs = chatMode ? allTabs.filter(tab => tab.name === "Output") : allTabs;
 
     return (
         <div {...restProps} className="absolute left-0 top-0 right-0 bottom-0 flex flex-col">

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
@@ -14,6 +14,7 @@ import {Button} from "@/components/button";
 import {InformationCircleIcon} from "@heroicons/react/24/outline";
 import {Input} from "@/components/input";
 import {Field, Fieldset, Label} from "@/components/fieldset";
+import {Textarea} from "@/components/textarea";
 import {
     getCategoryGradientBackgroundColor,
     getCategoryBorderColor,
@@ -33,11 +34,48 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
     const nodes = useNodesStore((state) => state.nodes);
     const openDocs = useEditorStore((state) => state.openDocs);
     const setGroupNameOverride = useNodesStore((state) => state.setGroupNameOverride);
+    const updateNodeNotes = useNodesStore((state) => state.updateNodeNotes);
     // const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
+
+    // Notes state with debouncing
+    const [localNotes, setLocalNotes] = useState("");
+    const notesTimeoutRef = useRef<NodeJS.Timeout>();
 
 
     const node: Node | null | undefined = selectedNodes.length === 1 ?
         nodes.find((n) => n.id === selectedNodes[0]) : null;
+
+    // Sync local notes when node changes
+    useEffect(() => {
+        setLocalNotes(node?.notes || "");
+    }, [node?.id, node?.notes]);
+
+    // Handle notes change with debouncing
+    const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const newValue = e.target.value;
+        setLocalNotes(newValue);
+
+        // Clear existing timeout
+        if (notesTimeoutRef.current) {
+            clearTimeout(notesTimeoutRef.current);
+        }
+
+        // Debounce the store update
+        notesTimeoutRef.current = setTimeout(() => {
+            if (node) {
+                updateNodeNotes(node.id, newValue);
+            }
+        }, 300);
+    };
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (notesTimeoutRef.current) {
+                clearTimeout(notesTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const category = node?.category ?? '';
     const isNodeInService = useNodesStore((state) => state.isNodeInService([node?.id ?? ""]));
@@ -115,17 +153,59 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
                 <NodeHandle node={node} categoryBorder={categoryBorder} />
             </VariableGroup>}
 
+            {node && <VariableGroup
+                title={'Notes'}
+                categoryBorderColor={categoryContainerBorder}
+                categoryMainTextColor={categoryMainTextColor}
+                categorySubTextColor={categorySubTextColor}
+                categoryBackgroundColor={categoryBackground}
+                categoryGradientBackgroundColor={categoryGradientBackground}
+            >
+                <Fieldset>
+                    <Field>
+                        <Textarea
+                            value={localNotes}
+                            onChange={handleNotesChange}
+                            placeholder="Add notes to document this node..."
+                            rows={3}
+                            className="dark:text-white resize-none"
+                        />
+                    </Field>
+                </Fieldset>
+            </VariableGroup>}
+
             {node && node.has_documentation && (
                 <div className="px-2">
                     <Button color={'skyLight'} className="w-full" onClick={async () => {
                         if (!node?.type) return;
-                        
+
                         try {
                             const nodeType = node.path.split('.').pop() || node.type;
+                            console.log('Fetching documentation for node type:', nodeType);
                             const docData = await fetchNodeDocumentationAPI(nodeType);
                             openDocs(docData.content);
                         } catch (error) {
                             console.error('Failed to fetch node documentation:', error);
+
+                            // Show user-friendly error message
+                            const errorMessage = `
+# Documentation Not Available
+
+Documentation for **${node.type}** is not yet available.
+
+**Node Details:**
+- Type: \`${node.type}\`
+- Path: \`${node.path}\`
+- Category: \`${node.category}\`
+
+**Error:** ${error instanceof Error ? error.message : 'Unknown error'}
+
+Please check:
+1. The node type is correct
+2. The documentation API is accessible
+3. You have proper authentication
+`;
+                            openDocs(errorMessage);
                         }
                     }}>
                         Documentation <InformationCircleIcon/>

@@ -3,6 +3,7 @@ import { usePathname } from 'next/navigation';
 import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
 import useConnectionsStore from '@/stores/connectionsStore';
+import useDrawingStore from '@/stores/drawingStore';
 import useMockStore from '@/stores/mockStore';
 import fetchAndApplyNodeSetup from '@/utils/fetchNodeSetup';
 import { addScheduleNodesIfNeeded } from '@/utils/addScheduleNodesIfNeeded';
@@ -38,11 +39,12 @@ export const useRouteSetup = ({
     const safelyClearStores = () => {
         // 1. Stop autosave to prevent saving mixed data
         setIsSaving(false);
-        
+
         // 2. Clear stores immediately to prevent contamination
         initNodes([]);
         initConnections([]);
-        
+        useDrawingStore.getState().clearAllDrawings();
+
         console.log('🛡️ Stores cleared safely - preventing data contamination');
     };
 

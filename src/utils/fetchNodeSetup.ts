@@ -1,6 +1,7 @@
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import useEditorStore from "@/stores/editorStore";
+import useDrawingStore from "@/stores/drawingStore";
 import {fetchDynamicRoute as fetchDynamicRouteAPI} from "@/api/dynamicRoutesApi";
 import {fetchBlueprint as fetchBlueprintAPI} from "@/api/blueprintApi";
 import {fetchSchedule as fetchScheduleAPI} from "@/api/schedulesApi";
@@ -71,10 +72,26 @@ async function fetchAndApplyNodeSetup({
             }
             useConnectionsStore.getState()
                 .initConnections(version?.content.connections ?? []);
-                
+
+            // Load drawings if they exist
+            if (version?.content.drawings) {
+                const drawingStore = useDrawingStore.getState();
+                // Clear existing drawings for this version first
+                drawingStore.paths.filter(p => p.versionId === version.id).forEach(p => drawingStore.deletePath(p.id));
+                drawingStore.shapes.filter(s => s.versionId === version.id).forEach(s => drawingStore.deleteShape(s.id));
+                drawingStore.images.filter(i => i.versionId === version.id).forEach(i => drawingStore.deleteImage(i.id));
+                drawingStore.notes.filter(n => n.versionId === version.id).forEach(n => drawingStore.deleteNote(n.id));
+
+                // Add loaded drawings
+                version.content.drawings.paths?.forEach(path => drawingStore.addPath(path));
+                version.content.drawings.shapes?.forEach(shape => drawingStore.addShape(shape));
+                version.content.drawings.images?.forEach(image => drawingStore.addImage(image));
+                version.content.drawings.notes?.forEach(note => drawingStore.addNote(note));
+            }
+
             // Wait a moment for all store updates to complete
             await new Promise(resolve => setTimeout(resolve, 100));
-            
+
         } finally {
             // CRITICAL: Re-enable autosave after loading is complete (replaces old module-based control)
             useEditorStore.getState().setAutosaveEnabled(true);

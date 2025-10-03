@@ -8,6 +8,7 @@ import PlayButton from '@/components/editor/nodes/rows/play-button';
 import ExecutionOrder from '@/components/editor/nodes/execution-order';
 import AvatarVariable from '@/components/editor/nodes/rows/avatar-variable';
 import interpretNodeVariableType from '@/utils/interpretNodeVariableType';
+import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
 
 interface CollapsedNodeProps {
     node: Node;
@@ -36,9 +37,12 @@ const CollapsedNode: React.FC<CollapsedNodeProps> = ({
     return (
         <>
             {mockNode && <ExecutionOrder mockNode={mockNode} centered={false}/>}
-            
+
+            {/* Notes Display - Always visible at top even when collapsed */}
+            <NodeNotesDisplay node={node} isCollapsed={true} />
+
             <Connector in nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
-            
+
             <div className="flex items-center gap-2">
                 {node?.has_play_button ? (
                     <PlayButton

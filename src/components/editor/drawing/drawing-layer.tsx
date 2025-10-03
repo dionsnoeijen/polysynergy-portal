@@ -223,41 +223,53 @@ export default function DrawingLayer() {
     }
 
     const handleStageMouseUp = () => {
-        // Handle path drawing completion
-        if (isDrawingPath && currentPath.length > 2 && currentTool === 'pen') {
-            // Only add path if using pen tool (not eraser)
-            addPath({
-                points: currentPath,
-                color: currentColor,
-                strokeWidth: strokeWidth,
-                versionId: activeVersionId || ''
-            })
-        }
-        
-        // Handle shape drawing completion
-        if (isDrawingShape && currentShapePreview && shapeStart) {
-            const minSize = 5 // Minimum size for shapes
-            if (currentShapePreview.width >= minSize && currentShapePreview.height >= minSize) {
-                addShape({
-                    type: currentTool as 'rectangle' | 'circle' | 'triangle' | 'line',
-                    x: currentShapePreview.x,
-                    y: currentShapePreview.y,
-                    width: currentShapePreview.width,
-                    height: currentShapePreview.height,
+        // Store local copies before resetting state
+        const wasDrawingPath = isDrawingPath
+        const wasDrawingShape = isDrawingShape
+        const pathToAdd = currentPath
+        const shapeToAdd = currentShapePreview
+        const shapeStartPos = shapeStart
+
+        // Reset local drawing states
+        setIsDrawingPath(false)
+        setIsDrawingShape(false)
+        setCurrentPath([])
+        setShapeStart(null)
+        setCurrentShapePreview(null)
+
+        // CRITICAL: Reset isDrawing in store FIRST, synchronously
+        setIsDrawing(false)
+
+        // Then add completed paths/shapes (after small delay to ensure state update propagates)
+        setTimeout(() => {
+            // Handle path drawing completion
+            if (wasDrawingPath && pathToAdd.length > 2 && currentTool === 'pen') {
+                // Only add path if using pen tool (not eraser)
+                addPath({
+                    points: pathToAdd,
                     color: currentColor,
                     strokeWidth: strokeWidth,
                     versionId: activeVersionId || ''
                 })
             }
-        }
-        
-        // Reset all drawing states
-        setIsDrawingPath(false)
-        setIsDrawingShape(false)
-        setIsDrawing(false)
-        setCurrentPath([])
-        setShapeStart(null)
-        setCurrentShapePreview(null)
+
+            // Handle shape drawing completion
+            if (wasDrawingShape && shapeToAdd && shapeStartPos) {
+                const minSize = 5 // Minimum size for shapes
+                if (shapeToAdd.width >= minSize && shapeToAdd.height >= minSize) {
+                    addShape({
+                        type: currentTool as 'rectangle' | 'circle' | 'triangle' | 'line',
+                        x: shapeToAdd.x,
+                        y: shapeToAdd.y,
+                        width: shapeToAdd.width,
+                        height: shapeToAdd.height,
+                        color: currentColor,
+                        strokeWidth: strokeWidth,
+                        versionId: activeVersionId || ''
+                    })
+                }
+            }
+        }, 10)
     }
 
     // Eraser functionality - check if eraser position intersects with any paths

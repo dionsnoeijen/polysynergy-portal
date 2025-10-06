@@ -14,6 +14,7 @@ import {Select} from "@/components/select";
 import {Checkbox, CheckboxField} from "@/components/checkbox";
 import {Label} from "@/components/fieldset";
 import {Button} from "@/components/button";
+import {Strong} from "@/components/text";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import {FormType, ChatWindow, ChatWindowAccess} from "@/types/types";
 import {useParams, useRouter} from "next/navigation";
@@ -242,7 +243,7 @@ const ChatWindowForm: React.FC = () => {
                         <div className="space-y-4">
                             {/* Add new user */}
                             <div className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-4 space-y-3">
-                                <Label>Assign New User</Label>
+                                <Text><Strong>Assign New User</Strong></Text>
                                 <Select
                                     value={selectedAccountId}
                                     onChange={(e) => setSelectedAccountId(e.target.value)}
@@ -309,7 +310,7 @@ const ChatWindowForm: React.FC = () => {
                             {/* Assigned users list */}
                             {assignedUsers.length > 0 && (
                                 <div className="space-y-2">
-                                    <Label>Assigned Users ({assignedUsers.length})</Label>
+                                    <Text><Strong>Assigned Users ({assignedUsers.length})</Strong></Text>
                                     {assignedUsers.map(access => (
                                         <div
                                             key={access.id}

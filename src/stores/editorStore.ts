@@ -94,6 +94,8 @@ export type EditorState = {
     setActiveRouteId: (routeId: string) => void;
     activeScheduleId?: string;
     setActiveScheduleId: (scheduleId: string) => void;
+    activeChatWindowId?: string;
+    setActiveChatWindowId: (chatWindowId: string) => void;
     activeServiceId: string;
     setActiveServiceId: (serviceId: string) => void;
     activeConfigId: string;
@@ -253,6 +255,8 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setActiveRouteId: (routeId: string) => set({activeRouteId: routeId}),
     activeScheduleId: '',
     setActiveScheduleId: (scheduleId: string) => set({activeScheduleId: scheduleId}),
+    activeChatWindowId: '',
+    setActiveChatWindowId: (chatWindowId: string) => set({activeChatWindowId: chatWindowId}),
     activeServiceId: '',
     setActiveServiceId: (serviceId: string) => set({activeServiceId: serviceId}),
     activeConfigId: '',

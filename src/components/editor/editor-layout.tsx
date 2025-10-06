@@ -37,12 +37,14 @@ const EditorLayout = ({
     projectUuid,
     routeUuid,
     scheduleUuid,
+    chatWindowUuid,
     blueprintUuid,
     configUuid,
 }: {
     projectUuid?: string,
     routeUuid?: string,
     scheduleUuid?: string,
+    chatWindowUuid?: string,
     blueprintUuid?: string,
     configUuid?: string,
 }) => {
@@ -76,7 +78,7 @@ const EditorLayout = ({
         setHeight
     });
     
-    useRouteSetup({ projectUuid, routeUuid, scheduleUuid, blueprintUuid });
+    useRouteSetup({ projectUuid, routeUuid, scheduleUuid, chatWindowUuid, blueprintUuid });
     useDebugTools();
     
     const {
@@ -316,7 +318,7 @@ const EditorLayout = ({
                         ) : showDocs ? (
                             <EnhancedDocs/>
                         ) : (
-                            projectUuid && (routeUuid || scheduleUuid || blueprintUuid || configUuid) ? (
+                            projectUuid && (routeUuid || scheduleUuid || chatWindowUuid || blueprintUuid || configUuid) ? (
                                 activeVersionId ? (
                                     <>
                                         <DrawingLayer />

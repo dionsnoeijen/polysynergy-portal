@@ -14,6 +14,7 @@ import VariableTypeTemplate from "@/components/editor/sidebars/dock/variable-typ
 import VariableTypeAvatar from "@/components/editor/sidebars/dock/variable-type-avatar";
 import VariableTypeImage from "@/components/editor/sidebars/dock/variable-type-image";
 import VariableTypeOAuth from "@/components/editor/sidebars/dock/variable-type-oauth";
+import {AccessLevel} from "@/types/enums";
 
 declare global {
     interface Window {
@@ -52,6 +53,8 @@ export enum FormType {
     EditRoute = 'editRoute',
     AddSchedule = 'addSchedule',
     EditSchedule = 'editSchedule',
+    AddChatWindow = 'addChatWindow',
+    EditChatWindow = 'editChatWindow',
     AddService = 'addService',
     EditService = 'editService',
     AddBlueprint = 'addBlueprint',
@@ -442,7 +445,39 @@ export type Route = ListItemWithId & {
     versions?: { id: string, version_number: number, published: boolean, draft: boolean }[];
 };
 
-export {Roles, AccessLevel, Fundamental} from './enums';
+export type AccountSimple = {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+};
+
+export type ChatWindowAccess = {
+    id: string;
+    account_id: string;
+    chat_window_id: string;
+    can_view_flow: boolean;
+    can_edit_flow: boolean;
+    can_view_output: boolean;
+    show_response_transparency: boolean;
+    account: AccountSimple;
+    created_at: string;
+    updated_at: string;
+};
+
+export type ChatWindow = ListItemWithId & {
+    id?: string | null;
+    name: string;
+    description?: string;
+    created_at?: string;
+    updated_at?: string;
+    project_id?: string;
+    node_setup?: NodeSetup;
+    versions?: { id: string, version_number: number, published: boolean, draft: boolean }[];
+    accesses?: ChatWindowAccess[];
+};
+
+export {Roles, AccessLevel, Fundamental, ChatWindowViewMode} from './enums';
 
 export type Tenant = {
     id: string;

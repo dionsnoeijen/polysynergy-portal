@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import useBlueprintsStore from "@/stores/blueprintsStore";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import useSchedulesStore from "@/stores/schedulesStore";
+import useChatWindowsStore from "@/stores/chatWindowsStore";
 import useProjectSecretsStore from "@/stores/projectSecretsStore";
 import useServicesStore from "@/stores/servicesStore";
 import useStagesStore from "@/stores/stagesStore";
@@ -12,6 +13,7 @@ export function useAutoFetch() {
     const blueprintsStore = useBlueprintsStore.getState();
     const routesStore = useDynamicRoutesStore.getState();
     const schedulesStore = useSchedulesStore.getState();
+    const chatWindowsStore = useChatWindowsStore.getState();
     const secretsStore = useProjectSecretsStore.getState();
     const servicesStore = useServicesStore.getState();
     const stagesStore = useStagesStore.getState();
@@ -49,6 +51,13 @@ export function useAutoFetch() {
                 !schedulesStore.hasInitialFetched &&
                 !schedulesStore.isFetching,
             schedulesStore.fetchSchedules
+        );
+
+        fetchIf(
+            chatWindowsStore.chatWindows.length === 0 &&
+                !chatWindowsStore.hasInitialFetched &&
+                !chatWindowsStore.isFetching,
+            chatWindowsStore.fetchChatWindows
         );
 
         fetchIf(

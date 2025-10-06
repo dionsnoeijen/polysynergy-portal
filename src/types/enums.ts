@@ -20,4 +20,11 @@ export enum Fundamental {
     Secret = 'secret',
     Variable = 'variable',
     EnvVar = 'envVar',
+    ChatWindow = 'chatWindow',
+}
+
+export enum ChatWindowViewMode {
+    ChatOnly = 'chat_only',
+    ChatWithFlowView = 'chat_flow_view',
+    ChatWithFlowAndOutput = 'chat_flow_output',
 }

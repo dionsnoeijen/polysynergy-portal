@@ -13,14 +13,16 @@ interface RouteSetupProps {
     projectUuid?: string;
     routeUuid?: string;
     scheduleUuid?: string;
+    chatWindowUuid?: string;
     blueprintUuid?: string;
 }
 
-export const useRouteSetup = ({ 
-    projectUuid, 
-    routeUuid, 
-    scheduleUuid, 
-    blueprintUuid 
+export const useRouteSetup = ({
+    projectUuid,
+    routeUuid,
+    scheduleUuid,
+    chatWindowUuid,
+    blueprintUuid
 }: RouteSetupProps) => {
     const pathname = usePathname();
     const clearMockStore = useMockStore((state) => state.clearMockStore);
@@ -28,6 +30,7 @@ export const useRouteSetup = ({
     const setActiveProjectId = useEditorStore((state) => state.setActiveProjectId);
     const setActiveRouteId = useEditorStore((state) => state.setActiveRouteId);
     const setActiveScheduleId = useEditorStore((state) => state.setActiveScheduleId);
+    const setActiveChatWindowId = useEditorStore((state) => state.setActiveChatWindowId);
     const setActiveBlueprintId = useEditorStore((state) => state.setActiveBlueprintId);
     const setIsExecuting = useEditorStore((state) => state.setIsExecuting);
     const setIsSaving = useEditorStore((state) => state.setIsSaving);
@@ -116,6 +119,35 @@ export const useRouteSetup = ({
                 useEditorStore.getState().setHasLoadedOnce(true);
                 console.log('✅ First load complete - future clicks will be switches');
             }
+        } else if (chatWindowUuid) {
+            // CRITICAL: Only clear stores on switching, not initial load (prevents crude reset)
+            if (hasLoadedOnce) {
+                safelyClearStores();
+                console.log('🔄 Switching to chat window - stores cleared');
+            } else {
+                console.log('🚀 Initial chat window load - preserving UI state');
+            }
+
+            // Only clear other IDs if they're not already empty (prevent unnecessary re-renders)
+            const currentState = useEditorStore.getState();
+            if (currentState.activeRouteId !== '') {
+                setActiveRouteId('');
+            }
+            if (currentState.activeScheduleId !== '') {
+                setActiveScheduleId('');
+            }
+            setActiveChatWindowId(chatWindowUuid);
+            if (currentState.activeBlueprintId !== '') {
+                setActiveBlueprintId('');
+            }
+            fetchAndApplyNodeSetup({ chatWindowId: chatWindowUuid });
+            setIsExecuting(null);
+
+            // Mark as loaded for future switches
+            if (!hasLoadedOnce) {
+                useEditorStore.getState().setHasLoadedOnce(true);
+                console.log('✅ First load complete - future clicks will be switches');
+            }
         } else if (blueprintUuid) {
             // CRITICAL: Only clear stores on switching, not initial load (prevents crude reset)
             if (hasLoadedOnce) {
@@ -144,17 +176,19 @@ export const useRouteSetup = ({
             }
         }
     }, [
-        routeUuid, 
-        scheduleUuid, 
-        blueprintUuid, 
-        setActiveRouteId, 
-        setActiveScheduleId, 
-        setActiveBlueprintId, 
+        routeUuid,
+        scheduleUuid,
+        chatWindowUuid,
+        blueprintUuid,
+        setActiveRouteId,
+        setActiveScheduleId,
+        setActiveChatWindowId,
+        setActiveBlueprintId,
         setIsExecuting
     ]);
 
     return {
         // These could be computed values if needed
-        hasValidRoute: !!(routeUuid || scheduleUuid || blueprintUuid)
+        hasValidRoute: !!(routeUuid || scheduleUuid || chatWindowUuid || blueprintUuid)
     };
 };

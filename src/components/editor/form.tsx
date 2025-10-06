@@ -4,6 +4,7 @@ import {FormType} from "@/types/types";
 import {useSmartWebSocketListener} from "@/hooks/editor/nodes/useSmartWebSocketListener";
 import DynamicRouteForm from "@/components/editor/forms/dynamic-route-form";
 import ScheduleForm from "@/components/editor/forms/schedule-form";
+import ChatWindowForm from "@/components/editor/forms/chat-window-form";
 import ServiceForm from "@/components/editor/forms/service-form";
 import DictVariableForm from "@/components/editor/forms/dict-variable-form";
 import CodeEditorForm from "@/components/editor/forms/code-editor-form";
@@ -46,6 +47,12 @@ const Form: React.FC = () => {
                 formType === FormType.EditSchedule
             ) && (
                 <ScheduleForm />
+            )}
+            {(
+                formType === FormType.AddChatWindow ||
+                formType === FormType.EditChatWindow
+            ) && (
+                <ChatWindowForm />
             )}
             {(formType === FormType.EditDict) && (
                 <DictVariableForm />

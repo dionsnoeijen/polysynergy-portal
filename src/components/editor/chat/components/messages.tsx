@@ -45,12 +45,12 @@ const Messages: React.FC<MessagesProps> = ({ teamResponsesCollapsed = true }) =>
         // Reset bij runstart.
         let runBatch = 0;
         let currentRunId: string | null = null;
-        let groupIndexByNode = new Map<string | null, number>();
+        // let groupIndexByNode = new Map<string | null, number>();
 
         const startNewRun = (nextRunId: string | null) => {
             runBatch += 1;
             currentRunId = nextRunId ?? null;
-            groupIndexByNode = new Map();
+            // groupIndexByNode = new Map();
         };
 
         for (const m of messages) {

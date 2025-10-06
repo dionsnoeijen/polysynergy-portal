@@ -1,4 +1,4 @@
-import { ChatWindow, ChatWindowAccess } from "@/types/types";
+import { ChatWindow, ChatWindowAccess, MyChatWindow } from "@/types/types";
 import { getIdToken } from "@/api/auth/authToken";
 import config from "@/config";
 
@@ -181,4 +181,24 @@ export const removeUserFromChatWindowAPI = async (
             },
         }
     );
+};
+
+// My Chat Windows API (cross-tenant, for end users)
+export const fetchMyChatWindowsAPI = async (): Promise<MyChatWindow[]> => {
+    const idToken = getIdToken();
+    const response = await fetch(
+        `${config.LOCAL_API_URL}/my-chat-windows/`,
+        {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            }
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch my chat windows: ${response.statusText}`);
+    }
+
+    return response.json();
 };

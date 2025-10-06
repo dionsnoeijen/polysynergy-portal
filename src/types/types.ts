@@ -477,6 +477,30 @@ export type ChatWindow = ListItemWithId & {
     accesses?: ChatWindowAccess[];
 };
 
+export type MyChatWindowPermissions = {
+    can_view_flow: boolean;
+    can_edit_flow: boolean;
+    can_view_output: boolean;
+    show_response_transparency: boolean;
+};
+
+export type MyChatWindow = {
+    chat_window: {
+        id: string;
+        name: string;
+        description?: string;
+    };
+    project: {
+        id: string;
+        name: string;
+    };
+    tenant: {
+        id: string;
+        name: string;
+    };
+    permissions: MyChatWindowPermissions;
+};
+
 export {Roles, AccessLevel, Fundamental, ChatWindowViewMode} from './enums';
 
 export type Tenant = {

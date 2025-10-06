@@ -8,6 +8,7 @@ import useMockStore from '@/stores/mockStore';
 import fetchAndApplyNodeSetup from '@/utils/fetchNodeSetup';
 import { addScheduleNodesIfNeeded } from '@/utils/addScheduleNodesIfNeeded';
 import { addRouteNodesIfNeeded } from '@/utils/addRouteNodesIfNeeded';
+import { addChatWindowNodesIfNeeded } from '@/utils/addChatWindowNodesIfNeeded';
 
 interface RouteSetupProps {
     projectUuid?: string;
@@ -141,6 +142,7 @@ export const useRouteSetup = ({
                 setActiveBlueprintId('');
             }
             fetchAndApplyNodeSetup({ chatWindowId: chatWindowUuid });
+            addChatWindowNodesIfNeeded(chatWindowUuid);
             setIsExecuting(null);
 
             // Mark as loaded for future switches

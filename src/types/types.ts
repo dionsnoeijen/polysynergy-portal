@@ -457,7 +457,6 @@ export type ChatWindowAccess = {
     account_id: string;
     chat_window_id: string;
     can_view_flow: boolean;
-    can_edit_flow: boolean;
     can_view_output: boolean;
     show_response_transparency: boolean;
     account: AccountSimple;
@@ -479,7 +478,6 @@ export type ChatWindow = ListItemWithId & {
 
 export type MyChatWindowPermissions = {
     can_view_flow: boolean;
-    can_edit_flow: boolean;
     can_view_output: boolean;
     show_response_transparency: boolean;
 };
@@ -525,6 +523,7 @@ export type Account = {
     email: string;
     first_name: string;
     last_name: string;
+    role: string; // 'admin', 'editor', 'chat_user'
     is_admin: boolean;
     single_user: boolean;
     created_at: string;

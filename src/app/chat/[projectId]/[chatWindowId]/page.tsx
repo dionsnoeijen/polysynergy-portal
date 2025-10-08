@@ -4,15 +4,15 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { MyChatWindow } from '@/types/types';
 import { fetchMyChatWindowsAPI } from '@/api/chatWindowsApi';
-import { Button } from '@/components/button';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { EditorLayout } from '@/components/editor/editor-layout';
+import useEditorStore from '@/stores/editorStore';
 
 export default function ChatWindowPage() {
     const router = useRouter();
-    const { chatWindowId } = useParams() as { chatWindowId: string };
+    const { projectId, chatWindowId } = useParams() as { projectId: string; chatWindowId: string };
     const [chatWindow, setChatWindow] = useState<MyChatWindow | null>(null);
     const [loading, setLoading] = useState(true);
+    const setChatWindowPermissions = useEditorStore((state) => state.setChatWindowPermissions);
 
     useEffect(() => {
         fetchMyChatWindowsAPI()
@@ -20,6 +20,8 @@ export default function ChatWindowPage() {
                 const found = data.find((cw) => cw.chat_window.id === chatWindowId);
                 if (found) {
                     setChatWindow(found);
+                    // Store permissions in editorStore for conditional UI
+                    setChatWindowPermissions(found.permissions);
                 } else {
                     router.push('/chat');
                 }
@@ -29,32 +31,19 @@ export default function ChatWindowPage() {
                 console.error('Failed to fetch chat windows:', err);
                 router.push('/chat');
             });
-    }, [chatWindowId, router]);
+    }, [chatWindowId, router, setChatWindowPermissions]);
 
     if (loading || !chatWindow) {
         return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
     }
 
     return (
-        <div className="relative h-screen">
-            {/* Back to grid button */}
-            <div className="absolute top-4 left-4 z-50">
-                <Button
-                    onClick={() => router.push('/chat')}
-                    color="sky"
-                    className="shadow-lg"
-                >
-                    <ArrowLeftIcon className="w-4 h-4 mr-2" />
-                    Back to Chat Windows
-                </Button>
-            </div>
-
-            {/* Editor with conditional permissions */}
-            <EditorLayout
-                projectUuid={chatWindow.project.id}
-                chatWindowUuid={chatWindowId}
-                chatWindowPermissions={chatWindow.permissions}
-            />
-        </div>
+        <EditorLayout
+            projectUuid={projectId}
+            chatWindowUuid={chatWindowId}
+            isEndUserChatMode={true}
+            showChatBackButton={true}
+            onChatBackClick={() => router.push('/chat')}
+        />
     );
 }

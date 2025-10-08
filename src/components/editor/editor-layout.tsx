@@ -25,6 +25,7 @@ import { useRouteSetup } from "@/hooks/editor/useRouteSetup";
 import { useDebugTools } from "@/hooks/editor/useDebugTools";
 import { useLayoutEventHandlers } from "@/hooks/editor/useLayoutEventHandlers";
 import { useLayoutState } from "@/hooks/editor/useLayoutState";
+import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import useEditorStore from "@/stores/editorStore";
 import PerformanceHUD from "@/components/debug/performance-hud";
 
@@ -40,6 +41,9 @@ const EditorLayout = ({
     chatWindowUuid,
     blueprintUuid,
     configUuid,
+    isEndUserChatMode = false,
+    showChatBackButton = false,
+    onChatBackClick,
 }: {
     projectUuid?: string,
     routeUuid?: string,
@@ -47,9 +51,21 @@ const EditorLayout = ({
     chatWindowUuid?: string,
     blueprintUuid?: string,
     configUuid?: string,
+    isEndUserChatMode?: boolean,
+    showChatBackButton?: boolean,
+    onChatBackClick?: () => void,
 }) => {
+    // Detect if we're in end-user chat mode (not admin editor)
+    const isChatWindow = isEndUserChatMode;
     // Performance HUD toggle state
     const [showPerformanceHUD, setShowPerformanceHUD] = useState(false);
+
+    // Set read-only mode for end-user chat windows
+    const setIsReadOnly = useEditorStore((state) => state.setIsReadOnly);
+    useEffect(() => {
+        setIsReadOnly(isChatWindow);
+        return () => setIsReadOnly(false); // Clean up on unmount
+    }, [isChatWindow, setIsReadOnly]);
     
     // Custom hooks for separated concerns
     const {
@@ -79,6 +95,7 @@ const EditorLayout = ({
     });
     
     useRouteSetup({ projectUuid, routeUuid, scheduleUuid, chatWindowUuid, blueprintUuid });
+    useGlobalStoreListenersWithImmediateSave(); // Hoisted from Editor to ensure forceSave always available
     useDebugTools();
     
     const {
@@ -95,7 +112,16 @@ const EditorLayout = ({
     const chatMode = useEditorStore(s => s.chatMode);
     const setChatMode = useEditorStore(s => s.setChatMode);
     // const isExecuting = useEditorStore(s => s.isExecuting);
-    
+
+    // Chat window permissions for conditional UI
+    const chatWindowPermissions = useEditorStore(s => s.chatWindowPermissions);
+
+    // /chat route specific UI state
+    const chatEditorCollapsed = useEditorStore(s => s.chatEditorCollapsed);
+    const setChatEditorCollapsed = useEditorStore(s => s.setChatEditorCollapsed);
+    const chatOutputCollapsed = useEditorStore(s => s.chatOutputCollapsed);
+    const setChatOutputCollapsed = useEditorStore(s => s.setChatOutputCollapsed);
+
     // Chat Mode functions - moved here where layout panels are available
     const enterChatMode = useCallback(() => {
         // Hide sidebars and output panel for clean vertical split
@@ -270,8 +296,9 @@ const EditorLayout = ({
                 </>
             )}
             <div className="absolute top-0 right-0 left-0" data-panel="top"
-                 style={{height: outputClosed ? windowHeight : height.horizontalEditorLayout}}>
-                {!itemManagerClosed && (
+                 style={{height: isChatWindow ? windowHeight : (outputClosed ? windowHeight : height.horizontalEditorLayout)}}>
+                {/* Only show ItemManager for non-chat-windows (never for end-user chat mode) */}
+                {!isChatWindow && !itemManagerClosed && (chatWindowPermissions?.can_view_flow !== false) && (
                     <div style={{width: width.itemManager}} className="absolute top-0 left-0 bottom-0" data-panel="item-manager">
                         <div className="absolute inset-0">
                             <ItemManagerTabs toggleClose={handleToggleItemManager}/>
@@ -286,34 +313,65 @@ const EditorLayout = ({
                     </div>
                 )}
 
-                {itemManagerClosed && !chatMode && (<button
+                {!isChatWindow && itemManagerClosed && !chatMode && (chatWindowPermissions?.can_view_flow !== false) && (<button
                     type="button"
                     onClick={handleToggleItemManager}
                     className="absolute z-10 top-1/2 -translate-y-1/2 left-0 p-3 radius-tl-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm"
                 ><ArrowRightEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/></button>)}
 
-                {/* Chat Panel - Left Side */}
-                {chatPanelOpen && (
-                    <div style={{width: width.chatPanel}} className="absolute top-0 left-0 bottom-0 bg-white dark:bg-zinc-800 border-r border-gray-200 dark:border-gray-700" data-panel="chat">
+                {/* Chat Panel - Left Side (always open for chat windows) */}
+                {(chatPanelOpen || isChatWindow) && (
+                    <div style={{
+                        width: isChatWindow
+                            ? (chatWindowPermissions?.can_view_flow === false && chatWindowPermissions?.can_view_output === false
+                                ? '100vw'  // Full width for chat-only mode (no permissions)
+                                : (chatWindowPermissions?.can_view_flow === false && !chatOutputCollapsed
+                                    ? `calc(100vw - ${width.dock}px)`  // No editor, but dock visible
+                                    : (chatWindowPermissions?.can_view_flow === false && chatOutputCollapsed
+                                        ? 'calc(100vw - 40px)'  // No editor, dock collapsed
+                                        : (chatEditorCollapsed && chatOutputCollapsed
+                                            ? 'calc(100vw - 80px)'  // Both collapsed (2x 40px bars)
+                                            : (chatEditorCollapsed && !chatOutputCollapsed
+                                                ? `calc(100vw - ${width.dock + 40}px)`  // Editor collapsed (40px), dock open
+                                                : (!chatEditorCollapsed && chatOutputCollapsed
+                                                    ? width.chatPanel  // Editor open, dock collapsed
+                                                    : width.chatPanel))))))  // Both open - normal split
+                            : width.chatPanel
+                    }} className={`absolute top-0 left-0 bottom-0 bg-white dark:bg-zinc-800 ${(isChatWindow && chatEditorCollapsed && chatOutputCollapsed) ? '' : 'border-r border-gray-200 dark:border-gray-700'}`} data-panel="chat">
                         <div className="absolute inset-0">
-                            <Chat/>
+                            <Chat
+                                showBackButton={showChatBackButton}
+                                onBackClick={onChatBackClick}
+                                isEndUserChatMode={isChatWindow}
+                            />
                         </div>
-                        <button
-                            onMouseDown={() => startResizing(ResizeWhat.ChatPanel)}
-                            type="button"
-                            className="absolute top-0 right-0 bottom-0 w-[8px] cursor-col-resize hover:bg-gray-300 dark:hover:bg-gray-600"
-                        />
+                        {!isChatWindow && chatWindowPermissions?.can_view_flow !== false && (
+                            <button
+                                onMouseDown={() => startResizing(ResizeWhat.ChatPanel)}
+                                type="button"
+                                className="absolute top-0 right-0 bottom-0 w-[8px] cursor-col-resize hover:bg-gray-300 dark:hover:bg-gray-600"
+                            />
+                        )}
                     </div>
                 )}
 
+                {/* Only render main panel when editor is not collapsed in chat window */}
+                {!(isChatWindow && chatEditorCollapsed) && (
                 <main className="absolute top-0 bottom-0" data-panel="main" style={{
-                    left: chatPanelOpen ? width.chatPanel : (itemManagerClosed ? 0 : width.itemManager),
-                    right: dockClosed ? 0 : width.dock
+                    left: isChatWindow ? width.chatPanel : (chatPanelOpen ? width.chatPanel : ((itemManagerClosed || chatWindowPermissions?.can_view_flow === false) ? 0 : width.itemManager)),
+                    right: isChatWindow
+                        ? (chatOutputCollapsed ? 40 : width.dock)  // Space for dock or collapsed bar
+                        : ((dockClosed || chatWindowPermissions?.can_view_flow === false) ? 0 : width.dock)
                 }}>
                     <div
                         className={`absolute top-0 left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border-l border-r border-sky-500/50 dark:border-white/10 ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
                     >
-                        {showForm ? (
+                        {isChatWindow && chatWindowPermissions?.can_view_flow === false ? (
+                            // Chat window with no flow view permission - show nothing (chat is on the left)
+                            <div className="flex justify-center items-center h-full bg-zinc-50 dark:bg-zinc-900">
+                                <p className="text-zinc-400 dark:text-zinc-600">Chat mode only</p>
+                            </div>
+                        ) : showForm ? (
                             <Form/>
                         ) : showDocs ? (
                             <EnhancedDocs/>
@@ -321,11 +379,16 @@ const EditorLayout = ({
                             projectUuid && (routeUuid || scheduleUuid || chatWindowUuid || blueprintUuid || configUuid) ? (
                                 activeVersionId ? (
                                     <>
-                                        <DrawingLayer />
-                                        <Editor key={'editor-' + activeVersionId}/>
-                                        
+                                        {/* Don't render DrawingLayer for chat windows */}
+                                        {!isChatWindow && <DrawingLayer />}
+
+                                        <Editor
+                                            key={'editor-' + activeVersionId}
+                                            readOnly={isChatWindow}
+                                        />
+
                                         {/* Output panel toggle button - centered relative to editor area */}
-                                        {outputClosed && !chatMode && (
+                                        {outputClosed && !chatMode && !isChatWindow && (chatWindowPermissions?.can_view_output !== false) && (
                                             <button
                                                 type="button"
                                                 onClick={toggleCloseOutput}
@@ -334,22 +397,43 @@ const EditorLayout = ({
                                                 <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/>
                                             </button>
                                         )}
-                                        
-                                        {!chatMode && (
+
+                                        {/* Only show menus for non-chat windows */}
+                                        {!chatMode && !isChatWindow && (
                                             <>
                                                 <BottomDrawToolbar/>
                                                 <TopRightEditorListener/>
                                                 <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
                                                 <VersionPublishedMenu/>
                                                 <BottomLeftPlayMenu/>
-                                                
+
                                                 {/* Floating AutosaveIndicator - centered relative to menu height */}
                                                 <div className="absolute bottom-1 right-2 z-[120] pointer-events-none flex items-center" style={{height: '52px'}}>
                                                     <AutosaveIndicator />
                                                 </div>
                                             </>
                                         )}
-                                        
+
+                                        {/* Minimal autosave indicator for chat windows */}
+                                        {isChatWindow && (
+                                            <>
+                                                <div className="absolute bottom-1 right-2 z-[120] pointer-events-none flex items-center" style={{height: '52px'}}>
+                                                    <AutosaveIndicator />
+                                                </div>
+
+                                                {/* Collapse Editor Button - left side */}
+                                                {!chatEditorCollapsed && chatWindowPermissions?.can_view_flow !== false && (
+                                                    <button
+                                                        onClick={() => setChatEditorCollapsed(true)}
+                                                        className="absolute top-2 left-2 z-[110] p-2 rounded bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700"
+                                                        title="Collapse editor"
+                                                    >
+                                                        <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-gray-700 dark:text-white" />
+                                                    </button>
+                                                )}
+                                            </>
+                                        )}
+
                                     </>
                                 ) : (
                                     <div className="flex justify-center items-center h-full">
@@ -377,8 +461,51 @@ const EditorLayout = ({
                         </div>
                     )}
                 </main>
+                )}
 
-                {!dockClosed && (
+                {/* Collapsed Editor Bar for /chat route */}
+                {isChatWindow && chatEditorCollapsed && chatWindowPermissions?.can_view_flow !== false && (
+                    <div
+                        className="absolute top-0 bottom-0 w-[40px] bg-white dark:bg-zinc-800 border-l border-gray-200 dark:border-gray-700 flex items-center justify-center"
+                        style={{
+                            right: chatOutputCollapsed ? 40 : width.dock  // Position depends on dock
+                        }}
+                    >
+                        <button
+                            onClick={() => setChatEditorCollapsed(false)}
+                            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                            title="Expand editor"
+                        >
+                            <ArrowLeftEndOnRectangleIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+                )}
+
+                {/* Dock (Output) Panel for /chat route (right side) */}
+                {isChatWindow && chatWindowPermissions?.can_view_output !== false && (
+                    <>
+                        {!chatOutputCollapsed ? (
+                            <div style={{width: width.dock}} className="absolute top-0 right-0 bottom-0 overflow-scroll" data-panel="dock">
+                                <div className="absolute inset-0">
+                                    <DockTabs toggleClose={() => setChatOutputCollapsed(true)} />
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="absolute top-0 right-0 bottom-0 w-[40px] bg-white dark:bg-zinc-800 border-l border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                                <button
+                                    onClick={() => setChatOutputCollapsed(false)}
+                                    className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                    title="Expand dock"
+                                >
+                                    <ArrowLeftEndOnRectangleIcon className="w-5 h-5" />
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* Don't render Dock for chat windows */}
+                {!isChatWindow && !dockClosed && (chatWindowPermissions?.can_view_flow !== false) && (
                     <>
                         <div style={{width: width.dock}} className="absolute top-0 right-0 bottom-0 overflow-scroll" data-panel="dock">
                             <div className="absolute inset-0">
@@ -395,7 +522,7 @@ const EditorLayout = ({
                     </>
                 )}
 
-                {dockClosed && (
+                {!isChatWindow && dockClosed && (chatWindowPermissions?.can_view_flow !== false) && (
                     <button
                         type="button"
                         onClick={toggleCloseDock}
@@ -406,7 +533,8 @@ const EditorLayout = ({
                 )}
             </div>
 
-            {!outputClosed && !chatMode && (
+            {/* Render Output panel when not in chat mode, not chat window, and permission allows */}
+            {!isChatWindow && !outputClosed && !chatMode && (chatWindowPermissions?.can_view_output !== false) && (
                 <div
                     className="absolute left-0 bottom-0 right-0" data-panel="bottom"
                     style={{height: windowHeight - height.horizontalEditorLayout}}

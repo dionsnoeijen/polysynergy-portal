@@ -2,6 +2,24 @@ import { getIdToken } from "@/api/auth/authToken";
 import {Fundamental, State, StoreName} from "@/types/types";
 import config from "@/config";
 
+// Convert Fundamental enum to API URL format
+const fundamentalToApiPath = (type: Fundamental): string => {
+    switch (type) {
+        case Fundamental.Route:
+            return 'route';
+        case Fundamental.Schedule:
+            return 'schedule';
+        case Fundamental.ChatWindow:
+            return 'chat_window';
+        case Fundamental.Blueprint:
+            return 'blueprint';
+        case Fundamental.Config:
+            return 'config';
+        default:
+            return type;
+    }
+};
+
 export const fetchNodeSetupVersionAPI = async (
     setupId: string,
     versionId: string,
@@ -28,9 +46,10 @@ export const updateNodeSetupVersionAPI = async (
     type: Fundamental
 ): Promise<Response> => {
     const idToken = getIdToken();
+    const apiPath = fundamentalToApiPath(type);
     return fetch(
-        //`${config.LOCAL_API_URL}/node-setup/${type}/${setupId}/version/${versionId}/${projectId}/`,
-        `${config.LOCAL_API_URL}/node-setup/${type}/${setupId}/version/${versionId}/?project_id=${projectId}`,
+        //`${config.LOCAL_API_URL}/node-setup/${apiPath}/${setupId}/version/${versionId}/${projectId}/`,
+        `${config.LOCAL_API_URL}/node-setup/${apiPath}/${setupId}/version/${versionId}/?project_id=${projectId}`,
         {
             method: "PUT",
             headers: {

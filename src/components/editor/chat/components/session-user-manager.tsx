@@ -8,6 +8,7 @@ import {NodeVariable, NodeVariableType} from "@/types/types";
 interface SessionUserManagerProps {
     promptNodeId: string;
     hasStorage: boolean;
+    hideUserSelector?: boolean;
     onEnterChatMode?: () => void;
     onExitChatMode?: () => void;
 }
@@ -15,6 +16,7 @@ interface SessionUserManagerProps {
 const SessionUserManager: React.FC<SessionUserManagerProps> = ({
     promptNodeId,
     hasStorage,
+    hideUserSelector = false,
     onEnterChatMode,
     onExitChatMode
 }) => {
@@ -244,6 +246,8 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
         <div className="border-b border-gray-200 dark:border-white/10 px-3 py-2">
             <div className="flex flex-wrap items-center gap-4">
                 {/* User Management */}
+                {!hideUserSelector && (
+                <>
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">User:</span>
                     {hasNoUsers ? (
@@ -291,6 +295,8 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
 
                 {/* Vertical Divider */}
                 <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+                </>
+                )}
 
                 {/* Session Management */}
                 <div className="flex items-center gap-2">

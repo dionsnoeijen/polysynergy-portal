@@ -6,12 +6,13 @@ import {ArrowPathIcon, CheckIcon, PlusIcon, TrashIcon, XMarkIcon} from "@heroico
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
 import {Input} from "@/components/input";
 import {Button} from "@/components/button";
+import {Select} from "@/components/select";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import {useEffect, useState} from "react";
 import {format} from "date-fns";
 import {deleteClientAccount, inviteClientAccount, resendClientAccountInvite} from "@/api/clientAccountsApi";
 import useAccountsStore from "@/stores/accountsStore";
-import {Roles} from "@/types/types";
+import {Roles} from "@/types/enums";
 import {isValidEmail} from "@/utils/validators";
 
 export default function AccountsPage() {
@@ -19,13 +20,15 @@ export default function AccountsPage() {
     const {loggedInAccount, accounts, fetchAccounts} = useAccountsStore();
     const [deleteAccountId, setDeleteAccountId] = useState<string | null>(null);
     const [inviteEmail, setInviteEmail] = useState('');
-    const [inviteRole, setInviteRole] = useState<Roles>(Roles.Editor);
+    const [inviteRole, setInviteRole] = useState<Roles>(Roles.ChatUser);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
     useEffect(() => {
-        fetchAccounts();
+        fetchAccounts().catch((error) => {
+            console.error('Error fetching accounts:', error);
+        });
     }, [fetchAccounts]);
 
     if (!loggedInAccount) {
@@ -41,7 +44,7 @@ export default function AccountsPage() {
         try {
             await inviteClientAccount(inviteEmail, inviteRole);
             setInviteEmail('');
-            setInviteRole(Roles.Editor);
+            setInviteRole(Roles.ChatUser);
             await fetchAccounts();
         } catch (error) {
             console.error('Error inviting account:', error);
@@ -59,7 +62,7 @@ export default function AccountsPage() {
     const handleResendInvitation = (accountId: string) => {
         resendClientAccountInvite(accountId)
             .then(() => {
-                fetchAccounts();
+                return fetchAccounts();
             })
             .catch((error) => {
                 console.error('Error resending account invite:', error);
@@ -69,13 +72,13 @@ export default function AccountsPage() {
     const confirmDeleteAccount = () => {
         deleteClientAccount(deleteAccountId as string)
             .then(() => {
-                fetchAccounts();
                 setShowDeleteAlert(false);
                 setDeleteAccountId(null);
+                return fetchAccounts();
             })
             .catch((error) => {
                 console.error('Error deleting account:', error);
-            })
+            });
     }
 
     return (
@@ -89,6 +92,7 @@ export default function AccountsPage() {
                     <TableRow>
                         <TableHeader>Email (username)</TableHeader>
                         <TableHeader>Name</TableHeader>
+                        <TableHeader>Role</TableHeader>
                         <TableHeader>Created</TableHeader>
                         <TableHeader>Activated</TableHeader>
                         <TableHeader className="text-right">Actions</TableHeader>
@@ -98,12 +102,17 @@ export default function AccountsPage() {
                     {accounts.map((account) => (
                         <TableRow
                             title={loggedInAccount.id === account.id ? "This is the logged-in user" : ("Account: " + account.email)}
-                            className={loggedInAccount.id === account.id ? 'bg-gray-800/40' : ''} key={account.id}>
+                            className={loggedInAccount.id === account.id ? 'bg-sky-50 dark:bg-gray-800/40' : ''} key={account.id}>
                             <TableCell>{account.email}</TableCell>
                             <TableCell className={!account.active ? 'text-zinc-500' : ''}>
                                 {account.active
                                     ? `${account.first_name} ${account.last_name}`
                                     : 'Available after this account is activated'}
+                            </TableCell>
+                            <TableCell>
+                                <span className="capitalize">
+                                    {account.role ? account.role.replace('_', ' ') : 'chat user'}
+                                </span>
                             </TableCell>
                             <TableCell>{format(new Date(account.created_at), "dd-MM-yyyy HH:mm:ss")}</TableCell>
                             <TableCell>
@@ -128,7 +137,7 @@ export default function AccountsPage() {
                         </TableRow>
                     ))}
                     <TableRow>
-                        <TableCell colSpan={4}>
+                        <TableCell colSpan={2}>
                             <Input
                                 name="email"
                                 placeholder="Account email"
@@ -139,18 +148,19 @@ export default function AccountsPage() {
                             />
                             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
                         </TableCell>
-                        {/*<TableCell>*/}
-                        {/*    <Select*/}
-                        {/*        name={'role'}*/}
-                        {/*        className={'w-full'}*/}
-                        {/*        defaultValue={Roles.Editor}*/}
-                        {/*        onChange={(e) => setInviteRole(e.target.value as Roles)}*/}
-                        {/*    >*/}
-                        {/*        <option value={Roles.Admin}>Admin</option>*/}
-                        {/*        <option value={Roles.Editor}>Editor</option>*/}
-                        {/*        <option value={Roles.Viewer}>Viewer</option>*/}
-                        {/*    </Select>*/}
-                        {/*</TableCell>*/}
+                        <TableCell>
+                            <Select
+                                name={'role'}
+                                className={'w-full'}
+                                value={inviteRole}
+                                onChange={(e) => setInviteRole(e.target.value as Roles)}
+                            >
+                                <option value={Roles.Admin}>Admin</option>
+                                <option value={Roles.Editor}>Editor</option>
+                                <option value={Roles.ChatUser}>Chat User</option>
+                            </Select>
+                        </TableCell>
+                        <TableCell colSpan={2}></TableCell>
                         <TableCell className="text-right">
                             <Button onClick={handleInviteAccount} disabled={isLoading}>
                                 <PlusIcon/>

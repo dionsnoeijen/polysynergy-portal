@@ -9,12 +9,13 @@ export const useNodeInteractions = (node: Node, isNodeInService: boolean, previe
     const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
     const isExecuting = useEditorStore((state) => state.isExecuting);
     const chatMode = useEditorStore((state) => state.chatMode);
-    
+    const isReadOnly = useEditorStore((state) => state.isReadOnly);
+
     const {handleNodeMouseDown} = useNodeMouseDown(node, isNodeInService);
     const {handleContextMenu} = useNodeContextMenu(node);
-    
-    // Determine if nodes should be locked (during execution OR in chat mode)
-    const isLocked = Boolean(isExecuting) || chatMode;
+
+    // Determine if nodes should be locked (during execution OR in chat mode OR read-only)
+    const isLocked = Boolean(isExecuting) || chatMode || isReadOnly;
 
     return useMemo(() => {
         const handleCollapse = () => {

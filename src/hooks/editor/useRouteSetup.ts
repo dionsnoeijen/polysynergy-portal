@@ -167,6 +167,9 @@ export const useRouteSetup = ({
             if (currentState.activeScheduleId !== '') {
                 setActiveScheduleId('');
             }
+            if (currentState.activeChatWindowId !== '') {
+                setActiveChatWindowId('');
+            }
             setActiveBlueprintId(blueprintUuid);
             fetchAndApplyNodeSetup({ blueprintId: blueprintUuid });
             setIsExecuting(null);

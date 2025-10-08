@@ -1,8 +1,7 @@
 export enum Roles {
     Admin = 'admin',
     Editor = 'editor',
-    Viewer = 'viewer',
-    ChatOnly = 'chat_only',
+    ChatUser = 'chat_user',
 }
 
 export enum AccessLevel {

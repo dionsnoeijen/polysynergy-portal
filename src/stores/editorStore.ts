@@ -96,6 +96,25 @@ export type EditorState = {
     setActiveScheduleId: (scheduleId: string) => void;
     activeChatWindowId?: string;
     setActiveChatWindowId: (chatWindowId: string) => void;
+    chatWindowPermissions?: {
+        can_view_flow: boolean;
+        can_view_output: boolean;
+        show_response_transparency: boolean;
+    } | null;
+    setChatWindowPermissions: (permissions: {
+        can_view_flow: boolean;
+        can_view_output: boolean;
+        show_response_transparency: boolean;
+    } | null) => void;
+    isReadOnly: boolean;
+    setIsReadOnly: (isReadOnly: boolean) => void;
+    // /chat route specific UI state (NOT for Chat mode)
+    chatSessionsSidebarCollapsed: boolean;
+    setChatSessionsSidebarCollapsed: (collapsed: boolean) => void;
+    chatEditorCollapsed: boolean;
+    setChatEditorCollapsed: (collapsed: boolean) => void;
+    chatOutputCollapsed: boolean;
+    setChatOutputCollapsed: (collapsed: boolean) => void;
     activeServiceId: string;
     setActiveServiceId: (serviceId: string) => void;
     activeConfigId: string;
@@ -257,6 +276,17 @@ const useEditorStore = create<EditorState>((set, get) => ({
     setActiveScheduleId: (scheduleId: string) => set({activeScheduleId: scheduleId}),
     activeChatWindowId: '',
     setActiveChatWindowId: (chatWindowId: string) => set({activeChatWindowId: chatWindowId}),
+    chatWindowPermissions: null,
+    setChatWindowPermissions: (permissions) => set({chatWindowPermissions: permissions}),
+    isReadOnly: false,
+    setIsReadOnly: (isReadOnly: boolean) => set({isReadOnly}),
+    // /chat route specific UI state
+    chatSessionsSidebarCollapsed: false,
+    setChatSessionsSidebarCollapsed: (collapsed: boolean) => set({chatSessionsSidebarCollapsed: collapsed}),
+    chatEditorCollapsed: false,
+    setChatEditorCollapsed: (collapsed: boolean) => set({chatEditorCollapsed: collapsed}),
+    chatOutputCollapsed: false,
+    setChatOutputCollapsed: (collapsed: boolean) => set({chatOutputCollapsed: collapsed}),
     activeServiceId: '',
     setActiveServiceId: (serviceId: string) => set({activeServiceId: serviceId}),
     activeConfigId: '',

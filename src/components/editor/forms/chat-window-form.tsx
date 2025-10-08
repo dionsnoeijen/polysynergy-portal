@@ -54,7 +54,6 @@ const ChatWindowForm: React.FC = () => {
     const [selectedAccountId, setSelectedAccountId] = useState<string>("");
     const [newUserPermissions, setNewUserPermissions] = useState({
         can_view_flow: false,
-        can_edit_flow: false,
         can_view_output: false,
         show_response_transparency: true
     });
@@ -62,7 +61,9 @@ const ChatWindowForm: React.FC = () => {
     useEffect(() => {
         // Fetch accounts for user assignment
         if (accounts.length === 0) {
-            fetchAccounts();
+            fetchAccounts().catch((error) => {
+                console.error('Error fetching accounts:', error);
+            });
         }
 
         if (formType === FormType.EditChatWindow && formEditRecordId) {
@@ -141,7 +142,6 @@ const ChatWindowForm: React.FC = () => {
             setSelectedAccountId("");
             setNewUserPermissions({
                 can_view_flow: false,
-                can_edit_flow: false,
                 can_view_output: false,
                 show_response_transparency: true
             });
@@ -272,16 +272,6 @@ const ChatWindowForm: React.FC = () => {
 
                                         <CheckboxField>
                                             <Checkbox
-                                                checked={newUserPermissions.can_edit_flow}
-                                                onChange={(checked) =>
-                                                    setNewUserPermissions({ ...newUserPermissions, can_edit_flow: checked })
-                                                }
-                                            />
-                                            <Label>Can edit flow</Label>
-                                        </CheckboxField>
-
-                                        <CheckboxField>
-                                            <Checkbox
                                                 checked={newUserPermissions.can_view_output}
                                                 onChange={(checked) =>
                                                     setNewUserPermissions({ ...newUserPermissions, can_view_output: checked })
@@ -343,16 +333,6 @@ const ChatWindowForm: React.FC = () => {
                                                         }
                                                     />
                                                     <Label>Can view flow</Label>
-                                                </CheckboxField>
-
-                                                <CheckboxField>
-                                                    <Checkbox
-                                                        checked={access.can_edit_flow}
-                                                        onChange={(checked) =>
-                                                            handleTogglePermission(access.account_id, 'can_edit_flow', checked)
-                                                        }
-                                                    />
-                                                    <Label>Can edit flow</Label>
                                                 </CheckboxField>
 
                                                 <CheckboxField>

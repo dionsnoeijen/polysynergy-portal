@@ -73,12 +73,12 @@ const VariableTypeAvatar: React.FC<Props> = ({
                 <Label>{variable.handle}</Label>
                 <Field>
                     <button
-                        className={`w-full pb-1 ring-1 rounded-md dark:text-white/50 bg-transparent dark:bg-white/5 border border-zinc-950/20 dark:border-white/10 relative before:absolute before:inset-px before:rounded-[calc(theme(borderRadius.md)-1px)] before:bg-zinc-50 before:shadow dark:before:hidden ${isGenerating && "opacity-60 cursor-wait"}`}
+                        className={`w-full pb-1 ring-1 rounded-md text-zinc-900 dark:text-white bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 ${isGenerating && "opacity-60 cursor-wait"}`}
                         onClick={() => onEdit(nodeId)}
                         disabled={isGenerating}
                     >
                         {isGenerating ? "Generating..." : "Generate new avatar"}
-                        <UserCircleIcon className="w-4 h-4 inline ml-1 text-sky-700/80 dark:text-white/50"/>
+                        <UserCircleIcon className="w-4 h-4 inline ml-1 text-blue-700/80 dark:text-white/50"/>
                     </button>
                 </Field>
             </Fieldset>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import MarkdownContent from "@/components/editor/chat/components/markdown-content";
 import TransparencyDetails from "@/components/editor/chat/components/transparency-details";
 import { EyeIcon } from "@heroicons/react/24/outline";
+import useEditorStore from "@/stores/editorStore";
 
 const NodeResponseCard: React.FC<{
   nodeName: string;
@@ -10,6 +11,7 @@ const NodeResponseCard: React.FC<{
   runId?: string | null;
 }> = ({ nodeName, text, agentAvatar = null, runId = null }) => {
   const [showTransparency, setShowTransparency] = useState(false);
+  const chatWindowPermissions = useEditorStore(s => s.chatWindowPermissions);
 
   // fallback initialen (max 2)
   const initials = nodeName
@@ -42,7 +44,7 @@ const NodeResponseCard: React.FC<{
           </div>
           
           {/* Transparency Button */}
-          {runId && (
+          {runId && (chatWindowPermissions?.show_response_transparency !== false) && (
             <button
               onClick={() => setShowTransparency(!showTransparency)}
               className="p-1 rounded text-slate-500 hover:text-sky-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -55,7 +57,7 @@ const NodeResponseCard: React.FC<{
       </div>
 
       {/* Transparency Expansion - Moved to top under header */}
-      {showTransparency && runId && (
+      {showTransparency && runId && (chatWindowPermissions?.show_response_transparency !== false) && (
         <div className="border-b border-sky-500/40 dark:border-slate-700/80 px-3 py-3 bg-slate-50 dark:bg-slate-900/50">
           <TransparencyDetails runId={runId} />
         </div>

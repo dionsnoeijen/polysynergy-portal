@@ -52,7 +52,7 @@ export default function ChatWindowsPage() {
                 <div className="text-center">
                     <Heading>No Chat Windows Assigned</Heading>
                     <Text className="mt-4 text-zinc-500 dark:text-zinc-400">
-                        You don't have access to any chat windows yet.
+                        You don&apos;t have access to any chat windows yet.
                         <br />
                         Contact your administrator to get access.
                     </Text>
@@ -61,9 +61,8 @@ export default function ChatWindowsPage() {
         );
     }
 
-    const isAdmin = (permissions: MyChatWindow['permissions']) => {
-        return permissions.can_edit_flow;
-    };
+    // Removed isAdmin check since can_edit_flow no longer exists
+    // Admin status is determined by Account role, not chat window permissions
 
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 p-8">
@@ -74,7 +73,7 @@ export default function ChatWindowsPage() {
                     {chatWindows.map((item) => (
                         <div
                             key={item.chat_window.id}
-                            onClick={() => router.push(`/chat/${item.chat_window.id}`)}
+                            onClick={() => router.push(`/chat/${item.project.id}/${item.chat_window.id}`)}
                             className="
                                 bg-white dark:bg-zinc-800
                                 border border-zinc-200 dark:border-zinc-700
@@ -90,9 +89,6 @@ export default function ChatWindowsPage() {
                                 <Heading level={3} className="text-lg font-semibold group-hover:text-sky-600 dark:group-hover:text-sky-400">
                                     {item.chat_window.name}
                                 </Heading>
-                                {isAdmin(item.permissions) && (
-                                    <Badge color="blue">Admin</Badge>
-                                )}
                             </div>
 
                             {item.chat_window.description && (

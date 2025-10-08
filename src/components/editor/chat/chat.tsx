@@ -10,13 +10,21 @@ import Messages from "@/components/editor/chat/components/messages";
 import SessionUserManager from "@/components/editor/chat/components/session-user-manager";
 import AIComplianceIndicator from "@/components/editor/chat/components/ai-compliance-indicator";
 import TeamMemberIndicators from "@/components/editor/chat/components/team-member-indicators";
+import SessionsSidebar from "@/components/editor/chat/sessions-sidebar";
 import {traceStorageConfiguration} from "@/utils/chatHistoryUtils";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
-// import {NodeVariable} from "@/types/types";
+import { ChevronDownIcon, ChevronUpIcon, ChatBubbleLeftIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {useSmartWebSocketListener} from "@/hooks/editor/nodes/useSmartWebSocketListener";
+import {NodeVariable, NodeVariableType} from "@/types/types";
 
 const PROMPT_NODE_PATH = 'polysynergy_nodes.play.prompt.Prompt';
 
-const Chat: React.FC = () => {
+interface ChatProps {
+    showBackButton?: boolean;
+    onBackClick?: () => void;
+    isEndUserChatMode?: boolean;
+}
+
+const Chat: React.FC<ChatProps> = ({ showBackButton = false, onBackClick, isEndUserChatMode = false }) => {
     // State for team response collapse controls
     const [teamResponsesCollapsed, setTeamResponsesCollapsed] = useState(true);
 
@@ -24,9 +32,10 @@ const Chat: React.FC = () => {
     const nodes = useNodesStore(s => s.nodes);
     const connections = useConnectionsStore(s => s.connections);
     const activeTeamMembers = useChatViewStore(s => s.activeTeamMembers);
-    
-    
-    
+    const updateNodeVariable = useNodesStore((s) => s.updateNodeVariable);
+
+
+
     // Memoize prompt nodes calculation
     const promptNodes = useMemo(() => {
         return nodes
@@ -46,10 +55,25 @@ const Chat: React.FC = () => {
     const selectedPromptNodeId = useNodesStore(s => s.selectedPromptNodeId);
     const {sid} = getLiveContextForPrompt(selectedPromptNodeId);
 
-    // Get project ID from editor store
+    // Get project ID and version ID from editor store
     const activeProjectId = useEditorStore(s => s.activeProjectId);
+    const activeVersionId = useEditorStore(s => s.activeVersionId);
+
+    // Initialize WebSocket connection for chat
+    const { connectionStatus, isConnected } = useSmartWebSocketListener(activeVersionId as string);
+
+    // Log websocket status for debugging
+    useEffect(() => {
+        console.log('[Chat] WebSocket status:', {
+            connectionStatus,
+            isConnected,
+            activeVersionId,
+            activeProjectId
+        });
+    }, [connectionStatus, isConnected, activeVersionId, activeProjectId]);
 
     // Check for storage configuration - reactive to both nodes AND connections
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- connections is needed for traceStorageConfiguration to detect storage node connections
     const hasStorage = useMemo(() => {
         if (!selectedPromptNodeId) return false;
         return !!traceStorageConfiguration(selectedPromptNodeId);
@@ -63,16 +87,48 @@ const Chat: React.FC = () => {
         return (activeSessionVar?.value as string) || '';
     }, [selectedPromptNodeId, nodes]);
     
-    // Get active user from prompt node  
+    // Get active user from prompt node
     // const activeUser = useMemo(() => {
     //     if (!selectedPromptNodeId) return '';
     //     const promptNode = nodes.find(n => n.id === selectedPromptNodeId);
     //     const activeUserVar = promptNode?.variables?.find(v => v.handle === 'active_user');
     //     return (activeUserVar?.value as string) || '';
     // }, [selectedPromptNodeId, nodes]);
-    
 
-    // ✅ session activeren zodra we ‘m kennen (of fallback op nodeId)
+    // Get sessions for empty state detection in end-user chat mode
+    const sessions = useMemo(() => {
+        if (!selectedPromptNodeId) return [];
+        const promptNode = nodes.find(n => n.id === selectedPromptNodeId);
+        const sessionVar = promptNode?.variables?.find(v => v.handle === 'session');
+
+        if (sessionVar?.value && Array.isArray(sessionVar.value)) {
+            return sessionVar.value as NodeVariable[];
+        }
+        return [];
+    }, [selectedPromptNodeId, nodes]);
+
+    // Helper to create new session
+    const createNewSession = () => {
+        if (!selectedPromptNodeId) return;
+
+        const sessionId = "session-" + Math.random().toString(36).substr(2, 9) + "-" + Date.now().toString(36);
+        const sessionName = "New Chat";
+
+        const newSessionVariable: NodeVariable = {
+            handle: sessionId,
+            type: NodeVariableType.String,
+            value: sessionName,
+            has_in: false,
+            has_out: false,
+            published: false,
+        };
+
+        const updatedSessionVariables = [...sessions, newSessionVariable];
+        updateNodeVariable(selectedPromptNodeId, "session", updatedSessionVariables);
+        updateNodeVariable(selectedPromptNodeId, "active_session", sessionId);
+    };
+
+    // ✅ session activeren zodra we 'm kennen (of fallback op nodeId)
     const setActiveSession = useChatViewStore(s => s.setActiveSession);
     useEffect(() => {
         const sessionId = sid ?? selectedPromptNodeId ?? null;
@@ -128,7 +184,19 @@ const Chat: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex h-full">
+            {/* Sessions Sidebar for end-user chat mode */}
+            {isEndUserChatMode && (
+                <SessionsSidebar
+                    promptNodeId={selectedPromptNodeId}
+                    showBackButton={showBackButton}
+                    onBackClick={onBackClick}
+                />
+            )}
+
+            {/* Main chat area */}
+            <div className="flex flex-col flex-1 h-full">
+
             <ChatTabs
                 promptNodes={promptNodes}
                 selectedPromptNodeId={selectedPromptNodeId}
@@ -137,26 +205,28 @@ const Chat: React.FC = () => {
             
             {/* Session/User Management with AI Act Compliance Indicator */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-white/10">
-                <SessionUserManager
-                    promptNodeId={selectedPromptNodeId}
-                    hasStorage={hasStorage}
-                    onEnterChatMode={() => {
-                    // Chat Mode is handled in editor-layout.tsx where layout panels are available
-                    const editorLayout = document.querySelector('[data-panel="top"]');
-                    if (editorLayout) {
-                        // Dispatch custom event to trigger Chat Mode in editor layout
-                        window.dispatchEvent(new CustomEvent('enterChatMode'));
-                    }
-                }}
-                onExitChatMode={() => {
-                    // Chat Mode is handled in editor-layout.tsx where layout panels are available
-                    const editorLayout = document.querySelector('[data-panel="top"]');
-                    if (editorLayout) {
-                        // Dispatch custom event to trigger Chat Mode exit in editor layout
-                        window.dispatchEvent(new CustomEvent('exitChatMode'));
-                    }
-                }}
-                />
+                {!isEndUserChatMode && (
+                    <SessionUserManager
+                        promptNodeId={selectedPromptNodeId}
+                        hasStorage={hasStorage}
+                        onEnterChatMode={() => {
+                        // Chat Mode is handled in editor-layout.tsx where layout panels are available
+                        const editorLayout = document.querySelector('[data-panel="top"]');
+                        if (editorLayout) {
+                            // Dispatch custom event to trigger Chat Mode in editor layout
+                            window.dispatchEvent(new CustomEvent('enterChatMode'));
+                        }
+                    }}
+                    onExitChatMode={() => {
+                        // Chat Mode is handled in editor-layout.tsx where layout panels are available
+                        const editorLayout = document.querySelector('[data-panel="top"]');
+                        if (editorLayout) {
+                            // Dispatch custom event to trigger Chat Mode exit in editor layout
+                            window.dispatchEvent(new CustomEvent('exitChatMode'));
+                        }
+                    }}
+                    />
+                )}
                 <AIComplianceIndicator />
             </div>
             
@@ -226,12 +296,39 @@ const Chat: React.FC = () => {
                     </div>
                 </div>
             )}
-            
-            <Messages teamResponsesCollapsed={teamResponsesCollapsed} />
-            <PromptField
-                promptNodes={promptNodes}
-                selectedPromptNodeId={selectedPromptNodeId}
-            />
+
+            {/* Empty state when no sessions in end-user chat mode */}
+            {isEndUserChatMode && sessions.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center p-8">
+                    <div className="text-center max-w-md">
+                        <div className="mb-6">
+                            <ChatBubbleLeftIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                            No chat sessions yet
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
+                            Start a new conversation to begin chatting
+                        </p>
+                        <button
+                            onClick={createNewSession}
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-lg font-medium transition-colors"
+                        >
+                            <PlusIcon className="w-5 h-5" />
+                            Create New Chat
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    <Messages teamResponsesCollapsed={teamResponsesCollapsed} />
+                    <PromptField
+                        promptNodes={promptNodes}
+                        selectedPromptNodeId={selectedPromptNodeId}
+                    />
+                </>
+            )}
+            </div>
         </div>
     );
 };

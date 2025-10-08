@@ -15,6 +15,7 @@ type Props = React.ComponentPropsWithoutRef<"div"> & {
 const DockTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
     const isExecuting = useEditorStore((state) => state.isExecuting);
     const chatMode = useEditorStore((state) => state.chatMode);
+    const isReadOnly = useEditorStore((state) => state.isReadOnly);
     const [selectedIndex, setSelectedIndex] = useState(0); // Always default to Variables tab (index 0)
 
     // Listen for execution start event to switch to Output tab
@@ -28,12 +29,12 @@ const DockTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
         return () => window.removeEventListener('switch-to-output-tab', handleSwitchToOutput);
     }, []);
 
-    // In chat mode, auto-select Output tab and only show Output
+    // In chat mode OR read-only mode (/chat route), auto-select Output tab and only show Output
     useEffect(() => {
-        if (chatMode) {
-            setSelectedIndex(0); // Will be the only tab (Output) in chat mode
+        if (chatMode || isReadOnly) {
+            setSelectedIndex(0); // Will be the only tab (Output) in chat/read-only mode
         }
-    }, [chatMode]);
+    }, [chatMode, isReadOnly]);
 
     const allTabs = [
         {
@@ -48,8 +49,8 @@ const DockTabs: React.FC<Props> = ({ toggleClose, ...restProps }) => {
         }
     ];
 
-    // Filter tabs based on chat mode
-    const tabs = chatMode ? allTabs.filter(tab => tab.name === "Output") : allTabs;
+    // Filter tabs based on chat mode or read-only mode (/chat route)
+    const tabs = (chatMode || isReadOnly) ? allTabs.filter(tab => tab.name === "Output") : allTabs;
 
     return (
         <div {...restProps} className="absolute left-0 top-0 right-0 bottom-0 flex flex-col">

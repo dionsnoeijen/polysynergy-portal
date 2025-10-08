@@ -21,16 +21,16 @@ import { useEditorKeyBindings } from "@/hooks/editor/useEditorKeyBindings";
 import { useEditorState } from "@/hooks/editor/useEditorState";
 import { useAutoUpdateScheduleNodes } from "@/hooks/editor/useAutoUpdateScheduleNodes";
 import { useAutoUpdateRouteNodes } from "@/hooks/editor/useAutoUpdateRouteNodes";
-import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import { useAutoFitNodes } from "@/hooks/editor/nodes/useAutoFitNodes";
 import { useExecutionTabSwitcher } from "@/hooks/editor/useExecutionTabSwitcher";
 import { EditorMode } from "@/types/types";
 import Minimap from "@/components/editor/minimap";
 import useEditorStore from "@/stores/editorStore";
 
-export default function Editor() {
+export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
     const contentRef = useRef<HTMLDivElement>(null);
-    
+    const isReadOnly = useEditorStore((state) => state.isReadOnly) || readOnly;
+
     // DOM-BASED PANNING
     const isDOMPanning = useRef(false);
     const isDOMActive = useRef<boolean>(false); // Block useEditorTransform during DOM operations
@@ -231,7 +231,7 @@ export default function Editor() {
     } = useEditorState(isMouseDown);
 
     // Global listeners and auto-updates
-    useGlobalStoreListenersWithImmediateSave();
+    // Note: useGlobalStoreListenersWithImmediateSave() moved to EditorLayout to ensure forceSave always available
     useAutoUpdateRouteNodes();
     useAutoUpdateScheduleNodes();
     useAutoFitNodes(contentRef, nodesToRender, 40, activeVersionId);
@@ -290,7 +290,7 @@ export default function Editor() {
             )}
 
             {/* Chat Mode Glow - Blue Pulsing Border */}
-            {chatMode && !isExecuting && (
+            {(chatMode || isReadOnly) && !isExecuting && (
                 <div
                     className="absolute top-0 left-0 w-full h-full z-20 pointer-events-none
                                bg-transparent
@@ -332,22 +332,26 @@ export default function Editor() {
                     ))}
             </div>
 
-            {editorMode === EditorMode.BoxSelect && <BoxSelect/>}
-            <AddNode/>
+            {editorMode === EditorMode.BoxSelect && !isReadOnly && <BoxSelect/>}
+            {!isReadOnly && <AddNode/>}
 
-            <DeleteDialog
-                isOpen={deleteNodesDialogOpen}
-                onConfirm={handleConfirmDelete}
-                onCancel={handleCancelDelete}
-                selectedNodes={selectedNodes}
-            />
-            
-            <DeleteConnectionDialog
-                isOpen={deleteConnectionDialogOpen}
-                onConfirm={() => useEditorStore.getState().setDeleteConnectionDialogOpen(false)}
-                onCancel={() => useEditorStore.getState().setDeleteConnectionDialogOpen(false)}
-                connectionId={selectedConnectionId}
-            />
+            {!isReadOnly && (
+                <>
+                    <DeleteDialog
+                        isOpen={deleteNodesDialogOpen}
+                        onConfirm={handleConfirmDelete}
+                        onCancel={handleCancelDelete}
+                        selectedNodes={selectedNodes}
+                    />
+
+                    <DeleteConnectionDialog
+                        isOpen={deleteConnectionDialogOpen}
+                        onConfirm={() => useEditorStore.getState().setDeleteConnectionDialogOpen(false)}
+                        onCancel={() => useEditorStore.getState().setDeleteConnectionDialogOpen(false)}
+                        connectionId={selectedConnectionId}
+                    />
+                </>
+            )}
             
             {/* Minimap in top-right corner */}
             <Minimap />

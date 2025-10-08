@@ -119,11 +119,13 @@ const PromptField: React.FC<PromptFieldProps> = ({
             if (forceSave) await forceSave();
 
             // 4) Start de run (WS listener voegt agent-chunks toe aan de actieve sessie)
+            console.log('[PromptField] Starting play for node:', selectedPromptNodeId, 'stage: mock');
             const syntheticEvent = {
                 preventDefault() {},
                 stopPropagation() {},
             } as React.MouseEvent;
             await handlePlay(syntheticEvent, selectedPromptNodeId, "mock");
+            console.log('[PromptField] Play started successfully');
 
             window.dispatchEvent(new CustomEvent("restart-log-polling"));
         } catch (e) {

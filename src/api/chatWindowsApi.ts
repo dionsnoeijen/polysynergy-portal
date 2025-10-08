@@ -117,7 +117,6 @@ export const assignUserToChatWindowAPI = async (
     data: {
         account_id: string;
         can_view_flow: boolean;
-        can_edit_flow: boolean;
         can_view_output: boolean;
         show_response_transparency: boolean;
     }
@@ -144,7 +143,6 @@ export const updateChatWindowUserPermissionsAPI = async (
     projectId: string,
     data: {
         can_view_flow?: boolean;
-        can_edit_flow?: boolean;
         can_view_output?: boolean;
         show_response_transparency?: boolean;
     }

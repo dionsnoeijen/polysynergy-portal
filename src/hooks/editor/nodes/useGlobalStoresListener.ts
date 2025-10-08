@@ -12,6 +12,7 @@ let savingInProgress = false;
 export default function useGlobalStoreListenersWithImmediateSave() {
     const activeRouteId = useEditorStore((state) => state.activeRouteId);
     const activeScheduleId = useEditorStore((state) => state.activeScheduleId);
+    const activeChatWindowId = useEditorStore((state) => state.activeChatWindowId);
     const activeBlueprintId = useEditorStore((state) => state.activeBlueprintId);
     const activeConfigId = useEditorStore((state) => state.activeConfigId);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
@@ -94,7 +95,7 @@ export default function useGlobalStoreListenersWithImmediateSave() {
             debounceTimeout = null;
         }
         // eslint-disable-next-line
-    }, [activeVersionId, activeProjectId, activeRouteId, activeScheduleId, activeBlueprintId, activeConfigId, setIsSaving]);
+    }, [activeVersionId, activeProjectId, activeRouteId, activeScheduleId, activeChatWindowId, activeBlueprintId, activeConfigId, setIsSaving]);
 
     // Create force save function that cancels debounce and saves immediately
     const forceImmediateSave = useCallback(async () => {
@@ -165,6 +166,7 @@ export default function useGlobalStoreListenersWithImmediateSave() {
     const getCurrentFundamental = (): [string | undefined, Fundamental | null] => {
         if (activeRouteId) return [activeRouteId, Fundamental.Route];
         if (activeScheduleId) return [activeScheduleId, Fundamental.Schedule];
+        if (activeChatWindowId) return [activeChatWindowId, Fundamental.ChatWindow];
         if (activeBlueprintId) return [activeBlueprintId, Fundamental.Blueprint];
         if (activeConfigId) return [activeConfigId, Fundamental.Config];
         return [undefined, null];

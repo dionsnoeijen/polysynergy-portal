@@ -135,13 +135,24 @@ export default function TreeList<T extends ListItemWithId>({
                         data-tour-id={dataTourId ?? null}
                         className={clsx(
                             "w-full flex items-center justify-between gap-2 px-3 py-2",
-                            "border-t border-b border-dotted text-sky-500 border-sky-500 dark:border-white/50",
-                            "bg-white/60 dark:bg-black/60 hover:bg-sky-100 dark:hover:bg-white/10",
-                            "transition-colors duration-200"
+                            "border-t border-b border-dotted",
+                            "transition-all duration-200",
+                            addDisabled || isExecuting
+                                ? "opacity-40 cursor-not-allowed border-sky-500/30 dark:border-white/20 bg-white/30 dark:bg-black/30"
+                                : "border-sky-500 dark:border-white/50 bg-white/60 dark:bg-black/60 hover:bg-sky-100 dark:hover:bg-white/10 cursor-pointer"
                         )}
                     >
-                        <span className="text-sky-500 dark:text-white">{title}</span>
-                        <PlusIcon className="w-4 h-4 text-sky-500 dark:text-white/70"/>
+                        <span className={clsx(
+                            addDisabled || isExecuting
+                                ? "text-sky-500/50 dark:text-white/30"
+                                : "text-sky-500 dark:text-white"
+                        )}>{title}</span>
+                        <PlusIcon className={clsx(
+                            "w-4 h-4",
+                            addDisabled || isExecuting
+                                ? "text-sky-500/50 dark:text-white/30"
+                                : "text-sky-500 dark:text-white/70"
+                        )}/>
                     </button>
                 )}
             </div>

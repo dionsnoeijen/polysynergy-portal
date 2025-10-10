@@ -4,7 +4,7 @@ import {Heading, Subheading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Input} from "@/components/input";
 import {Button} from "@/components/button";
-import {XMarkIcon} from "@heroicons/react/24/outline";
+import {XMarkIcon, Cog6ToothIcon} from "@heroicons/react/24/outline";
 import {Text} from "@/components/text";
 
 import useStagesStore from "@/stores/stagesStore";
@@ -27,6 +27,7 @@ const ProjectEnvVarsForm: React.FC = () => {
 
     const createEnvVar = useEnvVarsStore((state) => state.createEnvVar);
     const closeForm = useEditorStore((state) => state.closeForm);
+    const openForm = useEditorStore((state) => state.openForm);
     const deleteEnvVar = useEnvVarsStore((state) => state.deleteEnvVar);
     const getEnvVarByKey = useEnvVarsStore((state) => state.getEnvVarByKey);
 
@@ -126,7 +127,18 @@ const ProjectEnvVarsForm: React.FC = () => {
             </div>
 
             <Divider className="my-4" soft bleed/>
-            <Text>Define an environment variable across environments. Values are saved per environment.</Text>
+            <div className="flex items-center justify-between gap-4">
+                <Text>Define an environment variable across environments. Values are saved per environment.</Text>
+                <Button
+                    type="button"
+                    onClick={() => openForm(FormType.ProjectPublish)}
+                    color="sky"
+                    className="shrink-0"
+                >
+                    <Cog6ToothIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline ml-1">Manage Stages</span>
+                </Button>
+            </div>
             <Divider className="my-10" soft bleed/>
 
             {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -142,21 +154,34 @@ const ProjectEnvVarsForm: React.FC = () => {
 
             <Divider className="my-6" soft bleed/>
 
-            {stages.map((stage) => (
-                <div key={stage.name} className="mb-4">
-                    <label className="block font-medium mb-1">{stage.name}</label>
-                    <div className="relative flex gap-2 items-center">
-                        <Input
-                            value={values[stage.name] || ""}
-                            onChange={(e) =>
-                                setValues((prev) => ({...prev, [stage.name]: e.target.value}))
-                            }
-                            placeholder="Enter value for this environment"
-                        />
-                        <Button color={"sky"} onClick={() => handleSave(stage.name)}>Save</Button>
+            {stages.map((stage) => {
+                const hasValue = envVar?.values[stage.name]?.value;
+                return (
+                    <div key={stage.name} className="mb-4">
+                        <label className="block font-medium mb-1">
+                            <span className="text-xs text-zinc-500 dark:text-white/50">
+                                {stage.name === 'mock' ? `default:` : `custom:`}
+                            </span>{" "}
+                            {stage.name}{" "}
+                            {hasValue && (
+                                <span className="text-xs text-zinc-500 dark:text-white/50">
+                                    (has value, can be overridden)
+                                </span>
+                            )}
+                        </label>
+                        <div className="relative flex gap-2 items-center">
+                            <Input
+                                value={values[stage.name] || ""}
+                                onChange={(e) =>
+                                    setValues((prev) => ({...prev, [stage.name]: e.target.value}))
+                                }
+                                placeholder={hasValue ? "Current value set, enter to override" : "Enter value for this environment"}
+                            />
+                            <Button color={"sky"} onClick={() => handleSave(stage.name)}>Save</Button>
+                        </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
 
             {formType === FormType.EditProjectEnvVar && (
                 <>

@@ -5,6 +5,8 @@ import Connector from '@/components/editor/nodes/connector';
 import NodeIcon from '@/components/editor/nodes/node-icon';
 import {ConfirmAlert} from '@/components/confirm-alert';
 import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
+import { useGroupExecutionOrders } from '@/hooks/editor/nodes/useGroupExecutionOrders';
+import GroupExecutionOrders from '@/components/editor/nodes/group-execution-orders';
 
 interface CollapsedGroupProps {
     node: Node;
@@ -27,8 +29,13 @@ const CollapsedGroup: React.FC<CollapsedGroupProps> = ({
     setIsDissolveDialogOpen,
     onConfirmDissolve
 }) => {
+    const orders = useGroupExecutionOrders(node.id);
+
     return (
         <>
+            {/* Execution Orders */}
+            <GroupExecutionOrders orders={orders} />
+
             {/* Notes Display - Always visible at top even when collapsed */}
             <NodeNotesDisplay node={node} isCollapsed={true} />
 

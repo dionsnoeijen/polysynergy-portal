@@ -282,7 +282,7 @@ const DynamicRouteForm: React.FC = () => {
                                                 value={segment.name}
                                                 onChange={(e) => {
                                                     const inputValue = e.target.value;
-                                                    const validValue = inputValue.replace(/[^a-z-_]/g, '');
+                                                    const validValue = inputValue.replace(/[^a-z0-9-_]/g, '');
                                                     const updatedSegment = {...segment, name: validValue};
                                                     const updatedSegments = [...segments];
                                                     updatedSegments[index] = updatedSegment;
@@ -303,7 +303,7 @@ const DynamicRouteForm: React.FC = () => {
                                             <Select
                                                 aria-label="Variable type"
                                                 name="variable_type"
-                                                defaultValue="any"
+                                                value={segment.variable_type || "string"}
                                                 disabled={segment.type === RouteSegmentType.Static}
                                                 onChange={(e) => {
                                                     const updatedSegment = {
@@ -315,10 +315,8 @@ const DynamicRouteForm: React.FC = () => {
                                                     setSegments(updatedSegments);
                                                 }}
                                             >
-                                                <option value="any">Any</option>
                                                 <option value="string">String</option>
                                                 <option value="number">Number</option>
-                                                <option value="uuid">Uuid</option>
                                             </Select>
                                         </TableCell>
                                         <TableCell className="text-right">

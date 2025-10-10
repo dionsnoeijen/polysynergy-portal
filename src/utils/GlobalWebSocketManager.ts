@@ -64,8 +64,14 @@ class GlobalWebSocketSingleton {
         const connection = this.getOrCreateConnection(flowId);
 
         connection.subscribers.add(statusCallback);
-        if (messageHandler) {
+
+        // Only add message handler if it's not already in the set
+        // This prevents duplicate processing when the same singleton handler is passed multiple times
+        if (messageHandler && !connection.messageHandlers.has(messageHandler)) {
+            console.log('🔌 GLOBAL SINGLETON: Adding message handler for', flowId, 'Total handlers:', connection.messageHandlers.size + 1);
             connection.messageHandlers.add(messageHandler);
+        } else if (messageHandler) {
+            console.log('🔌 GLOBAL SINGLETON: Message handler already exists for', flowId, '- skipping duplicate');
         }
 
         // Immediately call with current status
@@ -74,13 +80,13 @@ class GlobalWebSocketSingleton {
         // Return unsubscribe function
         return () => {
             connection.subscribers.delete(statusCallback);
-            if (messageHandler) {
-                connection.messageHandlers.delete(messageHandler);
-            }
+            // Note: We don't delete the messageHandler here anymore because it's a singleton
+            // The handler will be removed when the last subscriber unsubscribes
 
-            // If no more subscribers, close the connection
-            if (connection.subscribers.size === 0 && connection.messageHandlers.size === 0) {
-                console.log('🔌 GLOBAL SINGLETON: No more subscribers, closing connection for', flowId);
+            // If no more status subscribers, we can consider cleaning up
+            if (connection.subscribers.size === 0) {
+                console.log('🔌 GLOBAL SINGLETON: No more status subscribers, closing connection for', flowId);
+                connection.messageHandlers.clear(); // Clear all message handlers
                 connection.manager.disconnect();
                 this.connections.delete(flowId);
             }

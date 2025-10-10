@@ -283,9 +283,9 @@ const useEditorStore = create<EditorState>((set, get) => ({
     // /chat route specific UI state
     chatSessionsSidebarCollapsed: false,
     setChatSessionsSidebarCollapsed: (collapsed: boolean) => set({chatSessionsSidebarCollapsed: collapsed}),
-    chatEditorCollapsed: false,
+    chatEditorCollapsed: true,  // Default CLOSED for cleaner initial view
     setChatEditorCollapsed: (collapsed: boolean) => set({chatEditorCollapsed: collapsed}),
-    chatOutputCollapsed: false,
+    chatOutputCollapsed: true,  // Default CLOSED for cleaner initial view
     setChatOutputCollapsed: (collapsed: boolean) => set({chatOutputCollapsed: collapsed}),
     activeServiceId: '',
     setActiveServiceId: (serviceId: string) => set({activeServiceId: serviceId}),

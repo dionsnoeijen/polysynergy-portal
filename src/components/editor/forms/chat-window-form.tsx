@@ -57,6 +57,13 @@ const ChatWindowForm: React.FC = () => {
         can_view_output: false,
         show_response_transparency: true
     });
+    // For create mode: pending user assignments
+    const [pendingUserAssignments, setPendingUserAssignments] = useState<Array<{
+        account_id: string;
+        can_view_flow: boolean;
+        can_view_output: boolean;
+        show_response_transparency: boolean;
+    }>>([]);
 
     useEffect(() => {
         // Fetch accounts for user assignment
@@ -104,6 +111,19 @@ const ChatWindowForm: React.FC = () => {
         const result = await action(payload);
 
         if (result) {
+            // For new chat windows, assign pending users
+            if (formType === FormType.AddChatWindow && pendingUserAssignments.length > 0) {
+                try {
+                    await Promise.all(
+                        pendingUserAssignments.map(assignment =>
+                            assignUserToChatWindowAPI(result.id as string, activeProjectId, assignment)
+                        )
+                    );
+                } catch (error) {
+                    console.error("Failed to assign users:", error);
+                }
+            }
+
             closeForm(`${formType === FormType.AddChatWindow ? "Created" : "Updated"} successfully`);
             setActiveChatWindowId(result.id as string);
             setIsExecuting("Loading Chat Window");
@@ -127,26 +147,46 @@ const ChatWindowForm: React.FC = () => {
     };
 
     const handleAssignUser = async () => {
-        if (!selectedAccountId || !formEditRecordId) return;
+        if (!selectedAccountId) return;
 
-        try {
-            const newAccess = await assignUserToChatWindowAPI(
-                formEditRecordId as string,
-                activeProjectId,
+        if (formType === FormType.AddChatWindow) {
+            // In create mode, add to pending assignments
+            setPendingUserAssignments([
+                ...pendingUserAssignments,
                 {
                     account_id: selectedAccountId,
                     ...newUserPermissions
                 }
-            );
-            setAssignedUsers([...assignedUsers, newAccess]);
+            ]);
             setSelectedAccountId("");
             setNewUserPermissions({
                 can_view_flow: false,
                 can_view_output: false,
                 show_response_transparency: true
             });
-        } catch (error) {
-            console.error("Failed to assign user:", error);
+        } else {
+            // In edit mode, assign directly
+            if (!formEditRecordId) return;
+
+            try {
+                const newAccess = await assignUserToChatWindowAPI(
+                    formEditRecordId as string,
+                    activeProjectId,
+                    {
+                        account_id: selectedAccountId,
+                        ...newUserPermissions
+                    }
+                );
+                setAssignedUsers([...assignedUsers, newAccess]);
+                setSelectedAccountId("");
+                setNewUserPermissions({
+                    can_view_flow: false,
+                    can_view_output: false,
+                    show_response_transparency: true
+                });
+            } catch (error) {
+                console.error("Failed to assign user:", error);
+            }
         }
     };
 
@@ -163,6 +203,10 @@ const ChatWindowForm: React.FC = () => {
         } catch (error) {
             console.error("Failed to remove user:", error);
         }
+    };
+
+    const handleRemovePendingUser = (accountId: string) => {
+        setPendingUserAssignments(pendingUserAssignments.filter(u => u.account_id !== accountId));
     };
 
     const handleTogglePermission = async (
@@ -185,6 +229,16 @@ const ChatWindowForm: React.FC = () => {
         } catch (error) {
             console.error("Failed to update permissions:", error);
         }
+    };
+
+    const handleTogglePendingPermission = (
+        accountId: string,
+        permission: keyof typeof newUserPermissions,
+        value: boolean
+    ) => {
+        setPendingUserAssignments(pendingUserAssignments.map(u =>
+            u.account_id === accountId ? { ...u, [permission]: value } : u
+        ));
     };
 
     return (
@@ -233,30 +287,31 @@ const ChatWindowForm: React.FC = () => {
 
             <Divider className="my-10" soft bleed />
 
-            {formType === FormType.EditChatWindow && (
-                <>
-                    <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
-                        <div className="space-y-1">
-                            <Subheading>User Access</Subheading>
-                            <Text>Assign users with specific permissions</Text>
-                        </div>
-                        <div className="space-y-4">
-                            {/* Add new user */}
-                            <div className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-4 space-y-3">
-                                <Text><Strong>Assign New User</Strong></Text>
-                                <Select
-                                    value={selectedAccountId}
-                                    onChange={(e) => setSelectedAccountId(e.target.value)}
-                                >
-                                    <option value="">Select a user...</option>
-                                    {accounts
-                                        .filter(acc => !assignedUsers.some(au => au.account_id === acc.id))
-                                        .map(account => (
-                                            <option key={account.id} value={account.id}>
-                                                {account.email} ({account.first_name} {account.last_name})
-                                            </option>
-                                        ))}
-                                </Select>
+            <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                <div className="space-y-1">
+                    <Subheading>User Access</Subheading>
+                    <Text>Assign users with specific permissions</Text>
+                </div>
+                <div className="space-y-4">
+                    {/* Add new user */}
+                    <div className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-4 space-y-3">
+                        <Text><Strong>Assign New User</Strong></Text>
+                        <Select
+                            value={selectedAccountId}
+                            onChange={(e) => setSelectedAccountId(e.target.value)}
+                        >
+                            <option value="">Select a user...</option>
+                            {accounts
+                                .filter(acc =>
+                                    !assignedUsers.some(au => au.account_id === acc.id) &&
+                                    !pendingUserAssignments.some(pu => pu.account_id === acc.id)
+                                )
+                                .map(account => (
+                                    <option key={account.id} value={account.id}>
+                                        {account.email} ({account.first_name} {account.last_name})
+                                    </option>
+                                ))}
+                        </Select>
 
                                 {selectedAccountId && (
                                     <div className="space-y-2">
@@ -297,8 +352,8 @@ const ChatWindowForm: React.FC = () => {
                                 )}
                             </div>
 
-                            {/* Assigned users list */}
-                            {assignedUsers.length > 0 && (
+                            {/* Assigned users list (Edit mode) */}
+                            {formType === FormType.EditChatWindow && assignedUsers.length > 0 && (
                                 <div className="space-y-2">
                                     <Text><Strong>Assigned Users ({assignedUsers.length})</Strong></Text>
                                     {assignedUsers.map(access => (
@@ -359,12 +414,78 @@ const ChatWindowForm: React.FC = () => {
                                     ))}
                                 </div>
                             )}
+
+                            {/* Pending users list (Create mode) */}
+                            {formType === FormType.AddChatWindow && pendingUserAssignments.length > 0 && (
+                                <div className="space-y-2">
+                                    <Text><Strong>Users to Assign ({pendingUserAssignments.length})</Strong></Text>
+                                    {pendingUserAssignments.map(assignment => {
+                                        const account = accounts.find(acc => acc.id === assignment.account_id);
+                                        if (!account) return null;
+
+                                        return (
+                                            <div
+                                                key={assignment.account_id}
+                                                className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-4 space-y-2"
+                                            >
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className="font-medium text-sm">
+                                                            {account.email}
+                                                        </p>
+                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                                            {account.first_name} {account.last_name}
+                                                        </p>
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        color="red"
+                                                        onClick={() => handleRemovePendingUser(assignment.account_id)}
+                                                    >
+                                                        <TrashIcon className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+
+                                                <div className="space-y-1 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                                                    <CheckboxField>
+                                                        <Checkbox
+                                                            checked={assignment.can_view_flow}
+                                                            onChange={(checked) =>
+                                                                handleTogglePendingPermission(assignment.account_id, 'can_view_flow', checked)
+                                                            }
+                                                        />
+                                                        <Label>Can view flow</Label>
+                                                    </CheckboxField>
+
+                                                    <CheckboxField>
+                                                        <Checkbox
+                                                            checked={assignment.can_view_output}
+                                                            onChange={(checked) =>
+                                                                handleTogglePendingPermission(assignment.account_id, 'can_view_output', checked)
+                                                            }
+                                                        />
+                                                        <Label>Can view output</Label>
+                                                    </CheckboxField>
+
+                                                    <CheckboxField>
+                                                        <Checkbox
+                                                            checked={assignment.show_response_transparency}
+                                                            onChange={(checked) =>
+                                                                handleTogglePendingPermission(assignment.account_id, 'show_response_transparency', checked)
+                                                            }
+                                                        />
+                                                        <Label>Show response transparency</Label>
+                                                    </CheckboxField>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </section>
 
                     <Divider className="my-10" soft bleed />
-                </>
-            )}
 
             {formType === FormType.EditChatWindow && (
                 <>

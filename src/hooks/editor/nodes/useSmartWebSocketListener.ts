@@ -130,7 +130,7 @@ export function restoreVisualStateForRun(runId: string) {
 // Function to cleanup state for completed runs
 export function cleanupStateForRun(runId: string) {
     console.log(`🧹 [WebSocket] Cleaning up state for completed run: ${runId}`);
-    
+
     // Clear pending animations for this run
     const pendingAnimations = pendingAnimationsByRun.get(runId);
     if (pendingAnimations) {
@@ -139,24 +139,89 @@ export function cleanupStateForRun(runId: string) {
         }
         pendingAnimationsByRun.delete(runId);
     }
-    
+
     // Clear group states for this run
     groupStatesByRun.delete(runId);
-    
+
     // Clear node execution states for this run
     nodeExecutionStateByRun.delete(runId);
-    
+
     console.log(`✅ [WebSocket] State cleaned up for run: ${runId}`);
 }
 
-export function useSmartWebSocketListener(flowId: string) {
-    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
-    const [isConnected, setIsConnected] = useState(false);
+// Function to cleanup all execution glow states
+function cleanupExecutionGlow() {
+    // ENHANCED: Clear all run-aware state trackers and pending animations
+    processedEvents.clear();
 
-    useEffect(() => {
-        if (!flowId) return;
+    // Clear all pending animations for all runs
+    for (const runAnimations of pendingAnimationsByRun.values()) {
+        for (const timeout of runAnimations.values()) {
+            clearTimeout(timeout);
+        }
+        runAnimations.clear();
+    }
+    pendingAnimationsByRun.clear();
 
-        const handleWebSocketMessage = async (event: MessageEvent) => {
+    // Clear group states for all runs
+    groupStatesByRun.clear();
+
+    // Clear node execution states for all runs
+    nodeExecutionStateByRun.clear();
+
+    // Clear completed runs tracker
+    completedRunIds.clear();
+
+    // Clear tool execution and visualization trackers
+    toolExecutionTracker.clear();
+    for (const tracker of toolVisualizationTracker.values()) {
+        if (tracker.timeoutId) {
+            clearTimeout(tracker.timeoutId);
+        }
+    }
+    toolVisualizationTracker.clear();
+
+    console.log('🧹 [WebSocket] Cleared all run-aware execution state trackers and pending animations');
+
+    // Clear visual classes from DOM elements
+    const nodeEls = document.querySelectorAll('[data-node-id]');
+    nodeEls.forEach((el) => {
+        el.classList.remove(
+            'executing',
+            'executed-success',
+            'executed-error',
+            'executed-killed',
+            'executed-provided'
+        );
+    });
+
+    const groupEls = document.querySelectorAll('[data-group-id]');
+    groupEls.forEach((el) => {
+        el.classList.remove(
+            'executing',
+            'executed-success',
+            'executed-error',
+            'executed-killed',
+            'executed-provided'
+        );
+    });
+}
+
+// Singleton message handler - only one instance processes messages regardless of how many times the hook is used
+let globalMessageHandler: ((event: MessageEvent) => Promise<void>) | null = null;
+let handlerRefCount = 0;
+
+function getOrCreateMessageHandler() {
+    if (globalMessageHandler) {
+        handlerRefCount++;
+        console.log(`📡 [WebSocket Singleton] Reusing message handler (subscribers: ${handlerRefCount})`);
+        return globalMessageHandler;
+    }
+
+    console.log(`📡 [WebSocket Singleton] Creating message handler (first subscriber)`);
+    handlerRefCount = 1;
+
+    globalMessageHandler = async (event: MessageEvent) => {
             const data = typeof event.data === 'string' ? event.data.trim() : '';
             if (!data || (data[0] !== '{' && data[0] !== '[')) return;
 
@@ -166,17 +231,6 @@ export function useSmartWebSocketListener(flowId: string) {
             } catch {
                 return;
             }
-
-            console.log('🔍 [DEBUG] WebSocket message received:', {
-                event: message.event,
-                node_id: message.node_id,
-                run_id: message.run_id,
-                status: message.status,
-                order: message.order,
-                timestamp: new Date().toISOString(),
-                fullMessage: message
-            });
-
             const editorStore = useEditorStore.getState();
             const nodesStore = useNodesStore.getState();
             const mockStore = useMockStore.getState();
@@ -283,7 +337,6 @@ export function useSmartWebSocketListener(flowId: string) {
             // ---- RUN START ----
             if (eventType === 'run_start') {
                 console.log('🚀 [WebSocket] Received run_start event for run_id:', message.run_id);
-                cleanupExecutionGlow();
 
                 // Update runs store - this might be from a different source than useHandlePlay
                 const runsStore = useRunsStore.getState();
@@ -311,41 +364,67 @@ export function useSmartWebSocketListener(flowId: string) {
 
             // ---- TOOLS UI ----
             if (eventType === 'start_tool') {
+                console.log('🔧 [TOOL DEBUG] start_tool event received:', {
+                    node_id,
+                    run_id: message.run_id,
+                    message
+                });
+
                 const startTime = performance.now();
                 const trackingKey = `${node_id}-${message.run_id}`;
-                
+
                 // Check if we already have a visualization running for this tool
                 const existingViz = toolVisualizationTracker.get(trackingKey);
                 if (existingViz) {
+                    console.log('🔧 [TOOL DEBUG] Already have visualization for this tool, skipping');
                     return;
                 }
-                
+
                 // Store start time for duration calculation
                 toolExecutionTracker.set(trackingKey, {
                     startTime,
                     startEvent: message
                 });
-                
+
                 const element = document.querySelector(`[data-node-id="${node_id}"]`);
+                console.log('🔧 [TOOL DEBUG] DOM element lookup:', {
+                    node_id,
+                    found: !!element,
+                    classList: element?.classList.toString()
+                });
+
                 if (element) {
                     element.classList.add('executing-tool');
-                    
+                    console.log('🔧 [TOOL DEBUG] Added executing-tool class, new classList:', element.classList.toString());
+
                     // Store visualization info for minimum display time
                     toolVisualizationTracker.set(trackingKey, {
                         timeoutId: null, // Will be set when end_tool arrives
                         displayStartTime: performance.now()
                     });
                 } else {
-                    console.warn('⚠️ Element not found for node_id:', node_id);
+                    console.warn('⚠️ [TOOL DEBUG] Element not found for node_id:', node_id);
                 }
                 return;
             }
             
             if (eventType === 'end_tool') {
+                console.log('🔧 [TOOL DEBUG] end_tool event received:', {
+                    node_id,
+                    run_id: message.run_id,
+                    message
+                });
+
                 const endTime = performance.now();
                 const trackingKey = `${node_id}-${message.run_id}`;
                 const startData = toolExecutionTracker.get(trackingKey);
                 const vizData = toolVisualizationTracker.get(trackingKey);
+
+                console.log('🔧 [TOOL DEBUG] Tracker data:', {
+                    trackingKey,
+                    hasStartData: !!startData,
+                    hasVizData: !!vizData
+                });
 
                 let duration = 'unknown';
                 if (startData) {
@@ -418,9 +497,12 @@ export function useSmartWebSocketListener(flowId: string) {
                 const sessionId = chatView.getActiveSessionId();
                 if (sessionId) {
                     chatView.finalizeAgentMessage(sessionId);
-                    
+
                     // Clear team member activity when run ends
                     chatView.clearTeamMembers();
+
+                    // Safety fallback: clear waiting state if still active (edge case: no agent response)
+                    chatView.setWaitingForResponse(false);
                     
                     // Sync with backend to get correct run_id after streaming completes
                     try {
@@ -560,18 +642,6 @@ export function useSmartWebSocketListener(flowId: string) {
 
             // For mock store updates (runs panel): Update for active run or selected historical run
             const forCurrentView = !isViewingHistoricalRun && (!selectedRunId || message.run_id === selectedRunId || message.run_id === currentActiveRunId);
-
-            console.log('🔍 [DEBUG] Event filtering check:', {
-                event: eventType,
-                message_run_id: message.run_id,
-                currentActiveRunId,
-                selectedRunId,
-                isViewingHistoricalRun,
-                isBackgroundedRun,
-                forVisualUpdates,
-                forCurrentView,
-                backgroundedRunIds: Array.from(runsStore.backgroundedRunIds)
-            });
 
             const el = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement | null;
             const nodeFlowNode = nodesStore.getNode(node_id);
@@ -777,6 +847,29 @@ export function useSmartWebSocketListener(flowId: string) {
             }
         };
 
+    return globalMessageHandler;
+}
+
+function releaseMessageHandler() {
+    handlerRefCount--;
+    console.log(`📡 [WebSocket Singleton] Releasing message handler (subscribers: ${handlerRefCount})`);
+
+    if (handlerRefCount <= 0) {
+        console.log(`📡 [WebSocket Singleton] Destroying message handler (last subscriber unsubscribed)`);
+        globalMessageHandler = null;
+        handlerRefCount = 0;
+    }
+}
+
+export function useSmartWebSocketListener(flowId: string) {
+    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
+    const [isConnected, setIsConnected] = useState(false);
+
+    useEffect(() => {
+        if (!flowId) return;
+
+        const handleWebSocketMessage = getOrCreateMessageHandler();
+
         const unsubscribe = globalWebSocketSingleton.subscribe(
             flowId,
             (status, connected) => {
@@ -785,7 +878,11 @@ export function useSmartWebSocketListener(flowId: string) {
             },
             handleWebSocketMessage
         );
-        return unsubscribe;
+
+        return () => {
+            unsubscribe();
+            releaseMessageHandler();
+        };
     }, [flowId]);
 
     useEffect(() => {
@@ -797,40 +894,6 @@ export function useSmartWebSocketListener(flowId: string) {
         cleanupExecutionGlow();
         return cleanupExecutionGlow;
     }, [flowId]);
-
-    function cleanupExecutionGlow() {
-        // ENHANCED: Clear all run-aware state trackers and pending animations
-        processedEvents.clear();
-        
-        // Clear all pending animations for all runs
-        for (const runAnimations of pendingAnimationsByRun.values()) {
-            for (const timeout of runAnimations.values()) {
-                clearTimeout(timeout);
-            }
-            runAnimations.clear();
-        }
-        pendingAnimationsByRun.clear();
-        
-        // Clear group states for all runs
-        groupStatesByRun.clear();
-        
-        // Clear node execution states for all runs
-        nodeExecutionStateByRun.clear();
-        
-        // Clear completed runs tracker
-        completedRunIds.clear();
-        
-        // Clear tool execution and visualization trackers
-        toolExecutionTracker.clear();
-        for (const tracker of toolVisualizationTracker.values()) {
-            if (tracker.timeoutId) {
-                clearTimeout(tracker.timeoutId);
-            }
-        }
-        toolVisualizationTracker.clear();
-        
-        console.log('🧹 [WebSocket] Cleared all run-aware execution state trackers and pending animations');
-    }
 
     return {connectionStatus, isConnected};
 }

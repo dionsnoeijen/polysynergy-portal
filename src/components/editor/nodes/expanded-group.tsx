@@ -6,6 +6,8 @@ import ServiceHeading from '@/components/editor/nodes/rows/service-heading';
 import NodeVariables from '@/components/editor/nodes/rows/node-variables';
 import {ConfirmAlert} from '@/components/confirm-alert';
 import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
+import { useGroupExecutionOrders } from '@/hooks/editor/nodes/useGroupExecutionOrders';
+import GroupExecutionOrders from '@/components/editor/nodes/group-execution-orders';
 
 interface ExpandedGroupProps {
     node: Node;
@@ -38,8 +40,13 @@ const ExpandedGroup: React.FC<ExpandedGroupProps> = ({
     setIsDissolveDialogOpen,
     onConfirmDissolve
 }) => {
+    const orders = useGroupExecutionOrders(node.id);
+
     return (
         <>
+            {/* Execution Orders */}
+            <GroupExecutionOrders orders={orders} />
+
             {/* Notes Display - Always visible at top */}
             <NodeNotesDisplay node={node} />
 

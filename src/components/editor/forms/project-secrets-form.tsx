@@ -5,7 +5,7 @@ import {Divider} from "@/components/divider";
 import {Input} from "@/components/input";
 import {Button} from "@/components/button";
 import {Secret, FormType} from "@/types/types";
-import {XMarkIcon} from "@heroicons/react/24/outline";
+import {XMarkIcon, Cog6ToothIcon} from "@heroicons/react/24/outline";
 import {
     createProjectSecretAPI,
     updateProjectSecretAPI,
@@ -24,6 +24,7 @@ const ProjectSecretsForm: React.FC = () => {
     const stages = useStagesStore((state) => state.stages);
 
     const closeForm = useEditorStore((state) => state.closeForm);
+    const openForm = useEditorStore((state) => state.openForm);
     const formType = useEditorStore((state) => state.formType);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
@@ -115,8 +116,19 @@ const ProjectSecretsForm: React.FC = () => {
             </div>
 
             <Divider className="my-4" soft bleed/>
-            <Text>The secret key is shared, but values are stage-specific. Secret values are never shown after creation
-                or update.</Text>
+            <div className="flex items-center justify-between gap-4">
+                <Text>The secret key is shared, but values are stage-specific. Secret values are never shown after creation
+                    or update.</Text>
+                <Button
+                    type="button"
+                    onClick={() => openForm(FormType.ProjectPublish)}
+                    color="sky"
+                    className="shrink-0"
+                >
+                    <Cog6ToothIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline ml-1">Manage Stages</span>
+                </Button>
+            </div>
             <Divider className="my-10" soft bleed/>
 
             {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -137,12 +149,12 @@ const ProjectSecretsForm: React.FC = () => {
             {stages.map((stage) => (
                 <div key={stage.name} className="mb-4">
                     <label className="block font-medium mb-1">
-                        <span className="text-xs text-white/50">
+                        <span className="text-xs text-zinc-500 dark:text-white/50">
                         {stage.name === 'mock' ? `default:` : `custom:`}
                         </span>{" "}
                         {stage.name}{" "}
                         {stagesWithValue.includes(stage.name) && (
-                            <span className="text-xs text-white/50">
+                            <span className="text-xs text-zinc-500 dark:text-white/50">
                                 (has value, can be overridden, not shown)
                             </span>
                         )}

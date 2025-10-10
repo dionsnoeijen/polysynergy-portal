@@ -12,13 +12,21 @@ const useNodeContextMenu = (node: Node) => {
     const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);
     const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
     const setNodeToMoveToGroupId = useEditorStore((state) => state.setNodeToMoveToGroupId);
-    const { removeNodeFromGroup } = useGrouping();
+    const { removeNodeFromGroup, createGroup } = useGrouping();
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
 
         const contextMenuItems = [];
+
+        // Group selected nodes option (when 2 or more nodes selected)
+        if (selectedNodes.length >= 2) {
+            contextMenuItems.push({
+                label: "Group Selected Nodes",
+                action: () => createGroup()
+            });
+        }
 
         const groupId = isNodeInGroup(node.id);
         if (groupId && selectedNodes.length === 1) {

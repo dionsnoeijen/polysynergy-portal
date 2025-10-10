@@ -89,15 +89,6 @@ export const useHandlePlay = () => {
 
             // Try new fire-and-forget API first
             try {
-                console.log('🚀 Attempting new fire-and-forget execution...');
-                console.log('🔍 [DEBUG] Execution params:', {
-                    activeProjectId,
-                    activeVersionId,
-                    nodeId,
-                    stage: 'mock',
-                    subStage
-                });
-
                 const executionResult = await startExecutionApi(
                     activeProjectId,
                     activeVersionId,
@@ -105,24 +96,13 @@ export const useHandlePlay = () => {
                     'mock',
                     subStage
                 );
-
-                console.log('🚀 EXECUTION STARTED (fire-and-forget):', executionResult);
-                console.log('🔍 [DEBUG] Execution result details:', {
-                    run_id: executionResult.run_id,
-                    status: executionResult.status,
-                    fullResult: executionResult
-                });
-                console.log('✅ Real-time updates will come via WebSocket');
                 
                 // Store the run_id to track this specific execution
                 const runId = executionResult.run_id;
-                console.log('🔍 [DEBUG] Processing run_id:', runId);
 
                 if (runId) {
                     // Store run_id in runs store to track the active execution
                     useRunsStore.getState().setActiveRunId(runId);
-                    console.log('🔒 Editor locked for run_id:', runId);
-                    console.log('🔍 [DEBUG] Active run_id set in store:', useRunsStore.getState().activeRunId);
 
                     // Add the new run to the runs store
                     const newRun = {
@@ -133,7 +113,6 @@ export const useHandlePlay = () => {
                         lastEventTime: Date.now()
                     };
                     useRunsStore.getState().addNewRun(newRun);
-                    console.log('🔍 [DEBUG] New run added to store:', newRun);
                 }
                 
                 // Flag that we used fire-and-forget so finally block doesn't clear state

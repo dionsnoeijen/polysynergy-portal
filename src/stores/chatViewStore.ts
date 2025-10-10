@@ -34,9 +34,11 @@ type ChatViewState = {
     messagesBySession: Record<string, ChatViewMessage[]>;
     bubbleMessagesBySession: Record<string, ChatViewMessage[]>;
     activeTeamMembers: Record<string, TeamMember>;
+    isWaitingForResponse: boolean;
 
     setActiveSession: (sessionId: string | null) => void;
     getActiveSessionId: () => string | null;
+    setWaitingForResponse: (waiting: boolean) => void;
 
     appendUser: (sessionId: string, text: string) => void;
     appendAgentChunk: (
@@ -89,9 +91,11 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
     messagesBySession: {},
     bubbleMessagesBySession: {},
     activeTeamMembers: {},
+    isWaitingForResponse: false,
 
     setActiveSession: (sessionId) => set({activeSessionId: sessionId}),
     getActiveSessionId: () => get().activeSessionId,
+    setWaitingForResponse: (waiting) => set({isWaitingForResponse: waiting}),
 
     appendUser: (sessionId, text) =>
         set((s) => {
@@ -102,7 +106,10 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
             if (last && last.sender === "user" && now - last.timestamp <= MERGE_WINDOW_MS) {
                 const merged = [...prev];
                 merged[merged.length - 1] = {...last, text: last.text + text, timestamp: now};
-                return {messagesBySession: {...s.messagesBySession, [sessionId]: merged}};
+                return {
+                    messagesBySession: {...s.messagesBySession, [sessionId]: merged},
+                    isWaitingForResponse: true  // Set waiting state when user sends message
+                };
             }
 
             const next: ChatViewMessage = {
@@ -111,7 +118,10 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 text,
                 timestamp: now,
             };
-            return {messagesBySession: {...s.messagesBySession, [sessionId]: [...prev, next]}};
+            return {
+                messagesBySession: {...s.messagesBySession, [sessionId]: [...prev, next]},
+                isWaitingForResponse: true  // Set waiting state when user sends message
+            };
         }),
 
     appendAgentChunk: (sessionId, nodeId, text, ts, seq, runId, isTeamMember, parentTeamId, memberIndex) =>
@@ -165,7 +175,8 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 
                 return {
                     messagesBySession: {...s.messagesBySession, [sessionId]: merged},
-                    bubbleMessagesBySession: {...s.bubbleMessagesBySession, [sessionId]: bubbleMerged}
+                    bubbleMessagesBySession: {...s.bubbleMessagesBySession, [sessionId]: bubbleMerged},
+                    isWaitingForResponse: false  // Clear waiting state on agent response
                 };
             }
 
@@ -181,10 +192,10 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 parent_team_id: parentTeamId,
                 member_index: memberIndex,
             };
-            
+
             // Also add to bubbles store
             const bubblePrev = s.bubbleMessagesBySession[sessionId] ?? [];
-            
+
             return {
                 messagesBySession: {
                     ...s.messagesBySession,
@@ -194,6 +205,7 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                     ...s.bubbleMessagesBySession,
                     [sessionId]: [...bubblePrev, next],
                 },
+                isWaitingForResponse: false  // Clear waiting state on agent response
             };
         }),
 

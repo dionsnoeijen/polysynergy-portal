@@ -6,11 +6,17 @@ import CompleteAccount from "@/components/auth/complete-account";
 import { fetchClientAccount } from "@/api/clientAccountsApi";
 import useAccountsStore from "@/stores/accountsStore";
 import {LoggedInAccount} from "@/types/types";
+import dynamic from 'next/dynamic';
+
+const WelcomeSplashScreen = dynamic(() => import('@/components/welcome/WelcomeSplashScreen'), {
+    ssr: false,
+});
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
     const auth = useAuth();
     const [isAccountSynced, setIsAccountSynced] = useState<boolean | null>(null);
     const [isAccountActive, setIsAccountActive] = useState<boolean>(false);
+    const [showWelcome, setShowWelcome] = useState<boolean>(false);
     const { setLoggedInAccount } = useAccountsStore();
 
     useEffect(() => {
@@ -23,6 +29,13 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
                         setLoggedInAccount(user);
                         setIsAccountSynced(true); // The account is in the api database
                         setIsAccountActive(true); // The account is already activated
+
+                        // Check if this is the first login
+                        const welcomeKey = `hasSeenWelcome_${auth.user?.profile.sub}`;
+                        const hasSeenWelcome = localStorage.getItem(welcomeKey);
+                        if (!hasSeenWelcome) {
+                            setShowWelcome(true);
+                        }
                     } else {
                         setIsAccountSynced(true); // The account is in the api database
                         setIsAccountActive(false); // The account is not yet activated, so it must be completed
@@ -48,6 +61,12 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     // eslint-disable-next-line
     }, [auth]);
 
+    const handleCloseWelcome = () => {
+        const welcomeKey = `hasSeenWelcome_${auth.user?.profile.sub}`;
+        localStorage.setItem(welcomeKey, 'true');
+        setShowWelcome(false);
+    };
+
     if (auth.isLoading || isAccountSynced === null) {
         return <div className="fixed inset-0 flex items-center justify-center bg-gray-100">Loading...</div>;
     }
@@ -60,5 +79,10 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         return <CompleteAccount isAccountSynced={isAccountSynced} isAccountActive={isAccountActive} />;
     }
 
-    return <>{children}</>;
+    return (
+        <>
+            {showWelcome && <WelcomeSplashScreen onClose={handleCloseWelcome} />}
+            {children}
+        </>
+    );
 }

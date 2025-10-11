@@ -43,8 +43,9 @@ const ImageVariable: React.FC<Props> = (props) => {
                 });
             });
         }
-        
+
         previousShouldShowPreview.current = shouldShowPreview;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [shouldShowPreview, logic.isValidImage(), triggerConnectionUpdate]);
     
     // Separate effect for image data changes to avoid excessive updates
@@ -53,6 +54,7 @@ const ImageVariable: React.FC<Props> = (props) => {
         if (shouldShowPreview && logic.isValidImage()) {
             triggerConnectionUpdate();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [logic.getImageData(), shouldShowPreview, logic.isValidImage(), triggerConnectionUpdate]);
 
     return (

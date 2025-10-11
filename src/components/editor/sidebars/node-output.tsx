@@ -74,7 +74,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     // Fetch runs when version/project changes
     useEffect(() => {
         fetchRuns();
-    }, [activeVersionId, activeProjectId]);
+    }, [activeVersionId, activeProjectId, fetchRuns]);
 
     // Listen for close accordion and reset events from 'c' key
     useEffect(() => {
@@ -142,9 +142,9 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                 }, 500);
             }
         }
-        
+
         previousMockNodesLength.current = mockNodes.length;
-    }, [mockNodes.length, currentRunId, activeRunId]);
+    }, [mockNodes, currentRunId, activeRunId, fetchRuns, isExecuting]);
 
     const sortedNodes = [...mockNodes]
         .sort((a, b) => a.order - b.order)

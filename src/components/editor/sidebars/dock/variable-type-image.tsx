@@ -107,7 +107,7 @@ const VariableTypeImage: React.FC<VariableTypeProps> = ({
             }
         };
         reader.readAsDataURL(file);
-    }, [variable, onChange]);
+    }, [variable, onChange, nodeId]);
 
     const clearImage = useCallback(() => {
         setPreviewUrl(null);
@@ -117,7 +117,7 @@ const VariableTypeImage: React.FC<VariableTypeProps> = ({
             // Use history-enabled variable update
             nodeHistoryActions.updateNodeVariableWithHistory(nodeId, variable.handle, '');
         }
-    }, [variable, onChange]);
+    }, [variable, onChange, nodeId]);
 
     return (
         <div className={`rounded p-6 relative ${categoryBorder} bg-white dark:bg-zinc-800`}>

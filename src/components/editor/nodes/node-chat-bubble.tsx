@@ -48,7 +48,7 @@ const NodeChatBubble: React.FC<Props> = ({nodeId}) => {
         if (!latestForNode) return;
         const el = scrollContainerRef.current;
         if (el) el.scrollTop = el.scrollHeight;
-    }, [aggregateText.length]); // <- lengte i.p.v. alleen id/text van het laatste item
+    }, [aggregateText.length, latestForNode]); // <- lengte i.p.v. alleen id/text van het laatste item
 
     if (!activeSessionId || !latestForNode || !aggregateText) return null;
 

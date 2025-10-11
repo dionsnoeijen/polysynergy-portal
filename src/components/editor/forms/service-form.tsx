@@ -117,6 +117,7 @@ const ServiceForm: React.FC = () => {
                 category: "",
             });
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formType, node?.id]); // Only depend on formType and node id, not the entire node object
 
     // Separate effect for published variables that need to update when nodes change

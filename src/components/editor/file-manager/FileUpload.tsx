@@ -27,7 +27,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
     // Removed unused formatFileSize function
 
-    const validateFile = (file: File): string | null => {
+    const validateFile = useCallback((file: File): string | null => {
         // Check file size
         const maxBytes = maxFileSize * 1024 * 1024;
         if (file.size > maxBytes) {
@@ -38,7 +38,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         if (acceptedTypes && acceptedTypes.length > 0) {
             const fileType = file.type;
             const fileExt = file.name.split('.').pop()?.toLowerCase();
-            
+
             const isValidType = acceptedTypes.some(type => {
                 if (type.includes('/')) {
                     // MIME type check
@@ -48,14 +48,14 @@ const FileUpload: React.FC<FileUploadProps> = ({
                     return fileExt === type.toLowerCase();
                 }
             });
-            
+
             if (!isValidType) {
                 return `File type not allowed. Accepted types: ${acceptedTypes.join(', ')}`;
             }
         }
 
         return null;
-    };
+    }, [maxFileSize, acceptedTypes]);
 
     const handleFiles = useCallback((files: FileList | null) => {
         if (!files || files.length === 0) return;
@@ -80,7 +80,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         if (validFiles.length > 0) {
             onUpload(validFiles);
         }
-    }, [onUpload, maxFileSize, acceptedTypes]);
+    }, [onUpload, validateFile]);
 
     const handleDragEnter = useCallback((e: React.DragEvent) => {
         e.preventDefault();

@@ -23,30 +23,28 @@ const FileAssignmentPanel: React.FC<FileAssignmentPanelProps> = ({
     const selectedNodes = useEditorStore(state => state.selectedNodes);
     const getNode = useNodesStore(state => state.getNode);
     const updateNodeVariable = useNodesStore(state => state.updateNodeVariable);
-    // Get the nodes array to detect any changes
-    const nodes = useNodesStore(state => state.nodes);
-    
+
     const [isDragOver, setIsDragOver] = useState(false);
     
     // Get the first selected file_selection node
     const fileSelectionNode = React.useMemo(() => {
         const selectedNode = selectedNodes.length === 1 ? getNode(selectedNodes[0]) : null;
         return selectedNode?.path === 'polysynergy_nodes.file.file_selection.FileSelection' ? selectedNode : null;
-    }, [selectedNodes, getNode, nodes]);
+    }, [selectedNodes, getNode]);
 
     // Get assigned files - will update when nodes array changes
     const assignedFiles = React.useMemo(() => {
         if (!fileSelectionNode) return [];
         const selectedFilesVar = fileSelectionNode.variables.find(v => v.handle === 'selected_files');
         return Array.isArray(selectedFilesVar?.value) ? selectedFilesVar.value as string[] : [];
-    }, [fileSelectionNode, nodes]);
+    }, [fileSelectionNode]);
 
     const handleRemoveFile = useCallback((filePath: string) => {
         if (!fileSelectionNode) return;
-        
+
         const newFiles = assignedFiles.filter(path => path !== filePath);
         updateNodeVariable(fileSelectionNode.id, 'selected_files', newFiles);
-    }, [fileSelectionNode?.id, assignedFiles, updateNodeVariable]);
+    }, [fileSelectionNode, assignedFiles, updateNodeVariable]);
 
     // This function is handled by the parent FileManager component
 
@@ -66,14 +64,14 @@ const FileAssignmentPanel: React.FC<FileAssignmentPanelProps> = ({
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         setIsDragOver(false);
-        
+
         // Extract file paths from drag data - use paths (S3 keys) not URLs
         try {
             const dragData = e.dataTransfer.getData('application/json');
             const { filePaths } = JSON.parse(dragData);
             if (Array.isArray(filePaths) && filePaths.length > 0) {
                 onDrop?.(filePaths);
-                
+
                 // Assign file paths (S3 keys) to the node, not URLs
                 if (fileSelectionNode) {
                     const uniqueFiles = [...new Set([...assignedFiles, ...filePaths])];
@@ -83,7 +81,7 @@ const FileAssignmentPanel: React.FC<FileAssignmentPanelProps> = ({
         } catch (error) {
             console.warn('Failed to parse drop data:', error);
         }
-    }, [onDrop, fileSelectionNode?.id, assignedFiles, updateNodeVariable]);
+    }, [onDrop, fileSelectionNode, assignedFiles, updateNodeVariable]);
 
     // Don't render if no file_selection node is selected
     if (!fileSelectionNode) {

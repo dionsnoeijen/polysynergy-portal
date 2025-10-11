@@ -484,6 +484,7 @@ const AddPropertyButton: React.FC<{
         if (isActive && !isAdding) {
             setIsAdding(true);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive]); // Remove isAdding dependency to prevent loops
 
     const handleAdd = () => {

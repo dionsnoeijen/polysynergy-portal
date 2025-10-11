@@ -93,9 +93,12 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
                                 onChange={(e) => setAccountType(e.target.value)}
                                 aria-label="Account Type"
                             >
-                                <option value="single_user">Single User</option>
-                                <option value="tenant">Organization</option>
+                                <option value="single_user">Personal Account (no organization)</option>
+                                <option value="tenant">Organization / Team Account</option>
                             </Select>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                Choose "Personal" if you're working solo. You can always add team members later.
+                            </p>
                         </div>
 
                         {accountType === 'tenant' && (

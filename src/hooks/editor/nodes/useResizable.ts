@@ -69,7 +69,7 @@ const useResizable = (node: Node) => {
 
         window.addEventListener("mousemove", handleMouseMove);
         window.addEventListener("mouseup", handleMouseUp);
-    }, [zoomFactor, node.id, updateNodeWidth]);
+    }, [zoomFactor, node.id, updateNodeWidth, connections]);
 
     return {
         size,

@@ -57,16 +57,14 @@ export const useNodeCommonLogic = (node: Node, preview: boolean = false) => {
         isNodeInService,
         preview
     }), [
-        node.service?.id, 
-        node.category, 
-        isNodeInService, 
+        node.service?.id,
+        node.category,
+        isNodeInService,
         isPanning,
         isZooming,
-        visibleNodeCount, 
-        mockNode, 
-        hasMockData, 
-        backgroundedRunIds,
-        activeRunId,
+        visibleNodeCount,
+        mockNode,
+        hasMockData,
         preview
     ]);
 };

@@ -7,7 +7,8 @@ export const useGroupExecutionOrders = (groupNodeId: string) => {
     const getNodesInGroup = useNodesStore(s => s.getNodesInGroup);
     const getNode = useNodesStore(s => s.getNode);
     const getMockNode = useMockStore(s => s.getMockNode);
-    const mockNodes = useMockStore(s => s.mockNodes);
+    // Subscribe to mockNodes length to trigger re-render when mock data changes
+    const mockNodesLength = useMockStore(s => s.mockNodes.length);
 
     const orders = useMemo(() => {
         const collectOrders = (nodeIds: string[]): number[] => {
@@ -38,7 +39,7 @@ export const useGroupExecutionOrders = (groupNodeId: string) => {
 
         // Sort and return unique orders
         return [...new Set(allOrders)].sort((a, b) => a - b);
-    }, [groupNodeId, getNodesInGroup, getNode, getMockNode, mockNodes]);
+    }, [groupNodeId, getNodesInGroup, getNode, getMockNode, mockNodesLength]);
 
     return orders;
 };

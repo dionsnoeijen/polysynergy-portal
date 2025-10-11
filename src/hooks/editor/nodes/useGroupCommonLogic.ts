@@ -81,8 +81,6 @@ export const useGroupCommonLogic = (node: Node, isMirror: boolean = false, previ
         isMirror,
         preview,
         isDissolveDialogOpen,
-        isZooming,
-        activeRunId,
-        backgroundedRunIds
+        isZooming
     ]);
 };

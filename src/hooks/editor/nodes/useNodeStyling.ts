@@ -67,12 +67,13 @@ export const useNodeStyling = (node: Node, options: NodeStylingOptions) => {
             subText: getCategoryTextColor('sub', node.category, subType)
         };
     }, [
+        node.id,
         node.view.disabled,
         node.view.adding,
         node.category,
         options.preview,
         options.isService,
         nodeColor,
-        selectedNodes // Added missing dependency for selection changes
+        selectedNodes
     ]);
 };

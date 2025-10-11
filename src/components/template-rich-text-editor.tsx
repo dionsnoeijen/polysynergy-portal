@@ -281,7 +281,7 @@ const TemplateRichTextEditor: React.FC<TemplateRichTextEditorProps> = ({
                 {parts}
             </span>
         );
-    }, [value, parsedVariables]);
+    }, [value, parsedVariables, removeVariable]);
 
     const currentInlineStyle = editorState.getCurrentInlineStyle();
     const currentBlockType = RichUtils.getCurrentBlockType(editorState);

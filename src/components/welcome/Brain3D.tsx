@@ -1,10 +1,11 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState } from "react";
+import type Scene from "./Scene";
 
 export default function Brain3D() {
     const mountRef = useRef<HTMLDivElement>(null);
-    const sceneRef = useRef<any>(null);
+    const sceneRef = useRef<Scene | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
     useLayoutEffect(() => {
@@ -17,7 +18,7 @@ export default function Brain3D() {
         }
 
         let initialized = false;
-        let timeoutId: any = null;
+        let timeoutId: NodeJS.Timeout | null = null;
 
         // Use requestIdleCallback or setTimeout to defer initialization
         const initScene = async () => {
@@ -61,7 +62,7 @@ export default function Brain3D() {
         if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
             requestIdleCallback(initScene);
         } else {
-            timeoutId = setTimeout(initScene, 100) as any;
+            timeoutId = setTimeout(initScene, 100);
         }
 
         return () => {

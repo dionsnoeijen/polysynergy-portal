@@ -132,7 +132,7 @@ export default function WelcomeSplashScreen({ onClose }: WelcomeSplashScreenProp
 
               {/* GitHub Issues */}
               <a
-                href="https://github.com/polysynergy/polysynergy/issues"
+                href="https://github.com/dionsnoeijen/polysynergy/issues"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors group md:col-span-2"

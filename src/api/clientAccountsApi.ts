@@ -34,7 +34,7 @@ export const createClientAccount = async (
         first_name: string,
         last_name: string,
         email: string,
-        role: string,
+        role?: string,
     }
 ): Promise<Response> => {
     const idToken = getIdToken();

@@ -51,8 +51,7 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
                     tenant_name: accountType === 'tenant' ? tenantName : auth.user?.profile.email,
                     first_name: firstName,
                     last_name: lastName,
-                    email: auth.user?.profile.email,
-                    role: 'Admin'
+                    email: auth.user?.profile.email
                 });
             } else {
                 response = await activateClientAccount(

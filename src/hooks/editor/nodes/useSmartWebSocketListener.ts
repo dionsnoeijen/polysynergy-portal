@@ -15,7 +15,7 @@ import useInteractionStore, { InteractionEvent } from '@/stores/interactionStore
 
 type ExecutionMessage = {
     node_id?: string;
-    event: 'run_start' | 'start_node' | 'end_node' | 'run_end' | "start_tool" | "end_tool" | "RunContent" | "TeamRunContent" | "TeamToolCallCompleted";
+    event: 'run_start' | 'start_node' | 'end_node' | 'run_end' | "start_tool" | "end_tool" | "RunContent" | "TeamRunContent" | "TeamToolCallCompleted" | "resume_start" | "resume_end";
     status?: 'success' | 'killed' | 'error';
     order?: number;
     run_id?: string;
@@ -466,6 +466,84 @@ function getOrCreateMessageHandler() {
                 } else {
                     console.warn('⚠️ END_TOOL received without corresponding START_TOOL visualization');
                 }
+                return;
+            }
+
+            // ---- RESUME START ----
+            if (eventType === 'resume_start') {
+                console.log('⏸️ [WebSocket] Received resume_start event for run_id:', message.run_id);
+                console.log('⏸️ [WebSocket] Flow paused - waiting for human input');
+                // TODO: Add visual feedback for paused state if needed
+                return;
+            }
+
+            // ---- RESUME END ----
+            if (eventType === 'resume_end') {
+                console.log('▶️ [WebSocket] Received resume_end event for run_id:', message.run_id);
+                console.log('▶️ [WebSocket] Flow resumed - refreshing connections and nodes state');
+
+                // Refresh connections and node state after resume (similar to run_end but without cleanup)
+                setTimeout(async () => {
+                    const activeVersionId = editorStore.activeVersionId as string;
+
+                    try {
+                        // Refresh connection execution details
+                        const data = await getConnectionExecutionDetails(activeVersionId, message.run_id as string);
+                        mockStore.setMockConnections(data);
+                        mockStore.setHasMockData(true);
+                        console.log('✅ [WebSocket] Connections refreshed after resume');
+
+                        // Refresh node execution details for currently executing nodes
+                        const mockNodes = mockStore.getMockNodesForRun(message.run_id!);
+                        if (mockNodes.length > 0) {
+                            // Find the node with highest order (last executed before resume)
+                            const lastNode = mockNodes.reduce((prev, curr) =>
+                                curr.order > prev.order ? curr : prev
+                            );
+
+                            // Import getNodeExecutionDetails dynamically
+                            const { getNodeExecutionDetails } = await import('@/api/executionApi');
+
+                            // Get the original node ID (without order suffix)
+                            const originalNodeId = lastNode.id.replace(/-\d+$/, '');
+
+                            try {
+                                const executeResult = await getNodeExecutionDetails(
+                                    activeVersionId,
+                                    message.run_id!,
+                                    originalNodeId,
+                                    lastNode.order,
+                                    'mock',
+                                    'mock'
+                                );
+
+                                // Update mock result for the node
+                                mockStore.setMockResultForNode(originalNodeId, executeResult);
+                                console.log('✅ [WebSocket] Node execution details refreshed after resume:', originalNodeId);
+
+                                // Update real node variables with execution results (for image nodes)
+                                if (executeResult && executeResult.variables) {
+                                    const node = nodesStore.nodes.find(n => n.id === originalNodeId);
+                                    if (node) {
+                                        const { getUpdatableVariableHandles } = await import('@/utils/imageNodeUtils');
+                                        const updatableHandles = getUpdatableVariableHandles(node, executeResult.variables);
+
+                                        for (const variableHandle of updatableHandles) {
+                                            const variableValue = executeResult.variables[variableHandle];
+                                            nodesStore.updateNodeVariable(originalNodeId, variableHandle, variableValue);
+                                            console.log('🖼️ [WebSocket] Updated variable after resume:', originalNodeId, variableHandle);
+                                        }
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('[WebSocket] Failed to refresh node execution details after resume:', error);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('[WebSocket] Failed to refresh connections after resume:', error);
+                    }
+                }, 100);
+
                 return;
             }
 

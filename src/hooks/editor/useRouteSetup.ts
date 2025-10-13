@@ -141,10 +141,6 @@ export const useRouteSetup = ({
             if (currentState.activeBlueprintId !== '') {
                 setActiveBlueprintId('');
             }
-
-            // Automatically open chat panel for chat windows
-            useEditorStore.getState().setChatPanelOpen(true);
-
             fetchAndApplyNodeSetup({ chatWindowId: chatWindowUuid });
             addChatWindowNodesIfNeeded(chatWindowUuid);
             setIsExecuting(null);

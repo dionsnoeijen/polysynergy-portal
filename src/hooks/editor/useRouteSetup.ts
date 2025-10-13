@@ -81,6 +81,9 @@ export const useRouteSetup = ({
             if (currentState.activeScheduleId !== '') {
                 setActiveScheduleId('');
             }
+            if (currentState.activeChatWindowId !== '') {
+                setActiveChatWindowId('');
+            }
             if (currentState.activeBlueprintId !== '') {
                 setActiveBlueprintId('');
             }
@@ -108,6 +111,9 @@ export const useRouteSetup = ({
                 setActiveRouteId('');
             }
             setActiveScheduleId(scheduleUuid);
+            if (currentState.activeChatWindowId !== '') {
+                setActiveChatWindowId('');
+            }
             if (currentState.activeBlueprintId !== '') {
                 setActiveBlueprintId('');
             }

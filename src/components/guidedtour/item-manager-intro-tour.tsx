@@ -7,7 +7,7 @@ import CustomPopoverItemManager from "@/components/guidedtour/custom-popover-ite
 const steps = [
     {
         selector: '[data-tour-id="add-route-button"]',
-        content: 'Add a new route to your oroject, available through an endpoint.',
+        content: 'Add a new route to your project, available through an endpoint.',
     },
     {
         selector: '[data-tour-id="add-schedule-button"]',

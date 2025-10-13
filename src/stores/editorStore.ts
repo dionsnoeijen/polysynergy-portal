@@ -190,6 +190,9 @@ export type EditorState = {
     chatMode: boolean;
     setChatMode: (chatMode: boolean) => void;
 
+    chatPanelOpen: boolean;
+    setChatPanelOpen: (open: boolean) => void;
+
     isLoadingFlow: boolean;
     setIsLoadingFlow: (isLoading: boolean) => void;
 
@@ -210,7 +213,10 @@ const useEditorStore = create<EditorState>((set, get) => ({
     
     chatMode: false,
     setChatMode: (chatMode) => set({chatMode: chatMode}),
-    
+
+    chatPanelOpen: false,
+    setChatPanelOpen: (open) => set({chatPanelOpen: open}),
+
     isLoadingFlow: false,
     setIsLoadingFlow: (isLoading) => set({isLoadingFlow: isLoading}),
 

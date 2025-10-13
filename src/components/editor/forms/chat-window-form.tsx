@@ -7,7 +7,7 @@ import {Text} from "@/components/text";
 import useEditorStore from "@/stores/editorStore";
 import useChatWindowsStore from "@/stores/chatWindowsStore";
 import useAccountsStore from "@/stores/accountsStore";
-import {XMarkIcon, TrashIcon} from "@heroicons/react/24/outline";
+import {XMarkIcon, TrashIcon, ExclamationTriangleIcon} from "@heroicons/react/24/outline";
 import {Input} from "@/components/input";
 import {Textarea} from "@/components/textarea";
 import {Select} from "@/components/select";
@@ -250,6 +250,22 @@ const ChatWindowForm: React.FC = () => {
                 </Button>
             </div>
             <Divider className="my-4" soft bleed/>
+
+            {/* Under Construction Warning */}
+            <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                    <ExclamationTriangleIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                        <p className="font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
+                            Under Active Development
+                        </p>
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                            Chat Windows are currently in active development. Some features may be incomplete or subject to change.
+                            Please use with caution and report any issues you encounter.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             {errors.length > 0 && (
                 <div className="text-red-500 mb-4">

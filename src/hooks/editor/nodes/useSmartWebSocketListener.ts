@@ -231,6 +231,16 @@ function getOrCreateMessageHandler() {
             } catch {
                 return;
             }
+
+            // DEBUG: Log all event types to see what's coming in
+            if (message.event && !['RunContent', 'TeamRunContent'].includes(message.event)) {
+                console.log('📨 [WebSocket] Event type:', message.event, 'run_id:', message.run_id);
+            }
+
+            // DEBUG: Log all incoming WebSocket messages to see if resume events arrive
+            if (message.event === 'resume_start' || message.event === 'resume_end') {
+                console.log('🐛 [DEBUG] Resume event received:', message);
+            }
             const editorStore = useEditorStore.getState();
             const nodesStore = useNodesStore.getState();
             const mockStore = useMockStore.getState();
@@ -481,6 +491,12 @@ function getOrCreateMessageHandler() {
             if (eventType === 'resume_end') {
                 console.log('▶️ [WebSocket] Received resume_end event for run_id:', message.run_id);
                 console.log('▶️ [WebSocket] Flow resumed - refreshing connections and nodes state');
+
+                // Remove run from completedRunIds so new nodes can get execution classes
+                if (message.run_id) {
+                    completedRunIds.delete(message.run_id);
+                    console.log('🔓 [WebSocket] Removed run from completedRunIds - execution can continue');
+                }
 
                 // Refresh connections and node state after resume (similar to run_end but without cleanup)
                 setTimeout(async () => {

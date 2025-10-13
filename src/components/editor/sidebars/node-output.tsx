@@ -512,7 +512,7 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="text-xs text-sky-500 dark:text-zinc-500 font-mono">
+                                    <div className="text-xs text-sky-500 dark:text-zinc-500 font-mono" title={run.run_id}>
                                         {run.run_id.substring(0, 8)}...
                                     </div>
                                 </button>

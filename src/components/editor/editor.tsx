@@ -21,6 +21,7 @@ import { useEditorKeyBindings } from "@/hooks/editor/useEditorKeyBindings";
 import { useEditorState } from "@/hooks/editor/useEditorState";
 import { useAutoUpdateScheduleNodes } from "@/hooks/editor/useAutoUpdateScheduleNodes";
 import { useAutoUpdateRouteNodes } from "@/hooks/editor/useAutoUpdateRouteNodes";
+import { useAutoUpdateChatWindowNodes } from "@/hooks/editor/useAutoUpdateChatWindowNodes";
 import { useAutoFitNodes } from "@/hooks/editor/nodes/useAutoFitNodes";
 import { useExecutionTabSwitcher } from "@/hooks/editor/useExecutionTabSwitcher";
 import { EditorMode } from "@/types/types";
@@ -234,6 +235,7 @@ export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
     // Note: useGlobalStoreListenersWithImmediateSave() moved to EditorLayout to ensure forceSave always available
     useAutoUpdateRouteNodes();
     useAutoUpdateScheduleNodes();
+    useAutoUpdateChatWindowNodes();
     useAutoFitNodes(contentRef, nodesToRender, 40, activeVersionId);
     useExecutionTabSwitcher();
     

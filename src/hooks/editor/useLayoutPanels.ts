@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react';
+import useEditorStore from '@/stores/editorStore';
 
 export const useLayoutPanels = () => {
-    const [width, setWidth] = useState({ 
-        itemManager: 256, 
-        dock: 512, 
-        chatPanel: typeof window !== 'undefined' ? Math.floor(window.innerWidth * 0.5) : 600 
+    const [width, setWidth] = useState({
+        itemManager: 256,
+        dock: 512,
+        chatPanel: typeof window !== 'undefined' ? Math.floor(window.innerWidth * 0.5) : 600
     });
     const [height, setHeight] = useState({ horizontalEditorLayout: 0 });
     const [windowHeight, setWindowHeight] = useState(0);
@@ -13,7 +14,10 @@ export const useLayoutPanels = () => {
     const [itemManagerClosed, setItemManagerClosed] = useState(false);
     const [dockClosed, setDockClosed] = useState(false);
     const [outputClosed, setOutputClosed] = useState(false);
-    const [chatPanelOpen, setChatPanelOpen] = useState(false);
+
+    // Chat panel state now managed by editorStore for persistence
+    const chatPanelOpen = useEditorStore((state) => state.chatPanelOpen);
+    const setChatPanelOpen = useEditorStore((state) => state.setChatPanelOpen);
 
     const toggleCloseItemManager = useCallback(() => {
         setItemManagerClosed(prev => !prev);
@@ -28,8 +32,8 @@ export const useLayoutPanels = () => {
     }, []);
 
     const toggleChatPanel = useCallback(() => {
-        setChatPanelOpen(prev => !prev);
-    }, []);
+        setChatPanelOpen(!chatPanelOpen);
+    }, [chatPanelOpen, setChatPanelOpen]);
 
     const toggleFullscreen = useCallback(() => {
         // If any panel is open, close all

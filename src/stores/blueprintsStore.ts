@@ -15,7 +15,7 @@ type BlueprintsStore = {
     blueprints: Blueprint[];
     getBlueprint: (blueprintId: string) => Blueprint | undefined;
     fetchBlueprints: () => Promise<void>;
-    storeBlueprint: (blueprint: Blueprint) => Promise<void>;
+    storeBlueprint: (blueprint: Blueprint) => Promise<Blueprint | undefined>;
     updateBlueprint: (blueprint: Blueprint) => Promise<Blueprint | undefined>;
     deleteBlueprint: (blueprintId: string) => Promise<void>;
 }
@@ -40,14 +40,16 @@ const useBlueprintsStore = create<BlueprintsStore>((
         return get().blueprints.find((blueprint: Blueprint) => blueprint.id === blueprintId);
     },
 
-    storeBlueprint: async (blueprint: Blueprint) => {
+    storeBlueprint: async (blueprint: Blueprint): Promise<Blueprint | undefined> => {
         const { activeProjectId } = useEditorStore.getState();
         try {
             const response = await storeBlueprintAPI(activeProjectId, blueprint);
             blueprint.id = response.id;
             set((state) => ({blueprints: [...state.blueprints, blueprint]}));
+            return blueprint;
         } catch (error) {
             console.error('Failed to store blueprint:', error);
+            return undefined;
         }
     },
 

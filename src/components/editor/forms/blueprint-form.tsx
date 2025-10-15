@@ -11,6 +11,7 @@ import SvgSelector from "@/components/editor/forms/service/svg-selector";
 import RichTextEditor from "@/components/rich-text-editor";
 import {Alert, AlertActions, AlertDescription, AlertTitle} from "@/components/alert";
 import {XMarkIcon} from "@heroicons/react/24/outline";
+import {useParams, useRouter} from 'next/navigation';
 
 const BlueprintForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -21,6 +22,9 @@ const BlueprintForm: React.FC = () => {
     const storeBlueprint = useBlueprintsStore((state) => state.storeBlueprint);
     const updateBlueprint = useBlueprintsStore((state) => state.updateBlueprint);
     const deleteBlueprint = useBlueprintsStore((state) => state.deleteBlueprint);
+
+    const params = useParams();
+    const router = useRouter();
 
     const [name, setName] = useState("");
     const [category, setCategory] = useState("");
@@ -42,10 +46,13 @@ const BlueprintForm: React.FC = () => {
         }
     }, [formEditRecordId, formType, getBlueprint]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (formType === FormType.AddBlueprint) {
+            // Set loading state before creation
+            useEditorStore.getState().setIsLoadingFlow(true);
+
             const newBlueprint: Blueprint = {
                 name: name,
                 meta: {
@@ -54,8 +61,12 @@ const BlueprintForm: React.FC = () => {
                     icon: icon,
                 },
             }
-            storeBlueprint(newBlueprint);
-            closeForm("Blueprint created successfully");
+            const createdBlueprint = await storeBlueprint(newBlueprint);
+
+            if (createdBlueprint && createdBlueprint.id) {
+                closeForm("Blueprint created successfully");
+                router.push(`/project/${params.projectUuid}/blueprint/${createdBlueprint.id}`);
+            }
         } else {
             const updatedBlueprint: Blueprint = {
                 id: formEditRecordId as string,
@@ -66,17 +77,17 @@ const BlueprintForm: React.FC = () => {
                     icon: icon,
                 },
             };
-            updateBlueprint(updatedBlueprint)
+            await updateBlueprint(updatedBlueprint);
             closeForm("Blueprint updated successfully");
         }
     };
 
-    const handleDelete = useCallback(() => {
-        deleteBlueprint(formEditRecordId as string);
+    const handleDelete = useCallback(async () => {
+        await deleteBlueprint(formEditRecordId as string);
         closeForm('Blueprint deleted successfully');
-
         setShowDeleteAlert(false);
-    }, [closeForm, deleteBlueprint, formEditRecordId]);
+        router.push(`/project/${params.projectUuid}`);
+    }, [closeForm, deleteBlueprint, formEditRecordId, router, params.projectUuid]);
 
     useEffect(() => {
         if (!showDeleteAlert) return;

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle } from "@/components/dialog";
 import { Button } from "@/components/button";
 import { connectionHistoryActions } from "@/stores/history";
+import useConnectionsStore from "@/stores/connectionsStore";
 
 type DeleteConnectionDialogProps = {
     isOpen: boolean;
@@ -10,12 +11,15 @@ type DeleteConnectionDialogProps = {
     connectionId: string | null;
 };
 
-const DeleteConnectionDialog: React.FC<DeleteConnectionDialogProps> = ({ 
-    isOpen, 
-    onConfirm, 
-    onCancel, 
-    connectionId 
+const DeleteConnectionDialog: React.FC<DeleteConnectionDialogProps> = ({
+    isOpen,
+    onConfirm,
+    onCancel,
+    connectionId
 }) => {
+    const isConnectionDeletable = useConnectionsStore((state) =>
+        state.isConnectionDeletable(connectionId ? [connectionId] : [])
+    );
 
     useEffect(() => {
         if (!isOpen) return;
@@ -39,6 +43,19 @@ const DeleteConnectionDialog: React.FC<DeleteConnectionDialogProps> = ({
         }
         onConfirm();
     };
+
+    if (!isConnectionDeletable) {
+        return (
+            <Dialog size="md" className="rounded-sm" open={isOpen} onClose={onCancel}>
+                <DialogTitle>Connection Cannot Be Deleted</DialogTitle>
+                <DialogDescription>This connection is a default connection and cannot be deleted.</DialogDescription>
+                <DialogBody></DialogBody>
+                <DialogActions>
+                    <Button outline onClick={onCancel}>Close</Button>
+                </DialogActions>
+            </Dialog>
+        );
+    }
 
     return (
         <Dialog size="md" className="rounded-sm" open={isOpen} onClose={onCancel}>

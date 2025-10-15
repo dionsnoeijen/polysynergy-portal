@@ -135,27 +135,35 @@ const ProjectSecretsForm: React.FC = () => {
             {success && <p className="text-green-500 mb-4">{success}</p>}
 
             <div className="mb-6">
-                <label className="block mb-1 font-medium">Key</label>
+                <label className="block mb-1 font-medium">Secret Key</label>
+                <Text className="text-xs text-zinc-600 dark:text-zinc-400 mb-2">
+                    The name of the secret (e.g., AWS_SECRET_KEY, STRIPE_API_KEY)
+                </Text>
                 <Input
                     value={key}
                     onChange={(e) => setKey(e.target.value)}
-                    placeholder="Enter secret key"
+                    placeholder="e.g., AWS_SECRET_KEY or STRIPE_API_KEY"
                     disabled={formType === FormType.EditProjectSecret}
                 />
             </div>
 
             <Divider className="my-6" soft bleed/>
 
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>Key:</strong> The name is shared across all stages<br/>
+                    <strong>Value:</strong> Each stage can have its own secret value (never shown after saving)
+                </p>
+            </div>
+
             {stages.map((stage) => (
                 <div key={stage.name} className="mb-4">
                     <label className="block font-medium mb-1">
-                        <span className="text-xs text-zinc-500 dark:text-white/50">
-                        {stage.name === 'mock' ? `default:` : `custom:`}
-                        </span>{" "}
-                        {stage.name}{" "}
+                        Value for <span className="text-sky-600 dark:text-sky-400">{stage.name}</span> stage
+                        {" "}
                         {stagesWithValue.includes(stage.name) && (
                             <span className="text-xs text-zinc-500 dark:text-white/50">
-                                (has value, can be overridden, not shown)
+                                (currently set, hidden, can be overridden)
                             </span>
                         )}
                     </label>
@@ -166,10 +174,10 @@ const ProjectSecretsForm: React.FC = () => {
                             onChange={(e) =>
                                 setValues((prev) => ({...prev, [stage.name]: e.target.value}))
                             }
-                            placeholder={stagesWithValue.includes(stage.name) ? "********" : "Enter secret value"}
+                            placeholder={stagesWithValue.includes(stage.name) ? "Enter new value to override (hidden)" : `Enter the secret value for ${key || 'this key'} in ${stage.name}`}
                         />
-                        <Button 
-                            color={"sky"} 
+                        <Button
+                            color={"sky"}
                             onClick={() => handleSave(stage.name)}
                             disabled={savingStages[stage.name] || !key.trim()}
                         >

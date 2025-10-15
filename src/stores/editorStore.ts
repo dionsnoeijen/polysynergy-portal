@@ -137,11 +137,6 @@ export type EditorState = {
     activeProjectVariableId?: string;
     setActiveProjectVariableId: (projectVariableId: string) => void;
 
-    treeOpen: Fundamental[];
-    openTree: (tree: Fundamental) => void;
-    closeTree: (tree: Fundamental) => void;
-    isTreeOpen: (tree: Fundamental) => boolean;
-
     isSaving: boolean;
     setIsSaving: (isSaving: boolean) => void;
     forceSave: (() => Promise<void>) | null;
@@ -365,21 +360,6 @@ const useEditorStore = create<EditorState>((set, get) => ({
     
     activeProjectVariableId: '',
     setActiveProjectVariableId: (projectVariableId: string) => set({activeProjectVariableId: projectVariableId}),
-
-    treeOpen: [Fundamental.Route, Fundamental.Schedule, Fundamental.Blueprint],
-    openTree: (tree) => set((state) => {
-        if (state.treeOpen.includes(tree)) {
-            return state;
-        }
-        return {treeOpen: [...state.treeOpen, tree]};
-    }),
-    closeTree: (tree) => set((state) => {
-        if (!state.treeOpen.includes(tree)) {
-            return state;
-        }
-        return {treeOpen: state.treeOpen.filter((t) => t !== tree)};
-    }),
-    isTreeOpen: (tree) => get().treeOpen.includes(tree),
 
     isSaving: false,
     setIsSaving: (isSaving) => set({isSaving: isSaving}),

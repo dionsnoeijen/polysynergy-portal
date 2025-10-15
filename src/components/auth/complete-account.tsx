@@ -86,7 +86,10 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
                 {!isAccountSynced && (
                     <>
                         <div className="mb-4">
-                            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">Account Type</label>
+                            <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Account Type</label>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                Choose &quot;Personal&quot; if you&apos;re working solo. You can always add team members later.
+                            </p>
                             <Select
                                 value={accountType}
                                 onChange={(e) => setAccountType(e.target.value)}
@@ -95,9 +98,6 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
                                 <option value="single_user">Personal Account (no organization)</option>
                                 <option value="tenant">Organization / Team Account</option>
                             </Select>
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                Choose &quot;Personal&quot; if you&apos;re working solo. You can always add team members later.
-                            </p>
                         </div>
 
                         {accountType === 'tenant' && (
@@ -145,16 +145,22 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
                             checked={termsAccepted}
                             onChange={() => setTermsAccepted(!termsAccepted)}
                         />
-                        <span className="ml-2 text-gray-900 dark:text-white">
+                        <label
+                            className="ml-2 text-gray-900 dark:text-white cursor-pointer"
+                            onClick={() => setTermsAccepted(!termsAccepted)}
+                        >
                             I accept the{" "}
                             <button
                                 type="button"
-                                onClick={() => setIsTermsModalOpen(true)}
-                                className="text-blue-600 dark:text-blue-400 underline"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsTermsModalOpen(true);
+                                }}
+                                className="text-blue-600 dark:text-blue-400 underline hover:text-blue-700 dark:hover:text-blue-300"
                             >
                                 Terms & Conditions
                             </button>.
-                        </span>
+                        </label>
                     </CheckboxField>
                 </div>
 

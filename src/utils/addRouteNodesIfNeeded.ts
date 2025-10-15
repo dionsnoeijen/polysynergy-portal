@@ -27,8 +27,8 @@ const addRouteNodes = (route: Route) => {
         driven: true,
         flowState: FlowState.FlowIn,
         view: {
-            x: 400,
-            y: 100,
+            x: 300,
+            y: 0,
             width: 200,
             height: 200,
             adding: false,
@@ -41,8 +41,8 @@ const addRouteNodes = (route: Route) => {
         ...mockTemplate,
         id: uuidv4(),
         view: {
-            x: 100,
-            y: 100,
+            x: 0,
+            y: 0,
             width: 200,
             height: 200,
             adding: false,
@@ -59,6 +59,7 @@ const addRouteNodes = (route: Route) => {
         targetHandle: "node",
         targetNodeId: routeNode.id,
         isInGroup: undefined,
+        isDeletable: false,
     };
 
     const { addNode, updateNodeVariable } = useNodesStore.getState();

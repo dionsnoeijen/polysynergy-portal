@@ -2,18 +2,16 @@
 
 import React from 'react';
 import useEditorStore from '@/stores/editorStore';
-import useDocumentationStore from '@/stores/documentationStore';
 import useMockStore from '@/stores/mockStore';
 
 import {FormType} from '@/types/types';
 
 import {
-    // Bars3Icon, 
+    // Bars3Icon,
     ArrowDownTrayIcon,
-    PlayIcon,
+    Squares2X2Icon,
     ArrowUturnUpIcon,
     AdjustmentsHorizontalIcon,
-    BookOpenIcon,
     RocketLaunchIcon
 } from '@heroicons/react/24/outline';
 
@@ -21,23 +19,9 @@ export default function VersionPublishedMenu() {
 
     // const isSaving = useEditorStore((state) => state.isSaving);
     const openForm = useEditorStore((state) => state.openForm);
-    const openDocs = useEditorStore((state) => state.openDocs);
-    
-    const setDocumentationType = useDocumentationStore((state) => state.setDocumentationType);
-    const fetchCategories = useDocumentationStore((state) => state.fetchCategories);
-    
+
     const hasMockData = useMockStore((state) => state.hasMockData);
     const clearMockStore = useMockStore((state) => state.clearMockStore);
-
-    const handleOpenDocs = async () => {
-        setDocumentationType('general');
-        openDocs(''); // Open with empty content to trigger EnhancedDocs
-        try {
-            await fetchCategories();
-        } catch (error) {
-            console.error('Failed to load documentation categories:', error);
-        }
-    };
 
     return (
         <div
@@ -69,25 +53,15 @@ export default function VersionPublishedMenu() {
             </button>
             
             {/* Play Buttons Button */}
-            <button 
-                className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" 
-                title="Play buttons" 
+            <button
+                className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400"
+                title="Play buttons"
                 onClick={() => openForm(FormType.PlayButtonsForm)}
                 data-tour-id="play-buttons-button"
             >
-                <PlayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+                <Squares2X2Icon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
             </button>
-            
-            {/* Documentation Button */}
-            <button 
-                className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" 
-                title="Documentation" 
-                onClick={handleOpenDocs}
-                data-tour-id="documentation-button"
-            >
-                <BookOpenIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
-            </button>
-            
+
             {/* Divider */}
             <div className="w-px h-6 bg-sky-300 dark:bg-zinc-600 mx-1"></div>
             

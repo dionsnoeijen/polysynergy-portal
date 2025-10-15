@@ -2,6 +2,7 @@ import React from "react";
 import {ChevronDownIcon, ChevronLeftIcon, PlusIcon} from "@heroicons/react/24/outline";
 import {Fundamental, ListItemWithId} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
+import useTreeStateStore from "@/stores/treeStateStore";
 import clsx from "clsx";
 
 type ListProps<T extends ListItemWithId> = {
@@ -29,21 +30,19 @@ export default function TreeList<T extends ListItemWithId>({
     dataTourId = null,
     toggleOpen = () => {},
 }: ListProps<T>): React.JSX.Element {
-    const openTree = useEditorStore((state) => state.openTree);
-    const closeTree = useEditorStore((state) => state.closeTree);
-    const isOpen = useEditorStore((state) => state.isTreeOpen(fundamental));
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
     const isFormOpen = useEditorStore((state) => state.isFormOpen());
     const isExecuting = useEditorStore((state) => state.isExecuting);
+    const isLoadingFlow = useEditorStore((state) => state.isLoadingFlow);
 
-    const handleTreeToggle = (isOpen: boolean) => {
+    const isOpen = useTreeStateStore((state) => state.isTreeOpenForProject(activeProjectId, fundamental));
+    const toggleTreeForProject = useTreeStateStore((state) => state.toggleTreeForProject);
+
+    const handleTreeToggle = () => {
         // Disable tree interactions during execution
         if (isExecuting) return;
-        
-        if (isOpen) {
-            closeTree(fundamental);
-        } else {
-            openTree(fundamental);
-        }
+
+        toggleTreeForProject(activeProjectId, fundamental);
         toggleOpen(!isOpen);
     }
 
@@ -65,23 +64,23 @@ export default function TreeList<T extends ListItemWithId>({
 
     return items.length > 0 ? (
         <div className="relative">
-            {isFormOpen && (
+            {(isFormOpen || isLoadingFlow) && (
                 <div className="absolute inset-0 z-10 bg-sky-50/80 dark:bg-black/40 cursor-not-allowed"/>
             )}
             <div className="mt-[10px]">
-                <div
-                    className={`flex items-center shadow-sm justify-between border-t border-b border-sky-500/50 bg-white/90 p-1 pl-2 pr-2 dark:border-white/10 dark:bg-zinc-800`}
+                <button
+                    type="button"
+                    onClick={handleTreeToggle}
+                    className="w-full flex items-center shadow-sm justify-between border-t border-b border-sky-500/50 bg-white/90 p-1 pl-2 pr-2 dark:border-white/10 dark:bg-zinc-800 hover:bg-sky-50 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
                     data-tour-id={dataTourId ?? null}
                 >
-                    <h4 className={`text-sky-500 dark:text-white/70`}>{title}</h4>
-                    <button type="button" onClick={() => handleTreeToggle(isOpen)}>
-                        {isOpen ? (
-                            <ChevronDownIcon className="w-5 h-5 text-sky-500 dark:text-white/70"/>
-                        ) : (
-                            <ChevronLeftIcon className="w-5 h-5 text-sky-500 dark:text-white/70"/>
-                        )}
-                    </button>
-                </div>
+                    <h4 className="text-sky-500 dark:text-white/70">{title}</h4>
+                    {isOpen ? (
+                        <ChevronDownIcon className="w-5 h-5 text-sky-500 dark:text-white/70"/>
+                    ) : (
+                        <ChevronLeftIcon className="w-5 h-5 text-sky-500 dark:text-white/70"/>
+                    )}
+                </button>
 
                 <div className="relative">
                     <ul
@@ -107,8 +106,8 @@ export default function TreeList<T extends ListItemWithId>({
                         <div
                             className="border-t border-b border-sky-500/50 bg-white dark:bg-zinc-800 dark:border-white/10">
                             <button
-                                disabled={addDisabled || Boolean(isExecuting)}
-                                onClick={isExecuting ? () => {} : addButtonClick}
+                                disabled={addDisabled || Boolean(isExecuting) || isLoadingFlow}
+                                onClick={(isExecuting || isLoadingFlow) ? () => {} : addButtonClick}
                                 className={clsx(
                                     "w-full flex items-center justify-center p-1",
                                     "text-sky-500 dark:text-white/70",
@@ -124,32 +123,32 @@ export default function TreeList<T extends ListItemWithId>({
         </div>
     ) : (
         <div className="relative">
-            {isFormOpen && (
+            {(isFormOpen || isLoadingFlow) && (
                 <div className="absolute inset-0 z-10  bg-sky-50/80 dark:bg-black/40 cursor-not-allowed"/>
             )}
             <div className="mt-[10px]">
                 {addButtonClick && (
                     <button
-                        disabled={addDisabled || Boolean(isExecuting)}
-                        onClick={isExecuting ? () => {} : addButtonClick}
+                        disabled={addDisabled || Boolean(isExecuting) || isLoadingFlow}
+                        onClick={(isExecuting || isLoadingFlow) ? () => {} : addButtonClick}
                         data-tour-id={dataTourId ?? null}
                         className={clsx(
                             "w-full flex items-center justify-between gap-2 px-3 py-2",
                             "border-t border-b border-dotted",
                             "transition-all duration-200",
-                            addDisabled || isExecuting
+                            addDisabled || isExecuting || isLoadingFlow
                                 ? "opacity-40 cursor-not-allowed border-sky-500/30 dark:border-white/20 bg-white/30 dark:bg-black/30"
                                 : "border-sky-500 dark:border-white/50 bg-white/60 dark:bg-black/60 hover:bg-sky-100 dark:hover:bg-white/10 cursor-pointer"
                         )}
                     >
                         <span className={clsx(
-                            addDisabled || isExecuting
+                            addDisabled || isExecuting || isLoadingFlow
                                 ? "text-sky-500/50 dark:text-white/30"
                                 : "text-sky-500 dark:text-white"
                         )}>{title}</span>
                         <PlusIcon className={clsx(
                             "w-4 h-4",
-                            addDisabled || isExecuting
+                            addDisabled || isExecuting || isLoadingFlow
                                 ? "text-sky-500/50 dark:text-white/30"
                                 : "text-sky-500 dark:text-white/70"
                         )}/>

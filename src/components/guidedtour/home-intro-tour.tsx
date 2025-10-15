@@ -21,15 +21,19 @@ function InnerTour() {
     const {projects} = useProjectsStore();
 
     useEffect(() => {
-        if (projects.length === 0) return;
+        // Wait a bit to ensure projects are loaded before checking
+        const timer = setTimeout(() => {
+            // Only show tour if user has NO projects yet (first time)
+            if (projects.length > 0) return;
 
-        const seen = localStorage.getItem('intro_home_seen');
-        if (!seen) {
-            setTimeout(() => {
+            const seen = localStorage.getItem('intro_home_seen');
+            if (!seen) {
                 setIsOpen(true);
-            }, 300);
-        }
-    }, [projects, setIsOpen]);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [projects.length, setIsOpen]);
 
     return null;
 }

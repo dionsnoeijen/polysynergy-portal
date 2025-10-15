@@ -113,3 +113,25 @@ export const activateClientAccount = async (
         }
     )
 }
+
+export const updateClientAccount = async (
+    accountId: string,
+    updates: { first_name?: string; last_name?: string }
+): Promise<Account> => {
+    const idToken = getIdToken();
+    const response = await fetch(`${config.LOCAL_API_URL}/accounts/${accountId}/`, {
+        method: 'PATCH',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(updates)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to update account: ${response.statusText}`);
+    }
+
+    return response.json();
+}

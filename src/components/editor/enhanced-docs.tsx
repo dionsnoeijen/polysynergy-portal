@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useRouter, usePathname } from 'next/navigation';
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import useEditorStore from "@/stores/editorStore";
@@ -7,9 +8,9 @@ import useAvailableNodeStore from "@/stores/availableNodesStore";
 import { fetchAllDocumentationAPI, fetchNodeDocumentationAPI } from "@/api/documentationApi";
 import { Button } from "@/components/button";
 import { Input, InputGroup } from "@/components/input";
-import { 
-    XMarkIcon, 
-    MagnifyingGlassIcon, 
+import {
+    XMarkIcon,
+    MagnifyingGlassIcon,
     BookOpenIcon,
     CubeIcon,
     ChevronRightIcon,
@@ -118,10 +119,13 @@ const EnhancedDocumentationContent: React.FC<{ nodeType?: string }> = ({ nodeTyp
 };
 
 const EnhancedDocs: React.FC = () => {
+    const router = useRouter();
+    const pathname = usePathname();
     const docsMarkdown = useEditorStore((state) => state.docsMarkdown);
     const closeDocs = useEditorStore((state) => state.closeDocs);
     const [editorTheme, setEditorTheme] = useState<"vs-dark" | "vs-light">("vs-dark");
-    
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+
     // Available nodes for node documentation
     const { availableNodes, hasInitialFetched, fetchAvailableNodes } = useAvailableNodeStore();
     const [selectedNodeDoc, setSelectedNodeDoc] = useState<string | null>(null);
@@ -178,6 +182,41 @@ const EnhancedDocs: React.FC = () => {
         setEditorTheme(isDark ? "vs-dark" : "vs-light");
     }, []);
 
+    // Parse URL on initial load to restore category/document state
+    useEffect(() => {
+        if (!isInitialLoad) return;
+
+        try {
+            // Parse pathname like: /ams/documentation/general/tutorials/flow-basics
+            const pathParts = pathname.split('/').filter(Boolean);
+
+            // Check if this looks like a documentation URL
+            if (pathParts.includes('documentation')) {
+                const docIndex = pathParts.indexOf('documentation');
+                const docType = pathParts[docIndex + 1]; // 'general' or 'node'
+                const category = pathParts[docIndex + 2]; // e.g. 'tutorials'
+                const documentId = pathParts[docIndex + 3]; // e.g. 'flow-basics'
+
+                if (docType === 'general' || docType === 'node') {
+                    setDocumentationType(docType as DocumentationType);
+
+                    if (category) {
+                        setSelectedCategory(category);
+
+                        // If there's also a document ID, fetch that specific document
+                        if (documentId) {
+                            fetchDocument(category, documentId);
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Failed to parse documentation URL:', error);
+        }
+
+        setIsInitialLoad(false);
+    }, [pathname, isInitialLoad, setDocumentationType, setSelectedCategory, fetchDocument]);
+
     useEffect(() => {
         if (documentationType === 'general') {
             // Only load the full documentation (which includes categories)
@@ -191,6 +230,27 @@ const EnhancedDocs: React.FC = () => {
     }, [documentationType, fetchAvailableNodes, hasInitialFetched, loadAllDocumentCounts]);
 
 
+    const updateURL = (type: DocumentationType, category?: string, documentId?: string) => {
+        try {
+            // Build URL path
+            const pathParts = pathname.split('/').filter(Boolean);
+            const docIndex = pathParts.indexOf('documentation');
+
+            if (docIndex >= 0) {
+                // Rebuild URL: keep everything before 'documentation', then add our parts
+                const baseParts = pathParts.slice(0, docIndex + 1);
+                const newPath = ['', ...baseParts, type, category, documentId]
+                    .filter(Boolean)
+                    .join('/');
+
+                // Use router.push to update URL without page reload
+                router.push(newPath);
+            }
+        } catch (error) {
+            console.error('Failed to update documentation URL:', error);
+        }
+    };
+
     const handleTabChange = (type: DocumentationType) => {
         setDocumentationType(type);
         clearSearch();
@@ -199,14 +259,23 @@ const EnhancedDocs: React.FC = () => {
         // Clear node doc selections when switching tabs
         setSelectedNodeDoc(null);
         setSelectedNodeCategory(null);
+
+        // Update URL to reflect tab change
+        updateURL(type);
     };
 
     const handleCategorySelect = (categoryName: string) => {
         setSelectedCategory(categoryName);
+
+        // Update URL to include category
+        updateURL(documentationType, categoryName);
     };
 
     const handleDocumentSelect = (category: string, docId: string) => {
         fetchDocument(category, docId);
+
+        // Update URL to include category and document
+        updateURL(documentationType, category, docId);
     };
 
 

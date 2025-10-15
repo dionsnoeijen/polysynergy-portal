@@ -69,6 +69,11 @@ const ScheduleForm: React.FC = () => {
         if (!start_time) return;
         if (!validateForm()) return;
 
+        // Set loading state for new schedules
+        if (formType === FormType.AddSchedule) {
+            useEditorStore.getState().setIsLoadingFlow(true);
+        }
+
         const payload: Schedule = {
             id: formEditRecordId as string ?? undefined,
             name,

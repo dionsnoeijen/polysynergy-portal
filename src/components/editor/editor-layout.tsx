@@ -3,6 +3,7 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { ArrowLeftEndOnRectangleIcon, ArrowRightEndOnRectangleIcon } from "@heroicons/react/24/outline";
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 
 import ItemManagerTabs from "@/components/editor/sidebars/item-manager-tabs";
 import DockTabs from "@/components/editor/sidebars/dock-tabs";
@@ -15,9 +16,11 @@ import TopLeftEditorMenu from "@/components/editor/editormenus/top-left-editor-m
 import TopRightEditorListener from "@/components/editor/editormenus/top-right-editor-listener";
 import BottomDrawToolbar from "@/components/editor/editormenus/bottom-draw-toolbar";
 import BottomLeftPlayMenu from "@/components/editor/editormenus/bottom-left-play-menu";
+import EditorTopBar from "@/components/editor/editormenus/editor-top-bar";
 import ItemManagerIntroTour from "@/components/guidedtour/item-manager-intro-tour";
 import AutosaveIndicator from "@/components/AutosaveIndicator";
 import Chat from "@/components/editor/chat/chat";
+import EmptyStatePanel from "@/components/editor/empty-state-panel";
 
 import { useLayoutPanels } from "@/hooks/editor/useLayoutPanels";
 import { useLayoutResizing } from "@/hooks/editor/useLayoutResizing";
@@ -27,7 +30,15 @@ import { useLayoutEventHandlers } from "@/hooks/editor/useLayoutEventHandlers";
 import { useLayoutState } from "@/hooks/editor/useLayoutState";
 import useGlobalStoreListenersWithImmediateSave from "@/hooks/editor/nodes/useGlobalStoresListener";
 import useEditorStore from "@/stores/editorStore";
+import useNodesStore from "@/stores/nodesStore";
+import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
+import useSchedulesStore from "@/stores/schedulesStore";
+import useBlueprintsStore from "@/stores/blueprintsStore";
+import useChatWindowsStore from "@/stores/chatWindowsStore";
+import useEditorTabsStore from "@/stores/editorTabsStore";
+import { formatSegments } from "@/utils/formatters";
 import PerformanceHUD from "@/components/debug/performance-hud";
+import { v4 as uuidv4 } from 'uuid';
 
 const DrawingLayer = dynamic(() => import('@/components/editor/drawing/drawing-layer'), { ssr: false });
 const Editor = dynamic(() => import('@/components/editor/editor'), {
@@ -116,6 +127,9 @@ const EditorLayout = ({
     // Chat window permissions for conditional UI
     const chatWindowPermissions = useEditorStore(s => s.chatWindowPermissions);
 
+    // Get opened group state to conditionally hide drawing layer
+    const openedGroup = useNodesStore(s => s.openedGroup);
+
     // /chat route specific UI state
     const chatEditorCollapsed = useEditorStore(s => s.chatEditorCollapsed);
     const setChatEditorCollapsed = useEditorStore(s => s.setChatEditorCollapsed);
@@ -185,7 +199,107 @@ const EditorLayout = ({
             }, 200);
         }
     }, [chatPanelOpen, itemManagerClosed, dockClosed, outputClosed, toggleChatPanel, toggleCloseItemManager, toggleCloseDock, toggleCloseOutput, setChatMode, updateEditorPosition]);
-    
+
+    // Router for navigation
+    const router = useRouter();
+
+    // Store getters for fetching fundamental data
+    const getDynamicRoute = useDynamicRoutesStore((state) => state.getDynamicRoute);
+    const getSchedule = useSchedulesStore((state) => state.getSchedule);
+    const getBlueprint = useBlueprintsStore((state) => state.getBlueprint);
+    const getChatWindow = useChatWindowsStore((state) => state.getChatWindow);
+
+    // Tab store actions
+    const addTab = useEditorTabsStore((state) => state.addTab);
+    const hasTab = useEditorTabsStore((state) => state.hasTab);
+    const getTabByFundamentalId = useEditorTabsStore((state) => state.getTabByFundamentalId);
+    const setActiveTab = useEditorTabsStore((state) => state.setActiveTab);
+
+    // Restore last active tab when landing on project root
+    useEffect(() => {
+        // Only run when we're on project root (no fundamental in URL)
+        if (!projectUuid || routeUuid || scheduleUuid || chatWindowUuid || blueprintUuid || configUuid) {
+            return;
+        }
+
+        // Get active tab for this project
+        const getActiveTab = useEditorTabsStore.getState().getActiveTab;
+        const activeTab = getActiveTab(projectUuid);
+
+        // If there's an active tab, navigate to it
+        if (activeTab) {
+            const fundamentalPath = activeTab.type === 'chatwindow' ? 'chat-window' : activeTab.type;
+            router.replace(`/project/${projectUuid}/${fundamentalPath}/${activeTab.fundamentalId}`);
+        }
+    }, [projectUuid, routeUuid, scheduleUuid, chatWindowUuid, blueprintUuid, configUuid, router]);
+
+    // Sync URL with tabs: When URL changes, ensure tab exists and is active
+    useEffect(() => {
+        if (!projectUuid) return;
+
+        let fundamentalId: string | undefined;
+        let fundamentalType: 'route' | 'schedule' | 'blueprint' | 'chatwindow' | undefined;
+        let fundamentalName: string | undefined;
+        let fundamentalMethod: string | undefined;
+
+        if (routeUuid) {
+            const route = getDynamicRoute(routeUuid);
+            if (route) {
+                fundamentalId = routeUuid;
+                fundamentalType = 'route';
+                fundamentalName = formatSegments(route.segments);
+                fundamentalMethod = route.method;
+            }
+        } else if (scheduleUuid) {
+            const schedule = getSchedule(scheduleUuid);
+            if (schedule) {
+                fundamentalId = scheduleUuid;
+                fundamentalType = 'schedule';
+                fundamentalName = schedule.name;
+            }
+        } else if (chatWindowUuid) {
+            const chatWindow = getChatWindow(chatWindowUuid);
+            if (chatWindow) {
+                fundamentalId = chatWindowUuid;
+                fundamentalType = 'chatwindow';
+                fundamentalName = chatWindow.name;
+            }
+        } else if (blueprintUuid) {
+            const blueprint = getBlueprint(blueprintUuid);
+            if (blueprint) {
+                fundamentalId = blueprintUuid;
+                fundamentalType = 'blueprint';
+                fundamentalName = blueprint.name;
+            }
+        }
+
+        // If we have a fundamental in the URL
+        if (fundamentalId && fundamentalType && fundamentalName) {
+            // Check if tab already exists
+            const existingTab = getTabByFundamentalId(projectUuid, fundamentalId);
+
+            if (existingTab) {
+                // Tab exists - make it active
+                setActiveTab(projectUuid, existingTab.id);
+            } else {
+                // Tab doesn't exist - create new one (addTab also sets it as active)
+                addTab(projectUuid, {
+                    id: uuidv4(),
+                    type: fundamentalType,
+                    fundamentalId: fundamentalId,
+                    name: fundamentalName,
+                    method: fundamentalMethod
+                });
+            }
+        }
+    }, [projectUuid, routeUuid, scheduleUuid, chatWindowUuid, blueprintUuid, getDynamicRoute, getSchedule, getChatWindow, getBlueprint, addTab, hasTab, getTabByFundamentalId, setActiveTab]);
+
+    // Tab change/close handlers are now in EditorTopBar
+
+    // Determine if we're in fullscreen mode (all panels closed)
+    const isFullscreen = React.useMemo(() => {
+        return itemManagerClosed && dockClosed && outputClosed;
+    }, [itemManagerClosed, dockClosed, outputClosed]);
 
     // Listen for Chat Mode events from child components
     useEffect(() => {
@@ -288,9 +402,9 @@ const EditorLayout = ({
             <ItemManagerIntroTour/>
             {closeFormMessage && (
                 <>
-                    <div className="z-20 fixed top-0 left-0 right-0 h-[1px] bg-green-500 animate-progress"></div>
+                    <div className="z-[100] fixed top-0 left-0 right-0 h-[1px] bg-green-500 animate-progress"></div>
                     <div
-                        className="z-20 fixed top-2 left-1/2 sm:max-w-md bg-green-100 text-green-800 p-4 rounded-md shadow-lg animate-fade-in-out">
+                        className="z-[100] fixed top-2 left-1/2 -translate-x-1/2 sm:max-w-md bg-green-100 text-green-800 p-4 rounded-md shadow-lg animate-fade-in-out">
                         {closeFormMessage}
                     </div>
                 </>
@@ -364,7 +478,7 @@ const EditorLayout = ({
                         : ((dockClosed || chatWindowPermissions?.can_view_flow === false) ? 0 : width.dock)
                 }}>
                     <div
-                        className={`absolute top-0 left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border-l border-r border-sky-500/50 dark:border-white/10 ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
+                        className={`absolute top-0 left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border-l border-r ${(!isChatWindow && !chatMode && !isFullscreen) ? '' : 'border-t'} border-sky-500/50 dark:border-white/10 ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
                     >
                         {isChatWindow && chatWindowPermissions?.can_view_flow === false ? (
                             // Chat window with no flow view permission - show nothing (chat is on the left)
@@ -376,77 +490,115 @@ const EditorLayout = ({
                         ) : showDocs ? (
                             <EnhancedDocs/>
                         ) : (
-                            projectUuid && (routeUuid || scheduleUuid || chatWindowUuid || blueprintUuid || configUuid) ? (
-                                activeVersionId ? (
-                                    <>
-                                        {/* Don't render DrawingLayer for chat windows */}
-                                        {!isChatWindow && <DrawingLayer />}
+                            projectUuid ? (
+                                <>
+                                    {/* Editor Top Bar - visible when not in fullscreen, chat window, or chat mode */}
+                                    {!isChatWindow && !chatMode && !isFullscreen && (
+                                        <div className="absolute top-0 left-0 right-0 z-10">
+                                            <EditorTopBar
+                                                projectId={projectUuid}
+                                            />
+                                        </div>
+                                    )}
 
-                                        <Editor
-                                            key={'editor-' + activeVersionId}
-                                            readOnly={isChatWindow}
-                                        />
+                                    {/* Content area - below bar when visible */}
+                                    <div className="absolute left-0 right-0 bottom-0" style={{
+                                        top: (!isChatWindow && !chatMode && !isFullscreen) ? '33px' : '0'
+                                    }}>
+                                        {(routeUuid || scheduleUuid || chatWindowUuid || blueprintUuid || configUuid) ? (
+                                            activeVersionId ? (
+                                                <>
+                                                    {/* Don't render DrawingLayer for chat windows or when group is open */}
+                                                    {!isChatWindow && !openedGroup && <DrawingLayer />}
 
-                                        {/* Output panel toggle button - centered relative to editor area */}
-                                        {outputClosed && !chatMode && !isChatWindow && (chatWindowPermissions?.can_view_output !== false) && (
-                                            <button
-                                                type="button"
-                                                onClick={toggleCloseOutput}
-                                                className="absolute z-10 bottom-2 left-1/2 -translate-x-1/2 p-3 radius-bl-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm"
-                                            >
-                                                <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/>
-                                            </button>
-                                        )}
+                                                    <Editor
+                                                        key={'editor-' + activeVersionId}
+                                                        readOnly={isChatWindow}
+                                                    />
 
-                                        {/* Only show menus for non-chat windows */}
-                                        {!chatMode && !isChatWindow && (
-                                            <>
-                                                <BottomDrawToolbar/>
-                                                <TopRightEditorListener/>
-                                                <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
-                                                <VersionPublishedMenu/>
-                                                <BottomLeftPlayMenu/>
+                                                    {/* Output panel toggle button - centered relative to editor area */}
+                                                    {outputClosed && !chatMode && !isChatWindow && (chatWindowPermissions?.can_view_output !== false) && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={toggleCloseOutput}
+                                                            className="absolute z-10 bottom-2 left-1/2 -translate-x-1/2 p-3 radius-bl-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                                                        >
+                                                            <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/>
+                                                        </button>
+                                                    )}
 
-                                                {/* Floating AutosaveIndicator - centered relative to menu height */}
-                                                <div className="absolute bottom-1 right-2 z-[120] pointer-events-none flex items-center" style={{height: '52px'}}>
-                                                    <AutosaveIndicator />
+                                                    {/* Only show menus for non-chat windows */}
+                                                    {!chatMode && !isChatWindow && (
+                                                        <>
+                                                            <BottomDrawToolbar/>
+                                                            <TopRightEditorListener/>
+                                                            <TopLeftEditorMenu key={'top-left-editor-menu-' + activeVersionId}/>
+                                                            <VersionPublishedMenu/>
+                                                            <BottomLeftPlayMenu/>
+
+                                                            {/* Floating AutosaveIndicator - centered relative to menu height */}
+                                                            <div className="absolute bottom-1 right-2 z-[120] pointer-events-none flex items-center" style={{height: '52px'}}>
+                                                                <AutosaveIndicator />
+                                                            </div>
+                                                        </>
+                                                    )}
+
+                                                    {/* Minimal autosave indicator for chat windows */}
+                                                    {isChatWindow && (
+                                                        <>
+                                                            <div className="absolute bottom-1 right-2 z-[120] pointer-events-none flex items-center" style={{height: '52px'}}>
+                                                                <AutosaveIndicator />
+                                                            </div>
+
+                                                            {/* Collapse Editor Button - left side */}
+                                                            {!chatEditorCollapsed && chatWindowPermissions?.can_view_flow !== false && (
+                                                                <button
+                                                                    onClick={() => setChatEditorCollapsed(true)}
+                                                                    className="absolute top-2 left-2 z-[110] p-2 rounded bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700"
+                                                                    title="Collapse editor"
+                                                                >
+                                                                    <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-gray-700 dark:text-white" />
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <div className="flex justify-center items-center h-full">
+                                                    <p className="text-white">Loading node setup...</p>
                                                 </div>
-                                            </>
-                                        )}
-
-                                        {/* Minimal autosave indicator for chat windows */}
-                                        {isChatWindow && (
+                                            )
+                                        ) : (
                                             <>
-                                                <div className="absolute bottom-1 right-2 z-[120] pointer-events-none flex items-center" style={{height: '52px'}}>
-                                                    <AutosaveIndicator />
-                                                </div>
-
-                                                {/* Collapse Editor Button - left side */}
-                                                {!chatEditorCollapsed && chatWindowPermissions?.can_view_flow !== false && (
+                                                <EmptyStatePanel />
+                                                {/* Output panel toggle button - also available when no flow is open */}
+                                                {outputClosed && !chatMode && !isChatWindow && (chatWindowPermissions?.can_view_output !== false) && (
                                                     <button
-                                                        onClick={() => setChatEditorCollapsed(true)}
-                                                        className="absolute top-2 left-2 z-[110] p-2 rounded bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700"
-                                                        title="Collapse editor"
+                                                        type="button"
+                                                        onClick={toggleCloseOutput}
+                                                        className="absolute z-10 bottom-2 left-1/2 -translate-x-1/2 p-3 radius-bl-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm"
                                                     >
-                                                        <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-gray-700 dark:text-white" />
+                                                        <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/>
                                                     </button>
                                                 )}
                                             </>
                                         )}
-
-                                    </>
-                                ) : (
-                                    <div className="flex justify-center items-center h-full">
-                                        <p className="text-white">Loading node setup...</p>
                                     </div>
-                                )
+                                </>
                             ) : (
-
-                                <div className="flex justify-center items-center h-full">
-                                    <p className="text-sky-500 dark:text-white">
-                                        Select a route, schedule or blueprint to start editing nodes
-                                    </p>
-                                </div>
+                                <>
+                                    <EmptyStatePanel />
+                                    {/* Output panel toggle button - also available when no project is loaded */}
+                                    {outputClosed && !chatMode && !isChatWindow && (chatWindowPermissions?.can_view_output !== false) && (
+                                        <button
+                                            type="button"
+                                            onClick={toggleCloseOutput}
+                                            className="absolute z-10 bottom-2 left-1/2 -translate-x-1/2 p-3 radius-bl-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                                        >
+                                            <ArrowRightEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/>
+                                        </button>
+                                    )}
+                                </>
                             )
                         )}
                     </div>
@@ -542,7 +694,7 @@ const EditorLayout = ({
                     <button
                         type="button"
                         onClick={toggleCloseOutput}
-                        className={`absolute z-10 top-1 left-0.5 p-3 radius-bl-0 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm`}
+                        className={`absolute z-10 top-1 left-0.5 p-3 radius-bl-0 bg-white dark:bg-zinc-800 shadow-sm`}
                     ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/></button>
                     <button
                         onMouseDown={() => startResizing(ResizeWhat.Output)}

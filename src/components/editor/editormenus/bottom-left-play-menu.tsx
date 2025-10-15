@@ -1,32 +1,35 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 // import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
 import {useHandlePlay} from '@/hooks/editor/useHandlePlay';
-import {PlayIcon, ChevronDownIcon} from '@heroicons/react/24/outline';
+import {PlayIcon, ChevronDownIcon, Squares2X2Icon} from '@heroicons/react/24/outline';
 import type { Node } from '@/types/types';
 
 export default function BottomLeftPlayMenu() {
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    
-    const getNodes = useNodesStore((state) => state.getNodes);
+
+    // Get all nodes from store
+    const nodes = useNodesStore((state) => state.nodes);
+
+    // Filter play button nodes with useMemo to avoid infinite loop
+    const playButtonNodes = useMemo(() =>
+        nodes.filter((node) =>
+            node.path === 'polysynergy_nodes.play.config.PlayConfig' ||
+            node.path === 'polysynergy_nodes.play.play.Play' ||
+            node.has_play_button === true
+        ),
+        [nodes]
+    );
     const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
     const findMainPlayNode = useNodesStore((state) => state.findMainPlayNode);
     const handlePlay = useHandlePlay();
 
-    // Get all play button nodes (by path OR has_play_button property)
-    const allNodes = getNodes();
-    const playButtonNodes = allNodes.filter((node) => 
-        node.path === 'polysynergy_nodes.play.config.PlayConfig' || 
-        node.path === 'polysynergy_nodes.play.play.Play' ||
-        node.has_play_button === true
-    );
-
-    // Get the main play node (or first available) 
+    // Get the main play node (or first available)
     const mainPlayNode = findMainPlayNode();
-    
+
     // Create combined list of all playable nodes
     const allPlayableNodes: Node[] = [];
     if (mainPlayNode && !playButtonNodes.some(n => n.id === mainPlayNode.id)) {
@@ -37,9 +40,21 @@ export default function BottomLeftPlayMenu() {
     // Select the first available playable node
     const [selectedPlayNode, setSelectedPlayNode] = useState(mainPlayNode || playButtonNodes[0]);
 
+    // Update selected node when play button nodes change
+    useEffect(() => {
+        // If currently selected node no longer exists, select first available
+        if (selectedPlayNode && !allPlayableNodes.some(n => n.id === selectedPlayNode.id)) {
+            setSelectedPlayNode(mainPlayNode || playButtonNodes[0]);
+        }
+        // If no node is selected but nodes are available, select the first one
+        if (!selectedPlayNode && allPlayableNodes.length > 0) {
+            setSelectedPlayNode(mainPlayNode || playButtonNodes[0]);
+        }
+    }, [playButtonNodes.length, allPlayableNodes, selectedPlayNode, mainPlayNode]);
+
     // Only show dropdown if there are multiple playable nodes
     const hasMultiplePlayButtons = allPlayableNodes.length > 1;
-    
+
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -69,20 +84,16 @@ export default function BottomLeftPlayMenu() {
         return title?.trim() || `Play ${node.handle}`;
     };
 
-    // Don't render if no playable nodes exist
-    if (allPlayableNodes.length === 0) {
-        return null;
-    }
-
+    // Always render the menu, but disable the play button if no nodes available
     return (
         <div className="absolute bottom-2 left-2 z-20">
             <div className="bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-lg p-2 flex items-center gap-2">
                 {hasMultiplePlayButtons ? (
                     <div className="flex items-center">
                         {/* Play Button */}
-                        <button 
+                        <button
                             disabled={allPlayableNodes.length === 0}
-                            className="hover:bg-sky-200 p-1 rounded-l-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed" 
+                            className="hover:bg-sky-200 p-1 rounded-l-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
                             title={allPlayableNodes.length > 0 ? `Play ${getNodeDisplayName(selectedPlayNode || allPlayableNodes[0])}` : 'No playable nodes'}
                             onClick={handlePlayClick}
                         >
@@ -111,7 +122,7 @@ export default function BottomLeftPlayMenu() {
                                                 setShowDropdown(false);
                                             }}
                                         >
-                                            <PlayIcon className="h-4 w-4 text-sky-500 dark:text-white/70 flex-shrink-0"/>
+                                            <Squares2X2Icon className="h-4 w-4 text-sky-500 dark:text-white/70 flex-shrink-0"/>
                                             <div>
                                                 <div className="text-sm font-medium text-gray-900 dark:text-white">
                                                     {getNodeDisplayName(node)}
@@ -131,9 +142,9 @@ export default function BottomLeftPlayMenu() {
                     </div>
                 ) : (
                     // Single Play Button
-                    <button 
+                    <button
                         disabled={allPlayableNodes.length === 0}
-                        className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed" 
+                        className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
                         title={allPlayableNodes.length > 0 ? `Play ${getNodeDisplayName(allPlayableNodes[0])}` : 'No playable nodes'}
                         onClick={handlePlayClick}
                     >

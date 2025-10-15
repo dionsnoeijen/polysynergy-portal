@@ -18,8 +18,8 @@ const addScheduleNodes = (schedule: Schedule) => {
         ...structuredClone(template1),
         id: uuidv4(),
         view: {
-            x: 400,
-            y: 100,
+            x: 300,
+            y: 0,
             width: 200,
             height: 200,
             adding: false,
@@ -32,8 +32,8 @@ const addScheduleNodes = (schedule: Schedule) => {
         ...structuredClone(template2),
         id: uuidv4(),
         view: {
-            x: 100,
-            y: 100,
+            x: 0,
+            y: 0,
             width: 200,
             height: 200,
             adding: false,
@@ -48,7 +48,8 @@ const addScheduleNodes = (schedule: Schedule) => {
         sourceHandle: "true_path",
         targetHandle: "node",
         targetNodeId: scheduleNode.id,
-        isInGroup: undefined
+        isInGroup: undefined,
+        isDeletable: false,
     };
 
     const { addNode, updateNodeVariable } = useNodesStore.getState();

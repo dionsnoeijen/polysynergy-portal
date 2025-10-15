@@ -114,6 +114,9 @@ const DynamicRouteForm: React.FC = () => {
 
         try {
             if (formType === FormType.AddRoute) {
+                // Set loading state before creation
+                useEditorStore.getState().setIsLoadingFlow(true);
+
                 const newRoute: Route = {
                     description,
                     segments,
@@ -138,6 +141,8 @@ const DynamicRouteForm: React.FC = () => {
                 closeForm('Route updated successfully');
             }
         } catch (error) {
+            // Clear loading state on error
+            useEditorStore.getState().setIsLoadingFlow(false);
             setErrorMessage((error as Error).message);
         }
     };

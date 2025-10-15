@@ -114,7 +114,7 @@ export default function AccountsPage() {
                                     {account.role ? account.role.replace('_', ' ') : 'chat user'}
                                 </span>
                             </TableCell>
-                            <TableCell>{format(new Date(account.created_at), "dd-MM-yyyy HH:mm:ss")}</TableCell>
+                            <TableCell>{format(new Date(account.created_at), "MMM d, yyyy 'at' HH:mm")}</TableCell>
                             <TableCell>
                                 {account.active ?
                                     <CheckIcon className={'h-4 w-4'}/>

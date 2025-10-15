@@ -34,6 +34,7 @@ const ProjectEnvVarsForm: React.FC = () => {
     const [key, setKey] = useState("");
     const [values, setValues] = useState<Record<string, string>>({});
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
     const updateEnvVar = useEnvVarsStore((state) => state.updateEnvVar);
     const envVar = useEnvVarsStore((state) =>
@@ -45,27 +46,42 @@ const ProjectEnvVarsForm: React.FC = () => {
         const value = values[stage];
         if (!key.trim() || !value.trim()) {
             setError("Missing key or value");
+            setSuccess(null);
+            setIsExecuting(null);
             return;
         }
 
         setError(null);
+        setSuccess(null);
 
-        if (envVar && envVar.values[stage]) {
-            const updated: EnvVar = {
-                ...envVar,
-                values: {
-                    ...envVar.values,
-                    [stage]: {
-                        ...envVar.values[stage],
-                        value,
+        try {
+            if (envVar && envVar.values[stage]) {
+                const updated: EnvVar = {
+                    ...envVar,
+                    values: {
+                        ...envVar.values,
+                        [stage]: {
+                            ...envVar.values[stage],
+                            value,
+                        },
                     },
-                },
-            };
-            await updateEnvVar(updated, stage);
-        } else {
-            await createEnvVar(key, value, stage);
+                };
+                await updateEnvVar(updated, stage);
+            } else {
+                await createEnvVar(key, value, stage);
+            }
+
+            setSuccess(`Variable saved successfully for ${stage}`);
+            setValues(prev => ({ ...prev, [stage]: "" }));
+
+            // Auto-clear success message after 3 seconds
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (err: unknown) {
+            const error = err as Error;
+            setError(error.message || "An error occurred while saving.");
+        } finally {
+            setIsExecuting(null);
         }
-        setIsExecuting(null);
     };
 
 
@@ -142,30 +158,39 @@ const ProjectEnvVarsForm: React.FC = () => {
             <Divider className="my-10" soft bleed/>
 
             {error && <p className="text-red-500 mb-4">{error}</p>}
+            {success && <p className="text-green-500 mb-4">{success}</p>}
 
             <div className="mb-6">
-                <label className="block mb-1 font-medium">Key</label>
+                <label className="block mb-1 font-medium">Variable Key</label>
+                <Text className="text-xs text-zinc-600 dark:text-zinc-400 mb-2">
+                    The name of the variable (e.g., API_KEY, DATABASE_URL)
+                </Text>
                 <Input
                     value={key}
                     onChange={(e) => setKey(e.target.value)}
-                    placeholder="Enter variable key"
+                    placeholder="e.g., API_KEY or DATABASE_URL"
                 />
             </div>
 
             <Divider className="my-6" soft bleed/>
+
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>Key:</strong> The name is shared across all stages<br/>
+                    <strong>Value:</strong> Each stage can have its own value
+                </p>
+            </div>
 
             {stages.map((stage) => {
                 const hasValue = envVar?.values[stage.name]?.value;
                 return (
                     <div key={stage.name} className="mb-4">
                         <label className="block font-medium mb-1">
-                            <span className="text-xs text-zinc-500 dark:text-white/50">
-                                {stage.name === 'mock' ? `default:` : `custom:`}
-                            </span>{" "}
-                            {stage.name}{" "}
+                            Value for <span className="text-sky-600 dark:text-sky-400">{stage.name}</span> stage
+                            {" "}
                             {hasValue && (
                                 <span className="text-xs text-zinc-500 dark:text-white/50">
-                                    (has value, can be overridden)
+                                    (currently set, can be overridden)
                                 </span>
                             )}
                         </label>
@@ -175,7 +200,7 @@ const ProjectEnvVarsForm: React.FC = () => {
                                 onChange={(e) =>
                                     setValues((prev) => ({...prev, [stage.name]: e.target.value}))
                                 }
-                                placeholder={hasValue ? "Current value set, enter to override" : "Enter value for this environment"}
+                                placeholder={hasValue ? "Enter new value to override" : `Enter the value for ${key || 'this key'} in ${stage.name}`}
                             />
                             <Button color={"sky"} onClick={() => handleSave(stage.name)}>Save</Button>
                         </div>

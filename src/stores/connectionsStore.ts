@@ -45,6 +45,7 @@ type ConnectionsStore = {
     clearConnections: () => void;
     initConnections: (connections: Connection[]) => void;
     isValueConnected: (nodeId: string, handle: string) => boolean;
+    isConnectionDeletable: (connectionIds: string[]) => boolean;
 };
 
 const memoizedResults = new Map();
@@ -441,6 +442,16 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             .getState()
             .connections
             .some((c) => c.targetNodeId === nodeId && c.targetHandle === handle);
+    },
+
+    isConnectionDeletable: (connectionIds: string[]): boolean => {
+        // If connection.isDeletable is set to false (explicitly), the connection is not deletable
+        // in any other case it is deletable
+        const connections = get().connections;
+        return connectionIds.every(connectionId => {
+            const connection = connections.find(c => c.id === connectionId);
+            return connection?.isDeletable !== false;
+        });
     },
 }));
 

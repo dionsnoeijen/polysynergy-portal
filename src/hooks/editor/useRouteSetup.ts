@@ -9,6 +9,7 @@ import fetchAndApplyNodeSetup from '@/utils/fetchNodeSetup';
 import { addScheduleNodesIfNeeded } from '@/utils/addScheduleNodesIfNeeded';
 import { addRouteNodesIfNeeded } from '@/utils/addRouteNodesIfNeeded';
 import { addChatWindowNodesIfNeeded } from '@/utils/addChatWindowNodesIfNeeded';
+import { addBlueprintNodesIfNeeded } from '@/utils/addBlueprintNodesIfNeeded';
 
 interface RouteSetupProps {
     projectUuid?: string;
@@ -178,8 +179,9 @@ export const useRouteSetup = ({
             }
             setActiveBlueprintId(blueprintUuid);
             fetchAndApplyNodeSetup({ blueprintId: blueprintUuid });
+            addBlueprintNodesIfNeeded(blueprintUuid);
             setIsExecuting(null);
-            
+
             // Mark as loaded for future switches
             if (!hasLoadedOnce) {
                 useEditorStore.getState().setHasLoadedOnce(true);

@@ -12,7 +12,7 @@ type DeleteDialogProps = {
 
 const DeleteDialog: React.FC<DeleteDialogProps> = ({ isOpen, onConfirm, onCancel, selectedNodes }) => {
     const isNodeInService = useNodesStore((state) => state.isNodeInService(selectedNodes));
-    // const isNodeDeletable = useNodesStore((state) => state.isNodeDeletable(selectedNodes));
+    const isNodeDeletable = useNodesStore((state) => state.isNodeDeletable(selectedNodes));
 
     useEffect(() => {
         if (!isOpen) return;
@@ -43,18 +43,18 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({ isOpen, onConfirm, onCancel
         );
     }
 
-    // if (!isNodeDeletable) {
-    //     return (
-    //         <Dialog size="md" className="rounded-sm" open={isOpen} onClose={onCancel}>
-    //             <DialogTitle>Node(s) Cannot Be Deleted</DialogTitle>
-    //             <DialogDescription>One or more of the selected nodes cannot be deleted.</DialogDescription>
-    //             <DialogBody></DialogBody>
-    //             <DialogActions>
-    //                 <Button outline onClick={onCancel}>Close</Button>
-    //             </DialogActions>
-    //         </Dialog>
-    //     );
-    // }
+    if (!isNodeDeletable) {
+        return (
+            <Dialog size="md" className="rounded-sm" open={isOpen} onClose={onCancel}>
+                <DialogTitle>Node(s) Cannot Be Deleted</DialogTitle>
+                <DialogDescription>One or more of the selected nodes cannot be deleted.</DialogDescription>
+                <DialogBody></DialogBody>
+                <DialogActions>
+                    <Button outline onClick={onCancel}>Close</Button>
+                </DialogActions>
+            </Dialog>
+        );
+    }
 
     return (
         <Dialog size="md" className="rounded-sm" open={isOpen} onClose={onCancel}>

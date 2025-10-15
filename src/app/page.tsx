@@ -32,6 +32,7 @@ import {
     AlertDescription,
     AlertTitle
 } from '@/components/alert';
+import Modal from '@/components/modal';
 import {Project} from '@/types/types';
 import useProjectsStore from '@/stores/projectsStore';
 
@@ -42,8 +43,11 @@ import useProjectSecretsStore from '@/stores/projectSecretsStore';
 import useServicesStore from '@/stores/servicesStore';
 import {useHistoryStore} from '@/stores/historyStore';
 import HomeIntroTour from "@/components/guidedtour/home-intro-tour";
+import {useRouter} from 'next/navigation';
+import {format} from 'date-fns';
 
 export default function Home() {
+    const router = useRouter();
     const {projects, fetchProjects} = useProjectsStore();
     const [newProjectName, setNewProjectName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -53,6 +57,8 @@ export default function Home() {
     const [showDeleteAlert, setShowDeleteAlert] = useState(false);
     const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
     const [showTrashed, setShowTrashed] = useState(false);
+    const [showProjectCreatedAlert, setShowProjectCreatedAlert] = useState(false);
+    const [newlyCreatedProject, setNewlyCreatedProject] = useState<Project | null>(null);
 
     // store reset functions
     const resetBlueprints = useBlueprintsStore(s => s.reset);
@@ -74,9 +80,11 @@ export default function Home() {
         setIsLoading(true);
         setError('');
         try {
-            await createProject(newProjectName);
+            const newProject = await createProject(newProjectName);
             setNewProjectName('');
             await fetchProjects(showTrashed);
+            setNewlyCreatedProject(newProject);
+            setShowProjectCreatedAlert(true);
         } catch {
             setError('Failed to create project. Please try again.');
         } finally {
@@ -113,6 +121,30 @@ export default function Home() {
     const handleRestoreProject = async (projectId: string) => {
         await restoreProject(projectId);
         await fetchProjects(showTrashed);
+    };
+
+    const handleGoToProject = () => {
+        if (!newlyCreatedProject) return;
+
+        // Reset all project-specific stores before navigating
+        resetBlueprints();
+        resetRoutes();
+        resetSchedules();
+        resetSecrets();
+        resetServices();
+        useHistoryStore.getState().save();
+
+        // Navigate to the new project
+        router.push(`/project/${newlyCreatedProject.id}`);
+
+        // Close the alert
+        setShowProjectCreatedAlert(false);
+        setNewlyCreatedProject(null);
+    };
+
+    const handleStayOnOverview = () => {
+        setShowProjectCreatedAlert(false);
+        setNewlyCreatedProject(null);
     };
 
     return (
@@ -185,8 +217,12 @@ export default function Home() {
                                     project.name
                                 )}
                             </TableCell>
-                            <TableCell className="text-zinc-500">{project.updated_at}</TableCell>
-                            <TableCell>{project.created_at}</TableCell>
+                            <TableCell className="text-zinc-500">
+                                {format(new Date(project.updated_at), "MMM d, yyyy 'at' HH:mm")}
+                            </TableCell>
+                            <TableCell>
+                                {format(new Date(project.created_at), "MMM d, yyyy 'at' HH:mm")}
+                            </TableCell>
                             <TableCell className="text-right">
                                 {showTrashed ? (
                                     <Button
@@ -267,6 +303,54 @@ export default function Home() {
                     </AlertActions>
                 </Alert>
             )}
+
+            <Modal
+                isOpen={showProjectCreatedAlert && !!newlyCreatedProject}
+                onClose={handleStayOnOverview}
+                title="Project Created Successfully"
+            >
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                        <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <CheckIcon className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="font-medium text-zinc-900 dark:text-zinc-100">
+                                Your project has been created
+                            </h3>
+                            {newlyCreatedProject && (
+                                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                                    Project: <span className="font-medium">{newlyCreatedProject.name}</span>
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    <p className="text-zinc-700 dark:text-zinc-300">
+                        Would you like to go to the project now or stay on the overview?
+                    </p>
+
+                    <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                        <button
+                            type="button"
+                            onClick={handleStayOnOverview}
+                            className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300
+                                     bg-zinc-100 dark:bg-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-600
+                                     rounded-md transition-colors"
+                        >
+                            Stay on overview
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleGoToProject}
+                            className="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700
+                                     rounded-md transition-colors flex items-center gap-2"
+                        >
+                            Go to project
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </ApplicationLayout>
     );
 }

@@ -36,6 +36,7 @@ export type Connection = {
     targetGroupId?: string;
     sourceGroupId?: string;
     isInGroup?: string | null;
+    isDeletable?: boolean;
     // Temporary added for service editing
     temp?: boolean;
 };
@@ -284,6 +285,11 @@ export type Node = {
     group_name_override?: string;
     // User notes for documenting/explaining the node
     notes?: string;
+    // Node metadata for deployment and other configuration
+    metadata?: {
+        deployment?: string;
+        [key: string]: any;
+    };
 };
 
 export interface NodeProps {

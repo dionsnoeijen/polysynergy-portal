@@ -41,11 +41,13 @@ export const useDictVariableLogic = ({
             : variable.name;
 
         // Check if any sub-items have output connectors
-        const hasSubItemOutputs = Array.isArray(variable.value) && 
+        const hasSubItemOutputs = Array.isArray(variable.value) &&
             (variable.value as NodeVariable[]).some((item: NodeVariable) => item.has_out);
-        
-        // Show main OUT connector when closed and sub-items have outputs
-        const showMainOutConnector = (variable.has_out || hasSubItemOutputs) && !isOpen;
+
+        // Show main OUT connector:
+        // - Always show if dict itself has has_out=True (even when open)
+        // - Show aggregated sub-item outputs only when closed
+        const showMainOutConnector = variable.has_out || (hasSubItemOutputs && !isOpen);
 
         const textColor = isMainValueConnected 
             ? 'text-orange-800 dark:text-yellow-300' 

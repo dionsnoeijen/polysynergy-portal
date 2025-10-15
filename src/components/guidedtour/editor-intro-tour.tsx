@@ -4,6 +4,10 @@ import {useEffect} from 'react';
 import {TourProvider, useTour} from '@reactour/tour';
 import CustomPopoverEditor from "@/components/guidedtour/custom-popover-editor";
 
+// Detect platform for keyboard shortcuts
+const isMac = typeof window !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+const modKey = isMac ? '⌘' : 'Ctrl';
+
 const steps = [
     {
         selector: '[data-tour-id="add-node-button"]',
@@ -11,11 +15,11 @@ const steps = [
     },
     {
         selector: '[data-tour-id="undo-button"]',
-        content: 'Undo your last action. This will revert the most recent change to your workflow. Shortcut: Ctrl+Z'
+        content: `Undo your last action. This will revert the most recent change to your workflow. Shortcut: ${modKey}+Z`
     },
     {
         selector: '[data-tour-id="redo-button"]',
-        content: 'Redo a previously undone action. This will restore a change you undid. Shortcut: Shift+Ctrl+Z'
+        content: `Redo a previously undone action. This will restore a change you undid. Shortcut: ${isMac ? '⌘+Shift+Z' : 'Shift+Ctrl+Z'}`
     },
     {
         selector: '[data-tour-id="clear-mock-data-button"]',

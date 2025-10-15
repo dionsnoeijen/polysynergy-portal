@@ -70,7 +70,7 @@ export default function SupportPage() {
                 This is an Alpha Release
               </h3>
               <Text className="text-purple-800 dark:text-purple-100">
-                You're using early-access software. Some features may be incomplete or change over time.
+                You&apos;re using early-access software. Some features may be incomplete or change over time.
                 We appreciate your patience and feedback as we continue to improve the platform.
               </Text>
             </div>
@@ -152,7 +152,7 @@ export default function SupportPage() {
         <section>
           <Subheading>Send Feedback</Subheading>
           <Text className="mt-2 text-zinc-600 dark:text-zinc-400 mb-6">
-            Have questions, suggestions, or issues? Send us a message and we'll get back to you.
+            Have questions, suggestions, or issues? Send us a message and we&apos;ll get back to you.
           </Text>
 
           {success && (
@@ -160,7 +160,7 @@ export default function SupportPage() {
               <div className="flex items-center gap-2">
                 <span className="text-2xl">✅</span>
                 <Text className="text-green-700 dark:text-green-300 font-medium">
-                  Message sent successfully! We'll get back to you soon.
+                  Message sent successfully! We&apos;ll get back to you soon.
                 </Text>
               </div>
             </div>

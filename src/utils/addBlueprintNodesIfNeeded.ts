@@ -2,10 +2,10 @@ import useAvailableNodeStore from "@/stores/availableNodesStore";
 import useNodesStore from "@/stores/nodesStore";
 import useBlueprintsStore from "@/stores/blueprintsStore";
 import { v4 as uuidv4 } from "uuid";
-import { Node, Blueprint } from "@/types/types";
+import { Node } from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 
-const addBlueprintNodes = (blueprint: Blueprint) => {
+const addBlueprintNodes = () => {
     const getNodeByPath = useAvailableNodeStore.getState().getAvailableNodeByPath;
     const playTemplate: Node | undefined = getNodeByPath("polysynergy_nodes.play.config.PlayConfig");
 
@@ -49,6 +49,6 @@ export function addBlueprintNodesIfNeeded(blueprintId: string) {
         }
 
         clearInterval(checkInterval);
-        addBlueprintNodes(blueprint);
+        addBlueprintNodes();
     }, 100);
 }

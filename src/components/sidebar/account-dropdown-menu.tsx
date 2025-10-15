@@ -42,7 +42,7 @@ export default function AccountDropdownMenu({ anchor }: { anchor: 'top start' | 
                     <DropdownLabel>My account</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
-                <DropdownItem href="#" onClick={(e) => { e.preventDefault(); setShowPrivacyPolicy(true); }}>
+                <DropdownItem href="#" onClick={(e: React.MouseEvent<HTMLAnchorElement>) => { e.preventDefault(); setShowPrivacyPolicy(true); }}>
                     <ShieldCheckIcon />
                     <DropdownLabel>Privacy policy</DropdownLabel>
                 </DropdownItem>

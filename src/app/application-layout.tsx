@@ -31,6 +31,7 @@ export function ApplicationLayout({
 
     return (
         <SidebarLayout
+            navbar={<div />}
             sidebar={
                 <Sidebar>
                     <div className="flex items-center p-4 border-b border-zinc-200 dark:border-zinc-700">

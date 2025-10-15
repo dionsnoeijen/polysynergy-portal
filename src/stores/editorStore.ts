@@ -1,5 +1,5 @@
 import {create} from 'zustand';
-import {Connection, EditorMode, FormType, Fundamental, Node, NodeVariable, Package} from "@/types/types";
+import {Connection, EditorMode, FormType, Node, NodeVariable, Package} from "@/types/types";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import {gatherAllIds, replaceIdsInJsonString, unpackNode} from "@/utils/packageGroupNode";

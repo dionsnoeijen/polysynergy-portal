@@ -288,7 +288,7 @@ export type Node = {
     // Node metadata for deployment and other configuration
     metadata?: {
         deployment?: string;
-        [key: string]: any;
+        [key: string]: unknown;
     };
 };
 

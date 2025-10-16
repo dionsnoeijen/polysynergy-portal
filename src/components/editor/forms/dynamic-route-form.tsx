@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import useEditorStore from "@/stores/editorStore";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
+import useEditorTabsStore from "@/stores/editorTabsStore";
 import {Heading, Subheading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Text} from "@/components/text";
@@ -149,6 +150,16 @@ const DynamicRouteForm: React.FC = () => {
 
     const handleDelete = useCallback(async () => {
         await deleteDynamicRoute(formEditRecordId as string);
+
+        // Close the tab for this route
+        const tab = useEditorTabsStore.getState().getTabByFundamentalId(
+            params.projectUuid as string,
+            formEditRecordId as string
+        );
+        if (tab) {
+            useEditorTabsStore.getState().removeTab(params.projectUuid as string, tab.id);
+        }
+
         closeForm('Route deleted successfully');
         setShowDeleteAlert(false);
         router.push(`/project/${params.projectUuid}`);

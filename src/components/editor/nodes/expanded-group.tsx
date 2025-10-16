@@ -7,6 +7,7 @@ import NodeVariables from '@/components/editor/nodes/rows/node-variables';
 import {ConfirmAlert} from '@/components/confirm-alert';
 import { useGroupExecutionOrders } from '@/hooks/editor/nodes/useGroupExecutionOrders';
 import GroupExecutionOrders from '@/components/editor/nodes/group-execution-orders';
+import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
 
 interface ExpandedGroupProps {
     node: Node;
@@ -45,6 +46,9 @@ const ExpandedGroup: React.FC<ExpandedGroupProps> = ({
         <>
             {/* Execution Orders */}
             <GroupExecutionOrders orders={orders} />
+
+            {/* Notes Display */}
+            <NodeNotesDisplay node={node} isCollapsed={false} />
 
             {/* Header */}
             <div className={`flex items-center border-b ${styles.border} ${styles.background} p-2 w-full overflow-visible relative pl-5 ${!isMirror && node.view.disabled && 'select-none opacity-0'}`}>

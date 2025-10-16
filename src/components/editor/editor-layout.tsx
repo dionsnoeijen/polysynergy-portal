@@ -322,7 +322,7 @@ const EditorLayout = ({
 
     // Initialize window dimensions
     useEffect(() => {
-        setWindowDimensions(window.innerHeight, window.innerHeight * 0.6);
+        setWindowDimensions(window.innerHeight, window.innerHeight * 0.75);
         const handleResize = () => setWindowDimensions(window.innerHeight);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);

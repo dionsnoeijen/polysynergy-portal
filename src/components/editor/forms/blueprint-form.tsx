@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useState} from "react";
 import useEditorStore from "@/stores/editorStore";
 import useBlueprintsStore from "@/stores/blueprintsStore";
+import useEditorTabsStore from "@/stores/editorTabsStore";
 import {Heading, Subheading} from "@/components/heading";
 import {Divider} from "@/components/divider";
 import {Button} from "@/components/button";
@@ -84,6 +85,16 @@ const BlueprintForm: React.FC = () => {
 
     const handleDelete = useCallback(async () => {
         await deleteBlueprint(formEditRecordId as string);
+
+        // Close the tab for this blueprint
+        const tab = useEditorTabsStore.getState().getTabByFundamentalId(
+            params.projectUuid as string,
+            formEditRecordId as string
+        );
+        if (tab) {
+            useEditorTabsStore.getState().removeTab(params.projectUuid as string, tab.id);
+        }
+
         closeForm('Blueprint deleted successfully');
         setShowDeleteAlert(false);
         router.push(`/project/${params.projectUuid}`);

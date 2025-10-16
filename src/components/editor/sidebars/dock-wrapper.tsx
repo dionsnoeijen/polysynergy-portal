@@ -53,6 +53,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
     // Handle notes change with debouncing
     const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = e.target.value;
+        console.log('🖊️ Notes textarea changed:', newValue);
         setLocalNotes(newValue);
 
         // Clear existing timeout
@@ -63,6 +64,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
         // Debounce the store update
         notesTimeoutRef.current = setTimeout(() => {
             if (node) {
+                console.log('⏰ Debounce timeout: calling updateNodeNotes for node:', node.id);
                 updateNodeNotes(node.id, newValue);
             }
         }, 300);

@@ -694,6 +694,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     updateNodeNotes: (nodeId: string, notes: string) => {
+        console.log('📝 updateNodeNotes CALLED:', { nodeId, notes });
         nodesByIdsCache.clear();
         set((state) => ({
             nodes: state.nodes.map((node) =>

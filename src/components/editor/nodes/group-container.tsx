@@ -100,7 +100,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
         minWidth: '200px'
     };
 
-    const finalClassName = isCollapsed 
+    const finalClassName = isCollapsed
         ? `${className} p-[0.86rem]`
         : `${className} pb-5`;
 

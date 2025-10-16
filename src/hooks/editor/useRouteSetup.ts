@@ -75,7 +75,7 @@ export const useRouteSetup = ({
             } else {
                 console.log('🚀 Initial route load - preserving UI state');
             }
-            
+
             setActiveRouteId(routeUuid);
             // Only clear other IDs if they're not already empty (prevent unnecessary re-renders)
             const currentState = useEditorStore.getState();
@@ -88,10 +88,15 @@ export const useRouteSetup = ({
             if (currentState.activeBlueprintId !== '') {
                 setActiveBlueprintId('');
             }
-            fetchAndApplyNodeSetup({ routeId: routeUuid });
-            addRouteNodesIfNeeded(routeUuid);
+
+            // CRITICAL: Await fetch before adding nodes to prevent race condition
+            (async () => {
+                await fetchAndApplyNodeSetup({ routeId: routeUuid });
+                addRouteNodesIfNeeded(routeUuid);
+            })();
+
             setIsExecuting(null);
-            
+
             // Mark as loaded for future switches
             if (!hasLoadedOnce) {
                 useEditorStore.getState().setHasLoadedOnce(true);
@@ -105,7 +110,7 @@ export const useRouteSetup = ({
             } else {
                 console.log('🚀 Initial schedule load - preserving UI state');
             }
-            
+
             // Only clear other IDs if they're not already empty (prevent unnecessary re-renders)
             const currentState = useEditorStore.getState();
             if (currentState.activeRouteId !== '') {
@@ -118,10 +123,15 @@ export const useRouteSetup = ({
             if (currentState.activeBlueprintId !== '') {
                 setActiveBlueprintId('');
             }
-            fetchAndApplyNodeSetup({ scheduleId: scheduleUuid });
-            addScheduleNodesIfNeeded(scheduleUuid);
+
+            // CRITICAL: Await fetch before adding nodes to prevent race condition
+            (async () => {
+                await fetchAndApplyNodeSetup({ scheduleId: scheduleUuid });
+                addScheduleNodesIfNeeded(scheduleUuid);
+            })();
+
             setIsExecuting(null);
-            
+
             // Mark as loaded for future switches
             if (!hasLoadedOnce) {
                 useEditorStore.getState().setHasLoadedOnce(true);
@@ -148,8 +158,13 @@ export const useRouteSetup = ({
             if (currentState.activeBlueprintId !== '') {
                 setActiveBlueprintId('');
             }
-            fetchAndApplyNodeSetup({ chatWindowId: chatWindowUuid });
-            addChatWindowNodesIfNeeded(chatWindowUuid);
+
+            // CRITICAL: Await fetch before adding nodes to prevent race condition
+            (async () => {
+                await fetchAndApplyNodeSetup({ chatWindowId: chatWindowUuid });
+                addChatWindowNodesIfNeeded(chatWindowUuid);
+            })();
+
             setIsExecuting(null);
 
             // Mark as loaded for future switches
@@ -165,7 +180,7 @@ export const useRouteSetup = ({
             } else {
                 console.log('🚀 Initial blueprint load - preserving UI state');
             }
-            
+
             // Only clear other IDs if they're not already empty (prevent unnecessary re-renders)
             const currentState = useEditorStore.getState();
             if (currentState.activeRouteId !== '') {
@@ -178,8 +193,13 @@ export const useRouteSetup = ({
                 setActiveChatWindowId('');
             }
             setActiveBlueprintId(blueprintUuid);
-            fetchAndApplyNodeSetup({ blueprintId: blueprintUuid });
-            addBlueprintNodesIfNeeded(blueprintUuid);
+
+            // CRITICAL: Await fetch before adding nodes to prevent race condition
+            (async () => {
+                await fetchAndApplyNodeSetup({ blueprintId: blueprintUuid });
+                addBlueprintNodesIfNeeded(blueprintUuid);
+            })();
+
             setIsExecuting(null);
 
             // Mark as loaded for future switches

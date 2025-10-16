@@ -8,10 +8,15 @@ interface NodeNotesDisplayProps {
 }
 
 const NodeNotesDisplay: React.FC<NodeNotesDisplayProps> = ({ node, isCollapsed = false }) => {
+    console.log('👁️ NodeNotesDisplay render:', { nodeId: node.id, notes: node.notes, isCollapsed });
+
     // Don't render if there are no notes
     if (!node.notes || node.notes.trim() === "") {
+        console.log('❌ No notes to display');
         return null;
     }
+
+    console.log('✅ Displaying notes');
 
     // For collapsed nodes/groups, use negative margin to compensate for container padding
     const containerClass = isCollapsed

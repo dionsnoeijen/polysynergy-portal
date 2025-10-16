@@ -57,7 +57,7 @@ const NodeContainer: React.FC<NodeContainerProps> = ({
     const expandedStyle = shouldSuspendRendering ? { ...baseStyle, height: `${height}px` } : baseStyle;
     const collapsedStyle = baseStyle;
 
-    const finalClassName = isCollapsed 
+    const finalClassName = isCollapsed
         ? `${className} p-[0.86rem] w-auto inline-block items-center justify-center cursor-pointer ${executionClasses}`
         : `${className} pb-5 ${executionClasses}`;
 

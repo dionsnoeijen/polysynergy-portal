@@ -6,6 +6,7 @@ import {Divider} from "@/components/divider";
 import {Text} from "@/components/text";
 import useEditorStore from "@/stores/editorStore";
 import useSchedulesStore from "@/stores/schedulesStore";
+import useEditorTabsStore from "@/stores/editorTabsStore";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {CalendarDateRangeIcon, XMarkIcon} from "@heroicons/react/24/outline";
@@ -99,6 +100,16 @@ const ScheduleForm: React.FC = () => {
 
     const handleDelete = async () => {
         await deleteSchedule(activeProjectId, formEditRecordId as string);
+
+        // Close the tab for this schedule
+        const tab = useEditorTabsStore.getState().getTabByFundamentalId(
+            params.projectUuid as string,
+            formEditRecordId as string
+        );
+        if (tab) {
+            useEditorTabsStore.getState().removeTab(params.projectUuid as string, tab.id);
+        }
+
         setActiveScheduleId('');
         closeForm("Schedule deleted");
         setShowDeleteAlert(false);

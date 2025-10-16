@@ -6,6 +6,7 @@ import {Divider} from "@/components/divider";
 import {Text} from "@/components/text";
 import useEditorStore from "@/stores/editorStore";
 import useChatWindowsStore from "@/stores/chatWindowsStore";
+import useEditorTabsStore from "@/stores/editorTabsStore";
 import useAccountsStore from "@/stores/accountsStore";
 import {XMarkIcon, TrashIcon, ExclamationTriangleIcon} from "@heroicons/react/24/outline";
 import {Input} from "@/components/input";
@@ -136,6 +137,16 @@ const ChatWindowForm: React.FC = () => {
 
     const handleDelete = async () => {
         await deleteChatWindow(activeProjectId, formEditRecordId as string);
+
+        // Close the tab for this chat window
+        const tab = useEditorTabsStore.getState().getTabByFundamentalId(
+            params.projectUuid as string,
+            formEditRecordId as string
+        );
+        if (tab) {
+            useEditorTabsStore.getState().removeTab(params.projectUuid as string, tab.id);
+        }
+
         setActiveChatWindowId('');
         closeForm("Chat window deleted");
         setShowDeleteAlert(false);

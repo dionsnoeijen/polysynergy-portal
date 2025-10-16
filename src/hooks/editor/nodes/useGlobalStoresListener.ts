@@ -39,13 +39,6 @@ export default function useGlobalStoreListenersWithImmediateSave() {
 
         if (!fundamentalId || !type) return;
 
-        // CRITICAL: Never save empty node arrays - final safety net
-        const {nodes} = useNodesStore.getState();
-        if (nodes.length === 0) {
-            console.warn('🚨 PREVENTED SAVING EMPTY NODE ARRAY - Data loss protection active');
-            return;
-        }
-
         // CRITICAL: Detect node setup switching and handle safely
         const isVersionSwitch = last.versionId !== activeVersionId && last.versionId !== null;
         const isTypeSwitch = last.type !== type && last.type !== null;

@@ -1,4 +1,5 @@
 import React, { ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface ModalProps {
@@ -11,9 +12,9 @@ interface ModalProps {
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg max-w-2xl w-full relative">
+    const modalContent = (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg max-w-2xl w-full relative z-[99999]">
                 {/* Header with title and close button */}
                 <div className="flex items-center justify-between border-b border-gray-200 dark:border-zinc-700 px-6 py-4">
                     {title && (
@@ -33,6 +34,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 };
 
 export default Modal;

@@ -35,7 +35,7 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
 
     const displayValue = currentValue !== undefined ? currentValue : (variable.value as string) || "";
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return (
         <>

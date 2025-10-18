@@ -45,6 +45,7 @@ type ConnectionsStore = {
     clearConnections: () => void;
     initConnections: (connections: Connection[]) => void;
     isValueConnected: (nodeId: string, handle: string) => boolean;
+    isValueConnectedExcludingGroupBoundary: (nodeId: string, handle: string) => boolean;
     isConnectionDeletable: (connectionIds: string[]) => boolean;
 };
 
@@ -442,6 +443,17 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             .getState()
             .connections
             .some((c) => c.targetNodeId === nodeId && c.targetHandle === handle);
+    },
+
+    isValueConnectedExcludingGroupBoundary: (nodeId: string, handle: string): boolean => {
+        return useConnectionsStore
+            .getState()
+            .connections
+            .some((c) =>
+                c.targetNodeId === nodeId &&
+                c.targetHandle === handle &&
+                !c.sourceGroupId  // Exclude connections from group boundary
+            );
     },
 
     isConnectionDeletable: (connectionIds: string[]): boolean => {

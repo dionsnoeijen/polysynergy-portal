@@ -29,7 +29,7 @@ export const useDependencyVariableLogic = ({
     categoryMainTextColor = 'text-sky-600 dark:text-white',
     categorySubTextColor = 'text-sky-400 dark:text-slate-400'
 }: DependencyVariableLogicProps) => {
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return useMemo(() => {
         const variableType = interpretNodeVariableType(variable);

@@ -66,7 +66,8 @@ const NodeVariables: React.FC<Props> = ({
         <>
             {variables.map(({ variable, nodeId }) => {
                 if (!variable) return null;
-                if (variable.node === false) return null;
+                // Allow node:false variables when used in group context (onlyIn/onlyOut)
+                if (variable.node === false && !onlyIn && !onlyOut) return null;
 
                 if (!nodeId) {
                     // In case of editing the node (by coding), there is no nodeId

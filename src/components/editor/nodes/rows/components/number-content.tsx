@@ -25,7 +25,7 @@ const NumberContent: React.FC<NumberContentProps> = ({ logic }) => {
                     <BoltIcon className={'w-4 h-4 text-orange-800 dark:text-yellow-300'} />
                 </span>
             ) : (
-                <span className={`ml-1 ${logic.categorySubTextColor}`}>{value}</span>
+                <span className={`ml-1 truncate ${logic.categorySubTextColor}`}>{value}</span>
             )}
         </>
     );

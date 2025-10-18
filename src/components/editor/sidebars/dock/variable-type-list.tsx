@@ -27,7 +27,7 @@ const VariableTypeList: React.FC<VariableTypeProps> = ({
         openForm(FormType.EditList, nodeId, variable);
     }
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return (
         <>

@@ -72,7 +72,7 @@ const ExpandedNode: React.FC<ExpandedNodeProps> = ({
                     </div>
                 )}
                 
-                <div className={`flex flex-col justify-center ${node.has_enabled_switch ? 'ml-2' : 'ml-3'} min-w-0`}>
+                <div className={`flex flex-col justify-center ${node.has_enabled_switch ? 'ml-2' : 'ml-3'} min-w-0 max-w-[150px]`}>
                     <h3 className={`font-bold truncate ${styles.mainText}`}>
                         {node.service?.name?.trim() === '' ? '...' : node.service?.name || node.name}
                     </h3>
@@ -82,7 +82,7 @@ const ExpandedNode: React.FC<ExpandedNodeProps> = ({
                 </div>
 
                 {false === node.view.isDeletable && (<HomeIcon className={'ml-2 h-4 w-4'}/>)}
-                
+
                 {isCollapsable && (
                     <button onClick={onCollapse} className={`ml-auto p-1 px-1 py-1`}>
                         <ChevronDownIcon className={`w-6 h-6 ${styles.mainText}`}/>

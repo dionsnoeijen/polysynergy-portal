@@ -49,7 +49,7 @@ export const useGroupCommonLogic = (node: Node, isMirror: boolean = false, previ
         }
     }, [allGroupNodes, activeRunId, backgroundedRunIds]);
     
-    const {variablesForGroup} = useVariablesForGroup(node.id, false);
+    const {variablesForGroup} = useVariablesForGroup(node.id);
     const [isDissolveDialogOpen, setIsDissolveDialogOpen] = useState(false);
 
     return useMemo(() => ({

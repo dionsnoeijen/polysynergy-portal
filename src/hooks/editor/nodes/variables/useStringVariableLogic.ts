@@ -28,7 +28,7 @@ export const useStringVariableLogic = ({
     categoryMainTextColor = 'text-slate-300',
     categorySubTextColor = 'text-slate-400'
 }: StringVariableLogicProps) => {
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return useMemo(() => {
         const variableType = interpretNodeVariableType(variable);

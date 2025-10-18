@@ -28,7 +28,7 @@ export const useSimpleVariableLogic = ({
     categoryMainTextColor = 'text-sky-600 dark:text-white',
     categorySubTextColor = 'text-sky-400 dark:text-slate-400'
 }: SimpleVariableLogicProps) => {
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return useMemo(() => {
         const displayName = (groupId && variable.group_name_override) 

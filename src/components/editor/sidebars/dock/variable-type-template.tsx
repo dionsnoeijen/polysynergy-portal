@@ -19,7 +19,7 @@ const VariableTypeTemplate: React.FC<VariableTypeProps> = ({
         openForm(FormType.EditTemplate, nodeId, variable);
     };
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return (
         <div className={'relative'}>

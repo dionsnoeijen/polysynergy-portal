@@ -94,8 +94,7 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
     const categoryContainerBorder = getCategoryBorderColor(category, isService ? NodeSubType.Service : undefined);
 
     const {group, variablesForGroup} = useVariablesForGroup(
-        openedGroup || (node?.id ?? null),
-        false
+        openedGroup || (node?.id ?? null)
     );
 
     const groupNameOverrides: Record<string, string> = {};
@@ -324,7 +323,7 @@ Please check:
                                                         />
                                                     </Field>
                                                 </Fieldset>
-                                                {!variable.has_dock && VariableComponent && (
+                                                {VariableComponent && (
                                                     <VariableComponent
                                                         nodeId={nodeId}
                                                         variable={variable}
@@ -377,12 +376,13 @@ Please check:
                                                         />
                                                     </Field>
                                                 </Fieldset>
-                                                {variable.has_dock && VariableComponent && (
+                                                {VariableComponent && (
                                                     <VariableComponent
                                                         nodeId={nodeId}
                                                         variable={variable}
                                                         publishedButton={true}
                                                         inDock={true}
+                                                        categoryBorder={categoryBorder}
                                                     />
                                                 )}
                                             </div>

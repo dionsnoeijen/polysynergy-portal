@@ -17,13 +17,13 @@ const ClosedGroup: React.FC<GroupProps> = ({
     const commonLogic = useGroupCommonLogic(node, isMirror, preview);
     const styles = useGroupStyling(node, commonLogic);
     const interactions = useGroupInteractions(
-        node, 
-        commonLogic.groupId, 
-        commonLogic.selectedNodes, 
-        commonLogic.nodeToMoveToGroupId, 
+        node,
+        commonLogic.groupId,
+        commonLogic.selectedNodes,
+        commonLogic.nodeToMoveToGroupId,
         preview
     );
-    
+
     const {dissolveGroup} = useGrouping();
 
     // Handle dissolve confirmation

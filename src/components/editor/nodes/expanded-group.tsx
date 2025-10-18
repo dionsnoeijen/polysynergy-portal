@@ -21,7 +21,7 @@ interface ExpandedGroupProps {
     };
     variablesForGroup: {
         inVariables?: Array<{ variable: NodeVariable; nodeId: string } | null>;
-        outVariables?: Array<{ variable: NodeVariable | undefined; nodeId: string }>;
+        outVariables?: Array<{ variable: NodeVariable; nodeId: string } | null>;
     } | null;
     onCollapse: () => void;
     isDissolveDialogOpen: boolean;
@@ -59,7 +59,7 @@ const ExpandedGroup: React.FC<ExpandedGroupProps> = ({
                         preserveColor={!!node.service?.id}
                     />
                 )}
-                <div className={`flex flex-col justify-center ${node.has_enabled_switch ? 'ml-2' : 'ml-3'} min-w-0`}>
+                <div className={`flex flex-col justify-center ${node.has_enabled_switch ? 'ml-2' : 'ml-3'} min-w-0 max-w-[150px]`}>
                     <h3 className={`font-bold truncate ${styles.mainText}`}>
                         {node.service
                             ? (node.service.name.trim() === '' ? '...' : node.service.name)
@@ -93,26 +93,28 @@ const ExpandedGroup: React.FC<ExpandedGroupProps> = ({
             {/* Variables */}
             <div className="flex w-full gap-4">
                 {variablesForGroup?.inVariables && variablesForGroup?.inVariables?.length > 0 && (
-                    <div className="flex-1 flex flex-col">
+                    <div className="flex-1 flex flex-col max-w-[200px]">
                         <NodeVariables
                             node={node}
                             categoryMainTextColor={styles.mainText}
                             categorySubTextColor={styles.subText}
                             variables={variablesForGroup.inVariables.filter(
                                 (v): v is { variable: NodeVariable; nodeId: string } => v !== null
-                            )} 
-                            isMirror={isMirror} 
+                            )}
+                            isMirror={isMirror}
                             onlyIn={true}
                         />
                     </div>
                 )}
                 {variablesForGroup?.outVariables && variablesForGroup?.outVariables?.length > 0 && (
-                    <div className="flex-1 flex flex-col">
+                    <div className="flex-1 flex flex-col max-w-[200px]">
                         <NodeVariables
                             node={node}
                             categoryMainTextColor={styles.mainText}
                             categorySubTextColor={styles.subText}
-                            variables={variablesForGroup.outVariables}
+                            variables={variablesForGroup.outVariables.filter(
+                                (v): v is { variable: NodeVariable; nodeId: string } => v !== null
+                            )}
                             isMirror={isMirror}
                             onlyOut={true}
                         />

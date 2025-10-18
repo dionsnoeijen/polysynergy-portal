@@ -69,7 +69,7 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
         };
     }, []);
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return (
         <>

@@ -63,7 +63,7 @@ const CollapsedNode: React.FC<CollapsedNodeProps> = ({
                     )
                 )}
                 
-                <div className={`flex flex-col justify-center ml-2 min-w-0`}>
+                <div className={`flex flex-col justify-center ml-2 min-w-0 max-w-[150px]`}>
                     <h3 className={`font-bold truncate ${styles.mainText}`}>
                         {node.service?.name?.trim() === '' ? '...' : node.service?.name || node.name}
                     </h3>
@@ -71,7 +71,7 @@ const CollapsedNode: React.FC<CollapsedNodeProps> = ({
                         {node.handle} : {node.category}
                     </h5>
                 </div>
-                
+
                 <button onClick={onCollapse} className="ml-auto p-1 px-1 py-1">
                     <ChevronUpIcon className={`w-6 h-6 ${styles.mainText}`}/>
                 </button>

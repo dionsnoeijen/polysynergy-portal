@@ -605,19 +605,39 @@ const useNodesStore = create<NodesStore>((set, get) => ({
         // Sanitize the value to ensure it's React-safe
         const sanitizedValue = sanitizeExecutionValue(newValue);
 
+        // Check if this is a sub-variable (contains '.')
+        const isSubVariable = variableHandle.includes('.');
+        const [parentHandle, subHandle] = isSubVariable ? variableHandle.split('.') : [variableHandle, null];
+
         set((state) => ({
             nodes: state.nodes.map((node) =>
                 node.id === nodeId
                     ? {
                         ...node,
-                        variables: node.variables.map((variable) =>
-                            variable.handle === variableHandle
+                        variables: node.variables.map((variable) => {
+                            // If this is a sub-variable, update the sub-variable value
+                            if (isSubVariable && variable.handle === parentHandle && Array.isArray(variable.value)) {
+                                return {
+                                    ...variable,
+                                    value: (variable.value as NodeVariable[]).map((subVar) =>
+                                        subVar.handle === subHandle
+                                            ? {
+                                                ...subVar,
+                                                value: sanitizedValue,
+                                            }
+                                            : subVar
+                                    ),
+                                };
+                            }
+
+                            // Otherwise, update the top-level variable
+                            return variable.handle === variableHandle
                                 ? {
                                     ...variable,
                                     value: sanitizedValue,
                                 }
-                                : variable
-                        ),
+                                : variable;
+                        }),
                     }
                     : node
             ),

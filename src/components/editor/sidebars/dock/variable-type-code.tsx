@@ -38,7 +38,7 @@ const VariableTypeCode: React.FC<Props> = ({
         openForm(FormType.EditCode, nodeId, variable);
     };
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return (
         <div className={'relative'}>

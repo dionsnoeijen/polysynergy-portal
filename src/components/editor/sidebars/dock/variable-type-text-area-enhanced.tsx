@@ -27,7 +27,7 @@ const VariableTypeTextAreaEnhanced: React.FC<VariableTypeProps> = ({
         updateNodeVariable(nodeId, variable.handle, newValue);
     };
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return (
         <>

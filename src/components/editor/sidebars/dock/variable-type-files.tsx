@@ -25,7 +25,7 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({
         openForm(FormType.EditFiles, nodeId, variable);
     }
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return (
         <div className={'relative'}>

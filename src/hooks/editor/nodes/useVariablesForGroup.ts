@@ -24,13 +24,11 @@ const getGroupOverridesKey = (state: NodesStore, groupId: string) => {
         .join('|');
 };
 
-const useVariablesForGroup = (groupId: string | null, checkDock = true) => {
+const useVariablesForGroup = (groupId: string | null) => {
     const getTrackedNode = useNodesStore((state) => state.getTrackedNode);
     const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
     const getNodeSubVariable = useNodesStore((state) => state.getNodeSubVariable);
     const getGroupById = useNodesStore((state) => state.getGroupById);
-    const findInConnectionsByNodeId = useConnectionsStore((state) => state.findInConnectionsByNodeId);
-    const findOutConnectionsByNodeId = useConnectionsStore((state) => state.findOutConnectionsByNodeId);
     const connections = useConnectionsStore((state) => state.connections);
 
     groupId = groupId?.startsWith("mirror-") ? groupId.replace("mirror-", "") : groupId;
@@ -45,8 +43,32 @@ const useVariablesForGroup = (groupId: string | null, checkDock = true) => {
     const variablesForGroup = useMemo(() => {
         if (!group) return null;
 
-        const outConnections = findInConnectionsByNodeId(group.id);
-        const inConnections = findOutConnectionsByNodeId(group.id);
+        // Helper: check if a node is inside this group
+        const isNodeInGroup = (nodeId: string): boolean => {
+            return group.group?.nodes?.includes(nodeId) ?? false;
+        };
+
+        // IN variabelen: connections van buiten naar binnen de group
+        // Source moet BUITEN de group zijn, target moet BINNEN de group zijn
+        const inConnections = connections.filter(c =>
+            c.isInGroup === group.id &&
+            c.targetNodeId &&
+            c.targetNodeId !== group.id &&
+            !c.targetGroupId &&
+            isNodeInGroup(c.targetNodeId) &&
+            !isNodeInGroup(c.sourceNodeId)
+        );
+
+        // OUT variabelen: connections van binnen naar buiten de group
+        // Source moet BINNEN de group zijn, target moet BUITEN de group zijn (of niet bestaan voor boundary)
+        const outConnections = connections.filter(c =>
+            c.isInGroup === group.id &&
+            c.sourceNodeId &&
+            c.sourceNodeId !== group.id &&
+            !c.sourceGroupId &&
+            isNodeInGroup(c.sourceNodeId) &&
+            (!c.targetNodeId || !isNodeInGroup(c.targetNodeId))
+        );
 
         const inVariables = inConnections
             .map((connection) => {
@@ -74,22 +96,27 @@ const useVariablesForGroup = (groupId: string | null, checkDock = true) => {
                     nodeId: connection.targetNodeId,
                 }
             })
-            .filter(Boolean)
-            .filter((item) => {
-                if (!item || !item.variable) return false;
-                return checkDock ? item.variable.has_dock : true;
-            });
+            .filter(Boolean);
 
         const outVariables = outConnections
-            .map((connection) => ({
-                variable: getNodeVariable(connection.sourceNodeId, connection.sourceHandle),
-                nodeId: connection.sourceNodeId,
-            }))
-            .filter(Boolean)
-            .filter((item) => {
-                if (!item.variable) return false;
-                return checkDock ? item.variable.has_dock : true;
-            });
+            .map((connection) => {
+                if (!connection.sourceNodeId || !connection.sourceHandle) return null;
+
+                let variable = getNodeVariable(connection.sourceNodeId, connection.sourceHandle);
+
+                // Check voor sub-variabelen
+                if (connection.sourceHandle?.indexOf('.') > -1) {
+                    variable = getNodeSubVariable(connection.sourceNodeId, connection.sourceHandle);
+                }
+
+                if (!variable) return null;
+
+                return {
+                    variable,
+                    nodeId: connection.sourceNodeId,
+                };
+            })
+            .filter(Boolean);
 
         return {inVariables, outVariables};
         // eslint-disable-next-line

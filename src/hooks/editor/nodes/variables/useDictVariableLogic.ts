@@ -30,8 +30,8 @@ export const useDictVariableLogic = ({
     categoryMainTextColor = 'text-sky-600 dark:text-white',
     categorySubTextColor = 'text-slate-400 dark:text-slate-500'
 }: DictVariableLogicProps) => {
-    const isSubValueConnected = useConnectionsStore((state) => state.isValueConnected);
-    const isMainValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isSubValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary);
+    const isMainValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return useMemo(() => {
         const variableType = interpretNodeVariableType(variable);

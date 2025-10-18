@@ -1,5 +1,6 @@
 import React from 'react';
 import {BoltIcon, CodeBracketIcon} from '@heroicons/react/24/outline';
+import {truncateText} from "@/utils/truncateText";
 
 interface JsonContentProps {
     logic?: {
@@ -26,8 +27,8 @@ const JsonContent: React.FC<JsonContentProps> = ({ logic }) => {
                     <BoltIcon className={'w-4 h-4 text-orange-800 dark:text-yellow-300'} />
                 </span>
             ) : (
-                <span className={`ml-1 ${logic.categorySubTextColor}`}>
-                    {logic.valueText}
+                <span className={`ml-1 truncate ${logic.categorySubTextColor}`}>
+                    {truncateText(logic.valueText)}
                 </span>
             )}
         </>

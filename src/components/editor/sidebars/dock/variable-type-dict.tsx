@@ -27,7 +27,7 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
         openForm(FormType.EditDict, nodeId, variable);
     }
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
     const isSubValueConnected = useConnectionsStore((state) => state.isValueConnected);
 
     function isVariableDisabled(variable: NodeVariable, inDock: boolean): boolean {

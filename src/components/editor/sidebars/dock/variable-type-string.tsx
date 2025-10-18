@@ -25,14 +25,18 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
     // eslint-disable-next-line
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900'
 }) => {
+    // Get the full handle (including parent if it's a sub-variable)
+    const fullHandle = variable.parentHandle
+        ? `${variable.parentHandle}.${variable.handle}`
+        : variable.handle;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
         const newValue = e.target.value;
         if (onChange) {
             onChange(newValue);
         } else {
-            // Use history-enabled variable update
-            nodeHistoryActions.updateNodeVariableWithHistory(nodeId, variable.handle, newValue);
+            // Use history-enabled variable update with full handle
+            nodeHistoryActions.updateNodeVariableWithHistory(nodeId, fullHandle, newValue);
         }
     };
 
@@ -40,12 +44,12 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
         if (onChange) {
             onChange(newValue);
         } else {
-            // Use history-enabled variable update
-            nodeHistoryActions.updateNodeVariableWithHistory(nodeId, variable.handle, newValue);
+            // Use history-enabled variable update with full handle
+            nodeHistoryActions.updateNodeVariableWithHistory(nodeId, fullHandle, newValue);
         }
     };
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnected(nodeId, variable.handle));
+    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
 
     return (
         <>

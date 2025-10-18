@@ -2,6 +2,7 @@ import React from 'react';
 import {useStringVariableLogic} from '@/hooks/editor/nodes/variables/useStringVariableLogic';
 import {BoltIcon, DocumentTextIcon} from "@heroicons/react/24/outline";
 import {isPlaceholder} from "@/utils/isPlaceholder";
+import {truncateText} from "@/utils/truncateText";
 
 interface StringContentProps {
     logic: ReturnType<typeof useStringVariableLogic>;
@@ -20,9 +21,9 @@ const StringContent: React.FC<StringContentProps> = ({ logic }) => {
                 </span>
             ) : (
                 isPlaceholder(logic.variable.value) ? (
-                    <span className="ml-1 text-green-300">{logic.variable.value as string}</span>
+                    <span className="ml-1 text-green-300 truncate">{truncateText(logic.variable.value as string)}</span>
                 ) : (
-                    <span className={`ml-1 ${logic.categorySubTextColor}`}>{logic.variable.value as unknown as string}</span>
+                    <span className={`ml-1 truncate ${logic.categorySubTextColor}`}>{truncateText(logic.variable.value as unknown as string)}</span>
                 )
             )}
         </>

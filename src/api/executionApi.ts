@@ -10,7 +10,8 @@ export const getNodeExecutionDetails = async (
     subStage: string
 ) => {
     const idToken = getIdToken();
-    const baseNodeId = nodeId.replace(/-\d+$/, '');
+    // Only strip short numeric suffixes (1-3 digits for mock orders), not UUID segments
+    const baseNodeId = nodeId.replace(/-(\d{1,3})$/, '');
     const response = await fetch(`${config.LOCAL_API_URL}/execution/${activeVersionId}/${runId}/${baseNodeId}/${order}?stage=${stage}&sub_stage=${subStage}`, {
         headers: {
             'Accept': 'application/json',

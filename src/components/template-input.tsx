@@ -8,6 +8,7 @@ interface VariableChip {
   handle: string;
   startPos: number;
   endPos: number;
+  type: 'variable' | 'secret' | 'environment';
 }
 
 interface TemplateInputProps {
@@ -58,17 +59,56 @@ export const TemplateInput = forwardRef(function TemplateInput(
     const variables: VariableChip[] = [];
     const regex = /\{\{\s*([^}]+?)\s*\}\}/g;
     let match;
-    
+
     while ((match = regex.exec(text)) !== null) {
       variables.push({
-        id: `${match.index}-${match[1]}`,
+        id: `variable-${match.index}-${match[1]}`,
         handle: match[1].trim(),
         startPos: match.index,
-        endPos: match.index + match[0].length
+        endPos: match.index + match[0].length,
+        type: 'variable'
       });
     }
-    
+
     return variables;
+  };
+
+  // Parse secrets from text (<secret:key> or <sec:key>)
+  const parseSecrets = (text: string): VariableChip[] => {
+    const secrets: VariableChip[] = [];
+    const regex = /<(secret|sec):\s*([^>]+?)\s*>/g;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      secrets.push({
+        id: `secret-${match.index}-${match[2]}`,
+        handle: match[2].trim(),
+        startPos: match.index,
+        endPos: match.index + match[0].length,
+        type: 'secret'
+      });
+    }
+
+    return secrets;
+  };
+
+  // Parse environment variables from text (<environment:key> or <env:key>)
+  const parseEnvironmentVars = (text: string): VariableChip[] => {
+    const envVars: VariableChip[] = [];
+    const regex = /<(environment|env):\s*([^>]+?)\s*>/g;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      envVars.push({
+        id: `env-${match.index}-${match[2]}`,
+        handle: match[2].trim(),
+        startPos: match.index,
+        endPos: match.index + match[0].length,
+        type: 'environment'
+      });
+    }
+
+    return envVars;
   };
 
   const removeVariable = (variable: VariableChip) => {
@@ -111,10 +151,38 @@ export const TemplateInput = forwardRef(function TemplateInput(
     }
   };
 
-  // Render preview with variable chips
+  // Get chip styling based on type
+  const getChipStyles = (type: 'variable' | 'secret' | 'environment') => {
+    switch (type) {
+      case 'secret':
+        return {
+          container: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-red-200 dark:border-red-700/50',
+          button: 'text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200'
+        };
+      case 'environment':
+        return {
+          container: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-700/50',
+          button: 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200'
+        };
+      case 'variable':
+      default:
+        return {
+          container: 'bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-200 border-sky-200 dark:border-sky-700/50',
+          button: 'text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-200'
+        };
+    }
+  };
+
+  // Render preview with variable, secret, and environment chips
   const renderPreviewContent = () => {
     const variables = parseVariables(value);
-    if (variables.length === 0) {
+    const secrets = parseSecrets(value);
+    const envVars = parseEnvironmentVars(value);
+
+    // Merge all chips and sort by position
+    const allChips = [...variables, ...secrets, ...envVars].sort((a, b) => a.startPos - b.startPos);
+
+    if (allChips.length === 0) {
       return (
         <div className="text-zinc-500 dark:text-zinc-400 pointer-events-none">
           {value || placeholder}
@@ -125,10 +193,10 @@ export const TemplateInput = forwardRef(function TemplateInput(
     const parts = [];
     let lastIndex = 0;
 
-    variables.forEach((variable, index) => {
-      // Add text before variable
-      if (variable.startPos > lastIndex) {
-        const textPart = value.slice(lastIndex, variable.startPos);
+    allChips.forEach((chip, index) => {
+      // Add text before chip
+      if (chip.startPos > lastIndex) {
+        const textPart = value.slice(lastIndex, chip.startPos);
         if (textPart) {
           parts.push(
             <span key={`text-${index}`}>
@@ -138,32 +206,34 @@ export const TemplateInput = forwardRef(function TemplateInput(
         }
       }
 
-      // Add variable chip
+      const styles = getChipStyles(chip.type);
+
+      // Add chip
       parts.push(
         <span
-          key={variable.id}
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-200 rounded text-xs font-mono border border-sky-200 dark:border-sky-700/50"
-          style={{ 
+          key={chip.id}
+          className={`inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 rounded text-xs font-mono border ${styles.container}`}
+          style={{
             verticalAlign: 'middle',
             display: 'inline-flex',
             lineHeight: '1'
           }}
         >
-          <span className="truncate max-w-[120px]">{variable.handle}</span>
+          <span className="truncate max-w-[120px]">{chip.handle}</span>
           <button
             onClick={(e) => {
               e.stopPropagation();
-              removeVariable(variable);
+              removeVariable(chip);
             }}
-            className="flex-shrink-0 text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-200 transition-colors ml-1"
-            title="Remove variable"
+            className={`flex-shrink-0 transition-colors ml-1 ${styles.button}`}
+            title={`Remove ${chip.type}`}
           >
             <XMarkIcon className="w-2.5 h-2.5" />
           </button>
         </span>
       );
 
-      lastIndex = variable.endPos;
+      lastIndex = chip.endPos;
     });
 
     // Add remaining text

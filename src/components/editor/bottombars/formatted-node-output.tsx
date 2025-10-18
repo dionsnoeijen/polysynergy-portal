@@ -84,6 +84,20 @@ const RenderValue = ({label, value}: { label: string; value: unknown }) => {
 
     if (typeof value === "string") {
         const isHtml = isProbablyHtml(value);
+
+        // Try to parse as JSON first (for JSON strings that should be rendered as objects)
+        if (!isHtml) {
+            try {
+                const parsed = JSON.parse(value);
+                // If parsing succeeds and it's an object/array, render as JSON
+                if (typeof parsed === 'object' && parsed !== null) {
+                    return <RenderValue label={label} value={parsed} />;
+                }
+            } catch {
+                // Not valid JSON, continue with string rendering
+            }
+        }
+
         return (
             <div className="mb-2">
                 <div className="text-xs font-bold text-black/70 dark:text-white/70">{label}</div>

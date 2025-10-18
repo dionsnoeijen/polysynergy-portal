@@ -30,4 +30,10 @@ export const sendFeedback = async (email: string, message: string): Promise<void
     if (!response.ok) {
         throw new Error('Failed to send feedback');
     }
+
+    // Check the success field in the response body
+    const result = await response.json();
+    if (!result.success) {
+        throw new Error(result.message || 'Failed to send feedback');
+    }
 };

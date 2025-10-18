@@ -9,6 +9,7 @@ import {FormType} from '@/types/types';
 import {
     // Bars3Icon,
     ArrowDownTrayIcon,
+    ArrowUpTrayIcon,
     Squares2X2Icon,
     ArrowUturnUpIcon,
     AdjustmentsHorizontalIcon,
@@ -64,12 +65,17 @@ export default function VersionPublishedMenu() {
 
             {/* Divider */}
             <div className="w-px h-6 bg-sky-300 dark:bg-zinc-600 mx-1"></div>
-            
+
             {/* Export Button */}
             <button className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" title="Export sharing package" onClick={() => openForm(FormType.ExportSharing)}>
                 <ArrowDownTrayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
             </button>
-            
+
+            {/* Import Button */}
+            <button className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" title="Import package" onClick={() => openForm(FormType.ImportPackage)}>
+                <ArrowUpTrayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+            </button>
+
             {/* Publish Button */}
             <button className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" title="Publish" onClick={() => openForm(FormType.ProjectPublish)}>
                 <RocketLaunchIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>

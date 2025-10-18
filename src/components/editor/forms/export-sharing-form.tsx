@@ -11,6 +11,7 @@ import {Textarea} from "@/components/textarea";
 import {Checkbox, CheckboxField} from "@/components/checkbox";
 import {XMarkIcon, ArrowDownTrayIcon} from "@heroicons/react/24/outline";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/table";
+import {exportPackage, ExportItem} from "@/api/packageApi";
 
 const ExportSharingForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -79,29 +80,54 @@ const ExportSharingForm: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (selectedBlueprints.size === 0 && selectedServices.size === 0) {
             alert("Please select at least one blueprint or service to export.");
             return;
         }
 
         setIsExporting(true);
-        
+
         try {
-            // TODO: Call backend API to generate and download zip file
-            // This will be implemented when backend endpoints are ready
-            console.log("Exporting:", {
-                name: exportName,
-                description: exportDescription,
-                blueprints: Array.from(selectedBlueprints),
-                services: Array.from(selectedServices)
+            const { activeProjectId } = useEditorStore.getState();
+
+            if (!activeProjectId) {
+                alert("No active project selected.");
+                return;
+            }
+
+            // Build export items array
+            const items: ExportItem[] = [
+                ...Array.from(selectedBlueprints).map(id => ({
+                    item_type: "blueprint" as const,
+                    item_id: id
+                })),
+                ...Array.from(selectedServices).map(id => ({
+                    item_type: "service" as const,
+                    item_id: id
+                }))
+            ];
+
+            // Call export API
+            const blob = await exportPackage(activeProjectId, {
+                items,
+                export_name: exportName || undefined
             });
-            
-            // For now, show success message
+
+            // Trigger download
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${exportName || 'PolySynergy_Export'}.psy`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
             closeForm("Export package created successfully");
         } catch (error) {
             console.error("Export failed:", error);
-            alert("Export failed. Please try again.");
+            alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         } finally {
             setIsExporting(false);
         }

@@ -1,6 +1,6 @@
 import {FormType, NodeVariable} from "@/types/types";
 import {Label, LabelGroup} from "@/components/fieldset";
-import {ArrowRightCircleIcon, InformationCircleIcon} from "@heroicons/react/24/outline";
+import {ArrowRightCircleIcon, InformationCircleIcon, ArrowUpCircleIcon} from "@heroicons/react/24/outline";
 import React, {useState} from "react";
 import {ConfirmDialog} from "@/components/confirm-dialog";
 import useEditorStore from "@/stores/editorStore";
@@ -23,6 +23,8 @@ const LabelPublish: React.FC<Props> = ({
     const openForm =
         useEditorStore((state) => state.openForm);
     const isNodeInService = useNodesStore((state) => state.isNodeInService([nodeId]));
+    const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup(nodeId));
+    const toggleVariableExposedToGroup = useNodesStore((state) => state.toggleVariableExposedToGroup);
     const [showInfo, setShowInfo] = useState(false);
 
     return (
@@ -36,6 +38,17 @@ const LabelPublish: React.FC<Props> = ({
                             title={'Info'}
                         >
                             <InformationCircleIcon className={`w-4 h-4 !m-0 ${categoryMainTextColor}`}/>
+                        </button>
+                    )}
+                    {isNodeInGroup && (
+                        <button
+                            onClick={() => toggleVariableExposedToGroup(nodeId, variable.handle)}
+                            disabled={isNodeInService}
+                            className={`p-1 mb-1 rounded-md ${!isNodeInService && 'hover:bg-emerald-500'} ${variable.exposed_to_group && 'bg-emerald-500 !hover:bg-emerald-600'} ${isNodeInService && 'opacity-50 cursor-not-allowed'}`}
+                            title={isNodeInService ? 'Cannot expose variables in service nodes' : 'Expose to group'}
+                        >
+                            <ArrowUpCircleIcon
+                                className={`w-4 h-4 !m-0 ${categoryMainTextColor} ${variable.exposed_to_group && '!text-white'}`} />
                         </button>
                     )}
                     <button

@@ -23,6 +23,7 @@ interface ExpandedGroupProps {
     variablesForGroup: {
         inVariables?: Array<{ variable: NodeVariable; nodeId: string } | null>;
         outVariables?: Array<{ variable: NodeVariable; nodeId: string } | null>;
+        exposedVariables?: Array<{ variable: NodeVariable; nodeId: string }>;
     } | null;
     onCollapse: () => void;
     isDissolveDialogOpen: boolean;

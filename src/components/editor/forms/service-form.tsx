@@ -141,14 +141,6 @@ const ServiceForm: React.FC = () => {
         }
     }, [getNodesByIds, getNodesInGroup, node]);
 
-    // Cleanup temp nodes when component unmounts
-    useEffect(() => {
-        return () => {
-            clearTempNodes();
-            clearTempConnections();
-        };
-    }, [clearTempNodes, clearTempConnections]);
-
     if (formType === FormType.AddService) {
         if (selectedNodes.length > 1) {
             console.log("MULTIPLE NODES SELECTED, MAKE SURE THE FORM DOES NOT LOAD AT ALL");

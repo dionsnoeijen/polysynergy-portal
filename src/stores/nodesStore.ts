@@ -42,6 +42,7 @@ export type NodesStore = {
     getNodesToRender: () => Node[];
     updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => void;
     toggleNodeVariablePublished: (nodeId: string, variableHandle: string) => void;
+    toggleVariableExposedToGroup: (nodeId: string, variableHandle: string) => void;
     updateNodeHandle: (nodeId: string, handle: string) => void;
     updateNodeNotes: (nodeId: string, notes: string) => void;
     getTrackedNode: () => Node | null;
@@ -691,6 +692,60 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     formEditVariable: {
                         ...editorStore.formEditVariable,
                         published: !editorStore?.formEditVariable?.published,
+                    } as NodeVariable,
+                });
+            }
+
+            return {nodes: updatedNodes};
+        });
+    },
+
+    toggleVariableExposedToGroup: (nodeId: string, variableHandle: string) => {
+        nodesByIdsCache.clear();
+
+        const [mainHandle, subHandle] = variableHandle.split(".");
+
+        set((state) => {
+            const updatedNodes = state.nodes.map((node) =>
+                node.id === nodeId
+                    ? {
+                        ...node,
+                        variables: node.variables.map((variable) => {
+                            if (variable.handle !== mainHandle) return variable;
+
+                            if (subHandle && Array.isArray(variable.value)) {
+                                return {
+                                    ...variable,
+                                    value: (variable.value as NodeVariable[]).map((subVar: NodeVariable) =>
+                                        subVar.handle === subHandle
+                                            ? {
+                                                ...subVar,
+                                                exposed_to_group: !subVar.exposed_to_group,
+                                            }
+                                            : subVar
+                                    ),
+                                };
+                            }
+
+                            return {
+                                ...variable,
+                                exposed_to_group: !variable.exposed_to_group,
+                            };
+                        }),
+                    }
+                    : node
+            );
+
+            const editorStore = useEditorStore.getState();
+            const isEditingThisVar =
+                editorStore.formEditRecordId === nodeId &&
+                editorStore.formEditVariable?.handle === variableHandle;
+
+            if (isEditingThisVar) {
+                useEditorStore.setState({
+                    formEditVariable: {
+                        ...editorStore.formEditVariable,
+                        exposed_to_group: !editorStore?.formEditVariable?.exposed_to_group,
                     } as NodeVariable,
                 });
             }

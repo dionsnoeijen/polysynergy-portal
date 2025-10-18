@@ -27,6 +27,8 @@ import { useExecutionTabSwitcher } from "@/hooks/editor/useExecutionTabSwitcher"
 import { EditorMode } from "@/types/types";
 import Minimap from "@/components/editor/minimap";
 import useEditorStore from "@/stores/editorStore";
+import useNodesStore from "@/stores/nodesStore";
+import useConnectionsStore from "@/stores/connectionsStore";
 
 export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
     const contentRef = useRef<HTMLDivElement>(null);
@@ -245,9 +247,15 @@ export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
     useEffect(() => {
         const element = contentRef.current;
         if (!element) return;
-        
+
         element.addEventListener('wheel', handleDOMWheel, { passive: false });
         return () => element.removeEventListener('wheel', handleDOMWheel);
+    }, []);
+
+    // Cleanup temp nodes on editor mount to prevent zombies from previous sessions
+    useEffect(() => {
+        useNodesStore.getState().clearTempNodes();
+        useConnectionsStore.getState().clearTempConnections();
     }, []);
 
     return (

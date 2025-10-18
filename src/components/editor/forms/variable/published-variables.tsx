@@ -305,6 +305,7 @@ const PublishedVariables: React.FC<Props> = ({
         }>();
 
         // Helper function to extract inline secrets from text
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const extractInlineSecrets = (text: string): string[] => {
             const regex = /<(?:secret|sec):([^>]+)>/g;
             const matches = [];
@@ -445,6 +446,7 @@ const PublishedVariables: React.FC<Props> = ({
         }>();
 
         // Helper function to extract inline environment variables from text
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const extractInlineEnvVars = (text: string): string[] => {
             const regex = /<(?:environment|env):([^>]+)>/g;
             const matches = [];

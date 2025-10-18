@@ -69,7 +69,7 @@ const CollapsedGroup: React.FC<CollapsedGroupProps> = ({
                     <ChevronUpIcon className={`w-6 h-6 ${styles.mainText}`}/>
                 </button>
             </div>
-            
+
             <Connector out nodeId={node.id} handle={NodeCollapsedConnector.Collapsed}/>
 
             {/* Dissolve Confirmation Dialog */}

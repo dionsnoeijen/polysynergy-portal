@@ -141,7 +141,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
                     position: "absolute",
                     pointerEvents: "auto",
                     overflow: "visible",
-                    zIndex: 1,
+                    zIndex: 10,
                     opacity: isReady ? 1 : 0,
                     transition: "opacity 0.2s ease-out 0.2s"
                 }}

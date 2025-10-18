@@ -1,7 +1,7 @@
 import {useMemo} from "react";
 import useNodesStore, {NodesStore} from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import {NodeVariable} from "@/types/types";
+import {NodeVariable, NodeType} from "@/types/types";
 
 const getGroupOverridesKey = (state: NodesStore, groupId: string) => {
     const group = state.getGroupById(groupId);
@@ -29,6 +29,7 @@ const useVariablesForGroup = (groupId: string | null) => {
     const getNodeVariable = useNodesStore((state) => state.getNodeVariable);
     const getNodeSubVariable = useNodesStore((state) => state.getNodeSubVariable);
     const getGroupById = useNodesStore((state) => state.getGroupById);
+    const getNode = useNodesStore((state) => state.getNode);
     const connections = useConnectionsStore((state) => state.connections);
 
     groupId = groupId?.startsWith("mirror-") ? groupId.replace("mirror-", "") : groupId;
@@ -42,6 +43,58 @@ const useVariablesForGroup = (groupId: string | null) => {
 
     const variablesForGroup = useMemo(() => {
         if (!group) return null;
+
+        // Recursive function to collect exposed variables from this group and all nested groups
+        const collectExposedVariables = (currentGroupId: string, visited = new Set<string>()): Array<{ variable: NodeVariable; nodeId: string }> => {
+            // Prevent infinite loops
+            if (visited.has(currentGroupId)) return [];
+            visited.add(currentGroupId);
+
+            const currentGroup = getGroupById(currentGroupId);
+            if (!currentGroup?.group?.nodes) return [];
+
+            const exposed: Array<{ variable: NodeVariable; nodeId: string }> = [];
+
+            // For each node in this group
+            currentGroup.group.nodes.forEach((nodeId: string) => {
+                const node = getNode(nodeId);
+                if (!node) return;
+
+                // If it's a group, recurse into it
+                if (node.type === NodeType.Group) {
+                    const nestedExposed = collectExposedVariables(nodeId, visited);
+                    exposed.push(...nestedExposed);
+                } else {
+                    // Check each variable for exposed_to_group
+                    node.variables.forEach((variable: NodeVariable) => {
+                        if (variable.exposed_to_group) {
+                            exposed.push({
+                                variable,
+                                nodeId: node.id,
+                            });
+                        }
+
+                        // Also check sub-variables in dicts
+                        if (variable.type === 'dict' && Array.isArray(variable.value)) {
+                            (variable.value as NodeVariable[]).forEach((subVar: NodeVariable) => {
+                                if (subVar.exposed_to_group) {
+                                    exposed.push({
+                                        variable: {
+                                            ...subVar,
+                                            name: `${variable.name}.${subVar.handle}`,
+                                            parentHandle: variable.handle,
+                                        },
+                                        nodeId: node.id,
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            return exposed;
+        };
 
         // Helper: check if a node is inside this group
         const isNodeInGroup = (nodeId: string): boolean => {
@@ -118,7 +171,10 @@ const useVariablesForGroup = (groupId: string | null) => {
             })
             .filter(Boolean);
 
-        return {inVariables, outVariables};
+        // Collect all exposed variables from this group and nested groups
+        const exposedVariables = collectExposedVariables(group.id);
+
+        return {inVariables, outVariables, exposedVariables};
         // eslint-disable-next-line
     }, [node, group, connections, groupOverridesKey]);
 

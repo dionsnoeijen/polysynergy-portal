@@ -339,6 +339,44 @@ Please check:
                             </VariableGroup>
                         )}
 
+                        {variablesForGroup?.exposedVariables && variablesForGroup?.exposedVariables.length > 0 && (
+                            <VariableGroup
+                                title="Exposed Variables"
+                                categoryBorderColor={categoryContainerBorder}
+                                categoryMainTextColor={categoryMainTextColor}
+                                categorySubTextColor={categorySubTextColor}
+                                categoryBackgroundColor={categoryBackground}
+                                categoryGradientBackgroundColor={categoryGradientBackground}
+                                nested={true}
+                            >
+                                {variablesForGroup.exposedVariables.map(({variable, nodeId}) => {
+                                    if (!variable) return null;
+
+                                    const {baseType} = interpretNodeVariableType(variable);
+                                    const VariableComponent = VariableTypeComponents[baseType];
+
+                                    // Get the source node to display its handle
+                                    const sourceNode = nodes.find(n => n.id === nodeId);
+                                    const nodeHandle = sourceNode?.handle || nodeId;
+
+                                    return VariableComponent ? (
+                                        <div key={nodeId + '-' + variable.handle}>
+                                            <Fieldset>
+                                                <Label>From node: <span className="text-zinc-500 dark:text-zinc-400 text-xs">{nodeHandle}</span></Label>
+                                            </Fieldset>
+                                            <VariableComponent
+                                                nodeId={nodeId}
+                                                variable={variable}
+                                                publishedButton={true}
+                                                inDock={true}
+                                                categoryBorder={categoryBorder}
+                                            />
+                                        </div>
+                                    ) : null;
+                                })}
+                            </VariableGroup>
+                        )}
+
                         {variablesForGroup?.outVariables && variablesForGroup?.outVariables.length > 0 && (
                             <VariableGroup
                                 title="Out Variables"

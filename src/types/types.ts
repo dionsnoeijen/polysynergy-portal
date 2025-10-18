@@ -196,6 +196,7 @@ export type NodeVariable = {
     published: boolean;
     published_title?: string;
     published_description?: string;
+    exposed_to_group?: boolean;
     group_name_override?: string;
     group_connector_color_override?: string;
     type: string | NodeVariableType;

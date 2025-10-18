@@ -49,7 +49,7 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
                             actions={
                                 <Button
                                     plain
-                                    disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
+                                    disabled={variable?.dock?.enabled === false}
                                     onClick={togglePasswordVisibility}
                                     className="!p-1"
                                     title={isPasswordVisible ? "Hide password" : "Show password"}
@@ -64,11 +64,12 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
                         >
                             <Input
                                 type={isPasswordVisible ? "text" : "password"}
-                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
+                                disabled={variable?.dock?.enabled === false}
                                 value={displayValue}
                                 onChange={handleChange}
                                 placeholder={'******'}
                                 aria-label={variable.handle}
+                                className={`${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}
                             />
                         </FieldGroup>
                     </Field>

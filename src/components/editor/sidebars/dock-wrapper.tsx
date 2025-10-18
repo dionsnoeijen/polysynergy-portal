@@ -214,7 +214,7 @@ Please check:
                 </div>
             )}
 
-            {isService && (
+            {isNodeInService && (
               <div className={`relative z-20 p-2`}>
                 <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
                     This is a service, only the published variables are editable from the published variables form.
@@ -233,7 +233,7 @@ Please check:
                         categorySubTextColor={categorySubTextColor}
                         categoryBackgroundColor={categoryBackground}
                         categoryGradientBackgroundColor={categoryGradientBackground}
-                        isService={isService}
+                        isService={isNodeInService}
                     >
                         {node.variables.map((variable: NodeVariable) => {
                             if (!variable.has_dock) return null;
@@ -264,7 +264,7 @@ Please check:
                         categorySubTextColor={categorySubTextColor}
                         categoryBackgroundColor={categoryBackground}
                         categoryGradientBackgroundColor={categoryGradientBackground}
-                        isService={isService}
+                        isService={isNodeInService}
                     >
                         <p className="text-zinc-400 text-sm italic p-4">
                             Node does not have variables that can be edited from the dock.
@@ -281,7 +281,7 @@ Please check:
                         categorySubTextColor={categorySubTextColor}
                         categoryBackgroundColor={categoryBackground}
                         categoryGradientBackgroundColor={categoryGradientBackground}
-                        isService={isService}
+                        isService={isNodeInService}
                     >
                         <GroupName group={group}/>
 

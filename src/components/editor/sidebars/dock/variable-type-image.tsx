@@ -13,6 +13,7 @@ const VariableTypeImage: React.FC<VariableTypeProps> = ({
     variable,
     publishedButton = true,
     onChange,
+    inDock = true,
     categoryBorder = 'border border-sky-200 dark:border-zinc-700',
     categoryMainTextColor = 'text-sky-500 dark:text-white/70',
     // categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
@@ -120,7 +121,7 @@ const VariableTypeImage: React.FC<VariableTypeProps> = ({
     }, [variable, onChange, nodeId]);
 
     return (
-        <div className={`rounded p-6 relative ${categoryBorder} bg-white dark:bg-zinc-800`}>
+        <div className={`rounded p-6 relative ${categoryBorder} bg-white dark:bg-zinc-800 ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}>
             <Fieldset>
                 <FieldGroup>
                     <Field>

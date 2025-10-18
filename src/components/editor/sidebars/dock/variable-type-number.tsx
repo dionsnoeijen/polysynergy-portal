@@ -81,10 +81,10 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
                     <Field>
                         {variable.dock && variable.dock.select_values ? (
                             <Select
-                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
+                                disabled={variable?.dock?.enabled === false}
                                 onChange={handleChange}
                                 defaultValue={value}
-                                className="dark:text-white"
+                                className={`dark:text-white ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}
                             >
                                 {Object.entries(variable.dock.select_values).map(([key, v]) => (
                                     <option key={key} value={key}>
@@ -96,11 +96,11 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
                             <Input
                                 type="number"
                                 value={localValue}
-                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
+                                disabled={variable?.dock?.enabled === false}
                                 onChange={handleChange}
                                 placeholder={variable.handle}
                                 aria-label={variable.handle}
-                                className="dark:text-white"
+                                className={`dark:text-white ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}
                             />
                         )}
                     </Field>

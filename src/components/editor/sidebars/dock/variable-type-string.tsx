@@ -63,10 +63,10 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
                         <FieldGroup>
                         {variable.dock && variable.dock.select_values ? (
                             <Select
-                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
+                                disabled={variable?.dock?.enabled === false}
                                 onChange={handleChange}
                                 defaultValue={variable.value as string}
-                                className="dark:text-white"
+                                className={`dark:text-white ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}
                             >
                                 {Object.entries(variable.dock.select_values).map(([key, v]) => (
                                 <option key={key} value={key}>{v}</option>
@@ -74,12 +74,12 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
                             </Select>
                         ) : (
                             <TemplateInput
-                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
+                                disabled={variable?.dock?.enabled === false}
                                 type="text"
                                 value={variable.value as string || ""}
                                 onChange={handleTemplateChange}
                                 placeholder={variable.handle}
-                                className="dark:text-white"
+                                className={`dark:text-white ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}
                             />
                         )}
                         </FieldGroup>

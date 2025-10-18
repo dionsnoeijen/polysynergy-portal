@@ -153,7 +153,7 @@ const JsonEditorForm: React.FC = () => {
             <div className="px-10">
                 <section className="grid sm:grid-cols-1 relative">
                     {activeTab === 'visual' ? (
-                        <div className="h-[500px] overflow-auto">
+                        <div className="max-h-[60vh] overflow-auto">
                             {jsonError ? (
                                 <div className="text-center text-zinc-500 dark:text-zinc-400 py-20">
                                     <CubeIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -161,14 +161,14 @@ const JsonEditorForm: React.FC = () => {
                                     <p className="text-sm">Fix JSON syntax errors in Code tab first</p>
                                 </div>
                             ) : (
-                                <VisualJsonEditor 
-                                    value={parsedJson} 
+                                <VisualJsonEditor
+                                    value={parsedJson}
                                     onChange={handleVisualChange}
                                 />
                             )}
                         </div>
                     ) : (
-                        <div className="h-[500px] overflow-hidden -mx-10 relative">
+                        <div className="h-[300px] overflow-hidden -mx-10 relative">
                             <Editor
                                 height={`100%`}
                                 defaultLanguage="json"
@@ -198,17 +198,16 @@ const JsonEditorForm: React.FC = () => {
                         </div>
                     )}
                 </section>
-            </div>
 
-            <Divider soft={true} bleed={true} />
-
-            <div className="flex justify-end gap-4 p-10">
-                <Button type="button" onClick={() => closeForm()} plain>
-                    Cancel
-                </Button>
-                <Button type="submit">
-                    Save Json
-                </Button>
+                {/* Buttons directly under editor */}
+                <div className="flex justify-end gap-4 mt-4">
+                    <Button type="button" onClick={() => closeForm()} plain>
+                        Cancel
+                    </Button>
+                    <Button type="submit">
+                        Save Json
+                    </Button>
+                </div>
             </div>
         </form>
     );

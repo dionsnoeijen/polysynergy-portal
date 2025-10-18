@@ -66,14 +66,14 @@ const VariableTypeAvatar: React.FC<Props> = ({
 
     return (
         <div className={'relative'}>
-            {variable?.dock?.enabled === false || (variable.published && inDock) && (
+            {variable?.dock?.enabled === false && (
                 <div className="absolute inset-0 bg-sky-50/60 dark:bg-black/40 rounded-md z-10 pointer-events-none"/>
             )}
             <Fieldset>
                 <Label>{variable.handle}</Label>
                 <Field>
                     <button
-                        className={`w-full pb-1 ring-1 rounded-md text-zinc-900 dark:text-white bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 ${isGenerating && "opacity-60 cursor-wait"}`}
+                        className={`w-full pb-1 ring-1 rounded-md text-zinc-900 dark:text-white bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 ${isGenerating && "opacity-60 cursor-wait"} ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}
                         onClick={() => onEdit(nodeId)}
                         disabled={isGenerating}
                     >

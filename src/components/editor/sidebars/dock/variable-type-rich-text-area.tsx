@@ -41,16 +41,18 @@ const VariableTypeRichTextArea: React.FC<VariableTypeProps> = ({
                         categoryGradientBackgroundColor={categoryGradientBackgroundColor}
                     />)}
                     <Field>
-                        <TemplateRichTextEditor
-                            disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
-                            onChange={(value: string) => handleChange(value)}
-                            value={variable.value as string || ""}
-                            categoryBorder={categoryBorder}
-                            categoryMainTextColor={categoryMainTextColor}
-                            categorySubTextColor={categorySubTextColor}
-                            categoryBackgroundColor={categoryBackgroundColor}
-                            categoryGradientBackgroundColor={categoryGradientBackgroundColor}
-                        />
+                        <div className={`${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)] rounded-md' : ''}`}>
+                            <TemplateRichTextEditor
+                                disabled={variable?.dock?.enabled === false}
+                                onChange={(value: string) => handleChange(value)}
+                                value={variable.value as string || ""}
+                                categoryBorder={categoryBorder}
+                                categoryMainTextColor={categoryMainTextColor}
+                                categorySubTextColor={categorySubTextColor}
+                                categoryBackgroundColor={categoryBackgroundColor}
+                                categoryGradientBackgroundColor={categoryGradientBackgroundColor}
+                            />
+                        </div>
                     </Field>
                 </Fieldset>
             )}

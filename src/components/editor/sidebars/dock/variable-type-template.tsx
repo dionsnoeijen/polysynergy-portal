@@ -23,7 +23,7 @@ const VariableTypeTemplate: React.FC<VariableTypeProps> = ({
 
     return (
         <div className={'relative'}>
-            {variable?.dock?.enabled === false || (variable.published && inDock) && (
+            {variable?.dock?.enabled === false && (
                 <div className="absolute inset-0 bg-sky-50/60 dark:bg-black/40 rounded-md z-10 pointer-events-none"/>
             )}
              {isValueConnected ? (
@@ -33,8 +33,8 @@ const VariableTypeTemplate: React.FC<VariableTypeProps> = ({
                     {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
                     <Field>
                         <button
-                            disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
-                            className="text-slate-500 hover:text-slate-600 w-full pb-1 ring-1 ring-white/20 rounded-md"
+                            disabled={variable?.dock?.enabled === false}
+                            className={`text-slate-500 hover:text-slate-600 w-full pb-1 ring-1 ring-white/20 rounded-md ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}
                             onClick={() => onEdit(nodeId)}
                         >
                             <PencilIcon className="w-4 h-4 inline text-zinc-600 dark:text-slate-300"/>

@@ -44,11 +44,11 @@ const VariableTypeTextArea: React.FC<VariableTypeProps> = ({
                         {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
                         <Field>
                             <TemplateTextarea
-                                disabled={variable?.dock?.enabled === false || (variable.published && inDock)}
+                                disabled={variable?.dock?.enabled === false}
                                 onChange={handleChange}
                                 placeholder={variable.handle}
                                 value={variable.value as string || ""}
-                                className="dark:text-white"
+                                className={`dark:text-white ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}
                             />
                         </Field>
                     </Fieldset>

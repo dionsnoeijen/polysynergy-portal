@@ -30,16 +30,9 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
     const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
     const isSubValueConnected = useConnectionsStore((state) => state.isValueConnected);
 
-    function isVariableDisabled(variable: NodeVariable, inDock: boolean): boolean {
+    function isVariableDisabled(variable: NodeVariable): boolean {
         const dockDisabled = variable?.dock?.enabled === false;
-        const mainPublished = variable.published === true;
-        const isArray = Array.isArray(variable.value);
-        const allSubPublished =
-            isArray &&
-            (variable.value as NodeVariable[]).length > 0 &&
-            (variable.value as NodeVariable[]).every((v) => v.published);
-
-        return dockDisabled || mainPublished || (inDock && allSubPublished);
+        return dockDisabled;
     }
 
     return (
@@ -56,7 +49,7 @@ const VariableTypeDict: React.FC<VariableTypeProps> = ({
                         </div>
                     )}
                     <div
-                        className={`border ${categoryBorder} rounded-md relative z-0 ${isVariableDisabled(variable, inDock) ? 'opacity-40 pointer-events-none' : ''}`}>
+                        className={`border ${categoryBorder} rounded-md relative z-0 ${isVariableDisabled(variable) ? 'opacity-40 pointer-events-none' : ''} ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}>
                         <Table dense className="bg-transparent dark:bg-white/5 rounded-t-md">
                             <TableHead>
                                 <TableRow>

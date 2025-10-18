@@ -4,6 +4,7 @@ import {ArrowRightCircleIcon, InformationCircleIcon} from "@heroicons/react/24/o
 import React, {useState} from "react";
 import {ConfirmDialog} from "@/components/confirm-dialog";
 import useEditorStore from "@/stores/editorStore";
+import useNodesStore from "@/stores/nodesStore";
 
 type Props = {
     nodeId: string;
@@ -21,6 +22,7 @@ const LabelPublish: React.FC<Props> = ({
 }) => {
     const openForm =
         useEditorStore((state) => state.openForm);
+    const isNodeInService = useNodesStore((state) => state.isNodeInService([nodeId]));
     const [showInfo, setShowInfo] = useState(false);
 
     return (
@@ -43,8 +45,9 @@ const LabelPublish: React.FC<Props> = ({
                                 variable
                             })
                         }
-                        className={`p-1 -mr-2 mb-1 rounded-md hover:bg-sky-500 ${variable.published && 'bg-sky-500 !hover:bg-sky-600'}`}
-                        title={'Publish variable'}
+                        disabled={isNodeInService}
+                        className={`p-1 -mr-2 mb-1 rounded-md ${!isNodeInService && 'hover:bg-sky-500'} ${variable.published && 'bg-sky-500 !hover:bg-sky-600'} ${isNodeInService && 'opacity-50 cursor-not-allowed'}`}
+                        title={isNodeInService ? 'Cannot modify published variables in service nodes' : 'Publish variable'}
                     >
                         <ArrowRightCircleIcon
                             className={`w-4 h-4 !m-0 ${categoryMainTextColor} ${variable.published && '!text-white'}`} />

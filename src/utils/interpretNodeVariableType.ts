@@ -31,7 +31,9 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         return { baseType: NodeVariableType.OAuth, validationType: NodeVariableType.OAuth, containsNone };
     }
 
-    if (types.includes('true_path')) {
+    if (types.includes('any')) {
+        return { baseType: NodeVariableType.Any, validationType: types.join(','), containsNone };
+    } else if (types.includes('true_path')) {
         return { baseType: NodeVariableType.TruePath, validationType: types.join(','), containsNone };
     } else if (types.includes('false_path')) {
         return { baseType: NodeVariableType.FalsePath, validationType: types.join(','), containsNone };

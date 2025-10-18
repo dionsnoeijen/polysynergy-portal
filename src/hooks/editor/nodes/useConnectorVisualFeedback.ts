@@ -19,7 +19,10 @@ export const useConnectorVisualFeedback = () => {
 
         allInConnectors.forEach((el) => {
             const nodeTypes = (el.getAttribute("data-variable-type") || "").split(",");
-            const isValid = nodeTypes.some(type => activeTypes.includes(type));
+            // Allow 'any' type to always be highlighted as valid
+            const isValid = nodeTypes.some(type => activeTypes.includes(type)) ||
+                           nodeTypes.includes('any') ||
+                           activeTypes.includes('any');
 
             if (isValid) {
                 const elStyle = (el as HTMLElement).style;

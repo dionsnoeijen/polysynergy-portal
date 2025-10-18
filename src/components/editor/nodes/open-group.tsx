@@ -83,25 +83,29 @@ const OpenGroup: React.FC<GroupProps> = ({node}): null | React.ReactElement => {
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        openContextMenu(
-            e.clientX,
-            e.clientY,
-            [
-                {
-                    label: "Close Group",
-                    action: () => {
-                        closeGroup(node.id);
-                    }
+
+        const isService = !!(node.service && node.service.id);
+        const menuItems = [
+            {
+                label: "Close Group",
+                action: () => {
+                    closeGroup(node.id);
+                }
+            }
+        ];
+
+        // Only add Dissolve option if not a service
+        if (!isService) {
+            menuItems.push({
+                label: "Dissolve Group",
+                action: () => {
+                    setSelectedNodes([]);
+                    setIsDialogOpen(true);
                 },
-                {
-                    label: "Dissolve Group",
-                    action: () => {
-                        setSelectedNodes([]);
-                        setIsDialogOpen(true);
-                    },
-                },
-            ]
-        );
+            });
+        }
+
+        openContextMenu(e.clientX, e.clientY, menuItems);
     };
 
     const handleConfirmDissolve = () => {

@@ -30,6 +30,7 @@ const ServiceForm: React.FC = () => {
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
+    const activeProjectId = useEditorStore((state) => state.activeProjectId);
 
     const nodes = useNodesStore((state) => state.nodes);
     const getNodesInGroup = useNodesStore((state) => state.getNodesInGroup);
@@ -140,6 +141,14 @@ const ServiceForm: React.FC = () => {
         }
     }, [getNodesByIds, getNodesInGroup, node]);
 
+    // Cleanup temp nodes when component unmounts
+    useEffect(() => {
+        return () => {
+            clearTempNodes();
+            clearTempConnections();
+        };
+    }, [clearTempNodes, clearTempConnections]);
+
     if (formType === FormType.AddService) {
         if (selectedNodes.length > 1) {
             console.log("MULTIPLE NODES SELECTED, MAKE SURE THE FORM DOES NOT LOAD AT ALL");
@@ -215,18 +224,23 @@ const ServiceForm: React.FC = () => {
         if (formType === FormType.EditService) {
             if (!node.service || !formEditRecordId) return;
 
-            node.service.name = name;
-            node.service.category = category;
-            node.service.description = description;
+            // Get fresh node data from store to include any dock changes
+            const freshNode = getNode(selectedNodes[0]);
+            if (!freshNode || !freshNode.service) return;
+
+            freshNode.service.name = name;
+            freshNode.service.category = category;
+            freshNode.service.description = description;
 
             const nodeForStorage = makeServiceFromNodeForStorage(
-                node,
+                freshNode,
                 nodes,
                 connections,
             );
 
             await updateService(
                 formEditRecordId as string,
+                activeProjectId,
                 name,
                 category,
                 description,

@@ -9,6 +9,7 @@ import ExecutionOrder from '@/components/editor/nodes/execution-order';
 import AvatarVariable from '@/components/editor/nodes/rows/avatar-variable';
 import interpretNodeVariableType from '@/utils/interpretNodeVariableType';
 import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
+import useNodesStore from '@/stores/nodesStore';
 
 interface CollapsedNodeProps {
     node: Node;
@@ -27,12 +28,18 @@ const CollapsedNode: React.FC<CollapsedNodeProps> = ({
     styles,
     onCollapse
 }) => {
+    // Use useMemo to prevent recalculation on every render
+    const shouldPreserveIconColor = React.useMemo(() => {
+        if (node.service?.id) return true;
+        return useNodesStore.getState().isNodeInService([node.id]);
+    }, [node.id, node.service?.id]);
+
     // Find avatar variables to show in collapsed state
     const avatarVariables = node.variables.filter(variable => {
         const interpretedType = interpretNodeVariableType(variable);
         return interpretedType.baseType === NodeVariableType.Avatar;
     });
-    
+
 
     return (
         <>
@@ -56,7 +63,7 @@ const CollapsedNode: React.FC<CollapsedNodeProps> = ({
                         <NodeIcon
                             icon={node.icon}
                             className={`${styles.mainText} w-10 h-10 max-w-10 max-h-10`}
-                            preserveColor={!!node.service?.id}
+                            preserveColor={shouldPreserveIconColor}
                         />
                     ) : (
                         <GlobeAltIcon className={`w-10 h-10 ${styles.mainText}`}/>

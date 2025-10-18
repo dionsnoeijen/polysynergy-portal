@@ -135,6 +135,8 @@ const getVariableComponent = (
             return <ListVariable key={key} {...commonProps} />;
         case NodeVariableType.String:
             return <StringVariable key={key} {...commonProps} />;
+        case NodeVariableType.Any:
+            return <StringVariable key={key} {...commonProps} />;
         case NodeVariableType.Json:
             return <JsonVariable key={key} {...commonProps} />;
         case NodeVariableType.Bytes:

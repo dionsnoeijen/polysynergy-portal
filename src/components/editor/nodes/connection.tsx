@@ -6,6 +6,7 @@ import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
 import useMockStore from "@/stores/mockStore";
 import useEditorStore from "@/stores/editorStore";
 import {useRunsStore} from "@/stores/runsStore";
+import useNodesStore from "@/stores/nodesStore";
 
 type Props = { connection: ConnectionProps; };
 
@@ -19,12 +20,34 @@ const Connection: React.FC<Props> = ({ connection }) => {
 
     const setDeleteConnectionDialogOpen = useEditorStore(s => s.setDeleteConnectionDialogOpen);
     const chatMode = useEditorStore(s => s.chatMode);
+    const isPanning = useEditorStore(s => s.isPanning);
+
+    // Check if connection is within a service
+    const isNodeInService = useNodesStore(s => s.isNodeInService);
+
+    // For group boundary connections, check if the actual node is in service
+    // For normal connections, both nodes must be in service
+    const isConnectionInService = React.useMemo(() => {
+        // Group boundary to node
+        if (connection.sourceGroupId && connection.targetNodeId) {
+            return isNodeInService([connection.targetNodeId]);
+        }
+        // Node to group boundary
+        if (connection.targetGroupId) {
+            return isNodeInService([connection.sourceNodeId]);
+        }
+        // Normal connection: both nodes must be in service
+        if (connection.targetNodeId) {
+            return isNodeInService([connection.sourceNodeId]) && isNodeInService([connection.targetNodeId]);
+        }
+        return false;
+    }, [connection.sourceNodeId, connection.targetNodeId, connection.sourceGroupId, connection.targetGroupId, isNodeInService]);
 
     const handleConnectionClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // Don't allow connection deletion in chat mode
-        if (chatMode) return;
-        
+        // Don't allow connection deletion in chat mode or when panning
+        if (chatMode || isPanning) return;
+
         // Open delete confirmation dialog instead of immediate deletion
         setDeleteConnectionDialogOpen(true, connection.id);
     };
@@ -59,7 +82,18 @@ const Connection: React.FC<Props> = ({ connection }) => {
     // Use resolvedTheme to handle system theme correctly
     const currentTheme = theme === 'system' ? resolvedTheme : theme;
 
-    if (currentTheme === "light") {
+    // Purple color for connections in services
+    if (isConnectionInService) {
+        if (currentTheme === "light") {
+            color = connection.collapsed
+                ? "rgb(147, 51, 234)" // purple-600
+                : "rgb(168, 85, 247)"; // purple-500
+        } else {
+            color = connection.collapsed
+                ? "rgb(192, 132, 252)" // purple-400
+                : "rgb(216, 180, 254)"; // purple-300
+        }
+    } else if (currentTheme === "light") {
         color = connection.collapsed
             ? "rgb(7, 89, 133)"
             : "rgb(14, 165, 233)";

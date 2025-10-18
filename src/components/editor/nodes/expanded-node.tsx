@@ -10,6 +10,7 @@ import NodeVariables from '@/components/editor/nodes/rows/node-variables';
 import PlayButton from '@/components/editor/nodes/rows/play-button';
 import ExecutionOrder from '@/components/editor/nodes/execution-order';
 import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
+import useNodesStore from '@/stores/nodesStore';
 
 interface ExpandedNodeProps {
     node: Node;
@@ -35,6 +36,12 @@ const ExpandedNode: React.FC<ExpandedNodeProps> = ({
     onCollapse,
     onResizeMouseDown
 }) => {
+    // Use useMemo to prevent recalculation on every render
+    const shouldPreserveIconColor = React.useMemo(() => {
+        if (node.service?.id) return true;
+        return useNodesStore.getState().isNodeInService([node.id]);
+    }, [node.id, node.service?.id]);
+
     return (
         <>
             {mockNode && <ExecutionOrder mockNode={mockNode} centered={false}/>}
@@ -67,7 +74,7 @@ const ExpandedNode: React.FC<ExpandedNodeProps> = ({
                         <NodeIcon
                             icon={node.icon}
                             className={`h-10 w-10 ${node.has_enabled_switch ? 'ml-2' : ''} ${styles.mainText}`}
-                            preserveColor={!!node.service}
+                            preserveColor={shouldPreserveIconColor}
                         />
                     </div>
                 )}

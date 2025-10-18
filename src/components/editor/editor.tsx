@@ -47,7 +47,7 @@ export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
             e.stopPropagation(); // Stop React handlers
             isDOMPanning.current = true;
             isDOMActive.current = true; // Block useEditorTransform
-            // useEditorStore.getState().setIsPanning(true); // DISABLED: Causes store spam
+            useEditorStore.getState().setIsPanning(true);
             panStartPos.current = { x: e.clientX, y: e.clientY };
             
             // Get current transform values
@@ -106,9 +106,9 @@ export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
     const handleDOMMouseUp = () => {
         if (!isDOMPanning.current) return;
         isDOMPanning.current = false;
-        
+
         // Re-enable connector handlers immediately
-        // useEditorStore.getState().setIsPanning(false); // DISABLED: Causes store spam
+        useEditorStore.getState().setIsPanning(false);
         
         // Cancel any pending animation frame
         if (panAnimationFrame.current) {
@@ -231,6 +231,8 @@ export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
         containerClass
     } = useEditorState(isMouseDown);
 
+    const isPanning = useEditorStore((state) => state.isPanning);
+
     // Global listeners and auto-updates
     // Note: useGlobalStoreListenersWithImmediateSave() moved to EditorLayout to ensure forceSave always available
     useAutoUpdateRouteNodes();
@@ -297,6 +299,14 @@ export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
                     className="absolute top-0 left-0 w-full h-full z-20 pointer-events-none
                                bg-transparent
                                chat-mode"
+                />
+            )}
+
+            {/* Panning Overlay - Blocks all interactions */}
+            {isPanning && (
+                <div
+                    className="absolute top-0 left-0 w-full h-full z-50 cursor-grabbing"
+                    style={{ pointerEvents: 'auto' }}
                 />
             )}
 

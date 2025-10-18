@@ -4,6 +4,7 @@ import config from "@/config";
 
 export const updateService = async (
     id: string,
+    projectId: string,
     name: string,
     category: string,
     description: string,
@@ -12,7 +13,7 @@ export const updateService = async (
     try {
         const idToken = getIdToken();
         const response = await fetch(
-            `${config.LOCAL_API_URL}/services/${id}/`,
+            `${config.LOCAL_API_URL}/services/${id}/?project_id=${projectId}`,
             {
                 method: 'PUT',
                 headers: {
@@ -41,11 +42,11 @@ export const updateService = async (
     }
 }
 
-export const deleteService = async (id: string) => {
+export const deleteService = async (id: string, projectId: string) => {
     try {
         const idToken = getIdToken();
         const response = await fetch(
-            `${config.LOCAL_API_URL}/services/${id}/`,
+            `${config.LOCAL_API_URL}/services/${id}/?project_id=${projectId}`,
             {
                 method: 'DELETE',
                 headers: {

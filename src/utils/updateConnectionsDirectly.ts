@@ -41,8 +41,10 @@ export const updateConnectionsDirectly = (
             if (connection.id === isDrawingConnection && mousePosition) {
                 endPosition = mousePosition;
             } else if (connection.targetNodeId && connection.targetHandle) {
+                // Use targetNodeId (specific connector) instead of targetGroupId (all connectors in group)
+                // This ensures we find the exact connector, not just the first one with the same handle
                 endPosition = calculateConnectorPositionByAttributes(
-                    connection.targetGroupId ?? connection.targetNodeId,
+                    connection.targetNodeId ?? connection.targetGroupId,
                     connection.targetHandle,
                     InOut.In
                 );
@@ -50,10 +52,27 @@ export const updateConnectionsDirectly = (
 
             if (endPosition.x === 0 && endPosition.y === 0) return;
 
-            const controlPointX = (startPosition.x + endPosition.x) / 2;
+            // Smart curve routing with horizontal offsets from connectors
+            // This creates an elegant S-curve that works in all directions
+            const deltaX = endPosition.x - startPosition.x;
+            const distance = Math.abs(deltaX);
+
+            // Smooth blend between forward and backwards offset based on direction
+            // When deltaX is negative (backwards), blend towards aggressive offset
+            const backwardsFactor = deltaX < 0 ? Math.min(Math.abs(deltaX) / 200, 1) : 0;
+
+            const forwardOffset = Math.min(Math.max(distance * 0.3, 50), 150);   // Subtle
+            const backwardsOffset = Math.min(Math.max(distance * 0.5, 150), 400); // Aggressive
+
+            // Smooth interpolation between the two
+            const offset = forwardOffset + (backwardsOffset - forwardOffset) * backwardsFactor;
+
+            const control1X = startPosition.x + offset;  // Extend right from source
+            const control2X = endPosition.x - offset;     // Extend left from target
+
             const pathData = `M ${startPosition.x},${startPosition.y}
-                   C ${controlPointX},${startPosition.y}
-                     ${controlPointX},${endPosition.y}
+                   C ${control1X},${startPosition.y}
+                     ${control2X},${endPosition.y}
                      ${endPosition.x},${endPosition.y}`;
             
             pathElement.setAttribute("d", pathData);

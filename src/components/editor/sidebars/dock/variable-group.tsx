@@ -10,6 +10,7 @@ type Props = React.PropsWithChildren<{
     categoryBackgroundColor?: string;
     categoryGradientBackgroundColor?: string;
     isService?: boolean;
+    nested?: boolean;
 }>;
 
 const VariableGroup: React.FC<Props> = ({
@@ -22,12 +23,13 @@ const VariableGroup: React.FC<Props> = ({
                                             categoryBorderColor = 'border-sky-500 dark:border-white/20',
                                             categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
                                             categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
-                                            isService = false
+                                            isService = false,
+                                            nested = false
                                         }) => {
     const formattedVersion = version != null ? `v${version.toFixed(1)}` : null;
 
     return (
-        <div className={`border-t border-b ${categoryBorderColor} ${categoryBackgroundColor} shadow-sm relative`}>
+        <div className={`${nested ? 'border' : 'border-t border-b'} ${categoryBorderColor} ${categoryBackgroundColor} shadow-sm relative`}>
             {isService && (
                 <div className={`absolute inset-0 bg-sky-50/60 dark:bg-black/40 z-10`}>
                 </div>

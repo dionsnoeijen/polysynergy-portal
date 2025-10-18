@@ -23,22 +23,39 @@ const isSimpleSvg = (svg: string): boolean => {
 };
 
 const normalizeSvg = (raw: string, preserveColor: boolean = false): string => {
+    if (preserveColor) {
+        // PRESERVE COLORS: Only remove XML/DOCTYPE and add sizing for visibility
+        let svg = raw
+            .replace(/<\?xml[^>]*>/g, "")
+            .replace(/<!DOCTYPE[^>]*>/g, "")
+            .trim();
+
+        // Add width/height to make SVG visible, but don't touch any color attributes
+        const svgOpenTagRegex = /<svg([^>]*)>/;
+        svg = svg.replace(svgOpenTagRegex, (_match, attrs) => {
+            // Only add style if not already present
+            if (!attrs.includes('style=')) {
+                return `<svg${attrs} style="width: 100%; height: 100%;">`;
+            }
+            return `<svg${attrs}>`;
+        });
+
+        return svg;
+    }
+
     let svg = raw
         .replace(/<\?xml[^>]*>/g, "") // remove XML declaration
         .replace(/<!DOCTYPE[^>]*>/g, "") // remove DOCTYPE
-        .replace(/(width|height)="[^"]*"/g, "") // remove dimension attributes
-        .replace(/style="[^"]*"/g, "") // remove inline styles
-        .replace(/color="[^"]*"/g, "");
+        .replace(/(width|height)="[^"]*"/g, ""); // remove dimension attributes
 
-    if (!preserveColor) {
-        // More aggressive color replacement for light mode compatibility
-        svg = svg
-            .replace(/fill="(?!none|transparent)[^"]*"/g, 'fill="currentColor"')
-            .replace(/stroke="(?!none|transparent)[^"]*"/g, 'stroke="currentColor"')
-            // Also handle fill/stroke without quotes
-            .replace(/fill='(?!none|transparent)[^']*'/g, "fill='currentColor'")
-            .replace(/stroke='(?!none|transparent)[^']*'/g, "stroke='currentColor'");
-    }
+    // NOT preserving colors: full color replacement
+    svg = svg
+        .replace(/style="[^"]*"/g, "") // remove inline styles
+        .replace(/color="[^"]*"/g, "")
+        .replace(/fill="(?!none|transparent)[^"]*"/g, 'fill="currentColor"')
+        .replace(/stroke="(?!none|transparent)[^"]*"/g, 'stroke="currentColor"')
+        .replace(/fill='(?!none|transparent)[^']*'/g, "fill='currentColor'")
+        .replace(/stroke='(?!none|transparent)[^']*'/g, "stroke='currentColor'");
 
     const hasViewBox = /viewBox="[^"]*"/.test(svg);
     const svgOpenTagRegex = /<svg([^>]*)>/;
@@ -46,8 +63,7 @@ const normalizeSvg = (raw: string, preserveColor: boolean = false): string => {
     svg = svg.replace(svgOpenTagRegex, (_match, attrs) => {
         const viewBoxAttr = hasViewBox ? "" : ' viewBox="0 0 256 256"';
         const styleAttr = ' style="width: 100%; height: 100%; object-fit: contain;"';
-        // Only add fill/stroke to root SVG if not preserving colors
-        const colorAttrs = preserveColor ? "" : ' fill="currentColor"';
+        const colorAttrs = ' fill="currentColor"';
         return `<svg${attrs}${viewBoxAttr}${styleAttr}${colorAttrs}>`;
     });
 
@@ -67,13 +83,15 @@ const NodeIcon = ({
     preserveColor?: boolean;
 }) => {
 
+    // Preserve color if:
+    // 1. preserveColor prop is true (service nodes, nodes in services)
+    // 2. SVG is complex (has gradients, filters, etc - would break if colors replaced)
     const isSimple = isSimpleSvg(icon);
-    const processedSvg = isSimple
-        ? normalizeSvg(icon, preserveColor) // force currentColor
-        : normalizeSvg(icon, true); // bewaar originele styling
+    const shouldPreserve = preserveColor || !isSimple;
+    const processedSvg = normalizeSvg(icon, shouldPreserve);
 
     return (
-        <div className={clsx("rounded inline-flex items-center justify-center overflow-hidden", className)}>
+        <div className={clsx("rounded inline-flex items-center justify-center", className)}>
             <div
                 dangerouslySetInnerHTML={{__html: processedSvg}}
             />

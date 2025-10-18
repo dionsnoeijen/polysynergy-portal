@@ -116,6 +116,7 @@ const ServiceHeading: React.FC<Props> = ({
                             <NodeIcon
                                 icon={icon}
                                 className={`inline border w-10 h-10 ${categoryMainTextColor} dark:bg-white border-sky-500 dark:border-white/50 mr-3`}
+                                preserveColor={true}
                             />
                         )}
                         Service <ChevronRightIcon className={'w-4 h-4 inline'}/> {service?.category} <ChevronRightIcon

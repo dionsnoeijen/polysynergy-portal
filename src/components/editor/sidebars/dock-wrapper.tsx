@@ -293,6 +293,7 @@ Please check:
                                 categorySubTextColor={categorySubTextColor}
                                 categoryBackgroundColor={categoryBackground}
                                 categoryGradientBackgroundColor={categoryGradientBackground}
+                                nested={true}
                             >
                                 {variablesForGroup.inVariables
                                     .filter((item): item is { variable: NodeVariable; nodeId: string } => !!item)
@@ -346,6 +347,7 @@ Please check:
                                 categorySubTextColor={categorySubTextColor}
                                 categoryBackgroundColor={categoryBackground}
                                 categoryGradientBackgroundColor={categoryGradientBackground}
+                                nested={true}
                             >
                                 {variablesForGroup.outVariables
                                     .filter((item): item is { variable: NodeVariable; nodeId: string } => !!item)

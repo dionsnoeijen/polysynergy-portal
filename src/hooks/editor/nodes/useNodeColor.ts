@@ -48,27 +48,27 @@ export const getCategoryPlaneBackgroundColor = (
 ): string => {
     if (nodeSubType === NodeSubType.Service) {
         return highOpacity
-            ? "bg-purple-500/20 dark:bg-purple-700/70"
-            : "bg-purple-500/10 dark:bg-purple-700/70";
+            ? "bg-purple-200/80 dark:bg-purple-700/70"
+            : "bg-purple-200/70 dark:bg-purple-700/70";
     }
     switch (nodeType) {
         case NodeType.Mock:
             return highOpacity
-                ? "bg-orange-500/20 dark:bg-orange-700/70"
-                : "bg-orange-500/10 dark:bg-orange-700/70";
+                ? "bg-orange-200/80 dark:bg-orange-700/70"
+                : "bg-orange-200/70 dark:bg-orange-700/70";
         case NodeType.Note:
             return highOpacity
-                ? "bg-yellow-200/70 dark:bg-yellow-700/70"
-                : "bg-yellow-200/60 dark:bg-yellow-700/70";
+                ? "bg-yellow-200/80 dark:bg-yellow-700/70"
+                : "bg-yellow-200/70 dark:bg-yellow-700/70";
         case NodeType.Group:
             return highOpacity
-                ? "bg-green-400/60 dark:bg-green-700/70"
-                : "bg-green-400/40 dark:bg-green-700/70";
+                ? "bg-green-200/80 dark:bg-green-700/70"
+                : "bg-green-200/70 dark:bg-green-700/70";
         case NodeType.Flow:
         case NodeType.Jump:
             return highOpacity
-                ? "bg-pink-700/20 dark:bg-pink-700/60"
-                : "bg-pink-700/10 dark:bg-pink-700/60";
+                ? "bg-pink-200/80 dark:bg-pink-700/60"
+                : "bg-pink-200/70 dark:bg-pink-700/60";
         default:
             return highOpacity
                 ? "bg-sky-200/80 dark:bg-sky-700/70"

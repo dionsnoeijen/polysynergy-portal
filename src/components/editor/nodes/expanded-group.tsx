@@ -8,6 +8,7 @@ import {ConfirmAlert} from '@/components/confirm-alert';
 import { useGroupExecutionOrders } from '@/hooks/editor/nodes/useGroupExecutionOrders';
 import GroupExecutionOrders from '@/components/editor/nodes/group-execution-orders';
 import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
+import useNodesStore from '@/stores/nodesStore';
 
 interface ExpandedGroupProps {
     node: Node;
@@ -41,6 +42,11 @@ const ExpandedGroup: React.FC<ExpandedGroupProps> = ({
     onConfirmDissolve
 }) => {
     const orders = useGroupExecutionOrders(node.id);
+    // Use useMemo to prevent recalculation on every render
+    const shouldPreserveIconColor = React.useMemo(() => {
+        if (node.service?.id) return true;
+        return useNodesStore.getState().isNodeInService([node.id]);
+    }, [node.id, node.service?.id]);
 
     return (
         <>
@@ -56,7 +62,7 @@ const ExpandedGroup: React.FC<ExpandedGroupProps> = ({
                     <NodeIcon
                         icon={node.icon}
                         className={`h-10 w-10 ${styles.mainText} mr-3`}
-                        preserveColor={!!node.service?.id}
+                        preserveColor={shouldPreserveIconColor}
                     />
                 )}
                 <div className={`flex flex-col justify-center ${node.has_enabled_switch ? 'ml-2' : 'ml-3'} min-w-0 max-w-[150px]`}>

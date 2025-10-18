@@ -63,8 +63,9 @@ const useServicesStore = create<ServicesStore>((
     },
 
     deleteService: async (serviceId: string) => {
+        const {activeProjectId} = useEditorStore.getState();
         try {
-            await deleteServiceAPI(serviceId);
+            await deleteServiceAPI(serviceId, activeProjectId);
             set((state) => ({services: state.services.filter((service) => service.id !== serviceId)}));
         } catch (error) {
             console.error('Failed to delete service:', error);

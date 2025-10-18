@@ -14,6 +14,7 @@ import VariableTypeTemplate from "@/components/editor/sidebars/dock/variable-typ
 import VariableTypeAvatar from "@/components/editor/sidebars/dock/variable-type-avatar";
 import VariableTypeImage from "@/components/editor/sidebars/dock/variable-type-image";
 import VariableTypeOAuth from "@/components/editor/sidebars/dock/variable-type-oauth";
+import VariableTypeAny from "@/components/editor/sidebars/dock/variable-type-any";
 import {AccessLevel} from "@/types/enums";
 
 declare global {
@@ -123,6 +124,7 @@ export enum NodeVariableType {
     Avatar = 'avatar',
     Image = 'image',
     OAuth = 'oauth',
+    Any = 'any',
 }
 
 export enum NodeType {
@@ -718,5 +720,6 @@ export const VariableTypeComponents = {
     [NodeVariableType.Avatar]: VariableTypeAvatar,
     [NodeVariableType.Image]: VariableTypeImage,
     [NodeVariableType.OAuth]: VariableTypeOAuth,
+    [NodeVariableType.Any]: VariableTypeAny,
     [NodeVariableType.Node]: null,
 };

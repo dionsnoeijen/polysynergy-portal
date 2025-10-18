@@ -7,6 +7,7 @@ import {ConfirmAlert} from '@/components/confirm-alert';
 import NodeNotesDisplay from '@/components/editor/nodes/node-notes-display';
 import { useGroupExecutionOrders } from '@/hooks/editor/nodes/useGroupExecutionOrders';
 import GroupExecutionOrders from '@/components/editor/nodes/group-execution-orders';
+import useNodesStore from '@/stores/nodesStore';
 
 interface CollapsedGroupProps {
     node: Node;
@@ -30,6 +31,11 @@ const CollapsedGroup: React.FC<CollapsedGroupProps> = ({
     onConfirmDissolve
 }) => {
     const orders = useGroupExecutionOrders(node.id);
+    // Use useMemo to prevent recalculation on every render
+    const shouldPreserveIconColor = React.useMemo(() => {
+        if (node.service?.id) return true;
+        return useNodesStore.getState().isNodeInService([node.id]);
+    }, [node.id, node.service?.id]);
 
     return (
         <>
@@ -46,7 +52,7 @@ const CollapsedGroup: React.FC<CollapsedGroupProps> = ({
                     <NodeIcon
                         icon={node.icon}
                         className={`${styles.mainText} w-10 h-10 max-w-10 max-h-10`}
-                        preserveColor={!!node.service?.id}
+                        preserveColor={shouldPreserveIconColor}
                     />
                 ) : (
                     <GlobeAltIcon className={`w-10 h-10 ${styles.mainText}`}/>

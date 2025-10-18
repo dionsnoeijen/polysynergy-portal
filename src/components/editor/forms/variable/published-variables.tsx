@@ -306,13 +306,39 @@ const PublishedVariables: React.FC<Props> = ({
 
         // Helper function to extract inline secrets from text
         const extractInlineSecrets = (text: string): string[] => {
-            const regex = /<secret:([^>]+)>/g;
+            const regex = /<(?:secret|sec):([^>]+)>/g;
             const matches = [];
             let match;
             while ((match = regex.exec(text)) !== null) {
                 matches.push(match[1].trim());
             }
             return matches;
+        };
+
+        // Helper function to recursively scan variables and their nested children for patterns
+        const scanVariableForPatterns = (
+            variable: NodeVariable,
+            node: Node,
+            pattern: RegExp,
+            onMatch: (key: string, variableHandle: string) => void
+        ) => {
+            // Scan direct value if it's a string
+            if (typeof variable.value === 'string' && pattern.test(variable.value)) {
+                const regex = new RegExp(pattern);
+                let match;
+                while ((match = regex.exec(variable.value)) !== null) {
+                    onMatch(match[1].trim(), variable.handle);
+                }
+            }
+
+            // Recursively scan dict children
+            if (Array.isArray(variable.value)) {
+                variable.value.forEach((child) => {
+                    if (child && typeof child === 'object' && 'handle' in child) {
+                        scanVariableForPatterns(child as NodeVariable, node, pattern, onMatch);
+                    }
+                });
+            }
         };
 
         // First pass: Process secret nodes
@@ -346,48 +372,50 @@ const PublishedVariables: React.FC<Props> = ({
             });
         });
 
-        // Second pass: Scan all node variables for inline secret patterns
+        // Second pass: Scan all node variables for inline secret patterns (recursively including dict children)
         nodes.forEach((node) => {
             node.variables.forEach((variable) => {
-                const value = variable.value;
-                if (typeof value === 'string' && value.includes('<secret:')) {
-                    const inlineSecrets = extractInlineSecrets(value);
+                const secretPattern = /<(?:secret|sec):([^>]+)>/g;
 
-                    inlineSecrets.forEach((secretKey) => {
-                        const exists = secrets.find((s) => s.key === secretKey);
+                scanVariableForPatterns(variable, node, secretPattern, (secretKey, variableHandle) => {
+                    const exists = secrets.find((s) => s.key === secretKey);
 
-                        if (secretGroups.has(secretKey)) {
-                            // Add this inline instance to existing group
-                            const group = secretGroups.get(secretKey)!;
+                    if (secretGroups.has(secretKey)) {
+                        // Add this inline instance to existing group
+                        const group = secretGroups.get(secretKey)!;
+                        // Only add if not already tracked
+                        const alreadyTracked = group.nodeInstances.some(
+                            n => n.nodeId === node.id && n.variableHandle === variableHandle
+                        );
+                        if (!alreadyTracked) {
                             group.nodeInstances.push({
                                 nodeId: node.id,
                                 nodeName: node.name,
                                 source: 'inline',
-                                variableHandle: variable.handle
-                            });
-                        } else {
-                            // Create new group for this inline secret
-                            // Create a synthetic variable for the inline secret
-                            const syntheticVariable: NodeVariable = {
-                                ...variable,
-                                handle: secretKey,
-                                value: secretKey,
-                                type: NodeVariableType.SecretString
-                            };
-
-                            secretGroups.set(secretKey, {
-                                variable: syntheticVariable,
-                                nodeInstances: [{
-                                    nodeId: node.id,
-                                    nodeName: node.name,
-                                    source: 'inline',
-                                    variableHandle: variable.handle
-                                }],
-                                exists: !!exists
+                                variableHandle: variableHandle
                             });
                         }
-                    });
-                }
+                    } else {
+                        // Create new group for this inline secret
+                        const syntheticVariable: NodeVariable = {
+                            handle: secretKey,
+                            value: secretKey,
+                            type: NodeVariableType.SecretString,
+                            published: false
+                        };
+
+                        secretGroups.set(secretKey, {
+                            variable: syntheticVariable,
+                            nodeInstances: [{
+                                nodeId: node.id,
+                                nodeName: node.name,
+                                source: 'inline',
+                                variableHandle: variableHandle
+                            }],
+                            exists: !!exists
+                        });
+                    }
+                });
             });
         });
 
@@ -418,7 +446,7 @@ const PublishedVariables: React.FC<Props> = ({
 
         // Helper function to extract inline environment variables from text
         const extractInlineEnvVars = (text: string): string[] => {
-            const regex = /<environment:([^>]+)>/g;
+            const regex = /<(?:environment|env):([^>]+)>/g;
             const matches = [];
             let match;
             while ((match = regex.exec(text)) !== null) {
@@ -459,49 +487,51 @@ const PublishedVariables: React.FC<Props> = ({
             });
         });
 
-        // Second pass: Scan all node variables for inline environment patterns
+        // Second pass: Scan all node variables for inline environment patterns (recursively including dict children)
         nodes.forEach((node) => {
             node.variables.forEach((variable) => {
-                const value = variable.value;
-                if (typeof value === 'string' && value.includes('<environment:')) {
-                    const inlineEnvVars = extractInlineEnvVars(value);
+                const envPattern = /<(?:environment|env):([^>]+)>/g;
 
-                    inlineEnvVars.forEach((envKey) => {
-                        const exists = envVars.find((v) => v.key === envKey);
-                        if (!exists) return; // Only show existing env vars
+                scanVariableForPatterns(variable, node, envPattern, (envKey, variableHandle) => {
+                    const exists = envVars.find((v) => v.key === envKey);
+                    if (!exists) return; // Only show existing env vars
 
-                        if (envGroups.has(envKey)) {
-                            // Add this inline instance to existing group
-                            const group = envGroups.get(envKey)!;
+                    if (envGroups.has(envKey)) {
+                        // Add this inline instance to existing group
+                        const group = envGroups.get(envKey)!;
+                        // Only add if not already tracked
+                        const alreadyTracked = group.nodeInstances.some(
+                            n => n.nodeId === node.id && n.variableHandle === variableHandle
+                        );
+                        if (!alreadyTracked) {
                             group.nodeInstances.push({
                                 nodeId: node.id,
                                 nodeName: node.name,
                                 source: 'inline',
-                                variableHandle: variable.handle
-                            });
-                        } else {
-                            // Create new group for this inline env var
-                            // Create a synthetic variable for the inline env var
-                            const syntheticVariable: NodeVariable = {
-                                ...variable,
-                                handle: envKey,
-                                value: envKey,
-                                type: variable.type
-                            };
-
-                            envGroups.set(envKey, {
-                                variable: syntheticVariable,
-                                nodeInstances: [{
-                                    nodeId: node.id,
-                                    nodeName: node.name,
-                                    source: 'inline',
-                                    variableHandle: variable.handle
-                                }],
-                                exists: !!exists
+                                variableHandle: variableHandle
                             });
                         }
-                    });
-                }
+                    } else {
+                        // Create new group for this inline env var
+                        const syntheticVariable: NodeVariable = {
+                            handle: envKey,
+                            value: envKey,
+                            type: NodeVariableType.String,
+                            published: false
+                        };
+
+                        envGroups.set(envKey, {
+                            variable: syntheticVariable,
+                            nodeInstances: [{
+                                nodeId: node.id,
+                                nodeName: node.name,
+                                source: 'inline',
+                                variableHandle: variableHandle
+                            }],
+                            exists: !!exists
+                        });
+                    }
+                });
             });
         });
 

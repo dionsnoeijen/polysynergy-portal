@@ -90,9 +90,35 @@ const useGroupManagement = () => {
     };
 
     const moveNodeToGroup = (nodeId: string, groupId: string) => {
-        const inConnections = findInConnectionsByNodeId(nodeId);
-        const outConnections = findOutConnectionsByNodeId(nodeId);
-        removeConnections([...inConnections, ...outConnections]);
+        const node = getNode(nodeId);
+
+        // If we're moving a group, we need to preserve connections inside it
+        if (node?.type === NodeType.Group) {
+            // Only remove boundary connections (where the group itself is source/target)
+            // These are connections with sourceGroupId or targetGroupId === nodeId
+            const inConnections = findInConnectionsByNodeId(nodeId, true);
+            const outConnections = findOutConnectionsByNodeId(nodeId, true);
+
+            // Filter to only remove external connections
+            // Keep ALL internal connections (isInGroup === nodeId), including:
+            // - Node to Node connections within the group
+            // - Group boundary to Node connections (internal inputs)
+            // - Node to Group boundary connections (internal outputs)
+            const allFoundConnections = [...inConnections, ...outConnections];
+            const boundaryConnections = allFoundConnections.filter(c => {
+                // Remove only connections that are NOT internal
+                return c.isInGroup !== nodeId;
+            });
+
+            removeConnections(boundaryConnections);
+            // Internal connections (isInGroup === nodeId) are preserved!
+        } else {
+            // For regular nodes, remove all connections as before
+            const inConnections = findInConnectionsByNodeId(nodeId);
+            const outConnections = findOutConnectionsByNodeId(nodeId);
+            removeConnections([...inConnections, ...outConnections]);
+        }
+
         addNodeToGroup(groupId, nodeId);
         setNodeToMoveToGroupId(null);
     };

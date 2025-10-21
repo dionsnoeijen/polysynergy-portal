@@ -82,7 +82,7 @@ export const useOutConnectorHandler = (
 
                 const targetVariableType = target.getAttribute('data-variable-type');
                 const activeVariableType = getActiveVariableType();
-                
+
                 if (!validateVariableTypeMatch(targetVariableType, activeVariableType)) {
                     removeConnectionById(id);
                     setActiveVariableType(null);
@@ -100,20 +100,20 @@ export const useOutConnectorHandler = (
                 if (connection) {
                     // First, remove the temporary connection
                     removeConnectionById(id);
-                    
+
                     // Create the final connection with all properties
                     const finalConnection = {
                         ...connection,
                         targetHandle: targetHandle,
                         targetNodeId: targetNodeId,
                         isInGroup: openedGroup as string,
-                        sourceGroupId: (nodeGroupTarget && targetGroupId && groupId) ? groupId : 
-                                      (!nodeGroupTarget && groupId) ? groupId : 
+                        sourceGroupId: (nodeGroupTarget && targetGroupId && groupId) ? groupId :
+                                      (!nodeGroupTarget && groupId) ? groupId :
                                       (targetGroupId && groupId === null) ? undefined : connection.sourceGroupId,
                         targetGroupId: (nodeGroupTarget && targetGroupId && groupId) ? targetGroupId :
                                       (targetGroupId && groupId === null) ? targetGroupId : connection.targetGroupId
                     };
-                    
+
                     // Add the final connection with history
                     connectionHistoryActions.addConnectionWithHistory(finalConnection);
                 }

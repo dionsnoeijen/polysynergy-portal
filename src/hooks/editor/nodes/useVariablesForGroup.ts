@@ -30,6 +30,7 @@ const useVariablesForGroup = (groupId: string | null) => {
     const getNodeSubVariable = useNodesStore((state) => state.getNodeSubVariable);
     const getGroupById = useNodesStore((state) => state.getGroupById);
     const getNode = useNodesStore((state) => state.getNode);
+    const isConnectionInGroupOrNested = useNodesStore((state) => state.isConnectionInGroupOrNested);
     const connections = useConnectionsStore((state) => state.connections);
 
     groupId = groupId?.startsWith("mirror-") ? groupId.replace("mirror-", "") : groupId;
@@ -96,29 +97,56 @@ const useVariablesForGroup = (groupId: string | null) => {
             return exposed;
         };
 
-        // Helper: check if a node is inside this group
+        // Helper: recursively check if a node is inside a specific group (including nested groups)
+        const isNodeInNestedGroup = (nodeId: string, groupId: string, visited = new Set<string>()): boolean => {
+            // Prevent infinite loops
+            if (visited.has(groupId)) return false;
+            visited.add(groupId);
+
+            const g = getGroupById(groupId);
+            if (!g?.group?.nodes) return false;
+
+            // Direct check
+            if (g.group.nodes.includes(nodeId)) return true;
+
+            // Recursive check: is the node in any nested group?
+            const nestedGroupIds = g.group.nodes.filter(id => {
+                const node = getNode(id);
+                return node?.type === NodeType.Group;
+            });
+
+            for (const nestedGroupId of nestedGroupIds) {
+                if (isNodeInNestedGroup(nodeId, nestedGroupId, visited)) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        // Helper: check if a node is inside this group (including nested groups)
         const isNodeInGroup = (nodeId: string): boolean => {
-            return group.group?.nodes?.includes(nodeId) ?? false;
+            return isNodeInNestedGroup(nodeId, group.id);
         };
 
         // IN variabelen: connections van buiten naar binnen de group
         // Source moet BUITEN de group zijn, target moet BINNEN de group zijn
+        // Includes connections to nested groups (targetGroupId can be set)
         const inConnections = connections.filter(c =>
-            c.isInGroup === group.id &&
+            isConnectionInGroupOrNested(c.isInGroup, group.id) &&
             c.targetNodeId &&
             c.targetNodeId !== group.id &&
-            !c.targetGroupId &&
             isNodeInGroup(c.targetNodeId) &&
             !isNodeInGroup(c.sourceNodeId)
         );
 
         // OUT variabelen: connections van binnen naar buiten de group
-        // Source moet BINNEN de group zijn, target moet BUITEN de group zijn (of niet bestaan voor boundary)
+        // Source moet BINNEN de group zijn, target moet BUITEN de group zijn (of niet bestaan for boundary)
+        // Includes connections from nested groups (sourceGroupId can be set)
         const outConnections = connections.filter(c =>
-            c.isInGroup === group.id &&
+            isConnectionInGroupOrNested(c.isInGroup, group.id) &&
             c.sourceNodeId &&
             c.sourceNodeId !== group.id &&
-            !c.sourceGroupId &&
             isNodeInGroup(c.sourceNodeId) &&
             (!c.targetNodeId || !isNodeInGroup(c.targetNodeId))
         );

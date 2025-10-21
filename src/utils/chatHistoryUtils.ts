@@ -248,7 +248,7 @@ export function getSessionInfo(promptNodeId: string): { sessionId?: string; user
     // Fallback: try to get from agent node (old method for backward compatibility)
     const result = traceAgentAndStorage(promptNodeId);
     if (!result) {
-        console.log('No agent/storage configuration found for session info');
+        // console.log('No agent/storage configuration found for session info');
         return {};
     }
 

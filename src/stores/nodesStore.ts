@@ -73,6 +73,7 @@ export type NodesStore = {
     setGroupNameOverride: (nodeId: string, variableHandle: string, name: string) => void;
     setGroupConnectorColorOverride: (nodeId: string, variableHandle: string, color: string) => void;
     findNearestVisibleGroupWithCount: (nodeId: string) => { groupId: string, count: number } | null;
+    isConnectionInGroupOrNested: (connectionGroupId: string | null | undefined, targetGroupId: string) => boolean;
 
     groupStack: string[];
     openedGroup: string | null;
@@ -1276,6 +1277,42 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
         return node;
 
+    },
+
+    isConnectionInGroupOrNested: (connectionGroupId: string | null | undefined, targetGroupId: string): boolean => {
+        // If no connection group, it's not in any group
+        if (!connectionGroupId) return false;
+
+        // Direct match
+        if (connectionGroupId === targetGroupId) return true;
+
+        // Check if the connection's group is nested inside the target group
+        const checkGroupNested = (groupIdToCheck: string, visited = new Set<string>()): boolean => {
+            // Prevent infinite loops
+            if (visited.has(groupIdToCheck)) return false;
+            visited.add(groupIdToCheck);
+
+            // Check if this group is directly in the target group
+            const targetGroup = get().getGroupById(targetGroupId);
+            if (targetGroup?.group?.nodes?.includes(groupIdToCheck)) {
+                return true;
+            }
+
+            // Recursively check if this group is in any nested group
+            const allGroups = get().nodes.filter(n => n.type === NodeType.Group);
+            for (const group of allGroups) {
+                if (group.group?.nodes?.includes(groupIdToCheck)) {
+                    // This group contains our groupIdToCheck, check if this group is nested in target
+                    if (checkGroupNested(group.id, visited)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        };
+
+        return checkGroupNested(connectionGroupId);
     },
 
     getPromptNodes: (): PromptNodeInfo[] => {

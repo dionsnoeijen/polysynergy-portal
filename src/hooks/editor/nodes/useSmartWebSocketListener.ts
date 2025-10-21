@@ -15,7 +15,7 @@ import useInteractionStore, { InteractionEvent } from '@/stores/interactionStore
 
 type ExecutionMessage = {
     node_id?: string;
-    event: 'run_start' | 'start_node' | 'end_node' | 'run_end' | "start_tool" | "end_tool" | "RunContent" | "TeamRunContent" | "TeamToolCallCompleted" | "resume_start" | "resume_end";
+    event: 'run_start' | 'start_node' | 'end_node' | 'run_end' | "start_tool" | "end_tool" | "RunContent" | "TeamRunContent" | "TeamToolCallCompleted" | "resume_start" | "resume_end" | "AgentPaused" | "ChatHTML";
     status?: 'success' | 'killed' | 'error';
     order?: number;
     run_id?: string;
@@ -28,6 +28,8 @@ type ExecutionMessage = {
     is_member_agent?: boolean;
     parent_team_id?: string;
     member_index?: number;
+    // Rich content
+    html_content?: string;
 };
 
 const processedEvents = new Set<string>();
@@ -268,6 +270,59 @@ function getOrCreateMessageHandler() {
 
             const eventType = message.event;
             const node_id = message.node_id;
+
+            // ---- AGENT PAUSED EVENT ----
+            if (eventType === 'AgentPaused') {
+                console.log('⏸️ [WebSocket] Agent paused for user input:', message);
+
+                const pauseEvent = message as unknown as {
+                    node_id: string;
+                    run_id: string;
+                    pause_type: 'confirmation' | 'user_input' | 'external_tool' | 'unknown';
+                    pause_message: string;
+                    pause_data: {
+                        tools?: Array<{ tool_name: string; tool_args: unknown }>;
+                        schema?: Array<{ name: string; description: string; type: string; required: boolean }>;
+                    };
+                };
+
+                const sessionId = chatView.getActiveSessionId();
+                if (!sessionId) {
+                    console.warn('⏸️ [WebSocket] Agent paused but no active chat session');
+                    return;
+                }
+
+                chatView.addPauseMessage(sessionId, {
+                    node_id: pauseEvent.node_id,
+                    run_id: pauseEvent.run_id,
+                    pause_type: pauseEvent.pause_type,
+                    pause_message: pauseEvent.pause_message,
+                    pause_data: pauseEvent.pause_data
+                });
+
+                console.log('⏸️ [WebSocket] Added pause UI to chat session');
+                return;
+            }
+
+            // ---- CHAT HTML EVENT ----
+            if (eventType === 'ChatHTML') {
+                console.log('📄 [WebSocket] Received ChatHTML event:', message);
+
+                const htmlEvent = message as {
+                    node_id: string;
+                    html_content: string;
+                };
+
+                const sessionId = chatView.getActiveSessionId();
+                if (sessionId) {
+                    chatView.addHTMLContent(sessionId, {
+                        html: htmlEvent.html_content,
+                        node_id: htmlEvent.node_id,
+                    });
+                    console.log('📄 [WebSocket] Added HTML content to chat');
+                }
+                return;
+            }
 
             // Special debug for run_start event
             if (eventType === 'run_start') {
@@ -566,13 +621,13 @@ function getOrCreateMessageHandler() {
             // ---- RUN END ----
             if (eventType === 'run_end') {
                 console.log('🏁 [WebSocket] Received run_end event for run_id:', message.run_id);
-                
+
                 // Mark this run as completed to prevent late execution classes
                 if (message.run_id) {
                     completedRunIds.add(message.run_id);
                     console.log(`🔒 [WebSocket] Marked run ${message.run_id} as completed - no more execution classes will be added`);
                 }
-                
+
                 // Clear ALL executed status classes when run ends
                 const elementsToClean = document.querySelectorAll('.executed-success, .executed-error, .executed-killed, .executing');
                 console.log(`🧹 [WebSocket] Found ${elementsToClean.length} elements with execution status to clear`);
@@ -582,12 +637,16 @@ function getOrCreateMessageHandler() {
                     el.classList.remove('executed-success', 'executed-error', 'executed-killed', 'executing');
                 });
                 console.log('✅ [WebSocket] Cleared all execution status classes at run_end');
-                
+
                 // NEVER clear mock data at run_end - this removes run output from NodeOutput panel
                 // The purple glow issue will need to be fixed elsewhere
                 console.log(`📋 [WebSocket] Preserving ALL mock data for run: ${message.run_id}`);
-                
-                
+
+                // ALWAYS clear waiting state at run_end (even if no sessionId)
+                // This ensures "thinking" indicator always stops
+                chatView.setWaitingForResponse(false);
+                console.log('⏸️ [WebSocket] Cleared waiting state at run_end');
+
                 const sessionId = chatView.getActiveSessionId();
                 if (sessionId) {
                     chatView.finalizeAgentMessage(sessionId);
@@ -595,30 +654,38 @@ function getOrCreateMessageHandler() {
                     // Clear team member activity when run ends
                     chatView.clearTeamMembers();
 
-                    // Safety fallback: clear waiting state if still active (edge case: no agent response)
-                    chatView.setWaitingForResponse(false);
-                    
-                    // Sync with backend to get correct run_id after streaming completes
-                    try {
-                        const selectedPromptNodeId = nodesStore.selectedPromptNodeId;
-                        const activeProjectId = editorStore.activeProjectId;
-                        
-                        if (selectedPromptNodeId && activeProjectId) {
-                            const context = nodesStore.getLiveContextForPrompt(selectedPromptNodeId);
-                            if (context.hasMemory && context.storageNow && context.sid) {
-                                console.log('[sync] Syncing session after streaming completion...');
-                                await chatView.syncSessionFromBackend({
-                                    projectId: activeProjectId,
-                                    storageConfig: context.storageNow as {type: "LocalAgentStorage" | "DynamoDBAgentStorage" | "LocalDb" | "DynamoDb"},
-                                    sessionId: context.sid,
-                                    userId: context.uid as string | undefined,
-                                    limit: 200,
-                                });
-                                console.log('[sync] Session sync completed with correct run_ids');
+                    // CHECK: Skip sync if there's an active pause message
+                    // Pause messages are not in the agent DB, so syncing would remove them
+                    const hasPauseMessage = chatView.messagesBySession[sessionId]?.some(
+                        m => m.sender === 'system' && m.pause_data
+                    );
+
+                    if (hasPauseMessage) {
+                        console.log('⏸️ [sync] Skipping session sync - active pause message present');
+                        console.log('⏸️ [sync] Flow is paused, waiting for user input');
+                    } else {
+                        // Sync with backend to get correct run_id after streaming completes
+                        try {
+                            const selectedPromptNodeId = nodesStore.selectedPromptNodeId;
+                            const activeProjectId = editorStore.activeProjectId;
+
+                            if (selectedPromptNodeId && activeProjectId) {
+                                const context = nodesStore.getLiveContextForPrompt(selectedPromptNodeId);
+                                if (context.hasMemory && context.storageNow && context.sid) {
+                                    console.log('[sync] Syncing session after streaming completion...');
+                                    await chatView.syncSessionFromBackend({
+                                        projectId: activeProjectId,
+                                        storageConfig: context.storageNow as {type: "LocalAgentStorage" | "DynamoDBAgentStorage" | "LocalDb" | "DynamoDb"},
+                                        sessionId: context.sid,
+                                        userId: context.uid as string | undefined,
+                                        limit: 200,
+                                    });
+                                    console.log('[sync] Session sync completed with correct run_ids');
+                                }
                             }
+                        } catch (e) {
+                            console.warn('[sync] Failed to sync session after streaming:', e);
                         }
-                    } catch (e) {
-                        console.warn('[sync] Failed to sync session after streaming:', e);
                     }
                 }
 

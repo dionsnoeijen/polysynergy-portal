@@ -35,6 +35,7 @@ const PromptField: React.FC<PromptFieldProps> = ({
     const activeSessionId = useChatViewStore((s) => s.activeSessionId);
     const setActiveSession = useChatViewStore((s) => s.setActiveSession);
     const appendUser = useChatViewStore((s) => s.appendUser);
+    const hasActivePause = useChatViewStore((s) => s.hasActivePause());
 
     // File attachment functions
     const handleAttachFiles = () => {
@@ -162,23 +163,29 @@ const PromptField: React.FC<PromptFieldProps> = ({
                 {/* Input Container with Buttons */}
                 <div className="relative">
                     <textarea
-                        className="w-full resize-none border border-sky-500/50 dark:border-white/20 rounded-md p-3 pr-20 min-h-[40px] max-h-[120px] text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-white/40 transition-colors"
+                        className={`w-full resize-none border border-sky-500/50 dark:border-white/20 rounded-md p-3 pr-20 min-h-[40px] max-h-[120px] text-sm bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-white/40 transition-colors ${hasActivePause ? 'opacity-50 cursor-not-allowed' : ''}`}
                         rows={1}
                         value={input}
-                        placeholder={`Prompt${selectedPromptNode ? ` for ${selectedPromptNode.name}` : ""}...`}
+                        placeholder={
+                            hasActivePause
+                                ? "Respond to the request above before sending a new message..."
+                                : `Prompt${selectedPromptNode ? ` for ${selectedPromptNode.name}` : ""}...`
+                        }
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
+                            if (e.key === "Enter" && !e.shiftKey && !hasActivePause) {
                                 e.preventDefault();
                                 handleSend();
                             }
                         }}
+                        disabled={hasActivePause}
                     />
                     {/* Attachment Button */}
                     <button
-                        className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1.5 transition-colors"
+                        className={`absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-1.5 transition-colors ${hasActivePause ? 'opacity-50 cursor-not-allowed' : ''}`}
                         onClick={handleAttachFiles}
-                        title="Attach files"
+                        title={hasActivePause ? "Respond to the request above first" : "Attach files"}
+                        disabled={hasActivePause}
                     >
                         <PaperClipIcon className="h-4 w-4"/>
                     </button>
@@ -187,8 +194,12 @@ const PromptField: React.FC<PromptFieldProps> = ({
                     <button
                         className="absolute right-2 top-1/2 -translate-y-1/2 bg-sky-500 hover:bg-sky-600 dark:bg-sky-600 dark:hover:bg-sky-700 text-white p-1.5 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         onClick={handleSend}
-                        disabled={!selectedPromptNodeId}
-                        title="Send prompt and run workflow"
+                        disabled={!selectedPromptNodeId || hasActivePause}
+                        title={
+                            hasActivePause
+                                ? "Respond to the request above first"
+                                : "Send prompt and run workflow"
+                        }
                     >
                         <ArrowUpIcon className="h-4 w-4"/>
                     </button>

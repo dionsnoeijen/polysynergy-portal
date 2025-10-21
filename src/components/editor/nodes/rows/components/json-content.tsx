@@ -28,7 +28,7 @@ const JsonContent: React.FC<JsonContentProps> = ({ logic }) => {
                 </span>
             ) : (
                 <span className={`ml-1 truncate ${logic.categorySubTextColor}`}>
-                    {truncateText(logic.valueText)}
+                    {truncateText(logic.valueText, 300)}
                 </span>
             )}
         </>

@@ -129,3 +129,32 @@ export const getMockNodesForRun = async (
     return response.json();
 }
 
+export const resumeFlow = async (
+    versionId: string,
+    runId: string,
+    resumeNodeId: string,
+    userInput: unknown
+) => {
+    const idToken = getIdToken();
+    const response = await fetch(`${config.LOCAL_API_URL}/execution/${versionId}/resume/`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+            run_id: runId,
+            resume_node_id: resumeNodeId,
+            user_input: userInput
+        }),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(`Failed to resume flow: ${errorData.error || response.statusText}`);
+    }
+
+    return response.json();
+}
+

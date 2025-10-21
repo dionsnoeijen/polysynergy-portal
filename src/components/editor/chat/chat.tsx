@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import useNodesStore from "@/stores/nodesStore";
 import useChatViewStore from "@/stores/chatViewStore";
 import useEditorStore from "@/stores/editorStore";
@@ -15,6 +15,7 @@ import {traceStorageConfiguration} from "@/utils/chatHistoryUtils";
 import { ChevronDownIcon, ChevronUpIcon, ChatBubbleLeftIcon, PlusIcon } from "@heroicons/react/24/outline";
 import {useSmartWebSocketListener} from "@/hooks/editor/nodes/useSmartWebSocketListener";
 import {NodeVariable, NodeVariableType} from "@/types/types";
+import {resumeFlow} from "@/api/executionApi";
 
 const PROMPT_NODE_PATH = 'polysynergy_nodes.play.prompt.Prompt';
 
@@ -33,6 +34,53 @@ const Chat: React.FC<ChatProps> = ({ showBackButton = false, onBackClick, isEndU
     const connections = useConnectionsStore(s => s.connections);
     const activeTeamMembers = useChatViewStore(s => s.activeTeamMembers);
     const updateNodeVariable = useNodesStore((s) => s.updateNodeVariable);
+    const setWaitingForResponse = useChatViewStore((s) => s.setWaitingForResponse);
+    const activeVersionId = useEditorStore(s => s.activeVersionId);
+
+    // Handle resume flow for HITL pause events
+    const handleResumeFlow = useCallback(async (runId: string, nodeId: string, userInput: unknown) => {
+        const chatView = useChatViewStore.getState();
+        const activeSessionId = chatView.activeSessionId;
+
+        if (!activeVersionId) {
+            console.error('❌ [Chat] No active version ID');
+            alert('Cannot resume: no active flow version');
+            return;
+        }
+
+        // Set waiting state IMMEDIATELY (before API call)
+        // This ensures "thinking" indicator appears right away
+        setWaitingForResponse(true);
+
+        try {
+            console.log('⏸️ [Chat] Resuming flow:', { runId, nodeId, userInput, versionId: activeVersionId });
+
+            // Call resume API
+            await resumeFlow(activeVersionId, runId, nodeId, userInput);
+
+            console.log('✅ [Chat] Resume API call successful');
+
+            // Remove pause message from chat after successful resume
+            if (activeSessionId) {
+                const messages = chatView.messagesBySession[activeSessionId] ?? [];
+                const pauseMessage = messages.find(m =>
+                    m.sender === 'system' &&
+                    m.pause_data?.run_id === runId &&
+                    m.pause_data?.node_id === nodeId
+                );
+
+                if (pauseMessage) {
+                    chatView.removePauseMessage(activeSessionId, pauseMessage.id);
+                    console.log('⏸️ [Chat] Removed pause message after resume');
+                }
+            }
+        } catch (error) {
+            console.error('❌ [Chat] Failed to resume flow:', error);
+            // On error: stop waiting and keep pause message visible
+            setWaitingForResponse(false);
+            alert(`Failed to resume agent execution: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }, [activeVersionId, setWaitingForResponse]);
 
 
 
@@ -55,9 +103,8 @@ const Chat: React.FC<ChatProps> = ({ showBackButton = false, onBackClick, isEndU
     const selectedPromptNodeId = useNodesStore(s => s.selectedPromptNodeId);
     const {sid} = getLiveContextForPrompt(selectedPromptNodeId);
 
-    // Get project ID and version ID from editor store
+    // Get project ID from editor store (activeVersionId already defined above)
     const activeProjectId = useEditorStore(s => s.activeProjectId);
-    const activeVersionId = useEditorStore(s => s.activeVersionId);
 
     // Initialize WebSocket connection for chat
     const { connectionStatus, isConnected } = useSmartWebSocketListener(activeVersionId as string);
@@ -321,7 +368,10 @@ const Chat: React.FC<ChatProps> = ({ showBackButton = false, onBackClick, isEndU
                 </div>
             ) : (
                 <>
-                    <Messages teamResponsesCollapsed={teamResponsesCollapsed} />
+                    <Messages
+                        teamResponsesCollapsed={teamResponsesCollapsed}
+                        onResumeFlow={handleResumeFlow}
+                    />
                     <PromptField
                         promptNodes={promptNodes}
                         selectedPromptNodeId={selectedPromptNodeId}

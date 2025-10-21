@@ -186,6 +186,7 @@ export type Dock = {
     value_field?: boolean;
     template_editor?: boolean;
     image?: boolean;
+    metadata?: Record<string, unknown>;
 };
 
 export type NodeVariable = {

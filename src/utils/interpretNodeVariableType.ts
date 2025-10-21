@@ -54,7 +54,7 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
                 return { baseType: NodeVariableType.Template, validationType: [...types, NodeVariableType.String].join(','), containsNone};
             }
             if (variable?.dock.code_editor) {
-                return { baseType: NodeVariableType.Code, validationType: NodeVariableType.Code, containsNone};
+                return { baseType: NodeVariableType.Code, validationType: [...types, NodeVariableType.Code].join(','), containsNone};
             }
             if (variable?.dock.json_editor) {
                 return { baseType: NodeVariableType.Json, validationType: [...types, NodeVariableType.Json].join(','), containsNone};

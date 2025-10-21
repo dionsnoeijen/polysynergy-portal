@@ -28,12 +28,18 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
     const [showNewUserDialog, setShowNewUserDialog] = useState(false);
     const [newSessionName, setNewSessionName] = useState("");
     const [newUserId, setNewUserId] = useState("");
+    const [newUserName, setNewUserName] = useState("");
+    const [newUserEmail, setNewUserEmail] = useState("");
+    const [newUserRole, setNewUserRole] = useState("");
     const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
     const [userToDelete, setUserToDelete] = useState<string | null>(null);
     const [editingSession, setEditingSession] = useState<string | null>(null);
     const [editSessionName, setEditSessionName] = useState("");
     const [editingUser, setEditingUser] = useState<string | null>(null);
     const [editUserId, setEditUserId] = useState("");
+    const [editUserName, setEditUserName] = useState("");
+    const [editUserEmail, setEditUserEmail] = useState("");
+    const [editUserRole, setEditUserRole] = useState("");
 
     // Get current prompt node data
     const promptNode = getNode(promptNodeId);
@@ -58,17 +64,38 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
     }
     
     
-    // Parse user data - handle both string and array cases
-    let users: string[] = [];
+    // Parse user data - now supports user profile objects
+    type UserProfile = {
+        id: string;
+        name?: string;
+        email?: string;
+        role?: string;
+        [key: string]: unknown;
+    };
+
+    let users: UserProfile[] = [];
     if (userVar?.value) {
         if (typeof userVar.value === 'string') {
             try {
-                users = JSON.parse(userVar.value);
+                const parsed = JSON.parse(userVar.value);
+                // Handle migration from old string[] format
+                if (Array.isArray(parsed)) {
+                    users = parsed.map(item =>
+                        typeof item === 'string'
+                            ? { id: item, name: item, email: '', role: '' }
+                            : item
+                    );
+                }
             } catch {
                 users = [];
             }
         } else if (Array.isArray(userVar.value)) {
-            users = userVar.value as string[];
+            // Handle migration from old string[] format
+            users = (userVar.value as (string | UserProfile)[]).map(item =>
+                typeof item === 'string'
+                    ? { id: item, name: item, email: '', role: '' }
+                    : item
+            );
         }
     }
     
@@ -169,15 +196,25 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
     const addNewUser = () => {
         if (!newUserId.trim()) return;
         const trimmedUserId = newUserId.trim();
-        
-        // Don't add duplicate users
-        if (users.includes(trimmedUserId)) return;
-        
-        const newUsers = [...users, trimmedUserId];
-        updateNodeVariable(promptNodeId, 'user', newUsers);
+
+        // Don't add duplicate user IDs
+        if (users.some(u => u.id === trimmedUserId)) return;
+
+        const newUserProfile: UserProfile = {
+            id: trimmedUserId,
+            name: newUserName.trim() || trimmedUserId,
+            email: newUserEmail.trim(),
+            role: newUserRole.trim()
+        };
+
+        const newUsers = [...users, newUserProfile];
+        updateNodeVariable(promptNodeId, 'user', JSON.stringify(newUsers));
         updateNodeVariable(promptNodeId, 'active_user', trimmedUserId);
-        
+
         setNewUserId("");
+        setNewUserName("");
+        setNewUserEmail("");
+        setNewUserRole("");
         setShowNewUserDialog(false);
     };
 
@@ -186,14 +223,14 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
     };
 
     const removeUser = (userId: string) => {
-        const newUsers = users.filter(id => id !== userId);
-        updateNodeVariable(promptNodeId, 'user', newUsers);
-        
+        const newUsers = users.filter(u => u.id !== userId);
+        updateNodeVariable(promptNodeId, 'user', JSON.stringify(newUsers));
+
         // If removing active user, set to first remaining or empty
         if (activeUser === userId) {
-            updateNodeVariable(promptNodeId, 'active_user', newUsers[0] || '');
+            updateNodeVariable(promptNodeId, 'active_user', newUsers[0]?.id || '');
         }
-        
+
         setUserToDelete(null);
     };
 
@@ -206,37 +243,57 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
     };
 
     const startEditUser = (userId: string) => {
+        const user = users.find(u => u.id === userId);
+        if (!user) return;
+
         setEditingUser(userId);
-        setEditUserId(userId);
+        setEditUserId(user.id);
+        setEditUserName(user.name || '');
+        setEditUserEmail(user.email || '');
+        setEditUserRole(user.role || '');
     };
 
     const saveEditUser = () => {
         if (!editingUser || !editUserId.trim()) return;
-        
+
         const trimmedNewUserId = editUserId.trim();
-        
+
         // Don't allow duplicate user IDs (except if it's the same as current)
-        if (trimmedNewUserId !== editingUser && users.includes(trimmedNewUserId)) return;
-        
-        // Update the user list
-        const updatedUsers = users.map(userId => 
-            userId === editingUser ? trimmedNewUserId : userId
+        if (trimmedNewUserId !== editingUser && users.some(u => u.id === trimmedNewUserId)) return;
+
+        // Update the user profile
+        const updatedUsers = users.map(user =>
+            user.id === editingUser
+                ? {
+                    ...user,
+                    id: trimmedNewUserId,
+                    name: editUserName.trim() || trimmedNewUserId,
+                    email: editUserEmail.trim(),
+                    role: editUserRole.trim()
+                }
+                : user
         );
-        
-        updateNodeVariable(promptNodeId, 'user', updatedUsers);
-        
+
+        updateNodeVariable(promptNodeId, 'user', JSON.stringify(updatedUsers));
+
         // Update active user if it was the edited one
         if (activeUser === editingUser) {
             updateNodeVariable(promptNodeId, 'active_user', trimmedNewUserId);
         }
-        
+
         setEditingUser(null);
         setEditUserId('');
+        setEditUserName('');
+        setEditUserEmail('');
+        setEditUserRole('');
     };
 
     const cancelEditUser = () => {
         setEditingUser(null);
         setEditUserId('');
+        setEditUserName('');
+        setEditUserEmail('');
+        setEditUserRole('');
     };
 
     // Don't show anything if no storage (warning will be shown elsewhere)
@@ -259,8 +316,10 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
                             className="text-sm border rounded px-2 py-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                         >
                             <option value="">Select user...</option>
-                            {users.map(userId => (
-                                <option key={userId} value={userId}>{userId}</option>
+                            {users.map(user => (
+                                <option key={user.id} value={user.id}>
+                                    {user.name || user.id} {user.role ? `(${user.role})` : ''}
+                                </option>
                             ))}
                         </select>
                     )}
@@ -369,42 +428,97 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
 
             {/* New User Dialog */}
             {showNewUserDialog && (
-                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700">
+                <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700">
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Create New User Profile</h3>
                     <form autoComplete="off" onSubmit={(e) => { e.preventDefault(); addNewUser(); }}>
-                        <div className="flex items-center gap-2">
-                        <Input
-                            type="text"
-                            value={newUserId}
-                            onChange={(e) => setNewUserId(e.target.value)}
-                            placeholder="Enter identifier..."
-                            className="flex-1"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') addNewUser();
-                                if (e.key === 'Escape') setShowNewUserDialog(false);
-                            }}
-                            autoFocus
-                            autoComplete="new-password"
-                            data-form-type="other"
-                            data-lpignore="true"
-                            data-1p-ignore="true"
-                            name="node-identifier"
-                            role="textbox"
-                        />
-                        <button
-                            onClick={addNewUser}
-                            disabled={!newUserId.trim()}
-                            title="Add user"
-                            className="p-1.5 rounded text-sky-500 hover:text-white dark:text-white hover:bg-sky-300 dark:hover:bg-zinc-600 bg-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <CheckIcon className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => setShowNewUserDialog(false)}
-                            title="Cancel"
-                            className="p-1.5 rounded text-gray-500 hover:text-white dark:text-gray-400 dark:hover:text-white hover:bg-gray-400 dark:hover:bg-gray-600 bg-transparent transition-colors"
-                        >
-                            <XMarkIcon className="w-4 h-4" />
-                        </button>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                    ID <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={newUserId}
+                                    onChange={(e) => setNewUserId(e.target.value)}
+                                    placeholder="e.g., john"
+                                    className="w-full"
+                                    autoFocus
+                                    autoComplete="new-password"
+                                    data-form-type="other"
+                                    data-lpignore="true"
+                                    data-1p-ignore="true"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                    Name
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={newUserName}
+                                    onChange={(e) => setNewUserName(e.target.value)}
+                                    placeholder="e.g., John Smith"
+                                    className="w-full"
+                                    autoComplete="new-password"
+                                    data-form-type="other"
+                                    data-lpignore="true"
+                                    data-1p-ignore="true"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                    Email
+                                </label>
+                                <Input
+                                    type="email"
+                                    value={newUserEmail}
+                                    onChange={(e) => setNewUserEmail(e.target.value)}
+                                    placeholder="e.g., john@company.com"
+                                    className="w-full"
+                                    autoComplete="new-password"
+                                    data-form-type="other"
+                                    data-lpignore="true"
+                                    data-1p-ignore="true"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                    Role
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={newUserRole}
+                                    onChange={(e) => setNewUserRole(e.target.value)}
+                                    placeholder="e.g., Sales Manager"
+                                    className="w-full"
+                                    autoComplete="new-password"
+                                    data-form-type="other"
+                                    data-lpignore="true"
+                                    data-1p-ignore="true"
+                                />
+                            </div>
+                            <div className="flex gap-2 justify-end pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowNewUserDialog(false);
+                                        setNewUserId("");
+                                        setNewUserName("");
+                                        setNewUserEmail("");
+                                        setNewUserRole("");
+                                    }}
+                                    className="px-3 py-1.5 text-xs rounded text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={!newUserId.trim()}
+                                    className="px-3 py-1.5 text-xs rounded bg-sky-500 text-white hover:bg-sky-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Create User
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -461,43 +575,91 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
 
             {/* Edit User Dialog */}
             {editingUser && (
-                <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                <div className="mt-2 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                    <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-3">Edit User Profile</h3>
                     <form autoComplete="off" onSubmit={(e) => { e.preventDefault(); saveEditUser(); }}>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Edit User ID:</span>
-                            <Input
-                                type="text"
-                                value={editUserId}
-                                onChange={(e) => setEditUserId(e.target.value)}
-                                placeholder="User ID..."
-                                className="flex-1"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') saveEditUser();
-                                    if (e.key === 'Escape') cancelEditUser();
-                                }}
-                                autoFocus
-                                autoComplete="new-password"
-                                data-form-type="other"
-                                data-lpignore="true"
-                                data-1p-ignore="true"
-                                name="edit-user-id"
-                                role="textbox"
-                            />
-                            <button
-                                onClick={saveEditUser}
-                                disabled={!editUserId.trim()}
-                                title="Save changes"
-                                className="p-1.5 rounded text-sky-500 hover:text-white dark:text-white hover:bg-sky-300 dark:hover:bg-zinc-600 bg-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <CheckIcon className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={cancelEditUser}
-                                title="Cancel"
-                                className="p-1.5 rounded text-gray-500 hover:text-white dark:text-gray-400 dark:hover:text-white hover:bg-gray-400 dark:hover:bg-gray-600 bg-transparent transition-colors"
-                            >
-                                <XMarkIcon className="w-4 h-4" />
-                            </button>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
+                                    ID <span className="text-red-500">*</span>
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={editUserId}
+                                    onChange={(e) => setEditUserId(e.target.value)}
+                                    placeholder="User ID..."
+                                    className="w-full"
+                                    autoFocus
+                                    autoComplete="new-password"
+                                    data-form-type="other"
+                                    data-lpignore="true"
+                                    data-1p-ignore="true"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
+                                    Name
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={editUserName}
+                                    onChange={(e) => setEditUserName(e.target.value)}
+                                    placeholder="Full name..."
+                                    className="w-full"
+                                    autoComplete="new-password"
+                                    data-form-type="other"
+                                    data-lpignore="true"
+                                    data-1p-ignore="true"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
+                                    Email
+                                </label>
+                                <Input
+                                    type="email"
+                                    value={editUserEmail}
+                                    onChange={(e) => setEditUserEmail(e.target.value)}
+                                    placeholder="Email address..."
+                                    className="w-full"
+                                    autoComplete="new-password"
+                                    data-form-type="other"
+                                    data-lpignore="true"
+                                    data-1p-ignore="true"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">
+                                    Role
+                                </label>
+                                <Input
+                                    type="text"
+                                    value={editUserRole}
+                                    onChange={(e) => setEditUserRole(e.target.value)}
+                                    placeholder="Job role..."
+                                    className="w-full"
+                                    autoComplete="new-password"
+                                    data-form-type="other"
+                                    data-lpignore="true"
+                                    data-1p-ignore="true"
+                                />
+                            </div>
+                            <div className="flex gap-2 justify-end pt-2">
+                                <button
+                                    type="button"
+                                    onClick={cancelEditUser}
+                                    className="px-3 py-1.5 text-xs rounded text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={!editUserId.trim()}
+                                    className="px-3 py-1.5 text-xs rounded bg-sky-500 text-white hover:bg-sky-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -561,7 +723,7 @@ const SessionUserManager: React.FC<SessionUserManagerProps> = ({
                                 Delete User
                             </h3>
                             <div className="mt-1 text-sm text-red-700 dark:text-red-300">
-                                Are you sure you want to delete the user &quot;{userToDelete}&quot;? This action cannot be undone and all data associated with this user will be permanently lost.
+                                Are you sure you want to delete the user &quot;{users.find(u => u.id === userToDelete)?.name || userToDelete}&quot;? This action cannot be undone and all data associated with this user will be permanently lost.
                             </div>
                             <div className="mt-3 flex gap-2">
                                 <button

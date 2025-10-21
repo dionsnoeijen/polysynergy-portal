@@ -2,9 +2,20 @@
 import {create} from "zustand";
 import {ChatHistory, ChatMessage, createAgnoChatHistoryApi, StorageConfig} from "@/api/agnoChatHistoryApi";
 
+export type PauseMessageData = {
+    node_id: string;
+    run_id: string;
+    pause_type: 'confirmation' | 'user_input' | 'external_tool' | 'unknown';
+    pause_message: string;
+    pause_data: {
+        tools?: Array<{ tool_name: string; tool_args: unknown }>;
+        schema?: Array<{ name: string; description: string; type: string; required: boolean }>;
+    };
+};
+
 export type ChatViewMessage = {
     id: string;
-    sender: "user" | "agent";
+    sender: "user" | "agent" | "system";
     text: string;
     timestamp: number;
     node_id?: string | null;
@@ -18,6 +29,10 @@ export type ChatViewMessage = {
         id: string;
         filepath: string;
     }>;
+    // Pause data for HITL
+    pause_data?: PauseMessageData;
+    // HTML content for rich display
+    html_content?: string;
 };
 
 export type TeamMember = {
@@ -72,12 +87,20 @@ type ChatViewState = {
         userId?: string;
         limit?: number;
     }) => Promise<void>;
-    
+
+    // HITL Pause functionality
+    addPauseMessage: (sessionId: string, pauseData: PauseMessageData) => void;
+    hasActivePause: () => boolean;
+    removePauseMessage: (sessionId: string, messageId: string) => void;
+
+    // HTML content for rich display
+    addHTMLContent: (sessionId: string, data: { html: string; node_id: string }) => void;
+
     // Clear functions to replace chatStore functionality
     clearSession: (sessionId?: string) => void;
     clearAllSessions: () => void;
     clearBubbles: () => void;
-    
+
     // Team member activity tracking
     setTeamMemberActive: (memberId: string, memberName: string, memberIndex?: number) => void;
     setTeamMemberInactive: (memberId: string) => void;
@@ -380,7 +403,92 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
             console.warn("[chat-sync] failed to fetch session history", e);
         }
     },
-    
+
+    // HITL Pause functionality
+    addPauseMessage: (sessionId, pauseData) =>
+        set((s) => {
+            const now = Date.now();
+            const prev = s.messagesBySession[sessionId] ?? [];
+
+            const pauseMessage: ChatViewMessage = {
+                id: `system-pause-${now}`,
+                sender: "system",
+                text: pauseData.pause_message,
+                timestamp: now,
+                node_id: pauseData.node_id,
+                run_id: pauseData.run_id,
+                pause_data: pauseData,
+            };
+
+            return {
+                messagesBySession: {
+                    ...s.messagesBySession,
+                    [sessionId]: [...prev, pauseMessage],
+                },
+            };
+        }),
+
+    // Check if there's an active pause in the current session
+    hasActivePause: () => {
+        const { activeSessionId, messagesBySession } = get();
+        if (!activeSessionId) return false;
+
+        const messages = messagesBySession[activeSessionId] ?? [];
+
+        // Check if the last message is a system pause message
+        // We look from the end because pause should be the most recent event
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const msg = messages[i];
+
+            // If we hit a user message or agent response after the pause, pause is no longer active
+            if (msg.sender === 'user' || msg.sender === 'agent') {
+                return false;
+            }
+
+            // Found an active pause
+            if (msg.sender === 'system' && msg.pause_data) {
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    // Remove pause message after resume (prevents re-showing after scroll)
+    removePauseMessage: (sessionId, messageId) =>
+        set((s) => {
+            const messages = s.messagesBySession[sessionId] ?? [];
+            return {
+                messagesBySession: {
+                    ...s.messagesBySession,
+                    [sessionId]: messages.filter(m => m.id !== messageId)
+                }
+            };
+        }),
+
+    // HTML content for rich display
+    addHTMLContent: (sessionId, data) =>
+        set((s) => {
+            const now = Date.now();
+            const prev = s.messagesBySession[sessionId] ?? [];
+
+            const htmlMessage: ChatViewMessage = {
+                id: `system-html-${now}`,
+                sender: "system",
+                text: "", // Empty text, content is in html_content
+                timestamp: now,
+                node_id: data.node_id,
+                html_content: data.html,
+            };
+
+            return {
+                messagesBySession: {
+                    ...s.messagesBySession,
+                    [sessionId]: [...prev, htmlMessage],
+                },
+            };
+        }),
+
     // Clear functions to replace chatStore functionality
     clearSession: (sessionId) => 
         set((s) => {

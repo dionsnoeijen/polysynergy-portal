@@ -52,10 +52,11 @@ const VariableTypeCode: React.FC<Props> = ({
                     <Label>{variable.handle}</Label>
                     <Field>
                         <button
-                            className="text-slate-500 hover:text-slate-600 w-full pb-1 ring-1 ring-white/20 rounded-md"
+                            className={`w-full pb-1 ring-1 rounded-md text-zinc-900 dark:text-white bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}
                             onClick={() => onEdit(nodeId)}
                         >
-                            <PencilIcon className="w-4 h-4 inline text-zinc-600 dark:text-slate-300"/>
+                            Edit code
+                            <PencilIcon className="w-4 h-4 inline ml-1 text-blue-700/80 dark:text-white/50"/>
                         </button>
                     </Field>
                 </Fieldset>

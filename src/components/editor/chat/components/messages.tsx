@@ -4,6 +4,8 @@ import useNodesStore from "@/stores/nodesStore";
 import PromptRow from "./prompt-row";
 import NodeResponseCard from "@/components/editor/chat/components/node-response-card";
 import CollapsibleTeamResponse from "./collapsible-team-response";
+import {PauseInteraction} from "./PauseInteraction";
+import {HTMLContentCard} from "./HTMLContentCard";
 import {getAgentMetaFromNode} from "@/utils/chatHistoryUtils";
 
 const EMPTY: ReadonlyArray<ChatViewMessage> = Object.freeze([]);
@@ -18,13 +20,16 @@ type AgentGroupItem = {
     memberIndex?: number;
 };
 type UserItem = { type: "user"; message: ChatViewMessage; runBatch: number };
-type RenderItem = AgentGroupItem | UserItem;
+type SystemPauseItem = { type: "system_pause"; message: ChatViewMessage; runBatch: number };
+type SystemHTMLItem = { type: "system_html"; message: ChatViewMessage; runBatch: number };
+type RenderItem = AgentGroupItem | UserItem | SystemPauseItem | SystemHTMLItem;
 
 interface MessagesProps {
     teamResponsesCollapsed?: boolean;
+    onResumeFlow?: (runId: string, nodeId: string, userInput: unknown) => void;
 }
 
-const Messages: React.FC<MessagesProps> = ({ teamResponsesCollapsed = true }) => {
+const Messages: React.FC<MessagesProps> = ({ teamResponsesCollapsed = true, onResumeFlow }) => {
     const activeSessionId = useChatViewStore((s) => s.activeSessionId);
     const isWaitingForResponse = useChatViewStore((s) => s.isWaitingForResponse);
 
@@ -55,6 +60,18 @@ const Messages: React.FC<MessagesProps> = ({ teamResponsesCollapsed = true }) =>
         };
 
         for (const m of messages) {
+            // System pause message
+            if (m.sender === "system" && m.pause_data) {
+                out.push({type: "system_pause", message: m, runBatch});
+                continue;
+            }
+
+            // System HTML content message
+            if (m.sender === "system" && m.html_content) {
+                out.push({type: "system_html", message: m, runBatch});
+                continue;
+            }
+
             // Run-bounds:
             if (m.sender === "user") {
                 startNewRun(m.run_id ?? null);
@@ -103,6 +120,41 @@ const Messages: React.FC<MessagesProps> = ({ teamResponsesCollapsed = true }) =>
                 if (item.type === "user") {
                     const {message} = item;
                     return <PromptRow key={`user-${item.runBatch}-${message.id}`} message={message}/>;
+                }
+
+                // System pause message for HITL
+                if (item.type === "system_pause") {
+                    const {message} = item;
+                    if (!message.pause_data) return null;
+
+                    return (
+                        <PauseInteraction
+                            key={`pause-${item.runBatch}-${message.id}`}
+                            pauseData={message.pause_data}
+                            onResume={(userInput) => {
+                                if (onResumeFlow && message.pause_data) {
+                                    onResumeFlow(
+                                        message.pause_data.run_id,
+                                        message.pause_data.node_id,
+                                        userInput
+                                    );
+                                }
+                            }}
+                        />
+                    );
+                }
+
+                // System HTML content message
+                if (item.type === "system_html") {
+                    const {message} = item;
+                    if (!message.html_content) return null;
+
+                    return (
+                        <HTMLContentCard
+                            key={`html-${item.runBatch}-${message.id}`}
+                            htmlContent={message.html_content}
+                        />
+                    );
                 }
 
                 const {nodeId, messages: groupMsgs, runBatch, isTeamMember, memberIndex} = item;

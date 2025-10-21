@@ -19,7 +19,7 @@ const TemplateContent: React.FC<TemplateContentProps> = ({ logic }) => {
                     <BoltIcon className={'w-4 h-4 text-orange-800'} />
                 </span>
             ) : (
-                <span className={`ml-1 truncate ${logic.categorySubTextColor}`}>{truncateText(logic.variable.value as string)}</span>
+                <span className={`ml-1 truncate ${logic.categorySubTextColor}`}>{truncateText(logic.variable.value as string, 300)}</span>
             )}
         </>
     );

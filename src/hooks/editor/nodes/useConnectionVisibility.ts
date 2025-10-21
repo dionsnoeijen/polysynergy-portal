@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import useNodesStore from '@/stores/nodesStore';
 import useConnectionsStore from '@/stores/connectionsStore';
-import { Connection } from '@/types/types';
+import { Connection, Node } from '@/types/types';
 import { updateConnectionsDirectly } from '@/utils/updateConnectionsDirectly';
 
 const useConnectionVisibility = () => {
@@ -15,7 +15,7 @@ const useConnectionVisibility = () => {
         []
     );
 
-    const showConnectionsInsideOpenGroup = useCallback((group: any) =>
+    const showConnectionsInsideOpenGroup = useCallback((group: Node) =>
         useConnectionsStore.getState().showConnectionsInsideOpenGroup(group),
         []
     );

@@ -33,7 +33,6 @@ export const useEditorState = (isMouseDown?: boolean) => {
         []
     );
 
-    const nodes = useNodesStore((state) => state.nodes);
     const connections = useConnectionsStore((state) => state.connections);
 
     // PERFORMANCE: Read node/group getters on-demand instead of subscribing
@@ -46,7 +45,7 @@ export const useEditorState = (isMouseDown?: boolean) => {
         []
     );
 
-    // Derived state
+    // Derived state - these automatically refresh when nodes change internally
     const nodesToRender = useMemo(() => getNodesToRender(), [getNodesToRender]);
     const openGroups = useMemo(() => getOpenGroups(), [getOpenGroups]);
 

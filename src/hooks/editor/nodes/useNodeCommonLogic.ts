@@ -14,6 +14,12 @@ export const useNodeCommonLogic = (node: Node, preview: boolean = false) => {
     const [activeRunId, setActiveRunId] = useState(() => useRunsStore.getState().activeRunId);
     const [backgroundedRunIds, setBackgroundedRunIds] = useState(() => useRunsStore.getState().backgroundedRunIds);
 
+    // PERFORMANCE: Subscribe to isPanning/isZooming for suspend rendering feature
+    // These MUST be subscriptions to hide text during pan/zoom performance optimization
+    const isPanning = useEditorStore((state) => state.isPanning);
+    const isZooming = useEditorStore((state) => state.isZooming);
+    const visibleNodeCount = useEditorStore((state) => state.visibleNodeCount);
+
     useEffect(() => {
         // Subscribe to mock store changes for this specific node
         const unsubMock = useMockStore.subscribe((state) => {
@@ -80,11 +86,6 @@ export const useNodeCommonLogic = (node: Node, preview: boolean = false) => {
     }, [allMockNode, activeRunId, backgroundedRunIds]);
 
     return useMemo(() => {
-        // PERFORMANCE: Read panning/zooming state on-demand instead of subscribing
-        const isPanning = useEditorStore.getState().isPanning;
-        const isZooming = useEditorStore.getState().isZooming;
-        const visibleNodeCount = useEditorStore.getState().visibleNodeCount;
-
         return {
             isService: !!node.service?.id || isNodeInService,
             isCollapsable: node.category !== NodeType.Note,
@@ -98,6 +99,9 @@ export const useNodeCommonLogic = (node: Node, preview: boolean = false) => {
         node.service?.id,
         node.category,
         isNodeInService,
+        isPanning,
+        isZooming,
+        visibleNodeCount,
         mockNode,
         hasMockData,
         preview

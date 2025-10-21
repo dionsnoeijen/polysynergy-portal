@@ -138,14 +138,18 @@ export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
     const handleDOMWheel = (e: WheelEvent) => {
         const contentEl = contentRef.current;
         if (!contentEl) return;
-        
+
         const hoveredEl = document.elementFromPoint(e.clientX, e.clientY);
         if (!hoveredEl?.closest('[data-type="editor"], [data-type="drawing-layer"]')) return;
-        
+
         e.preventDefault();
         e.stopPropagation(); // Block any other handlers
         isDOMActive.current = true; // Block useEditorTransform
-        
+
+        // Set isZooming to trigger suspend rendering for performance
+        useEditorStore.getState().setIsZooming(true);
+        console.log('🔍 ZOOM START - isZooming set to TRUE');
+
         // Get current transform
         const layer = transformLayerRef.current;
         if (!layer) return;
@@ -190,17 +194,29 @@ export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
             `;
         }
         
-        // Debounced store sync - shorter delay to minimize visual jump
+        // Debounced store sync - longer delay for smoother restore after zoom
         clearTimeout((window as unknown as {_domZoomTimeout: ReturnType<typeof setTimeout>})._domZoomTimeout);
         (window as unknown as {_domZoomTimeout: ReturnType<typeof setTimeout>})._domZoomTimeout = setTimeout(() => {
             useEditorStore.getState().setZoomFactorForVersion(newZoom);
             useEditorStore.getState().setPanPositionForVersion({ x: newPanX, y: newPanY });
-            
+
+            // Clear isZooming to restore text rendering - use requestIdleCallback for smoother restore
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(() => {
+                    useEditorStore.getState().setIsZooming(false);
+                }, { timeout: 100 });
+            } else {
+                // Fallback for browsers without requestIdleCallback
+                setTimeout(() => {
+                    useEditorStore.getState().setIsZooming(false);
+                }, 50);
+            }
+
             // Re-enable useEditorTransform after sync
             setTimeout(() => {
                 isDOMActive.current = false;
             }, 50);
-        }, 50); // Reduced from 150ms to 50ms
+        }, 150); // PERFORMANCE: Longer debounce allows zoom gestures to complete before restore
     };
 
     // Custom hooks for separated concerns  

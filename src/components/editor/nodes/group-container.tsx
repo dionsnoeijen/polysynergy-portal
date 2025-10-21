@@ -107,7 +107,7 @@ const GroupContainer: React.FC<GroupContainerProps> = ({
     const ref = isCollapsed ? autoResizeRef : measureRef;
     const style = isCollapsed ? collapsedStyle : expandedStyle;
     const dataNodeId = isMirror ? ('mirror-' + node.id) : node.id;
-    const title = isCollapsed 
+    const title = isCollapsed
         ? `${node.category} > ${node.id} > ${node.name}`
         : `${node.category} > ${node.name} > ${dataNodeId}`;
 

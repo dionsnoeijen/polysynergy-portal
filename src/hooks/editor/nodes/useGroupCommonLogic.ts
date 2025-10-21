@@ -14,10 +14,11 @@ export const useGroupCommonLogic = (node: Node, isMirror: boolean = false, previ
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
 
-    // PERFORMANCE: Read panning/zooming state on-demand instead of subscribing
-    const isPanning = useMemo(() => useEditorStore.getState().isPanning, []);
-    const isZooming = useMemo(() => useEditorStore.getState().isZooming, []);
-    const visibleNodeCount = useMemo(() => useEditorStore.getState().visibleNodeCount, []);
+    // PERFORMANCE: Subscribe to isPanning/isZooming for suspend rendering feature
+    // These MUST be subscriptions to hide text during pan/zoom performance optimization
+    const isPanning = useEditorStore((state) => state.isPanning);
+    const isZooming = useEditorStore((state) => state.isZooming);
+    const visibleNodeCount = useEditorStore((state) => state.visibleNodeCount);
 
     // PERFORMANCE: Read group/service state on-demand
     const isNodeInGroup = useMemo(

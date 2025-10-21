@@ -1,4 +1,4 @@
-import {useMemo} from 'react';
+import {useMemo, useCallback} from 'react';
 import {Node} from '@/types/types';
 import useNodesStore from '@/stores/nodesStore';
 import useEditorStore from '@/stores/editorStore';
@@ -6,30 +6,40 @@ import useNodeMouseDown from '@/hooks/editor/nodes/useNodeMouseDown';
 import useNodeContextMenu from '@/hooks/editor/nodes/useNodeContextMenu';
 
 export const useNodeInteractions = (node: Node, isNodeInService: boolean, preview: boolean = false) => {
-    const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
-    const isExecuting = useEditorStore((state) => state.isExecuting);
-    const chatMode = useEditorStore((state) => state.chatMode);
-    const isReadOnly = useEditorStore((state) => state.isReadOnly);
-
     const {handleNodeMouseDown} = useNodeMouseDown(node, isNodeInService);
     const {handleContextMenu} = useNodeContextMenu(node);
 
-    // Determine if nodes should be locked (during execution OR in chat mode OR read-only)
-    const isLocked = Boolean(isExecuting) || chatMode || isReadOnly;
+    // PERFORMANCE: Wrap handlers to check lock state on-demand at call-time instead of subscribing
+    // This prevents 3 subscriptions per node (isExecuting, chatMode, isReadOnly)
+    const wrappedContextMenu = useCallback((e: React.MouseEvent) => {
+        if (preview) return;
 
-    return useMemo(() => {
-        const handleCollapse = () => {
-            toggleNodeViewCollapsedState(node.id);
-        };
+        const { isExecuting, chatMode, isReadOnly } = useEditorStore.getState();
+        const isLocked = Boolean(isExecuting) || chatMode || isReadOnly;
 
-        // Use stable no-op function to avoid re-renders
-        const noOp = () => {};
+        if (!isLocked) {
+            handleContextMenu(e);
+        }
+    }, [preview, handleContextMenu]);
 
-        return {
-            onContextMenu: (preview || isLocked) ? noOp : handleContextMenu,
-            onMouseDown: (preview || isLocked) ? noOp : handleNodeMouseDown,
-            onCollapse: handleCollapse,
-            isLocked
-        };
-    }, [handleContextMenu, handleNodeMouseDown, toggleNodeViewCollapsedState, node.id, preview, isLocked]);
+    const wrappedMouseDown = useCallback((e: React.MouseEvent) => {
+        if (preview) return;
+
+        const { isExecuting, chatMode, isReadOnly } = useEditorStore.getState();
+        const isLocked = Boolean(isExecuting) || chatMode || isReadOnly;
+
+        if (!isLocked) {
+            handleNodeMouseDown(e);
+        }
+    }, [preview, handleNodeMouseDown]);
+
+    const handleCollapse = useCallback(() => {
+        useNodesStore.getState().toggleNodeViewCollapsedState(node.id);
+    }, [node.id]);
+
+    return useMemo(() => ({
+        onContextMenu: wrappedContextMenu,
+        onMouseDown: wrappedMouseDown,
+        onCollapse: handleCollapse,
+    }), [wrappedContextMenu, wrappedMouseDown, handleCollapse]);
 };

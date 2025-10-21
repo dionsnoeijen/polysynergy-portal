@@ -72,4 +72,7 @@ const ClosedGroup: React.FC<GroupProps> = ({
     );
 };
 
-export default ClosedGroup;
+// Memoize to prevent unnecessary re-renders
+export default React.memo(ClosedGroup, (prevProps, nextProps) => {
+    return prevProps.node === nextProps.node && prevProps.preview === nextProps.preview;
+});

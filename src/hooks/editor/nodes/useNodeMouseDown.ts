@@ -8,28 +8,41 @@ const useNodeMouseDown = (
     isInService?: boolean
 ) => {
 
-    const selectedNodes = useEditorStore((state) => state.selectedNodes);
-    const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
+    // Use stable refs instead of subscribing to state
+    // This prevents the callback from being recreated on every selection change
+    const getSelectedNodes = useCallback(() => useEditorStore.getState().selectedNodes, []);
+    const setSelectedNodes = useCallback((nodes: string[]) => useEditorStore.getState().setSelectedNodes(nodes), []);
 
     const { onDragMouseDown } = useDraggable();
 
     const handleNodeMouseDown = useCallback(
         (e: React.MouseEvent) => {
-            if (node.view.disabled) return;
-            
+            if (node.view.disabled) {
+                return;
+            }
+
             // Disable node selection during execution
             const isExecuting = useEditorStore.getState().isExecuting;
-            if (isExecuting) return;
-            
+            if (isExecuting) {
+                return;
+            }
+
             const editorMode = useEditorStore.getState().editorMode;
-            if (editorMode !== EditorMode.Select) return;
+            if (editorMode !== EditorMode.Select) {
+                return;
+            }
 
             const isToggleClick = (e.target as HTMLElement)
                 .closest("button[data-toggle='true']");
 
-            if (isToggleClick) return;
+            if (isToggleClick) {
+                return;
+            }
 
             e.preventDefault();
+
+            // Get fresh selectedNodes value
+            const selectedNodes = getSelectedNodes();
 
             if (e.ctrlKey) {
                 if (selectedNodes.includes(node.id)) {
@@ -55,7 +68,7 @@ const useNodeMouseDown = (
                 onDragMouseDown(e);
             }
         },
-        [isInService, node, selectedNodes, setSelectedNodes, onDragMouseDown]
+        [isInService, node.id, node.view.disabled, getSelectedNodes, setSelectedNodes, onDragMouseDown]
     );
 
     return { handleNodeMouseDown };

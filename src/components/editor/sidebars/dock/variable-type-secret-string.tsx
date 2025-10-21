@@ -17,25 +17,29 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
     currentValue,
     inDock = true
 }) => {
-    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         if (onChange) {
             onChange(newValue);
         } else {
-            updateNodeVariable(nodeId, variable.handle, newValue);
+            useNodesStore.getState().updateNodeVariable(nodeId, variable.handle, newValue);
         }
-    };
+    }, [onChange, nodeId, variable.handle]);
 
-    const togglePasswordVisibility = () => {
+    const togglePasswordVisibility = React.useCallback(() => {
         setIsPasswordVisible((prev) => !prev);
-    };
+    }, []);
 
     const displayValue = currentValue !== undefined ? currentValue : (variable.value as string) || "";
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     return (
         <>
@@ -79,4 +83,14 @@ const VariableTypeSecretString: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default VariableTypeSecretString;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeSecretString, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.publishedButton === nextProps.publishedButton &&
+        prevProps.onChange === nextProps.onChange &&
+        prevProps.currentValue === nextProps.currentValue &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

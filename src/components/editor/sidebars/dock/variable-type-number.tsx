@@ -69,7 +69,12 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
         };
     }, []);
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     return (
         <>
@@ -110,4 +115,12 @@ const VariableTypeNumber: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default VariableTypeNumber;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeNumber, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.publishedButton === nextProps.publishedButton &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

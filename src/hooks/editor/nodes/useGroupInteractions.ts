@@ -6,16 +6,30 @@ import useGrouping from '@/hooks/editor/nodes/useGrouping';
 import useNodeMouseDown from '@/hooks/editor/nodes/useNodeMouseDown';
 
 export const useGroupInteractions = (
-    node: Node, 
-    groupId: string | null, 
-    selectedNodes: string[], 
+    node: Node,
+    groupId: string | null,
+    selectedNodes: string[],
     nodeToMoveToGroupId: string | null,
     preview: boolean = false
 ) => {
-    const openContextMenu = useEditorStore((state) => state.openContextMenu);
-    const setNodeToMoveToGroupId = useEditorStore((state) => state.setNodeToMoveToGroupId);
-    const toggleNodeViewCollapsedState = useNodesStore((state) => state.toggleNodeViewCollapsedState);
-    
+    // PERFORMANCE: Convert store subscriptions to callbacks with getState()
+    // These are only called on user interactions, not during render
+    const openContextMenu = useMemo(
+        () => (x: number, y: number, items: any[]) =>
+            useEditorStore.getState().openContextMenu(x, y, items),
+        []
+    );
+
+    const setNodeToMoveToGroupId = useMemo(
+        () => (id: string) => useEditorStore.getState().setNodeToMoveToGroupId(id),
+        []
+    );
+
+    const toggleNodeViewCollapsedState = useMemo(
+        () => (nodeId: string) => useNodesStore.getState().toggleNodeViewCollapsedState(nodeId),
+        []
+    );
+
     const {openGroup, deleteGroup, removeNodeFromGroup, moveNodeToGroup} = useGrouping();
     const {handleNodeMouseDown} = useNodeMouseDown(node);
 

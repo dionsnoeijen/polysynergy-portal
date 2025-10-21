@@ -146,4 +146,15 @@ const ExpandedNode: React.FC<ExpandedNodeProps> = ({
     );
 };
 
-export default ExpandedNode;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(ExpandedNode, (prevProps, nextProps) => {
+    return (
+        prevProps.node === nextProps.node &&
+        prevProps.preview === nextProps.preview &&
+        prevProps.mockNode === nextProps.mockNode &&
+        prevProps.styles === nextProps.styles &&
+        prevProps.isCollapsable === nextProps.isCollapsable &&
+        prevProps.onCollapse === nextProps.onCollapse &&
+        prevProps.onResizeMouseDown === nextProps.onResizeMouseDown
+    );
+});

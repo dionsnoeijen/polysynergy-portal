@@ -81,7 +81,47 @@ const Li: Components["li"] = ({ children }) => {
   return <li className="m-0">{trimmed}</li>;
 };
 
-const MarkdownContent: React.FC<Props> = ({ text, enableMarkdown = true, className }) => {
+// PERFORMANCE: Memoize the markdown components to avoid recreating on every render
+const markdownComponents: Components = {
+  a: ({ href, children }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="underline underline-offset-2 decoration-sky-500 hover:decoration-2 text-sky-600 dark:text-sky-400"
+    >
+      {children}
+    </a>
+  ),
+  code: ({ children, className }) => {
+    const inline = !className;
+    return inline ? (
+      <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs">
+        {children}
+      </code>
+    ) : (
+      <code className="block bg-gray-100 dark:bg-gray-800 p-2 rounded text-xs overflow-x-auto">
+        {children}
+      </code>
+    );
+  },
+  pre: ({ children }) => (
+    <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-x-auto my-2">
+      {children}
+    </pre>
+  ),
+  p: ({ children }) => <p className="m-0">{children}</p>,
+  ul: ({ children }) => <ul className="list-disc list-inside my-1">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal list-inside my-1">{children}</ol>,
+  li: Li,
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic my-2">
+      {children}
+    </blockquote>
+  ),
+};
+
+const MarkdownContentComponent: React.FC<Props> = ({ text, enableMarkdown = true, className }) => {
   const processed = useMemo(
     () => (enableMarkdown ? preprocessMarkdown(text) : text),
     [text, enableMarkdown]
@@ -109,49 +149,21 @@ const MarkdownContent: React.FC<Props> = ({ text, enableMarkdown = true, classNa
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
-        components={{
-          a: ({ href, children }) => (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2 decoration-sky-500 hover:decoration-2 text-sky-600 dark:text-sky-400"
-            >
-              {children}
-            </a>
-          ),
-          code: ({ children, className }) => {
-            const inline = !className;
-            return inline ? (
-              <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs">
-                {children}
-              </code>
-            ) : (
-              <code className="block bg-gray-100 dark:bg-gray-800 p-2 rounded text-xs overflow-x-auto">
-                {children}
-              </code>
-            );
-          },
-          pre: ({ children }) => (
-            <pre className="bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-x-auto my-2">
-              {children}
-            </pre>
-          ),
-          p: ({ children }) => <p className="m-0">{children}</p>,
-          ul: ({ children }) => <ul className="list-disc list-inside my-1">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal list-inside my-1">{children}</ol>,
-          li: Li,
-          blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic my-2">
-              {children}
-            </blockquote>
-          ),
-        }}
+        components={markdownComponents}
       >
         {processed}
       </ReactMarkdown>
     </div>
   );
 };
+
+// PERFORMANCE: Memoize to prevent unnecessary re-renders during node selection
+const MarkdownContent = React.memo(MarkdownContentComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.text === nextProps.text &&
+    prevProps.enableMarkdown === nextProps.enableMarkdown &&
+    prevProps.className === nextProps.className
+  );
+});
 
 export default MarkdownContent;

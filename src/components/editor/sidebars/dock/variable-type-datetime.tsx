@@ -26,15 +26,19 @@ const VariableTypeDatetime: React.FC<VariableTypeProps> = ({
     // eslint-disable-next-line
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900'
 }): React.ReactElement => {
-    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
     const initialValue = variable.value ? new Date(variable.value as string) : null;
 
-    const handleChange = (datetime: Date | null) => {
+    const handleChange = React.useCallback((datetime: Date | null) => {
         const formattedValue = datetime ? datetime.toISOString() : null;
-        updateNodeVariable(nodeId, variable.handle, formattedValue);
-    };
+        useNodesStore.getState().updateNodeVariable(nodeId, variable.handle, formattedValue);
+    }, [nodeId, variable.handle]);
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     return (
         <div className={'relative'}>
@@ -61,4 +65,12 @@ const VariableTypeDatetime: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default VariableTypeDatetime;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeDatetime, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.publishedButton === nextProps.publishedButton &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

@@ -1,14 +1,13 @@
+import { useCallback } from 'react';
 import { Node } from '@/types/types';
 import useConnectionsStore from "@/stores/connectionsStore";
 
 const useToggleConnectionCollapse = (node: Node) => {
-    const {
-        findInConnectionsByNodeIdAndHandle,
-        findOutConnectionsByNodeIdAndHandle,
-        updateConnection
-    } = useConnectionsStore();
+    // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+    const collapseConnections = useCallback((handle: string) => {
+        const { findInConnectionsByNodeIdAndHandle, findOutConnectionsByNodeIdAndHandle, updateConnection } =
+            useConnectionsStore.getState();
 
-    const collapseConnections = (handle: string) => {
         const inConnections = findInConnectionsByNodeIdAndHandle(node.id, handle, false);
         const outConnections = findOutConnectionsByNodeIdAndHandle(node.id, handle, false);
 
@@ -18,9 +17,12 @@ const useToggleConnectionCollapse = (node: Node) => {
                 collapsed: true,
             });
         });
-    };
+    }, [node.id]);
 
-    const openConnections = (handle: string) => {
+    const openConnections = useCallback((handle: string) => {
+        const { findInConnectionsByNodeIdAndHandle, findOutConnectionsByNodeIdAndHandle, updateConnection } =
+            useConnectionsStore.getState();
+
         const inConnections = findInConnectionsByNodeIdAndHandle(node.id, handle, false);
         const outConnections = findOutConnectionsByNodeIdAndHandle(node.id, handle, false);
 
@@ -30,7 +32,7 @@ const useToggleConnectionCollapse = (node: Node) => {
                 collapsed: false,
             });
         });
-    };
+    }, [node.id]);
 
     return { collapseConnections, openConnections };
 };

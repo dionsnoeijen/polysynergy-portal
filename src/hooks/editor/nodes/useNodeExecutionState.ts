@@ -40,18 +40,18 @@ export function useNodeExecutionState(nodeId: string) {
  */
 export function useNodeExecutionClasses(nodeId: string) {
     const activeRunId = useRunsStore((state) => state.activeRunId);
-    const mockNodes = useMockStore((state) => state.mockNodes);
-    
+
+    // PERFORMANCE: Use getActiveMockNode selector instead of subscribing to entire mockNodes array
+    // This prevents ALL nodes from re-rendering on every execution state change
+    const getActiveMockNode = useMockStore((state) => state.getActiveMockNode);
+
     const classes = useMemo(() => {
         const classNames = [];
-        
+
         // Only for active run: show live execution states (glows)
         if (activeRunId) {
-            const activeMockNode = mockNodes.find(mockNode => {
-                const originalNodeId = mockNode.id.replace(/-\d+$/, '');
-                return originalNodeId === nodeId && mockNode.runId === activeRunId;
-            });
-            
+            const activeMockNode = getActiveMockNode(nodeId, activeRunId);
+
             if (activeMockNode) {
                 if (activeMockNode.status === 'executing') {
                     classNames.push('executing');
@@ -59,9 +59,9 @@ export function useNodeExecutionClasses(nodeId: string) {
                 // Note: completion states (executed-*) are handled elsewhere, NOT here
             }
         }
-        
+
         return classNames.join(' ');
-    }, [nodeId, activeRunId, mockNodes]);
-    
+    }, [nodeId, activeRunId, getActiveMockNode]);
+
     return classes;
 }

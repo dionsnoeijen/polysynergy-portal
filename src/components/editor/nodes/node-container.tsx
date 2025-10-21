@@ -30,23 +30,25 @@ const NodeContainer: React.FC<NodeContainerProps> = ({
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [height, setHeight] = useState(0);
-    
+
     const position = useNodePlacement(node);
     const {size} = useResizable(node);
+
+    // PERFORMANCE: Only subscribe to zoomFactor for calculations
     const zoomFactor = useEditorStore((state) => state.getZoomFactorForVersion());
-    const isPanning = useEditorStore((state) => state.isPanning);
-    const isZooming = useEditorStore((state) => state.isZooming);
-    
+
     // Get execution classes from store-based hook
     const executionClasses = useNodeExecutionClasses(node.id);
 
     useLayoutEffect(() => {
         if (ref.current && !shouldSuspendRendering) {
+            // PERFORMANCE: Check isPanning/isZooming on-demand instead of subscribing
+            const { isPanning, isZooming } = useEditorStore.getState();
             if (!isPanning && !isZooming) {
                 setHeight(ref.current.getBoundingClientRect().height / zoomFactor);
             }
         }
-    }, [node.view.height, isPanning, isZooming, node.id, zoomFactor, shouldSuspendRendering]);
+    }, [node.view.height, node.id, zoomFactor, shouldSuspendRendering]);
 
     const baseStyle = {
         width: `${size.width}px`,

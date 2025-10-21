@@ -32,17 +32,17 @@ const VariableTypeAvatar: React.FC<Props> = ({
     // eslint-disable-next-line
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
 }) => {
-
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
     const isGenerating = useAvatarStore(state => state.isGenerating(nodeId));
-    const startGenerating = useAvatarStore(state => state.startGenerating);
-    const stopGenerating = useAvatarStore(state => state.stopGenerating);
-    const updateNodeVariable = useNodesStore(state => state.updateNodeVariable);
-    const getNodeVariable = useNodesStore(state => state.getNodeVariable);
 
-    const onEdit = (nodeId: string) => {
+    const onEdit = React.useCallback((nodeId: string) => {
+        const { startGenerating, stopGenerating } = useAvatarStore.getState();
+        const { updateNodeVariable, getNodeVariable } = useNodesStore.getState();
+
         // Start generation state immediately for instant UI feedback
         startGenerating(nodeId);
-        
+
         // Fire-and-forget async generation to prevent UI blocking
         (async () => {
             try {
@@ -51,7 +51,7 @@ const VariableTypeAvatar: React.FC<Props> = ({
 
                 console.log('🎨 [Avatar] Starting background avatar generation for node:', nodeId);
                 const result = await fetchGenerateAvatar(nodeId, name, instructions);
-                
+
                 // Update with cache-busting timestamp for immediate visual refresh
                 updateNodeVariable(nodeId, variable.handle, `${result}?v=${Date.now()}`);
                 console.log('✅ [Avatar] Avatar generation completed for node:', nodeId);
@@ -62,7 +62,7 @@ const VariableTypeAvatar: React.FC<Props> = ({
                 stopGenerating(nodeId);
             }
         })(); // IIFE to run async function immediately without blocking
-    };
+    }, [variable.handle]);
 
     return (
         <div className={'relative'}>
@@ -86,4 +86,11 @@ const VariableTypeAvatar: React.FC<Props> = ({
     );
 };
 
-export default VariableTypeAvatar;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeAvatar, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

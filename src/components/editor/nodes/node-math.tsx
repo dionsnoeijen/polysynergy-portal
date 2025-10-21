@@ -1,16 +1,16 @@
 import { NodeProps } from "@/types/types";
 import React, { useMemo } from "react";
-import useEditorStore from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
+import {useIsNodeSelectedOptimized} from "@/hooks/editor/nodes/useIsNodeSelectedOptimized";
 
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
 import useMockStore from "@/stores/mockStore";
 
 const NodeMath: React.FC<NodeProps> = ({ node }) => {
-    const isSelected = useEditorStore((state) => state.selectedNodes.includes(node.id));
+    const isSelected = useIsNodeSelectedOptimized(node.id);
     const mockNode = useMockStore((state) => state.getMockNode(node.id));
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
@@ -51,7 +51,7 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
 
     return (
         <div
-            className={`absolute select-none flex items-center justify-center bg-sky-600 dark:bg-zinc-800 bg-opacity-50 backdrop-blur-lg backdrop-opacity-60 rounded-[50%] ${
+            className={`absolute select-none flex items-center justify-center bg-sky-600 dark:bg-zinc-800 rounded-[50%] ${
                 isSelected ? "shadow-2xl ring-4" : "shadow-sm ring-2"
             } ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'} ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}`}
             style={{
@@ -105,4 +105,7 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
     );
 };
 
-export default NodeMath;
+// Memoize to prevent unnecessary re-renders
+export default React.memo(NodeMath, (prevProps, nextProps) => {
+    return prevProps.node === nextProps.node && prevProps.preview === nextProps.preview;
+});

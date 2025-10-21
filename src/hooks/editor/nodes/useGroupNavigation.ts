@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import { updateConnectionsDirectly } from "@/utils/updateConnectionsDirectly";
@@ -5,26 +6,20 @@ import { getNodeBoundsFromState } from "@/utils/positionUtils";
 import useConnectionVisibility from "./useConnectionVisibility";
 
 const useGroupNavigation = () => {
-    const setSelectedNodes = useEditorStore((state) => state.setSelectedNodes);
-
-    const closeGroupStore = useNodesStore((state) => state.closeGroup);
-    const openGroupStore = useNodesStore((state) => state.openGroup);
-    const hideGroup = useNodesStore((state) => state.hideGroup);
-    const showGroup = useNodesStore((state) => state.showGroup);
-    const getNodesInGroup = useNodesStore((state) => state.getNodesInGroup);
-    const getGroupById = useNodesStore((state) => state.getGroupById);
-    const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);
-    const updateNodePositionByDelta = useNodesStore((state) => state.updateNodePositionByDelta);
-    const updateMultipleNodePositionsByDelta = useNodesStore((state) => state.updateMultipleNodePositionsByDelta);
-    const disableAllNodesViewExceptByIds = useNodesStore((state) => state.disableAllNodesViewExceptByIds);
-    const enableAllNodesView = useNodesStore((state) => state.enableAllNodesView);
-    const enableNodesView = useNodesStore((state) => state.enableNodesView);
-    const getNode = useNodesStore((state) => state.getNode);
-    const currentOpenGroup = useNodesStore((state) => state.openedGroup);
-
     const { showConnectionsInsideOpenGroup, showConnectionsOutsideGroup } = useConnectionVisibility();
 
-    const closeGroup = (groupId: string) => {
+    const closeGroup = useCallback((groupId: string) => {
+        // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+        const setSelectedNodes = useEditorStore.getState().setSelectedNodes;
+        const closeGroupStore = useNodesStore.getState().closeGroup;
+        const hideGroup = useNodesStore.getState().hideGroup;
+        const showGroup = useNodesStore.getState().showGroup;
+        const getNodesInGroup = useNodesStore.getState().getNodesInGroup;
+        const getGroupById = useNodesStore.getState().getGroupById;
+        const isNodeInGroup = useNodesStore.getState().isNodeInGroup;
+        const enableAllNodesView = useNodesStore.getState().enableAllNodesView;
+        const enableNodesView = useNodesStore.getState().enableNodesView;
+
         const group = getGroupById(groupId);
 
         if (!group || !group.group || !group.group.nodes) return;
@@ -63,9 +58,20 @@ const useGroupNavigation = () => {
         setTimeout(() => {
             updateConnectionsDirectly(showConnections);
         }, 0);
-    };
+    }, [showConnectionsInsideOpenGroup, showConnectionsOutsideGroup]);
 
-    const openGroup = (groupId: string) => {
+    const openGroup = useCallback((groupId: string) => {
+        // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+        const setSelectedNodes = useEditorStore.getState().setSelectedNodes;
+        const openGroupStore = useNodesStore.getState().openGroup;
+        const hideGroup = useNodesStore.getState().hideGroup;
+        const showGroup = useNodesStore.getState().showGroup;
+        const getNodesInGroup = useNodesStore.getState().getNodesInGroup;
+        const updateMultipleNodePositionsByDelta = useNodesStore.getState().updateMultipleNodePositionsByDelta;
+        const disableAllNodesViewExceptByIds = useNodesStore.getState().disableAllNodesViewExceptByIds;
+        const getNode = useNodesStore.getState().getNode;
+        const currentOpenGroup = useNodesStore.getState().openedGroup;
+
         const group = getNode(groupId);
 
         if (!group) return;
@@ -103,7 +109,7 @@ const useGroupNavigation = () => {
         setTimeout(() => {
             updateConnectionsDirectly(showConnections);
         }, 0);
-    };
+    }, [showConnectionsInsideOpenGroup]);
 
     return {
         closeGroup,

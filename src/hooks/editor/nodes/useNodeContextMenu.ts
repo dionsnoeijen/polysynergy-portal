@@ -1,22 +1,24 @@
 import {FormType, Node} from '@/types/types';
-import React from "react";
+import React, { useCallback } from "react";
 import useEditorStore from "@/stores/editorStore";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import useNodesStore from "@/stores/nodesStore";
 
 const useNodeContextMenu = (node: Node) => {
-    const selectedNodes = useEditorStore((state) => state.selectedNodes);
-    const setDeleteNodesDialogOpen = useEditorStore((state) => state.setDeleteNodesDialogOpen);
-    const openForm = useEditorStore((state) => state.openForm);
-    const openContextMenu = useEditorStore((state) => state.openContextMenu);
-    const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);
-    const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
-    const setNodeToMoveToGroupId = useEditorStore((state) => state.setNodeToMoveToGroupId);
     const { removeNodeFromGroup, createGroup } = useGrouping();
 
-    const handleContextMenu = (e: React.MouseEvent) => {
+    const handleContextMenu = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
+
+        // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+        const selectedNodes = useEditorStore.getState().selectedNodes;
+        const setDeleteNodesDialogOpen = useEditorStore.getState().setDeleteNodesDialogOpen;
+        const openForm = useEditorStore.getState().openForm;
+        const openContextMenu = useEditorStore.getState().openContextMenu;
+        const isNodeInGroup = useNodesStore.getState().isNodeInGroup;
+        const nodeToMoveToGroupId = useEditorStore.getState().nodeToMoveToGroupId;
+        const setNodeToMoveToGroupId = useEditorStore.getState().setNodeToMoveToGroupId;
 
         const contextMenuItems = [];
 
@@ -54,7 +56,7 @@ const useNodeContextMenu = (node: Node) => {
         });
 
         openContextMenu(e.clientX, e.clientY, contextMenuItems);
-    };
+    }, [node.id, removeNodeFromGroup, createGroup]);
 
     return { handleContextMenu };
 };

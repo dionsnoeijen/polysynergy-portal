@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { globalToLocal } from '@/utils/positionUtils';
 import { updateConnectionsDirectly } from '@/utils/updateConnectionsDirectly';
@@ -14,11 +14,12 @@ export const useOutConnectorHandler = (
     isGroup: boolean = false,
     isIn: boolean = false
 ) => {
-    const getConnection = useConnectionsStore((state) => state.getConnection);
-    const addConnection = useConnectionsStore((state) => state.addConnection);
-    const removeConnectionById = useConnectionsStore((state) => state.removeConnectionById);
-    const setIsDrawingConnection = useEditorStore((state) => state.setIsDrawingConnection);
-    const openedGroup = useNodesStore((state) => state.openedGroup);
+    // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+    const getConnection = useCallback((id: string) => useConnectionsStore.getState().getConnection(id), []);
+    const addConnection = useCallback((connection: any) => useConnectionsStore.getState().addConnection(connection), []);
+    const removeConnectionById = useCallback((id: string) => useConnectionsStore.getState().removeConnectionById(id), []);
+    const setIsDrawingConnection = useCallback((id: string) => useEditorStore.getState().setIsDrawingConnection(id), []);
+    const getOpenedGroup = useCallback(() => useNodesStore.getState().openedGroup, []);
 
     const startedFromGroup = useRef(false);
     const { dimConnectors, undimConnectors, setActiveVariableType, getActiveVariableType, animateConnector } = useConnectorVisualFeedback();
@@ -106,7 +107,7 @@ export const useOutConnectorHandler = (
                         ...connection,
                         targetHandle: targetHandle,
                         targetNodeId: targetNodeId,
-                        isInGroup: openedGroup as string,
+                        isInGroup: getOpenedGroup() as string,
                         sourceGroupId: (nodeGroupTarget && targetGroupId && groupId) ? groupId :
                                       (!nodeGroupTarget && groupId) ? groupId :
                                       (targetGroupId && groupId === null) ? undefined : connection.sourceGroupId,

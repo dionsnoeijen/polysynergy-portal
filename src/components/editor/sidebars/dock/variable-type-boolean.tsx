@@ -25,21 +25,25 @@ const VariableTypeBoolean: React.FC<VariableTypeProps> = ({
     // eslint-disable-next-line
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
 }): React.ReactElement => {
-    const updateNodeVariable =
-        useNodesStore((state) => state.updateNodeVariable);
-
-    const handleChange =
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
+    const handleChange = React.useCallback(
         (checked: boolean) => {
             if (onChange) {
                 onChange(checked);
             } else {
-                updateNodeVariable(nodeId, variable.handle, checked);
+                useNodesStore.getState().updateNodeVariable(nodeId, variable.handle, checked);
             }
-        };
+        },
+        [onChange, nodeId, variable.handle]
+    );
 
     const displayValue = currentValue !== undefined ? currentValue : (variable.value as boolean) || false;
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     return (
         <>
@@ -67,4 +71,14 @@ const VariableTypeBoolean: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default VariableTypeBoolean;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeBoolean, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.publishedButton === nextProps.publishedButton &&
+        prevProps.onChange === nextProps.onChange &&
+        prevProps.currentValue === nextProps.currentValue &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

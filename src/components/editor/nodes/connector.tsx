@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {ChevronRightIcon} from "@heroicons/react/16/solid";
 import {InOut, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
 import {useConnectorHandlers} from "@/hooks/editor/nodes/useConnectorHandlers";
@@ -18,6 +18,23 @@ type ConnectorProps = {
     | { out: true; in?: never }
     );
 
+// Format variable types for tooltip display (moved outside component to avoid recreating)
+const formatVariableTypes = (types: string[]) => {
+    return types.map(type => {
+        // Convert enum values to readable names
+        switch (type) {
+            case NodeVariableType.TruePath:
+                return "True Path";
+            case NodeVariableType.FalsePath:
+                return "False Path";
+            case NodeVariableType.Dependency:
+                return "Dependency";
+            default:
+                return type;
+        }
+    }).join(", ");
+};
+
 const Connector: React.FC<ConnectorProps> = ({
                                                  nodeId,
                                                  handle,
@@ -33,48 +50,53 @@ const Connector: React.FC<ConnectorProps> = ({
     const {handleMouseDown} = useConnectorHandlers(isIn, isOut, nodeId, false, disabled);
     const [showTooltip, setShowTooltip] = useState(false);
 
-    let backgroundClasses;
-    let iconColorClasses;
+    // PERFORMANCE: Memoize expensive computations
+    const types = useMemo(() =>
+        typeof nodeVariableType === "string"
+            ? nodeVariableType.split(",").map((s) => s.trim())
+            : [],
+        [nodeVariableType]
+    );
 
-    const types = typeof nodeVariableType === "string"
-        ? nodeVariableType.split(",").map((s) => s.trim())
-        : [];
+    const { backgroundClasses, iconColorClasses } = useMemo(() => {
+        if (types.includes(NodeVariableType.TruePath)) {
+            return {
+                backgroundClasses: "ring-sky-500 dark:ring-white bg-green-400 dark:bg-green-400",
+                iconColorClasses: "text-zinc-800 dark:text-zinc-800"
+            };
+        } else if (types.includes(NodeVariableType.FalsePath)) {
+            return {
+                backgroundClasses: "ring-sky-500 dark:ring-white bg-red-400 dark:bg-red-400",
+                iconColorClasses: "text-zinc-800 dark:text-zinc-800"
+            };
+        } else if (types.includes(NodeVariableType.Dependency)) {
+            return {
+                backgroundClasses: "ring-sky-500 dark:ring-white bg-fuchsia-400 dark:bg-fuchsia-400",
+                iconColorClasses: "text-zinc-800 dark:text-zinc-800"
+            };
+        } else {
+            return {
+                backgroundClasses: "ring-sky-500 dark:ring-white bg-white dark:bg-zinc-800",
+                iconColorClasses: "text-sky-600 dark:text-white"
+            };
+        }
+    }, [types]);
 
-    if (types.includes(NodeVariableType.TruePath)) {
-        backgroundClasses = "ring-sky-500 dark:ring-white bg-green-400 dark:bg-green-400";
-        iconColorClasses = "text-zinc-800 dark:text-zinc-800";
-    } else if (types.includes(NodeVariableType.FalsePath)) {
-        backgroundClasses = "ring-sky-500 dark:ring-white bg-red-400 dark:bg-red-400";
-        iconColorClasses = "text-zinc-800 dark:text-zinc-800";
-    } else if (types.includes(NodeVariableType.Dependency)) {
-        backgroundClasses = "ring-sky-500 dark:ring-white bg-fuchsia-400 dark:bg-fuchsia-400";
-        iconColorClasses = "text-zinc-800 dark:text-zinc-800";
-    } else {
-        backgroundClasses = "ring-sky-500 dark:ring-white bg-white dark:bg-zinc-800";
-        iconColorClasses = "text-sky-600 dark:text-white";
-    }
-
-    const positionClasses = isIn ?
-        "left-0 -translate-x-1/2" : "right-0 translate-x-1/2";
+    const positionClasses = useMemo(() =>
+        isIn ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2",
+        [isIn]
+    );
 
     const isInteractive = handle !== NodeCollapsedConnector.Collapsed;
 
-    // Format variable types for tooltip display
-    const formatVariableTypes = (types: string[]) => {
-        return types.map(type => {
-            // Convert enum values to readable names
-            switch (type) {
-                case NodeVariableType.TruePath:
-                    return "True Path";
-                case NodeVariableType.FalsePath:
-                    return "False Path";
-                case NodeVariableType.Dependency:
-                    return "Dependency";
-                default:
-                    return type;
-            }
-        }).join(", ");
-    };
+    // PERFORMANCE: Stable callbacks
+    const handleMouseEnter = useCallback(() => setShowTooltip(true), []);
+    const handleMouseLeave = useCallback(() => setShowTooltip(false), []);
+
+    const dataHandle = useMemo(() =>
+        parentHandle ? `${parentHandle}.${handle}` : handle,
+        [parentHandle, handle]
+    );
 
     return (
         <div
@@ -86,13 +108,13 @@ const Connector: React.FC<ConnectorProps> = ({
         >
             <div
                 onMouseDown={isInteractive ? handleMouseDown : undefined}
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
                 data-type={isIn ? InOut.In : InOut.Out}
                 data-node-id={nodeId}
                 data-variable-type={nodeVariableType}
                 data-group-id={groupId}
-                data-handle={parentHandle ? parentHandle + '.' + handle : handle}
+                data-handle={dataHandle}
                 data-enabled={!disabled}
                 className={clsx(
                     "w-full h-full rounded-full ring-1 origin-center relative",
@@ -140,4 +162,18 @@ const Connector: React.FC<ConnectorProps> = ({
     );
 };
 
-export default Connector;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(Connector, (prevProps, nextProps) => {
+    return (
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.handle === nextProps.handle &&
+        prevProps.parentHandle === nextProps.parentHandle &&
+        prevProps.disabled === nextProps.disabled &&
+        prevProps.nodeVariableType === nextProps.nodeVariableType &&
+        prevProps.className === nextProps.className &&
+        prevProps.iconClassName === nextProps.iconClassName &&
+        prevProps.groupId === nextProps.groupId &&
+        prevProps.in === nextProps.in &&
+        prevProps.out === nextProps.out
+    );
+});

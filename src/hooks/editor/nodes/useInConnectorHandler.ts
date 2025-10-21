@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { globalToLocal } from '@/utils/positionUtils';
 import { updateConnectionsDirectly } from '@/utils/updateConnectionsDirectly';
 import { FlowState, NodeEnabledConnector } from '@/types/types';
@@ -9,12 +9,14 @@ import { useConnectorVisualFeedback } from './useConnectorVisualFeedback';
 import { useTargetResolver } from './useTargetResolver';
 
 export const useInConnectorHandler = (nodeId: string) => {
-    const getConnection = useConnectionsStore((state) => state.getConnection);
-    const removeConnectionById = useConnectionsStore((state) => state.removeConnectionById);
-    const findInConnectionsByNodeIdAndHandle = useConnectionsStore((state) => state.findInConnectionsByNodeIdAndHandle);
-    const updateConnection = useConnectionsStore((state) => state.updateConnection);
-    const setIsDrawingConnection = useEditorStore((state) => state.setIsDrawingConnection);
-    const setNodeFlowState = useNodesStore((state) => state.setNodeFlowState);
+    // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+    const getConnection = useCallback((id: string) => useConnectionsStore.getState().getConnection(id), []);
+    const removeConnectionById = useCallback((id: string) => useConnectionsStore.getState().removeConnectionById(id), []);
+    const findInConnectionsByNodeIdAndHandle = useCallback((nodeId: string, handle: string) =>
+        useConnectionsStore.getState().findInConnectionsByNodeIdAndHandle(nodeId, handle), []);
+    const updateConnection = useCallback((connection: any) => useConnectionsStore.getState().updateConnection(connection), []);
+    const setIsDrawingConnection = useCallback((id: string) => useEditorStore.getState().setIsDrawingConnection(id), []);
+    const setNodeFlowState = useCallback((nodeId: string, state: FlowState) => useNodesStore.getState().setNodeFlowState(nodeId, state), []);
 
     const { dimConnectors, undimConnectors, setActiveVariableType } = useConnectorVisualFeedback();
     const { resolveTargetMeta } = useTargetResolver();

@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
@@ -5,28 +6,18 @@ import { NodeType } from "@/types/types";
 import useConnectionVisibility from "./useConnectionVisibility";
 
 const useGroupManagement = () => {
-    const setNodeToMoveToGroupId = useEditorStore((state) => state.setNodeToMoveToGroupId);
-
-    const dissolveGroupStore = useNodesStore((state) => state.dissolveGroup);
-    const removeGroupStore = useNodesStore((state) => state.removeGroup);
-    const removeNodeFromGroupStore = useNodesStore((state) => state.removeNodeFromGroup);
-    const getGroupById = useNodesStore((state) => state.getGroupById);
-    const addNodeToGroup = useNodesStore((state) => state.addNodeToGroup);
-    const enableAllNodesView = useNodesStore((state) => state.enableAllNodesView);
-    const removeNode = useNodesStore((state) => state.removeNode);
-    const getNode = useNodesStore((state) => state.getNode);
-    const disableNodeView = useNodesStore((state) => state.disableNodeView);
-    const openGroupStore = useNodesStore((state) => state.openGroup);
-    const showGroup = useNodesStore((state) => state.showGroup);
-
-    const findInConnectionsByNodeId = useConnectionsStore((state) => state.findInConnectionsByNodeId);
-    const findOutConnectionsByNodeId = useConnectionsStore((state) => state.findOutConnectionsByNodeId);
-    const removeConnections = useConnectionsStore((state) => state.removeConnections);
-    const takeConnectionsOutOfGroup = useConnectionsStore((state) => state.takeConnectionsOutOfGroup);
-
     const { restoreConnectionVisibility } = useConnectionVisibility();
 
-    const dissolveGroup = (groupId: string) => {
+    const dissolveGroup = useCallback((groupId: string) => {
+        // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+        const dissolveGroupStore = useNodesStore.getState().dissolveGroup;
+        const removeNode = useNodesStore.getState().removeNode;
+        const enableAllNodesView = useNodesStore.getState().enableAllNodesView;
+        const findInConnectionsByNodeId = useConnectionsStore.getState().findInConnectionsByNodeId;
+        const findOutConnectionsByNodeId = useConnectionsStore.getState().findOutConnectionsByNodeId;
+        const removeConnections = useConnectionsStore.getState().removeConnections;
+        const takeConnectionsOutOfGroup = useConnectionsStore.getState().takeConnectionsOutOfGroup;
+
         const inConnections = findInConnectionsByNodeId(groupId, true);
         const outConnections = findOutConnectionsByNodeId(groupId, true);
         const connections = [...inConnections, ...outConnections];
@@ -35,12 +26,22 @@ const useGroupManagement = () => {
         removeNode(groupId);
         dissolveGroupStore(groupId);
         enableAllNodesView();
-        
+
         // Restore proper connection visibility after dissolving group
         restoreConnectionVisibility();
-    };
+    }, [restoreConnectionVisibility]);
 
-    const removeNodeFromGroup = (groupId: string, nodeId: string) => {
+    const removeNodeFromGroup = useCallback((groupId: string, nodeId: string) => {
+        // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+        const getGroupById = useNodesStore.getState().getGroupById;
+        const removeNodeFromGroupStore = useNodesStore.getState().removeNodeFromGroup;
+        const disableNodeView = useNodesStore.getState().disableNodeView;
+        const openGroupStore = useNodesStore.getState().openGroup;
+        const showGroup = useNodesStore.getState().showGroup;
+        const findInConnectionsByNodeId = useConnectionsStore.getState().findInConnectionsByNodeId;
+        const findOutConnectionsByNodeId = useConnectionsStore.getState().findOutConnectionsByNodeId;
+        const removeConnections = useConnectionsStore.getState().removeConnections;
+
         const inConnections = findInConnectionsByNodeId(nodeId);
         const outConnections = findOutConnectionsByNodeId(nodeId);
         const connections = [...inConnections, ...outConnections];
@@ -60,9 +61,18 @@ const useGroupManagement = () => {
                 showGroup(openedGroup);
             }
         }
-    };
+    }, [dissolveGroup]);
 
-    const deleteGroup = (groupId: string) => {
+    const deleteGroup = useCallback((groupId: string) => {
+        // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+        const getGroupById = useNodesStore.getState().getGroupById;
+        const getNode = useNodesStore.getState().getNode;
+        const removeNode = useNodesStore.getState().removeNode;
+        const removeGroupStore = useNodesStore.getState().removeGroup;
+        const findInConnectionsByNodeId = useConnectionsStore.getState().findInConnectionsByNodeId;
+        const findOutConnectionsByNodeId = useConnectionsStore.getState().findOutConnectionsByNodeId;
+        const removeConnections = useConnectionsStore.getState().removeConnections;
+
         const group = getGroupById(groupId);
         if (!group || !group.group || !group.group.nodes) return;
 
@@ -87,9 +97,17 @@ const useGroupManagement = () => {
         removeConnections([...groupIn, ...groupOut]);
 
         removeGroupStore(groupId);
-    };
+    }, []);
 
-    const moveNodeToGroup = (nodeId: string, groupId: string) => {
+    const moveNodeToGroup = useCallback((nodeId: string, groupId: string) => {
+        // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+        const getNode = useNodesStore.getState().getNode;
+        const addNodeToGroup = useNodesStore.getState().addNodeToGroup;
+        const setNodeToMoveToGroupId = useEditorStore.getState().setNodeToMoveToGroupId;
+        const findInConnectionsByNodeId = useConnectionsStore.getState().findInConnectionsByNodeId;
+        const findOutConnectionsByNodeId = useConnectionsStore.getState().findOutConnectionsByNodeId;
+        const removeConnections = useConnectionsStore.getState().removeConnections;
+
         const node = getNode(nodeId);
 
         // If we're moving a group, we need to preserve connections inside it
@@ -121,7 +139,7 @@ const useGroupManagement = () => {
 
         addNodeToGroup(groupId, nodeId);
         setNodeToMoveToGroupId(null);
-    };
+    }, []);
 
     return {
         dissolveGroup,

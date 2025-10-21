@@ -105,4 +105,12 @@ const CollapsedNode: React.FC<CollapsedNodeProps> = ({
     );
 };
 
-export default CollapsedNode;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(CollapsedNode, (prevProps, nextProps) => {
+    return (
+        prevProps.node === nextProps.node &&
+        prevProps.mockNode === nextProps.mockNode &&
+        prevProps.styles === nextProps.styles &&
+        prevProps.onCollapse === nextProps.onCollapse
+    );
+});

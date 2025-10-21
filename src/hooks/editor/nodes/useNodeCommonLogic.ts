@@ -1,4 +1,4 @@
-import {useMemo} from 'react';
+import {useMemo, useState, useEffect} from 'react';
 import {Node, NodeType} from '@/types/types';
 import useNodesStore from '@/stores/nodesStore';
 import useEditorStore from '@/stores/editorStore';
@@ -8,15 +8,46 @@ import {useRunsStore} from '@/stores/runsStore';
 const PERFORMANCE_THRESHOLD = 30;
 
 export const useNodeCommonLogic = (node: Node, preview: boolean = false) => {
-    const isNodeInService = useNodesStore((state) => state.isNodeInService([node.id]));
-    const activeRunId = useRunsStore((state) => state.activeRunId);
-    const allMockNode = useMockStore((state) => state.getMockNode(node.id));
-    const isPanning = useEditorStore((state) => state.isPanning);
-    const isZooming = useEditorStore((state) => state.isZooming);
-    const visibleNodeCount = useEditorStore((state) => state.visibleNodeCount);
-    
-    // Only show visual feedback for active run and completed runs, not background runs
-    const backgroundedRunIds = useRunsStore((state) => state.backgroundedRunIds);
+    // PERFORMANCE: Use manual subscriptions for values that should trigger re-renders
+    // Subscribe only to mockNode changes for THIS specific node
+    const [mockNodeState, setMockNodeState] = useState(() => useMockStore.getState().getMockNode(node.id));
+    const [activeRunId, setActiveRunId] = useState(() => useRunsStore.getState().activeRunId);
+    const [backgroundedRunIds, setBackgroundedRunIds] = useState(() => useRunsStore.getState().backgroundedRunIds);
+
+    useEffect(() => {
+        // Subscribe to mock store changes for this specific node
+        const unsubMock = useMockStore.subscribe((state) => {
+            const newMockNode = state.getMockNode(node.id);
+            setMockNodeState(prev => {
+                // Only update if the mock node actually changed
+                if (prev?.runId !== newMockNode?.runId ||
+                    prev?.order !== newMockNode?.order ||
+                    prev?.status !== newMockNode?.status) {
+                    return newMockNode;
+                }
+                return prev;
+            });
+        });
+
+        // Subscribe to runs store for active run changes
+        const unsubRuns = useRunsStore.subscribe((state) => {
+            setActiveRunId(state.activeRunId);
+            setBackgroundedRunIds(state.backgroundedRunIds);
+        });
+
+        return () => {
+            unsubMock();
+            unsubRuns();
+        };
+    }, [node.id]);
+
+    // PERFORMANCE: Read these values on-demand instead of subscribing
+    const isNodeInService = useMemo(() =>
+        useNodesStore.getState().isNodeInService([node.id]),
+        [node.id]
+    );
+
+    const allMockNode = mockNodeState;
     const isBackgroundRun = useMemo(() => {
         if (!allMockNode?.runId) return false;
         return backgroundedRunIds.has(allMockNode.runId);
@@ -48,21 +79,25 @@ export const useNodeCommonLogic = (node: Node, preview: boolean = false) => {
         }
     }, [allMockNode, activeRunId, backgroundedRunIds]);
 
-    return useMemo(() => ({
-        isService: !!node.service?.id || isNodeInService,
-        isCollapsable: node.category !== NodeType.Note,
-        shouldSuspendRendering: (isZooming || isPanning) && visibleNodeCount >= PERFORMANCE_THRESHOLD,
-        mockNode,
-        hasMockData,
-        isNodeInService,
-        preview
-    }), [
+    return useMemo(() => {
+        // PERFORMANCE: Read panning/zooming state on-demand instead of subscribing
+        const isPanning = useEditorStore.getState().isPanning;
+        const isZooming = useEditorStore.getState().isZooming;
+        const visibleNodeCount = useEditorStore.getState().visibleNodeCount;
+
+        return {
+            isService: !!node.service?.id || isNodeInService,
+            isCollapsable: node.category !== NodeType.Note,
+            shouldSuspendRendering: (isZooming || isPanning) && visibleNodeCount >= PERFORMANCE_THRESHOLD,
+            mockNode,
+            hasMockData,
+            isNodeInService,
+            preview
+        };
+    }, [
         node.service?.id,
         node.category,
         isNodeInService,
-        isPanning,
-        isZooming,
-        visibleNodeCount,
         mockNode,
         hasMockData,
         preview

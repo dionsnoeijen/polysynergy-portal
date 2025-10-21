@@ -10,7 +10,7 @@ import useNodesStore from "@/stores/nodesStore";
 
 type Props = { connection: ConnectionProps; };
 
-const Connection: React.FC<Props> = ({ connection }) => {
+const ConnectionComponent: React.FC<Props> = ({ connection }) => {
     const pathRef = useRef<SVGPathElement>(null);
     const startDotRef = useRef<HTMLDivElement>(null);
     const endDotRef = useRef<HTMLDivElement>(null);
@@ -18,16 +18,19 @@ const Connection: React.FC<Props> = ({ connection }) => {
     const [isReady, setIsReady] = useState(false);
     const [middle, setMiddle] = useState({ x: 0, y: 0 });
 
-    const setDeleteConnectionDialogOpen = useEditorStore(s => s.setDeleteConnectionDialogOpen);
-    const chatMode = useEditorStore(s => s.chatMode);
-    const isPanning = useEditorStore(s => s.isPanning);
+    // PERFORMANCE: Only subscribe to necessary state
+    const rawMockConnection = useMockStore(
+        (state) => state.getMockConnection(connection.id)
+    );
+    const backgroundedRunIds = useRunsStore((state) => state.backgroundedRunIds);
 
-    // Check if connection is within a service
-    const isNodeInService = useNodesStore(s => s.isNodeInService);
+    // Need chatMode for rendering - subscribe
+    const chatMode = useEditorStore((state) => state.chatMode);
 
-    // For group boundary connections, check if the actual node is in service
-    // For normal connections, both nodes must be in service
+    // PERFORMANCE: Check service status on-demand instead of subscribing
     const isConnectionInService = React.useMemo(() => {
+        const isNodeInService = useNodesStore.getState().isNodeInService;
+
         // Group boundary to node
         if (connection.sourceGroupId && connection.targetNodeId) {
             return isNodeInService([connection.targetNodeId]);
@@ -41,27 +44,27 @@ const Connection: React.FC<Props> = ({ connection }) => {
             return isNodeInService([connection.sourceNodeId]) && isNodeInService([connection.targetNodeId]);
         }
         return false;
-    }, [connection.sourceNodeId, connection.targetNodeId, connection.sourceGroupId, connection.targetGroupId, isNodeInService]);
+    }, [connection.sourceNodeId, connection.targetNodeId, connection.sourceGroupId, connection.targetGroupId]);
 
-    const handleConnectionClick = (e: React.MouseEvent) => {
+    const handleConnectionClick = React.useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
+
+        // PERFORMANCE: Read chat mode and panning state on-demand
+        const chatMode = useEditorStore.getState().chatMode;
+        const isPanning = useEditorStore.getState().isPanning;
+
         // Don't allow connection deletion in chat mode or when panning
         if (chatMode || isPanning) return;
 
         // Open delete confirmation dialog instead of immediate deletion
-        setDeleteConnectionDialogOpen(true, connection.id);
-    };
+        useEditorStore.getState().setDeleteConnectionDialogOpen(true, connection.id);
+    }, [connection.id]);
 
     const { theme, resolvedTheme } = useTheme();
-    const rawMockConnection = useMockStore(
-        (state) => state.getMockConnection(connection.id)
-    );
-    
-    // Hide connection visual feedback for background runs
-    const backgroundedRunIds = useRunsStore((state) => state.backgroundedRunIds);
+
     const mockConnection = React.useMemo(() => {
         if (!rawMockConnection) return undefined;
-        
+
         // Check if this connection belongs to a backgrounded run
         // Since connections don't have runId directly, we need to check if the mockConnection
         // belongs to a run that has been backgrounded. For now, we'll use a simpler approach:
@@ -69,13 +72,22 @@ const Connection: React.FC<Props> = ({ connection }) => {
         if (backgroundedRunIds.size > 0) {
             return undefined;
         }
-        
+
         return rawMockConnection;
     }, [rawMockConnection, backgroundedRunIds]);
 
+    // PERFORMANCE: Only update connection positions when actual position-related props change
     useEffect(() => {
         updateConnectionsDirectly([connection]);
-    }, [connection]);
+    }, [
+        connection.id,
+        connection.sourceNodeId,
+        connection.targetNodeId,
+        connection.sourceHandle,
+        connection.targetHandle,
+        connection.sourceGroupId,
+        connection.targetGroupId
+    ]);
 
     let color = connection.collapsed ? "#cccccc" : "#ffffff";
 
@@ -113,6 +125,7 @@ const Connection: React.FC<Props> = ({ connection }) => {
     const dotRadius = 5.5;
     const dashArray = connection.collapsed ? "4 4" : "0";
 
+    // PERFORMANCE: Only recalculate midpoint when connection endpoints change
     useLayoutEffect(() => {
         const frame = requestAnimationFrame(() => {
             if (pathRef.current) {
@@ -132,7 +145,13 @@ const Connection: React.FC<Props> = ({ connection }) => {
         });
 
         return () => cancelAnimationFrame(frame);
-    }, [connection]);
+    }, [
+        connection.id,
+        connection.sourceNodeId,
+        connection.targetNodeId,
+        connection.sourceHandle,
+        connection.targetHandle
+    ]);
 
     return (
         <>
@@ -211,5 +230,12 @@ const Connection: React.FC<Props> = ({ connection }) => {
         </>
     );
 };
+
+// PERFORMANCE: Memoize to prevent unnecessary re-renders during node selection
+const Connection = React.memo(ConnectionComponent, (prevProps, nextProps) => {
+    // Only re-render if the connection object reference changed
+    // Connection objects are immutable, so reference equality is sufficient
+    return prevProps.connection === nextProps.connection;
+});
 
 export default Connection;

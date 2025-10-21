@@ -19,13 +19,15 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({
 }): React.ReactElement => {
     const isArray = Array.isArray(variable.value);
 
-    const openForm = useEditorStore((state) => state.openForm);
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    const onEdit = React.useCallback((nodeId: string) => {
+        useEditorStore.getState().openForm(FormType.EditFiles, nodeId, variable);
+    }, [variable]);
 
-    const onEdit = (nodeId: string) => {
-        openForm(FormType.EditFiles, nodeId, variable);
-    }
-
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     return (
         <div className={'relative'}>
@@ -89,4 +91,12 @@ const VariableTypeFiles: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default VariableTypeFiles;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeFiles, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.publishedButton === nextProps.publishedButton &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

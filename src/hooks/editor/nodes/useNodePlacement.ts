@@ -1,11 +1,15 @@
-import {useState, useEffect} from "react";
+import {useState, useEffect, useCallback} from "react";
 import {Node as NodeType} from "@/types/types";
 import {globalToLocal} from "@/utils/positionUtils";
 import useNodesStore from "@/stores/nodesStore";
 import {snapToGrid} from "@/utils/snapToGrid";
 
 const useNodePlacement = (node: NodeType) => {
-    const {updateNodePosition, setAddingStatus} = useNodesStore();
+    // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+    const updateNodePosition = useCallback((nodeId: string, x: number, y: number) =>
+        useNodesStore.getState().updateNodePosition(nodeId, x, y), []);
+    const setAddingStatus = useCallback((nodeId: string, adding: boolean) =>
+        useNodesStore.getState().setAddingStatus(nodeId, adding), []);
     const [position, setPosition] = useState({x: node.view.x, y: node.view.y});
     
     // Sync local position with store changes (e.g., from undo/redo)

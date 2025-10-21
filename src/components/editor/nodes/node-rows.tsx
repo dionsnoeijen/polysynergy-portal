@@ -51,4 +51,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     );
 };
 
-export default NodeRows;
+// Memoize to prevent unnecessary re-renders when other nodes change
+export default React.memo(NodeRows, (prevProps, nextProps) => {
+    return prevProps.node === nextProps.node && prevProps.preview === nextProps.preview;
+});

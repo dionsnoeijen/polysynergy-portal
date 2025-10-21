@@ -15,9 +15,6 @@ type Size = {
 const useResizable = (node: Node) => {
     const [ size, setSize ] = useState<Size>({ width: node.view.width || 100, height: node.view.height || 100 });
     const [ isResizing, setIsResizing ] = useState(false);
-    const { zoomFactor } = useEditorStore();
-    const { updateNodeWidth } = useNodesStore();
-    const connections = useConnectionsStore((state) => state.connections);
 
     const sizeRef = useRef(size);
     sizeRef.current = size;
@@ -33,6 +30,10 @@ const useResizable = (node: Node) => {
         e.stopPropagation();
         setIsResizing(true);
         initialMouseX.current = e.clientX;
+
+        // PERFORMANCE: Read zoom factor and connections on-demand instead of subscribing
+        const zoomFactor = useEditorStore.getState().zoomFactor;
+        const connections = useConnectionsStore.getState().connections;
 
         const handleMouseMove = (moveEvent: MouseEvent) => {
             const deltaX = moveEvent.movementX / zoomFactor;
@@ -60,7 +61,10 @@ const useResizable = (node: Node) => {
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
             const finalWidth = snapToGrid(sizeRef.current.width);
-            updateNodeWidth(node.id, finalWidth);
+
+            // PERFORMANCE: Read updateNodeWidth on-demand
+            useNodesStore.getState().updateNodeWidth(node.id, finalWidth);
+
             const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`) as HTMLElement;
             if (nodeEl) {
                 nodeEl.style.width = `${finalWidth}px`;
@@ -69,7 +73,7 @@ const useResizable = (node: Node) => {
 
         window.addEventListener("mousemove", handleMouseMove);
         window.addEventListener("mouseup", handleMouseUp);
-    }, [zoomFactor, node.id, updateNodeWidth, connections]);
+    }, [node.id]);
 
     return {
         size,

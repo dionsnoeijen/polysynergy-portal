@@ -1,18 +1,18 @@
 import {NodeComparisonType, NodeProps, NodeVariableType} from "@/types/types";
 import React from "react";
-import useEditorStore from "@/stores/editorStore";
 import Connector from "@/components/editor/nodes/connector";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
 import {ChevronRightIcon} from "@heroicons/react/24/outline";
 import {Strong} from "@/components/text";
+import {useIsNodeSelectedOptimized} from "@/hooks/editor/nodes/useIsNodeSelectedOptimized";
 
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
 import useMockStore from "@/stores/mockStore";
 
 const NodeComparison: React.FC<NodeProps> = ({ node }) => {
-    const isSelected = useEditorStore((state) => state.selectedNodes.includes(node.id));
+    const isSelected = useIsNodeSelectedOptimized(node.id);
     const mockNode = useMockStore((state) => state.getMockNode(node.id));
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
@@ -21,7 +21,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
 
     return (
         <div
-            className={`absolute select-none flex items-center justify-center ring-orange-300 bg-orange-300 dark:bg-zinc-800 bg-opacity-50 backdrop-blur-lg backdrop-opacity-60 rounded-[50%] ${
+            className={`absolute select-none flex items-center justify-center ring-orange-300 bg-orange-300 dark:bg-zinc-800 rounded-[50%] ${
                 isSelected ? "shadow-2xl ring-4" : "shadow-sm ring-2"
             } ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'} ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}`}
             style={{
@@ -105,4 +105,7 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
     );
 };
 
-export default NodeComparison;
+// Memoize to prevent unnecessary re-renders
+export default React.memo(NodeComparison, (prevProps, nextProps) => {
+    return prevProps.node === nextProps.node && prevProps.preview === nextProps.preview;
+});

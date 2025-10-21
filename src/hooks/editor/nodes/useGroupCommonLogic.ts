@@ -9,26 +9,39 @@ import useVariablesForGroup from '@/hooks/editor/nodes/useVariablesForGroup';
 const PERFORMANCE_THRESHOLD = 30;
 
 export const useGroupCommonLogic = (node: Node, isMirror: boolean = false, preview: boolean = false) => {
+    // PERFORMANCE: Only subscribe to state that should trigger re-renders
+    // Groups need to react to selection changes for visual feedback
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
     const nodeToMoveToGroupId = useEditorStore((state) => state.nodeToMoveToGroupId);
-    const isPanning = useEditorStore((state) => state.isPanning);
-    const isZooming = useEditorStore((state) => state.isZooming);
-    const visibleNodeCount = useEditorStore((state) => state.visibleNodeCount);
-    
-    const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);
-    const isNodeInService = useNodesStore((state) => state.isNodeInService([node.id]));
-    
-    // Smart hasMockData calculation for groups - same logic as nodes
+
+    // PERFORMANCE: Read panning/zooming state on-demand instead of subscribing
+    const isPanning = useMemo(() => useEditorStore.getState().isPanning, []);
+    const isZooming = useMemo(() => useEditorStore.getState().isZooming, []);
+    const visibleNodeCount = useMemo(() => useEditorStore.getState().visibleNodeCount, []);
+
+    // PERFORMANCE: Read group/service state on-demand
+    const isNodeInGroup = useMemo(
+        () => (nodeId: string) => useNodesStore.getState().isNodeInGroup(nodeId),
+        []
+    );
+    const isNodeInService = useMemo(() =>
+        useNodesStore.getState().isNodeInService([node.id]),
+        [node.id]
+    );
+
+    // PERFORMANCE: Subscribe to activeRunId and backgroundedRunIds (needed for reactive updates)
+    // But compute group nodes on-demand instead of subscribing to entire mockNodes array
     const activeRunId = useRunsStore((state) => state.activeRunId);
     const backgroundedRunIds = useRunsStore((state) => state.backgroundedRunIds);
-    const allMockNodes = useMockStore((state) => state.mockNodes);
-    
+
     const allGroupNodes = useMemo(() => {
+        // Read mockNodes on-demand when dependencies change (activeRunId, backgroundedRunIds)
+        const allMockNodes = useMockStore.getState().mockNodes;
         return allMockNodes.filter(mockNode => {
             const originalNodeId = mockNode.id.replace(/-\d+$/, '');
             return isNodeInGroup(originalNodeId) === node.id;
         });
-    }, [allMockNodes, isNodeInGroup, node.id]);
+    }, [isNodeInGroup, node.id, activeRunId, backgroundedRunIds]);
     
     const hasMockData = useMemo(() => {
         if (allGroupNodes.length === 0) return false;

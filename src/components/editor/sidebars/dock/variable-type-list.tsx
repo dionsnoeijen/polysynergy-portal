@@ -19,15 +19,18 @@ const VariableTypeList: React.FC<VariableTypeProps> = ({
     categorySubTextColor = 'text-sky-700 dark:text-white/70',
     categoryBorder = 'border border-sky-200 dark:border-zinc-700'
 }: VariableTypeProps): React.ReactElement => {
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
     const isArray = Array.isArray(variable.value);
 
-    const openForm = useEditorStore((state) => state.openForm);
+    const onEdit = React.useCallback((nodeId: string) => {
+        useEditorStore.getState().openForm(FormType.EditList, nodeId, variable);
+    }, [variable]);
 
-    const onEdit = (nodeId: string) => {
-        openForm(FormType.EditList, nodeId, variable);
-    }
-
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     return (
         <>
@@ -80,4 +83,12 @@ const VariableTypeList: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default VariableTypeList;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeList, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.publishedButton === nextProps.publishedButton &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

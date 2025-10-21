@@ -32,13 +32,16 @@ const VariableTypeCode: React.FC<Props> = ({
     // eslint-disable-next-line
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
 }) => {
-    const { openForm } = useEditorStore();
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
+    const onEdit = React.useCallback((nodeId: string) => {
+        useEditorStore.getState().openForm(FormType.EditCode, nodeId, variable);
+    }, [variable]);
 
-    const onEdit = (nodeId: string) => {
-        openForm(FormType.EditCode, nodeId, variable);
-    };
-
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     return (
         <div className={'relative'}>
@@ -65,4 +68,11 @@ const VariableTypeCode: React.FC<Props> = ({
     );
 };
 
-export default VariableTypeCode;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeCode, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

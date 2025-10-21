@@ -22,14 +22,17 @@ const VariableTypeBytes: React.FC<VariableTypeProps> = ({
     // eslint-disable-next-line
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
 }) => {
-    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
-
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
+    const handleChange = React.useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = e.target.value;
-        updateNodeVariable(nodeId, variable.handle, newValue);
-    };
+        useNodesStore.getState().updateNodeVariable(nodeId, variable.handle, newValue);
+    }, [nodeId, variable.handle]);
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     return (
         <div className={'relative'}>
@@ -56,4 +59,12 @@ const VariableTypeBytes: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default VariableTypeBytes;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeBytes, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.publishedButton === nextProps.publishedButton &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

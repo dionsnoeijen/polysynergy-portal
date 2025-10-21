@@ -18,13 +18,16 @@ const VariableTypeRichTextArea: React.FC<VariableTypeProps> = ({
     categoryBackgroundColor = 'bg-white dark:bg-zinc-800 shadow-sm',
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
 }) => {
-    const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
+    const handleChange = React.useCallback((value: string) => {
+        useNodesStore.getState().updateNodeVariable(nodeId, variable.handle, value);
+    }, [nodeId, variable.handle]);
 
-    const handleChange = (value: string) => {
-        updateNodeVariable(nodeId, variable.handle, value);
-    };
-
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     return (
         <>
@@ -60,4 +63,12 @@ const VariableTypeRichTextArea: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default React.memo(VariableTypeRichTextArea);
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeRichTextArea, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.publishedButton === nextProps.publishedButton &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

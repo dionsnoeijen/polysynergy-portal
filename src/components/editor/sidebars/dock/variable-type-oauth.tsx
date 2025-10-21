@@ -32,7 +32,8 @@ const VariableTypeOAuth: React.FC<Props> = ({
     // eslint-disable-next-line
     categoryGradientBackgroundColor = 'bg-gradient-to-r from-sky-100 to-sky-200 dark:from-zinc-800 dark:to-zinc-900',
 }) => {
-
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
     const [isAuthorizing, setIsAuthorizing] = React.useState(false);
 
@@ -115,4 +116,11 @@ const VariableTypeOAuth: React.FC<Props> = ({
     );
 };
 
-export default VariableTypeOAuth;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeOAuth, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

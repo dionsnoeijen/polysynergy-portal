@@ -83,7 +83,12 @@ const VariableTypeImage: React.FC<VariableTypeProps> = ({
         });
     }, [variable.value, variable.metadata]);
 
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -206,4 +211,13 @@ const VariableTypeImage: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default VariableTypeImage;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeImage, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.publishedButton === nextProps.publishedButton &&
+        prevProps.onChange === nextProps.onChange &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

@@ -13,13 +13,16 @@ const VariableTypeTemplate: React.FC<VariableTypeProps> = ({
     publishedButton = true,
     inDock = true
 }) => {
-    const { openForm } = useEditorStore();
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // These components are rendered for every variable in the dock sidebar
+    const onEdit = React.useCallback((nodeId: string) => {
+        useEditorStore.getState().openForm(FormType.EditTemplate, nodeId, variable);
+    }, [variable]);
 
-    const onEdit = (nodeId: string) => {
-        openForm(FormType.EditTemplate, nodeId, variable);
-    };
-
-    const isValueConnected = useConnectionsStore((state) => state.isValueConnectedExcludingGroupBoundary(nodeId, variable.handle));
+    const isValueConnected = React.useMemo(() =>
+        useConnectionsStore.getState().isValueConnectedExcludingGroupBoundary(nodeId, variable.handle),
+        [nodeId, variable.handle]
+    );
 
     return (
         <div className={'relative'}>
@@ -46,4 +49,12 @@ const VariableTypeTemplate: React.FC<VariableTypeProps> = ({
     );
 };
 
-export default VariableTypeTemplate;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(VariableTypeTemplate, (prevProps, nextProps) => {
+    return (
+        prevProps.variable === nextProps.variable &&
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.publishedButton === nextProps.publishedButton &&
+        prevProps.inDock === nextProps.inDock
+    );
+});

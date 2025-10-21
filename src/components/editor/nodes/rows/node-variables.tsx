@@ -47,13 +47,23 @@ const NodeVariables: React.FC<Props> = ({
 }): React.ReactElement => {
 
     const { collapseConnections, openConnections } = useToggleConnectionCollapse(node);
-    const getNodeVariableOpenState = useNodesStore((state) => state.getNodeVariableOpenState);
-    const toggleNodeVariableOpenState = useNodesStore((state) => state.toggleNodeVariableOpenState);
-    const isNodeInService = useNodesStore((state) => state.isNodeInService([node.id]));
 
-    const handleToggle = (handle: string): (() => void) => {
+    // PERFORMANCE: Use getState() pattern to avoid store subscriptions
+    // These functions are only called when user interacts, not on every render
+    const getNodeVariableOpenState = React.useCallback(
+        (nodeId: string, handle: string) =>
+            useNodesStore.getState().getNodeVariableOpenState(nodeId, handle),
+        []
+    );
+
+    const isNodeInService = React.useMemo(() =>
+        useNodesStore.getState().isNodeInService([node.id]),
+        [node.id]
+    );
+
+    const handleToggle = React.useCallback((handle: string): (() => void) => {
         return () => {
-            toggleNodeVariableOpenState(node.id, handle);
+            useNodesStore.getState().toggleNodeVariableOpenState(node.id, handle);
             if (!node.view.isOpenMap) return;
             if (node.view.isOpenMap[handle]) {
                 collapseConnections(handle);
@@ -61,7 +71,7 @@ const NodeVariables: React.FC<Props> = ({
                 openConnections(handle);
             }
         };
-    };
+    }, [node.id, node.view.isOpenMap, collapseConnections, openConnections]);
 
     return (
         <>
@@ -179,4 +189,17 @@ const getVariableComponent = (
     }
 };
 
-export default NodeVariables;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(NodeVariables, (prevProps, nextProps) => {
+    return (
+        prevProps.node.id === nextProps.node.id &&
+        prevProps.node.view.disabled === nextProps.node.view.disabled &&
+        prevProps.node.view.isOpenMap === nextProps.node.view.isOpenMap &&
+        prevProps.variables === nextProps.variables &&
+        prevProps.isMirror === nextProps.isMirror &&
+        prevProps.onlyIn === nextProps.onlyIn &&
+        prevProps.onlyOut === nextProps.onlyOut &&
+        prevProps.categoryMainTextColor === nextProps.categoryMainTextColor &&
+        prevProps.categorySubTextColor === nextProps.categorySubTextColor
+    );
+});

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import {NodeJumpType, NodeProps, NodeType} from "@/types/types";
 import NodeComparison from "@/components/editor/nodes/node-comparison";
 import NodeMath from "@/components/editor/nodes/node-math";
@@ -7,7 +7,7 @@ import NodeJump from "@/components/editor/nodes/node-jump";
 import NodeRows from "@/components/editor/nodes/node-rows";
 
 const Node: React.FC<NodeProps> = ({ node, preview = false }) => {
-    
+
     if (node.category === NodeType.Jump && node.type === NodeJumpType.To) {
         return <NodeJump node={node} preview={preview} />;
     }
@@ -24,4 +24,8 @@ const Node: React.FC<NodeProps> = ({ node, preview = false }) => {
     }
 };
 
-export default Node;
+// Memoize to prevent unnecessary re-renders when other nodes change
+export default memo(Node, (prevProps, nextProps) => {
+    // Only re-render if the node object reference changed or preview changed
+    return prevProps.node === nextProps.node && prevProps.preview === nextProps.preview;
+});

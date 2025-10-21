@@ -1,14 +1,13 @@
 import {useMemo} from 'react';
 import {Node} from '@/types/types';
 import {MockNode} from '@/stores/mockStore';
-import useEditorStore from '@/stores/editorStore';
 import useNodeColor, {
     getCategoryBorderColor,
     getCategoryGradientBackgroundColor,
     getCategoryTextColor,
     NodeSubType
 } from '@/hooks/editor/nodes/useNodeColor';
-import {useShallow} from 'zustand/shallow';
+import {useIsNodeSelectedOptimized} from '@/hooks/editor/nodes/useIsNodeSelectedOptimized';
 
 interface NodeStylingOptions {
     isService: boolean;
@@ -19,14 +18,14 @@ interface NodeStylingOptions {
 }
 
 export const useNodeStyling = (node: Node, options: NodeStylingOptions) => {
-    // @ts-expect-error Zustand shallow compare accepted here
-    const selectedNodes: string[] = useEditorStore((state) => state.selectedNodes, useShallow);
-    
+    // Use ULTRA-optimized selector with manual subscription
+    const isSelected = useIsNodeSelectedOptimized(node.id);
+
     const nodeColor = useNodeColor(
-        node, 
-        selectedNodes.includes(node.id), 
-        options.mockNode, 
-        options.hasMockData, 
+        node,
+        isSelected,
+        options.mockNode,
+        options.hasMockData,
         options.isNodeInService
     );
 
@@ -41,15 +40,12 @@ export const useNodeStyling = (node: Node, options: NodeStylingOptions) => {
             'z-0'
         ];
 
-        const isSelected = selectedNodes.includes(node.id);
-        
-        const stateClasses = node.view.disabled 
+        // TEMPORARY: Test without z-index changes to diagnose performance
+        const stateClasses = node.view.disabled
             ? ['z-1', 'select-none', 'opacity-30']
-            : isSelected 
-                ? ['z-30', 'cursor-move'] // Higher z-index for selected nodes to show chat bubbles
-                : ['z-20', 'cursor-move'];
+            : ['z-20', 'cursor-move']; // Keep same z-index regardless of selection
 
-        const addingClasses = node.view.adding 
+        const addingClasses = node.view.adding
             ? ['shadow-[0_0_15px_rgba(59,130,246,0.8)]']
             : [];
 
@@ -74,6 +70,6 @@ export const useNodeStyling = (node: Node, options: NodeStylingOptions) => {
         options.preview,
         options.isService,
         nodeColor,
-        selectedNodes
+        isSelected // Now a stable boolean instead of array
     ]);
 };

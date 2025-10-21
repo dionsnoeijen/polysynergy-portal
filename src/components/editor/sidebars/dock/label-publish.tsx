@@ -20,12 +20,30 @@ const LabelPublish: React.FC<Props> = ({
     variable,
     categoryMainTextColor = 'text-gray-500 hover:text-gray-700 dark:text-white/80 dark:hover:text-white',
 }) => {
-    const openForm =
-        useEditorStore((state) => state.openForm);
-    const isNodeInService = useNodesStore((state) => state.isNodeInService([nodeId]));
-    const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup(nodeId));
-    const toggleVariableExposedToGroup = useNodesStore((state) => state.toggleVariableExposedToGroup);
     const [showInfo, setShowInfo] = useState(false);
+
+    // PERFORMANCE: Convert store subscriptions to getState() pattern
+    // With 20 variables per node, this eliminates 60+ subscriptions
+    const isNodeInService = React.useMemo(() =>
+        useNodesStore.getState().isNodeInService([nodeId]),
+        [nodeId]
+    );
+
+    const isNodeInGroup = React.useMemo(() =>
+        useNodesStore.getState().isNodeInGroup(nodeId),
+        [nodeId]
+    );
+
+    const handleOpenForm = React.useCallback(() => {
+        useEditorStore.getState().openForm(FormType.PublishedVariableSettings, {
+            nodeId,
+            variable
+        });
+    }, [nodeId, variable]);
+
+    const handleToggleExposed = React.useCallback(() => {
+        useNodesStore.getState().toggleVariableExposedToGroup(nodeId, variable.handle);
+    }, [nodeId, variable.handle]);
 
     return (
         <LabelGroup
@@ -42,7 +60,7 @@ const LabelPublish: React.FC<Props> = ({
                     )}
                     {isNodeInGroup && (
                         <button
-                            onClick={() => toggleVariableExposedToGroup(nodeId, variable.handle)}
+                            onClick={handleToggleExposed}
                             disabled={isNodeInService}
                             className={`p-1 mb-1 rounded-md ${!isNodeInService && 'hover:bg-emerald-500'} ${variable.exposed_to_group && 'bg-emerald-500 !hover:bg-emerald-600'} ${isNodeInService && 'opacity-50 cursor-not-allowed'}`}
                             title={isNodeInService ? 'Cannot expose variables in service nodes' : 'Expose to group'}
@@ -52,12 +70,7 @@ const LabelPublish: React.FC<Props> = ({
                         </button>
                     )}
                     <button
-                        onClick={() =>
-                            openForm(FormType.PublishedVariableSettings, {
-                                nodeId,
-                                variable
-                            })
-                        }
+                        onClick={handleOpenForm}
                         disabled={isNodeInService}
                         className={`p-1 -mr-2 mb-1 rounded-md ${!isNodeInService && 'hover:bg-sky-500'} ${variable.published && 'bg-sky-500 !hover:bg-sky-600'} ${isNodeInService && 'opacity-50 cursor-not-allowed'}`}
                         title={isNodeInService ? 'Cannot modify published variables in service nodes' : 'Publish variable'}
@@ -85,4 +98,14 @@ const LabelPublish: React.FC<Props> = ({
     );
 };
 
-export default LabelPublish;
+// PERFORMANCE: Memoize to prevent unnecessary re-renders
+export default React.memo(LabelPublish, (prevProps, nextProps) => {
+    return (
+        prevProps.nodeId === nextProps.nodeId &&
+        prevProps.variable === nextProps.variable &&
+        prevProps.categoryMainTextColor === nextProps.categoryMainTextColor &&
+        prevProps.categorySubTextColor === nextProps.categorySubTextColor &&
+        prevProps.categoryBackgroundColor === nextProps.categoryBackgroundColor &&
+        prevProps.categoryGradientBackgroundColor === nextProps.categoryGradientBackgroundColor
+    );
+});

@@ -2,6 +2,7 @@ import React, { useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { globalToLocal } from '@/utils/positionUtils';
 import { updateConnectionsDirectly } from '@/utils/updateConnectionsDirectly';
+import { Connection } from '@/types/types';
 import useConnectionsStore from '@/stores/connectionsStore';
 import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
@@ -16,7 +17,7 @@ export const useOutConnectorHandler = (
 ) => {
     // PERFORMANCE: Use getState() pattern to avoid store subscriptions
     const getConnection = useCallback((id: string) => useConnectionsStore.getState().getConnection(id), []);
-    const addConnection = useCallback((connection: any) => useConnectionsStore.getState().addConnection(connection), []);
+    const addConnection = useCallback((connection: Connection) => useConnectionsStore.getState().addConnection(connection), []);
     const removeConnectionById = useCallback((id: string) => useConnectionsStore.getState().removeConnectionById(id), []);
     const setIsDrawingConnection = useCallback((id: string) => useEditorStore.getState().setIsDrawingConnection(id), []);
     const getOpenedGroup = useCallback(() => useNodesStore.getState().openedGroup, []);

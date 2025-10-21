@@ -15,7 +15,7 @@ export const useGroupInteractions = (
     // PERFORMANCE: Convert store subscriptions to callbacks with getState()
     // These are only called on user interactions, not during render
     const openContextMenu = useMemo(
-        () => (x: number, y: number, items: any[]) =>
+        () => (x: number, y: number, items: {label: string; action: () => void}[]) =>
             useEditorStore.getState().openContextMenu(x, y, items),
         []
     );

@@ -36,13 +36,14 @@ export const useGroupCommonLogic = (node: Node, isMirror: boolean = false, previ
     const backgroundedRunIds = useRunsStore((state) => state.backgroundedRunIds);
 
     const allGroupNodes = useMemo(() => {
-        // Read mockNodes on-demand when dependencies change (activeRunId, backgroundedRunIds)
+        // Read mockNodes on-demand - recalculate when node changes
         const allMockNodes = useMockStore.getState().mockNodes;
         return allMockNodes.filter(mockNode => {
             const originalNodeId = mockNode.id.replace(/-\d+$/, '');
             return isNodeInGroup(originalNodeId) === node.id;
         });
-    }, [isNodeInGroup, node.id, activeRunId, backgroundedRunIds]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isNodeInGroup, node.id]);
     
     const hasMockData = useMemo(() => {
         if (allGroupNodes.length === 0) return false;

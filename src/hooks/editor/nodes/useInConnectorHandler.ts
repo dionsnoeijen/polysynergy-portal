@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { globalToLocal } from '@/utils/positionUtils';
 import { updateConnectionsDirectly } from '@/utils/updateConnectionsDirectly';
-import { FlowState, NodeEnabledConnector } from '@/types/types';
+import { FlowState, NodeEnabledConnector, Connection } from '@/types/types';
 import useConnectionsStore from '@/stores/connectionsStore';
 import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
@@ -14,7 +14,7 @@ export const useInConnectorHandler = (nodeId: string) => {
     const removeConnectionById = useCallback((id: string) => useConnectionsStore.getState().removeConnectionById(id), []);
     const findInConnectionsByNodeIdAndHandle = useCallback((nodeId: string, handle: string) =>
         useConnectionsStore.getState().findInConnectionsByNodeIdAndHandle(nodeId, handle), []);
-    const updateConnection = useCallback((connection: any) => useConnectionsStore.getState().updateConnection(connection), []);
+    const updateConnection = useCallback((connection: Connection) => useConnectionsStore.getState().updateConnection(connection), []);
     const setIsDrawingConnection = useCallback((id: string) => useEditorStore.getState().setIsDrawingConnection(id), []);
     const setNodeFlowState = useCallback((nodeId: string, state: FlowState) => useNodesStore.getState().setNodeFlowState(nodeId, state), []);
 

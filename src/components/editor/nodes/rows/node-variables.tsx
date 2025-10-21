@@ -112,7 +112,9 @@ const getVariableComponent = (
         return <span className="text-red-500">[Fout: unknown type]</span>;
     }
 
-    const key = `node-${nodeId}-${variable.handle}`;
+    // Make key unique based on render context to avoid duplicates in nested groups
+    const keyPrefix = onlyIn ? 'in' : onlyOut ? 'out' : 'node';
+    const key = `${keyPrefix}-${nodeId}-${variable.handle}`;
 
     const commonProps = {
         variable,

@@ -12,20 +12,20 @@ import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
 import useMockStore from "@/stores/mockStore";
 
 const NodeJump: React.FC<NodeProps> = ({node}) => {
-    const {selectedNodes} = useEditorStore();
+    const isSelected = useEditorStore((state) => state.selectedNodes.includes(node.id));
     const mockNode = useMockStore((state) => state.getMockNode(node.id));
     const hasMockData = useMockStore((state) => state.hasMockData);
     const {handleNodeMouseDown} = useNodeMouseDown(node);
     const {handleContextMenu} = useNodeContextMenu(node);
     const position = useNodePlacement(node);
-    
-    
-    const className = useNodeColor(node, selectedNodes.includes(node.id), mockNode, hasMockData);
+
+
+    const className = useNodeColor(node, isSelected, mockNode, hasMockData);
 
     return (
         <div
             className={`absolute select-none flex items-center justify-center ring-2 backdrop-blur-lg backdrop-opacity-60 rounded-full pl-5 pr-5 ${className} ${
-                selectedNodes.includes(node.id) ? "shadow-2xl" : "shadow-sm"
+                isSelected ? "shadow-2xl" : "shadow-sm"
             } ${node.view.disabled ? 'z-1 select-none opacity-30' : 'z-20 cursor-move'} ${node.view.adding ? ' shadow-[0_0_15px_rgba(59,130,246,0.8)]' : ''}`}
             style={{
                 left: `${position.x}px`,

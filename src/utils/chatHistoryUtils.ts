@@ -171,7 +171,7 @@ function extractStorageConfig(storageNode: Node): StorageConfig | null {
         } else {
             // For any other DB type (PostgreSQL, etc.), just treat as LocalDb
             type = 'LocalDb';
-            console.log(`Detected DB type: ${storageNode.path}, treating as LocalDb for chat`);
+            // console.log(`Detected DB type: ${storageNode.path}, treating as LocalDb for chat`);
         }
     }
     // Agno v1 detection (legacy)

@@ -35,19 +35,19 @@ export const useEditorState = (isMouseDown?: boolean) => {
 
     const connections = useConnectionsStore((state) => state.connections);
 
-    // PERFORMANCE: Read node/group getters on-demand instead of subscribing
-    const getNodesToRender = useMemo(
-        () => () => useNodesStore.getState().getNodesToRender(),
-        []
-    );
-    const getOpenGroups = useMemo(
-        () => () => useNodesStore.getState().getOpenGroups(),
-        []
-    );
+    // PERFORMANCE: Subscribe to nodes to trigger re-render when nodes are added/removed
+    // We need this subscription for reactive updates when nodes change
+    const nodes = useNodesStore((state) => state.nodes);
 
-    // Derived state - these automatically refresh when nodes change internally
-    const nodesToRender = useMemo(() => getNodesToRender(), [getNodesToRender]);
-    const openGroups = useMemo(() => getOpenGroups(), [getOpenGroups]);
+    // PERFORMANCE: Use getters with nodes as dependency to recalculate when nodes change
+    const nodesToRender = useMemo(() =>
+        useNodesStore.getState().getNodesToRender(),
+        [nodes]
+    );
+    const openGroups = useMemo(() =>
+        useNodesStore.getState().getOpenGroups(),
+        [nodes]
+    );
 
     // WebSocket connection
     const { connectionStatus, isConnected } = useSmartWebSocketListener(activeVersionId as string);

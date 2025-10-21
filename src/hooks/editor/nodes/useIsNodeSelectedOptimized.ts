@@ -17,7 +17,6 @@ export const useIsNodeSelectedOptimized = (nodeId: string): boolean => {
             // Only update if selection state actually changed for THIS node
             setIsSelected(prev => {
                 if (prev !== nowSelected) {
-                    console.log(`🎯 Node ${nodeId} selection changed: ${prev} → ${nowSelected}`);
                     return nowSelected;
                 }
                 return prev;

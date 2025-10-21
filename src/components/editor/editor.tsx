@@ -148,7 +148,6 @@ export default function Editor({ readOnly = false }: { readOnly?: boolean }) {
 
         // Set isZooming to trigger suspend rendering for performance
         useEditorStore.getState().setIsZooming(true);
-        console.log('🔍 ZOOM START - isZooming set to TRUE');
 
         // Get current transform
         const layer = transformLayerRef.current;

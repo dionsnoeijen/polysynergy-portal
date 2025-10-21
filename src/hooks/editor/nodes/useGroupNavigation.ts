@@ -15,6 +15,7 @@ const useGroupNavigation = () => {
     const getGroupById = useNodesStore((state) => state.getGroupById);
     const isNodeInGroup = useNodesStore((state) => state.isNodeInGroup);
     const updateNodePositionByDelta = useNodesStore((state) => state.updateNodePositionByDelta);
+    const updateMultipleNodePositionsByDelta = useNodesStore((state) => state.updateMultipleNodePositionsByDelta);
     const disableAllNodesViewExceptByIds = useNodesStore((state) => state.disableAllNodesViewExceptByIds);
     const enableAllNodesView = useNodesStore((state) => state.enableAllNodesView);
     const enableNodesView = useNodesStore((state) => state.enableNodesView);
@@ -84,9 +85,10 @@ const useGroupNavigation = () => {
         const diffX = closedGroupCenterX - nodesCenterX;
         const diffY = closedGroupCenterY - nodesCenterY;
 
-        nodesInGroup.forEach((nodeId) => {
-            updateNodePositionByDelta(nodeId, diffX, diffY);
-        });
+        // Batch update all node positions in one go instead of forEach
+        updateMultipleNodePositionsByDelta(
+            nodesInGroup.map((nodeId) => ({ nodeId, deltaX: diffX, deltaY: diffY }))
+        );
 
         if (currentOpenGroup && currentOpenGroup !== groupId) {
             hideGroup(currentOpenGroup);

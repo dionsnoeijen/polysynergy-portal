@@ -28,6 +28,7 @@ export type NodesStore = {
     setAddingStatus: (nodeId: string, adding: boolean) => void;
     updateNodePosition: (nodeId: string, x: number, y: number) => void;
     updateNodePositionByDelta: (nodeId: string, deltaX: number, deltaY: number) => void;
+    updateMultipleNodePositionsByDelta: (updates: Array<{nodeId: string, deltaX: number, deltaY: number}>) => void;
     updateNodeWidth: (nodeId: string, width: number) => void;
     updateNodeHeight: (nodeId: string, height: number) => void;
     getNode: (nodeId: string) => Node | undefined;
@@ -228,14 +229,26 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     },
 
     disableAllNodesViewExceptByIds: (nodeIds) => {
+        // Create a Set for O(1) lookup instead of array.includes
+        const enabledSet = new Set(nodeIds);
+
         set((state) => ({
-            nodes: state.nodes.map((node) => ({
-                ...node,
-                view: {
-                    ...node.view,
-                    disabled: !nodeIds.includes(node.id),
-                },
-            })),
+            nodes: state.nodes.map((node) => {
+                const shouldBeDisabled = !enabledSet.has(node.id);
+
+                // Only update if the disabled state actually changes
+                if (node.view.disabled === shouldBeDisabled) {
+                    return node;
+                }
+
+                return {
+                    ...node,
+                    view: {
+                        ...node.view,
+                        disabled: shouldBeDisabled,
+                    },
+                };
+            }),
         }));
     },
 
@@ -433,6 +446,29 @@ const useNodesStore = create<NodesStore>((set, get) => ({
                     }
                     : node
             ),
+        }));
+    },
+
+    updateMultipleNodePositionsByDelta: (updates) => {
+        nodesByIdsCache.clear();
+
+        // Create a Map for O(1) lookup instead of array.find
+        const updatesMap = new Map(updates.map(u => [u.nodeId, u]));
+
+        set((state) => ({
+            nodes: state.nodes.map((node) => {
+                const update = updatesMap.get(node.id);
+                if (!update) return node;
+
+                return {
+                    ...node,
+                    view: {
+                        ...node.view,
+                        x: node.view.x + update.deltaX,
+                        y: node.view.y + update.deltaY,
+                    },
+                };
+            }),
         }));
     },
 

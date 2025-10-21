@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
@@ -41,6 +41,9 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
     const [localNotes, setLocalNotes] = useState("");
     const notesTimeoutRef = useRef<NodeJS.Timeout>();
 
+    // Name override state with debouncing
+    const [localNameOverrides, setLocalNameOverrides] = useState<Record<string, string>>({});
+    const nameOverrideTimeoutRef = useRef<NodeJS.Timeout>();
 
     const node: Node | null | undefined = selectedNodes.length === 1 ?
         nodes.find((n) => n.id === selectedNodes[0]) : null;
@@ -79,6 +82,37 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
         };
     }, []);
 
+    // Handle name override change with debouncing
+    const handleNameOverrideChange = (nodeId: string, handle: string, newValue: string) => {
+        const key = `${nodeId}::${handle}`;
+        console.log('🏷️ Name override changed:', key, newValue);
+
+        setLocalNameOverrides(prev => ({
+            ...prev,
+            [key]: newValue
+        }));
+
+        // Clear existing timeout
+        if (nameOverrideTimeoutRef.current) {
+            clearTimeout(nameOverrideTimeoutRef.current);
+        }
+
+        // Debounce the store update
+        nameOverrideTimeoutRef.current = setTimeout(() => {
+            console.log('⏰ Debounce timeout: calling setGroupNameOverride for:', nodeId, handle);
+            setGroupNameOverride(nodeId, handle, newValue);
+        }, 300);
+    };
+
+    // Cleanup name override timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (nameOverrideTimeoutRef.current) {
+                clearTimeout(nameOverrideTimeoutRef.current);
+            }
+        };
+    }, []);
+
     const category = node?.category ?? '';
     const isNodeInService = useNodesStore((state) => state.isNodeInService([node?.id ?? ""]));
     const isService = !!node?.service?.id || isNodeInService;
@@ -97,33 +131,41 @@ const DockWrapper: React.FC<Props> = ({toggleClose, ...restProps}) => {
         openedGroup || (node?.id ?? null)
     );
 
-    const groupNameOverrides: Record<string, string> = {};
+    const groupNameOverrides = useMemo(() => {
+        const overrides: Record<string, string> = {};
 
+        for (const node of nodes) {
+            // Add node-level override for targetHandle === 'node'
+            const nodeKey = `${node.id}::node`;
+            overrides[nodeKey] = node.group_name_override ?? '';
 
-    for (const node of nodes) {
-        // Add node-level override for targetHandle === 'node'
-        const nodeKey = `${node.id}::node`;
-        groupNameOverrides[nodeKey] = node.group_name_override ?? '';
+            for (const variable of node.variables) {
+                if (!variable.handle) continue;
 
-        for (const variable of node.variables) {
-            if (!variable.handle) continue;
+                if (
+                    variable.type === NodeVariableType.Dict &&
+                    Array.isArray(variable.value)
+                ) {
+                    for (const subvar of variable.value as NodeVariable[]) {
+                        if (!subvar.handle) continue;
 
-            if (
-                variable.type === NodeVariableType.Dict &&
-                Array.isArray(variable.value)
-            ) {
-                for (const subvar of variable.value as NodeVariable[]) {
-                    if (!subvar.handle) continue;
-
-                    const key = `${node.id}::${variable.handle}.${subvar.handle}`;
-                    groupNameOverrides[key] = subvar.group_name_override ?? '';
+                        const key = `${node.id}::${variable.handle}.${subvar.handle}`;
+                        overrides[key] = subvar.group_name_override ?? '';
+                    }
+                } else {
+                    const key = `${node.id}::${variable.handle}`;
+                    overrides[key] = variable.group_name_override ?? '';
                 }
-            } else {
-                const key = `${node.id}::${variable.handle}`;
-                groupNameOverrides[key] = variable.group_name_override ?? '';
             }
         }
-    }
+
+        return overrides;
+    }, [nodes]);
+
+    // Sync local name overrides when groupNameOverrides changes
+    useEffect(() => {
+        setLocalNameOverrides(groupNameOverrides);
+    }, [groupNameOverrides]);
 
     // When no node is selected, return a centered message
     if (!node && !group) {
@@ -308,7 +350,7 @@ Please check:
                                             handle = variable.parentHandle + '.' + variable.handle;
                                         }
                                         const key = `${nodeId}::${handle}`;
-                                        const groupNameOverride = groupNameOverrides[key] ?? '';
+                                        const groupNameOverride = localNameOverrides[key] ?? '';
 
                                         return (
                                             <div key={nodeId + '-' + variable.handle}>
@@ -319,7 +361,7 @@ Please check:
                                                             value={groupNameOverride}
                                                             placeholder={`Override ${variable.handle} (${variable.name})`}
                                                             onChange={(e) => {
-                                                                setGroupNameOverride(nodeId, handle, e.target.value);
+                                                                handleNameOverrideChange(nodeId, handle, e.target.value);
                                                             }}
                                                         />
                                                     </Field>
@@ -400,7 +442,7 @@ Please check:
                                             handle = variable.parentHandle + '.' + variable.handle;
                                         }
                                         const key = `${nodeId}::${handle}`;
-                                        const groupNameOverride = groupNameOverrides[key] ?? '';
+                                        const groupNameOverride = localNameOverrides[key] ?? '';
 
                                         return (
                                             <div key={nodeId + '-' + variable.handle}>
@@ -411,7 +453,7 @@ Please check:
                                                             value={groupNameOverride}
                                                             placeholder={`Override ${variable.handle} (${variable.name})`}
                                                             onChange={(e) => {
-                                                                setGroupNameOverride(nodeId, variable.handle, e.target.value);
+                                                                handleNameOverrideChange(nodeId, handle, e.target.value);
                                                             }}
                                                         />
                                                     </Field>

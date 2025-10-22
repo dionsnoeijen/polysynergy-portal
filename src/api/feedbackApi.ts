@@ -18,7 +18,7 @@ export const sendFeedback = async (email: string, message: string): Promise<void
         user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined
     };
 
-    const response = await fetch(`${config.LOCAL_API_URL}/feedback`, {
+    const response = await fetch(`${config.LOCAL_API_URL}/feedback/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -42,11 +42,27 @@ export const useOutConnectorHandler = (
 
         startedFromGroup.current = isGroup;
 
+        // Check if this node is a warp gate
+        const currentNode = useNodesStore.getState().getNode(nodeId);
+        const isWarpGate = currentNode?.warpGate !== undefined;
+
+        // If warp gate: use original source node/handle, but track gate ID and handle for rendering
+        const actualSourceNodeId = isWarpGate && currentNode?.warpGate
+            ? currentNode.warpGate.sourceNodeId
+            : nodeId;
+        const actualSourceHandle = isWarpGate && currentNode?.warpGate
+            ? currentNode.warpGate.sourceHandle
+            : handle;
+        const warpGateNodeId = isWarpGate ? nodeId : undefined;
+        const warpGateHandle = isWarpGate ? handle : undefined;
+
         const id = uuidv4();
         const connection = addConnection({
             id,
-            sourceNodeId: nodeId,
-            sourceHandle: handle as string,
+            sourceNodeId: actualSourceNodeId,
+            sourceHandle: actualSourceHandle as string,
+            warpGateNodeId: warpGateNodeId,
+            warpGateHandle: warpGateHandle,
         });
 
         if (!connection) return;
@@ -113,7 +129,9 @@ export const useOutConnectorHandler = (
                                       (!nodeGroupTarget && groupId) ? groupId :
                                       (targetGroupId && groupId === null) ? undefined : connection.sourceGroupId,
                         targetGroupId: (nodeGroupTarget && targetGroupId && groupId) ? targetGroupId :
-                                      (targetGroupId && groupId === null) ? targetGroupId : connection.targetGroupId
+                                      (targetGroupId && groupId === null) ? targetGroupId : connection.targetGroupId,
+                        warpGateNodeId: connection.warpGateNodeId, // Preserve warp gate reference
+                        warpGateHandle: connection.warpGateHandle, // Preserve warp gate handle
                     };
 
                     // Add the final connection with history

@@ -5,6 +5,7 @@ import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
 import {useIsNodeSelectedOptimized} from "@/hooks/editor/nodes/useIsNodeSelectedOptimized";
+import {useSourceNodeWarpGateHighlight} from "@/hooks/editor/nodes/useSourceNodeWarpGateHighlight";
 
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
 import useMockStore from "@/stores/mockStore";
@@ -15,6 +16,9 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);
+
+    // Highlight warp gates when this node is selected
+    useSourceNodeWarpGateHighlight(node.id, isSelected);
     
     // Extract input and output variables from node.variables
     const inputVariables = useMemo(() => 

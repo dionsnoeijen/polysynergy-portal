@@ -552,7 +552,9 @@ const useEditorStore = create<EditorState>((set, get) => ({
         copiedPackage = unpackNode(copiedPackage);
 
         copiedPackage.nodes.forEach((node: Node) => {
-            useNodesStore.getState().addNode(node, false);
+            // Force new handle for warp gates to get unique names
+            const forceNewHandle = node.type === 'warp_gate';
+            useNodesStore.getState().addNode(node, forceNewHandle);
         });
 
         if (copiedPackage.connections) {

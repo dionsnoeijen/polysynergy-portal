@@ -29,11 +29,17 @@ export const updateConnectionsDirectly = (
         ) as HTMLDivElement;
 
         if (pathElement) {
+            // If connection uses a warp gate, use gate's position for visual rendering
+            // Otherwise use the actual source node
+            const visualSourceNodeId = connection.warpGateNodeId || connection.sourceNodeId;
+            const visualSourceGroupId = connection.warpGateNodeId ? undefined : connection.sourceGroupId;
+            const visualSourceHandle = connection.warpGateHandle || connection.sourceHandle;
+
             const startPosition = calculateConnectorPositionByAttributes(
-                connection.sourceNodeId,
-                connection.sourceHandle,
+                visualSourceNodeId,
+                visualSourceHandle,
                 InOut.Out,
-                connection.sourceGroupId
+                visualSourceGroupId
             );
 
             let endPosition = { x: 0, y: 0 };

@@ -117,22 +117,27 @@ export function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export function gatherAllIds(obj: unknown, ids: Set<string> = new Set()): Set<string> {
+export function gatherAllIds(obj: unknown, ids: Set<string> = new Set(), parentKey?: string): Set<string> {
   if (Array.isArray(obj)) {
     for (const item of obj) {
-      gatherAllIds(item, ids);
+      gatherAllIds(item, ids, parentKey);
     }
   } else if (obj && typeof obj === 'object') {
     for (const [key, value] of Object.entries(obj)) {
-      if ((key === 'id' ||
+      // Skip sourceNodeId if it's inside a warpGate object (should NOT be remapped)
+      const isWarpGateSource = parentKey === 'warpGate' && key === 'sourceNodeId';
+
+      if (!isWarpGateSource && (
+          key === 'id' ||
           key === 'isInGroup' ||
           key === 'sourceNodeId' ||
           key === 'targetNodeId' ||
-          key === 'sourceGroupId'
+          key === 'sourceGroupId' ||
+          key === 'warpGateNodeId'  // Add warp gate support
       ) && typeof value === 'string') {
           ids.add(value);
       }
-      gatherAllIds(value, ids);
+      gatherAllIds(value, ids, key);
     }
   }
   return ids;

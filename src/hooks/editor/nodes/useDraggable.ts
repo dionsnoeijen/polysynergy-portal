@@ -41,6 +41,11 @@ const useDraggable = () => {
             const inConnections = findInConnectionsByNodeId(nodeId, true);
             const outConnections = findOutConnectionsByNodeId(nodeId, true);
             allConnections.push(...inConnections, ...outConnections);
+
+            // Also collect connections that use this node as a warp gate (visual source)
+            const allConns = useConnectionsStore.getState().connections;
+            const warpGateConnections = allConns.filter(conn => conn.warpGateNodeId === nodeId);
+            allConnections.push(...warpGateConnections);
         });
         if (openedGroup) {
             const groupInConnections = findInConnectionsByNodeId(openedGroup);

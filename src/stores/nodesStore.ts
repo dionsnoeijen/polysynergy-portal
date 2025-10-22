@@ -388,9 +388,33 @@ const useNodesStore = create<NodesStore>((set, get) => ({
 
     removeNode: (nodeId) => {
         nodesByIdsCache.clear();
+
+        // Find all warp gates that point to this node
+        const state = get();
+        const warpGatesToDelete = state.nodes.filter((node) =>
+            node.type === NodeType.WarpGate &&
+            node.warpGate?.sourceNodeId === nodeId
+        );
+
+        // Check if the node being deleted is itself a warp gate
+        const isWarpGate = state.nodes.find(n => n.id === nodeId)?.type === NodeType.WarpGate;
+
+        // Delete the node and all associated warp gates
         set((state) => ({
-            nodes: state.nodes.filter((node) => node.id !== nodeId),
+            nodes: state.nodes.filter((node) =>
+                node.id !== nodeId && !warpGatesToDelete.some(gate => gate.id === node.id)
+            ),
         }));
+
+        // If deleting a warp gate, clean up connections that use it
+        if (isWarpGate) {
+            const connectionsToDelete = useConnectionsStore.getState().connections
+                .filter(conn => conn.warpGateNodeId === nodeId);
+
+            connectionsToDelete.forEach(conn => {
+                useConnectionsStore.getState().removeConnectionById(conn.id);
+            });
+        }
 
         // useHistoryStore.getState().save();
     },

@@ -5,6 +5,7 @@ import NodeMath from "@/components/editor/nodes/node-math";
 import ClosedGroup from "@/components/editor/nodes/closed-group";
 import NodeJump from "@/components/editor/nodes/node-jump";
 import NodeRows from "@/components/editor/nodes/node-rows";
+import WarpGate from "@/components/editor/nodes/warp-gate";
 
 const Node: React.FC<NodeProps> = ({ node, preview = false }) => {
 
@@ -19,6 +20,8 @@ const Node: React.FC<NodeProps> = ({ node, preview = false }) => {
             return <NodeMath node={node} preview={preview} />;
         case NodeType.Group:
             return <ClosedGroup node={node} preview={preview} />;
+        case NodeType.WarpGate:
+            return <WarpGate node={node} preview={preview} />;
         default:
             return <NodeRows node={node} preview={preview} />;
     }

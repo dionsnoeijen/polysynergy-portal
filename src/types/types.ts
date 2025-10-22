@@ -40,6 +40,10 @@ export type Connection = {
     isDeletable?: boolean;
     // Temporary added for service editing
     temp?: boolean;
+    // Frontend metadata: which warp gate node is used for rendering (if any)
+    warpGateNodeId?: string;
+    // Visual handle on the warp gate (out_0, out_1, etc.) for rendering
+    warpGateHandle?: string;
 };
 
 export enum NodeEnabledConnector {
@@ -136,6 +140,7 @@ export enum NodeType {
     Note = 'note',
     Jump = 'jump',
     Flow = 'flow',
+    WarpGate = 'warp_gate',
 }
 
 export enum NodeComparisonType {
@@ -294,6 +299,12 @@ export type Node = {
     metadata?: {
         deployment?: string;
         [key: string]: unknown;
+    };
+    // Warp gate data: links this gate to its source connector
+    warpGate?: {
+        sourceNodeId: string;     // Node that this gate represents
+        sourceHandle: string;      // Specific output connector handle
+        variableType: string;      // Type of the connector (for styling)
     };
 };
 

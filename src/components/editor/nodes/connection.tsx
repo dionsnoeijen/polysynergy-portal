@@ -15,7 +15,9 @@ const ConnectionComponent: React.FC<Props> = ({ connection }) => {
     const startDotRef = useRef<HTMLDivElement>(null);
     const endDotRef = useRef<HTMLDivElement>(null);
 
-    const [isReady, setIsReady] = useState(false);
+    // Visual connections (warp gate hover) should appear immediately
+    const isVisualConnection = connection.id.startsWith('warp-visual-');
+    const [isReady, setIsReady] = useState(isVisualConnection);
     const [middle, setMiddle] = useState({ x: 0, y: 0 });
 
     // PERFORMANCE: Only subscribe to necessary state
@@ -94,8 +96,12 @@ const ConnectionComponent: React.FC<Props> = ({ connection }) => {
     // Use resolvedTheme to handle system theme correctly
     const currentTheme = theme === 'system' ? resolvedTheme : theme;
 
-    // Purple color for connections in services
-    if (isConnectionInService) {
+    // Blue color for visual warp gate connections (always dashed)
+    if (isVisualConnection) {
+        color = currentTheme === "light"
+            ? "rgb(59, 130, 246)" // blue-500
+            : "rgb(96, 165, 250)"; // blue-400
+    } else if (isConnectionInService) {
         if (currentTheme === "light") {
             color = connection.collapsed
                 ? "rgb(147, 51, 234)" // purple-600
@@ -123,7 +129,7 @@ const ConnectionComponent: React.FC<Props> = ({ connection }) => {
 
     const width = 2;
     const dotRadius = 5.5;
-    const dashArray = connection.collapsed ? "4 4" : "0";
+    const dashArray = isVisualConnection ? "5 5" : (connection.collapsed ? "4 4" : "0");
 
     // PERFORMANCE: Only recalculate midpoint when connection endpoints change
     useLayoutEffect(() => {

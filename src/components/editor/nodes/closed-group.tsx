@@ -3,6 +3,7 @@ import {GroupProps} from "@/types/types";
 import {useGroupCommonLogic} from "@/hooks/editor/nodes/useGroupCommonLogic";
 import {useGroupStyling} from "@/hooks/editor/nodes/useGroupStyling";
 import {useGroupInteractions} from "@/hooks/editor/nodes/useGroupInteractions";
+import {useSourceNodeWarpGateHighlight} from "@/hooks/editor/nodes/useSourceNodeWarpGateHighlight";
 import useGrouping from "@/hooks/editor/nodes/useGrouping";
 import GroupContainer from "@/components/editor/nodes/group-container";
 import ExpandedGroup from "@/components/editor/nodes/expanded-group";
@@ -25,6 +26,10 @@ const ClosedGroup: React.FC<GroupProps> = ({
     );
 
     const {dissolveGroup} = useGrouping();
+
+    // Highlight warp gates when this group is selected
+    const isSelected = commonLogic.selectedNodes.includes(node.id);
+    useSourceNodeWarpGateHighlight(node.id, isSelected);
 
     // Handle dissolve confirmation
     const handleConfirmDissolve = () => {

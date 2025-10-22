@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import {ChevronRightIcon} from "@heroicons/react/16/solid";
 import {InOut, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
 import {useConnectorHandlers} from "@/hooks/editor/nodes/useConnectorHandlers";
+import {useConnectorContextMenu} from "@/hooks/editor/nodes/useConnectorContextMenu";
 import clsx from "clsx";
 
 type ConnectorProps = {
@@ -50,6 +51,12 @@ const Connector: React.FC<ConnectorProps> = ({
                                                  nodeVariableType
                                              }): React.ReactElement => {
     const {handleMouseDown} = useConnectorHandlers(isIn, isOut, nodeId, false, disabled);
+    const {handleConnectorContextMenu} = useConnectorContextMenu(
+        nodeId,
+        handle || '',
+        nodeVariableType,
+        isOut || false
+    );
     const [showTooltip, setShowTooltip] = useState(false);
 
     // PERFORMANCE: Memoize expensive computations
@@ -110,6 +117,7 @@ const Connector: React.FC<ConnectorProps> = ({
         >
             <div
                 onMouseDown={isInteractive ? handleMouseDown : undefined}
+                onContextMenu={isInteractive && isOut ? handleConnectorContextMenu : undefined}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 data-type={isIn ? InOut.In : InOut.Out}

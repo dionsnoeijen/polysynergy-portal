@@ -343,7 +343,6 @@ function getOrCreateMessageHandler() {
                     // Smart streaming: Route based on agent role
                     if (message.is_member_agent === true) {
                         // Member agent responses -> Now to BOTH node bubbles AND main chat
-                        console.log(`[Smart Streaming] Member agent response routed to both bubble and chat: ${message.node_id}`);
 
                         // Update team member activity status
                         if (message.parent_team_id && message.node_id) {

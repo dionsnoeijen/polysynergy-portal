@@ -6,6 +6,7 @@ import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
 import {useIsNodeSelectedOptimized} from "@/hooks/editor/nodes/useIsNodeSelectedOptimized";
+import {useSourceNodeWarpGateHighlight} from "@/hooks/editor/nodes/useSourceNodeWarpGateHighlight";
 
 import ExecutionOrder from "@/components/editor/nodes/execution-order";
 import useNodeColor from "@/hooks/editor/nodes/useNodeColor";
@@ -18,6 +19,9 @@ const NodeJump: React.FC<NodeProps> = ({node}) => {
     const {handleNodeMouseDown} = useNodeMouseDown(node);
     const {handleContextMenu} = useNodeContextMenu(node);
     const position = useNodePlacement(node);
+
+    // Highlight warp gates when this node is selected
+    useSourceNodeWarpGateHighlight(node.id, isSelected);
 
 
     const className = useNodeColor(node, isSelected, mockNode, hasMockData);

@@ -4,6 +4,7 @@ import Connector from "@/components/editor/nodes/connector";
 import useNodeMouseDown from "@/hooks/editor/nodes/useNodeMouseDown";
 import useNodeContextMenu from "@/hooks/editor/nodes/useNodeContextMenu";
 import useNodePlacement from "@/hooks/editor/nodes/useNodePlacement";
+import {useSourceNodeWarpGateHighlight} from "@/hooks/editor/nodes/useSourceNodeWarpGateHighlight";
 import {ChevronRightIcon} from "@heroicons/react/24/outline";
 import {Strong} from "@/components/text";
 import {useIsNodeSelectedOptimized} from "@/hooks/editor/nodes/useIsNodeSelectedOptimized";
@@ -17,6 +18,9 @@ const NodeComparison: React.FC<NodeProps> = ({ node }) => {
     const { handleNodeMouseDown } = useNodeMouseDown(node);
     const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);
+
+    // Highlight warp gates when this node is selected
+    useSourceNodeWarpGateHighlight(node.id, isSelected);
 
 
     return (

@@ -4,6 +4,8 @@ import {useNodeCommonLogic} from "@/hooks/editor/nodes/useNodeCommonLogic";
 import {useNodeStyling} from "@/hooks/editor/nodes/useNodeStyling";
 import {useNodeInteractions} from "@/hooks/editor/nodes/useNodeInteractions";
 import useResizable from "@/hooks/editor/nodes/useResizable";
+import {useSourceNodeWarpGateHighlight} from "@/hooks/editor/nodes/useSourceNodeWarpGateHighlight";
+import useEditorStore from "@/stores/editorStore";
 import NodeContainer from "@/components/editor/nodes/node-container";
 import ExpandedNode from "@/components/editor/nodes/expanded-node";
 import CollapsedNode from "@/components/editor/nodes/collapsed-node";
@@ -14,6 +16,11 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const styles = useNodeStyling(node, commonLogic);
     const interactions = useNodeInteractions(node, commonLogic.isNodeInService, preview);
     const {handleResizeMouseDown} = useResizable(node);
+
+    // Highlight warp gates when this node is selected
+    const selectedNodes = useEditorStore((state) => state.selectedNodes);
+    const isSelected = selectedNodes.includes(node.id);
+    useSourceNodeWarpGateHighlight(node.id, isSelected);
 
     // Handle double-click for collapsible nodes
     const handleDoubleClick = commonLogic.isCollapsable ? interactions.onCollapse : undefined;

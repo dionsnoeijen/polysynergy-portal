@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import useEditorStore from '@/stores/editorStore';
 import useNodesStore from '@/stores/nodesStore';
-import { Node, NodeType, NodeView, FlowState } from '@/types/types';
+import { Node, NodeType, FlowState } from '@/types/types';
 import { snapToGrid } from '@/utils/snapToGrid';
 import { globalToLocal } from '@/utils/positionUtils';
 

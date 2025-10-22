@@ -11,18 +11,19 @@ import useEditorStore from '@/stores/editorStore';
 import Connector from '@/components/editor/nodes/connector';
 import clsx from 'clsx';
 
-const WarpGate: React.FC<NodeProps> = ({ node, preview = false }) => {
+const WarpGate: React.FC<NodeProps> = ({ node }) => {
     const logic = useWarpGateLogic(node);
     const { handleNodeMouseDown } = useNodeMouseDown(node, false);
     const { handleContextMenu } = useNodeContextMenu(node);
     const position = useNodePlacement(node);
     const [isHovered, setIsHovered] = useState(false);
 
-    // Determine if we should show visual feedback (selected, hovered, OR source node is selected)
-    const sourceNode = logic.sourceNodeId ? useNodesStore((state) =>
-        state.nodes.find(n => n.id === logic.sourceNodeId)
-    ) : undefined;
+    // Get all nodes from store unconditionally (fixes conditional hook error)
+    const allNodes = useNodesStore((state) => state.nodes);
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
+
+    // Determine if we should show visual feedback (selected, hovered, OR source node is selected)
+    const sourceNode = logic.sourceNodeId ? allNodes.find(n => n.id === logic.sourceNodeId) : undefined;
     const isSourceSelected = sourceNode ? selectedNodes.includes(sourceNode.id) : false;
     const shouldHighlight = logic.isSelected || isHovered || isSourceSelected;
 

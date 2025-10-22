@@ -1,7 +1,6 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import { Node } from '@/types/types';
 import useEditorStore from '@/stores/editorStore';
-import useConnectionsStore from '@/stores/connectionsStore';
 
 export const useWarpGateLogic = (node: Node) => {
     // Subscribe to selection state for reactive updates

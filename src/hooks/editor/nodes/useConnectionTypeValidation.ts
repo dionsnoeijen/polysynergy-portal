@@ -4,11 +4,12 @@ export const useConnectionTypeValidation = () => {
             return true; // Allow if either type is not specified
         }
 
-        const targetTypes = targetVariableType.split(",");
-        const activeTypes = activeVariableType.split(',');
+        const targetTypes = targetVariableType.split(",").map(t => t.trim().toLowerCase());
+        const activeTypes = activeVariableType.split(',').map(t => t.trim().toLowerCase());
 
-        // Allow 'any' type to connect with all other types
-        if (targetTypes.includes('any') || activeTypes.includes('any')) {
+        // Allow 'any' or 'typing.any' type to connect with all other types
+        if (targetTypes.includes('any') || activeTypes.includes('any') ||
+            targetTypes.includes('typing.any') || activeTypes.includes('typing.any')) {
             return true;
         }
 

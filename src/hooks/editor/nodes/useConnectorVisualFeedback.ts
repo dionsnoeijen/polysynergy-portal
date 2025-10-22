@@ -5,7 +5,7 @@ export const useConnectorVisualFeedback = () => {
 
     const dimConnectors = () => {
         const activeTypes = activeConnectorVariableTypeRef.current
-            ? activeConnectorVariableTypeRef.current.split(',')
+            ? activeConnectorVariableTypeRef.current.split(',').map(t => t.trim().toLowerCase())
             : [];
 
         const allInConnectors = [...document.querySelectorAll(`[data-type="in"][data-node-id]`)];
@@ -18,11 +18,11 @@ export const useConnectorVisualFeedback = () => {
         });
 
         allInConnectors.forEach((el) => {
-            const nodeTypes = (el.getAttribute("data-variable-type") || "").split(",");
-            // Allow 'any' type to always be highlighted as valid
+            const nodeTypes = (el.getAttribute("data-variable-type") || "").split(",").map(t => t.trim().toLowerCase());
+            // Allow 'any' or 'typing.any' type to always be highlighted as valid
             const isValid = nodeTypes.some(type => activeTypes.includes(type)) ||
-                           nodeTypes.includes('any') ||
-                           activeTypes.includes('any');
+                           nodeTypes.includes('any') || activeTypes.includes('any') ||
+                           nodeTypes.includes('typing.any') || activeTypes.includes('typing.any');
 
             if (isValid) {
                 const elStyle = (el as HTMLElement).style;

@@ -29,6 +29,8 @@ const formatVariableTypes = (types: string[]) => {
                 return "False Path";
             case NodeVariableType.Dependency:
                 return "Dependency";
+            case NodeVariableType.Any:
+                return "Any";
             default:
                 return type;
         }

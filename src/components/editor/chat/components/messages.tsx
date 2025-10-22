@@ -6,6 +6,7 @@ import NodeResponseCard from "@/components/editor/chat/components/node-response-
 import CollapsibleTeamResponse from "./collapsible-team-response";
 import {PauseInteraction} from "./PauseInteraction";
 import {HTMLContentCard} from "./HTMLContentCard";
+import ReasoningBubble from "./reasoning-bubble";
 import {getAgentMetaFromNode} from "@/utils/chatHistoryUtils";
 
 const EMPTY: ReadonlyArray<ChatViewMessage> = Object.freeze([]);
@@ -22,7 +23,8 @@ type AgentGroupItem = {
 type UserItem = { type: "user"; message: ChatViewMessage; runBatch: number };
 type SystemPauseItem = { type: "system_pause"; message: ChatViewMessage; runBatch: number };
 type SystemHTMLItem = { type: "system_html"; message: ChatViewMessage; runBatch: number };
-type RenderItem = AgentGroupItem | UserItem | SystemPauseItem | SystemHTMLItem;
+type ReasoningItem = { type: "reasoning"; message: ChatViewMessage; runBatch: number };
+type RenderItem = AgentGroupItem | UserItem | SystemPauseItem | SystemHTMLItem | ReasoningItem;
 
 interface MessagesProps {
     teamResponsesCollapsed?: boolean;
@@ -69,6 +71,12 @@ const Messages: React.FC<MessagesProps> = ({ teamResponsesCollapsed = true, onRe
             // System HTML content message
             if (m.sender === "system" && m.html_content) {
                 out.push({type: "system_html", message: m, runBatch});
+                continue;
+            }
+
+            // Reasoning message
+            if (m.sender === "reasoning") {
+                out.push({type: "reasoning", message: m, runBatch});
                 continue;
             }
 
@@ -153,6 +161,22 @@ const Messages: React.FC<MessagesProps> = ({ teamResponsesCollapsed = true, onRe
                         <HTMLContentCard
                             key={`html-${item.runBatch}-${message.id}`}
                             htmlContent={message.html_content}
+                        />
+                    );
+                }
+
+                // Reasoning message
+                if (item.type === "reasoning") {
+                    const {message} = item;
+                    const node = message.node_id ? getNode?.(message.node_id) : null;
+                    const nodeName = node?.name;
+
+                    return (
+                        <ReasoningBubble
+                            key={`reasoning-${item.runBatch}-${message.id}`}
+                            text={message.text}
+                            nodeName={nodeName}
+                            isTeamMember={message.is_team_member}
                         />
                     );
                 }

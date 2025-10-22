@@ -481,6 +481,15 @@ const useEditorStore = create<EditorState>((set, get) => ({
         const selectedNodeIds = get().selectedNodes;
         if (selectedNodeIds.length === 0) return;
 
+        // Check if any selected nodes are service nodes or non-deletable
+        const isNodeInService = useNodesStore.getState().isNodeInService(selectedNodeIds);
+        const isNodeDeletable = useNodesStore.getState().isNodeDeletable(selectedNodeIds);
+
+        if (isNodeInService || !isNodeDeletable) {
+            console.warn('Cannot copy: One or more selected nodes are service nodes or cannot be copied');
+            return;
+        }
+
         const nestedNodes = useNodesStore
             .getState()
             .getAllNestedNodesByIds(selectedNodeIds);

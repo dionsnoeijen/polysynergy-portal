@@ -398,6 +398,31 @@ function getOrCreateMessageHandler() {
                 }
             }
 
+            // ---- REASONING CONTENT ----
+            if ((eventType === "ReasoningContent" ||
+                 eventType === "RunReasoningContent" ||
+                 eventType === "TeamRunReasoningContent") && message.content) {
+
+                const sessionId = chatView.getActiveSessionId();
+                if (sessionId) {
+                    const tsMs =
+                        typeof message.microtime === "number"
+                            ? Math.round(message.microtime * 1000)
+                            : Date.now();
+
+                    // Add reasoning chunk to chat
+                    chatView.appendReasoningChunk(
+                        sessionId,
+                        message.node_id,
+                        message.content,
+                        tsMs,
+                        message.sequence_id,
+                        message.run_id ?? null,
+                        message.is_member_agent ?? false
+                    );
+                }
+            }
+
             // ---- RUN START ----
             if (eventType === 'run_start') {
                 console.log('🚀 [WebSocket] Received run_start event for run_id:', message.run_id);

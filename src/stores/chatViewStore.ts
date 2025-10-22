@@ -15,7 +15,7 @@ export type PauseMessageData = {
 
 export type ChatViewMessage = {
     id: string;
-    sender: "user" | "agent" | "system";
+    sender: "user" | "agent" | "system" | "reasoning";
     text: string;
     timestamp: number;
     node_id?: string | null;
@@ -75,6 +75,16 @@ type ChatViewState = {
         ts?: number,
         seq?: number,
         runId?: string | null
+    ) => void;
+
+    appendReasoningChunk: (
+        sessionId: string,
+        nodeId: string | undefined,
+        text: string,
+        ts?: number,
+        seq?: number,
+        runId?: string | null,
+        isTeamMember?: boolean
     ) => void;
 
     finalizeAgentMessage: (sessionId: string) => void;
@@ -166,7 +176,13 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 const merged = [...prev];
                 const msg = {...last};
                 const parts = msg.parts ? [...msg.parts] : [];
-                parts.push({seq, ts: now, text});
+
+                // Deduplication: Check if part with same seq already exists
+                const existingPart = parts.find(p => p.seq != null && p.seq === seq);
+                if (!existingPart) {
+                    parts.push({seq, ts: now, text});
+                }
+
                 parts.sort((a, b) => {
                     if (a.seq != null && b.seq != null && a.seq !== b.seq) return a.seq - b.seq;
                     return a.ts - b.ts; // fallback
@@ -180,12 +196,18 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 const bubblePrev = s.bubbleMessagesBySession[sessionId] ?? [];
                 const bubbleLast = bubblePrev[bubblePrev.length - 1];
                 const bubbleMerged = [...bubblePrev];
-                if (bubbleLast && bubbleLast.sender === "agent" && 
+                if (bubbleLast && bubbleLast.sender === "agent" &&
                     (bubbleLast.node_id ?? null) === (nodeId ?? null) &&
                     (bubbleLast.run_id ?? null) === (runId ?? null)) {
                     const bubbleMsg = {...bubbleLast};
                     const bubbleParts = bubbleMsg.parts ? [...bubbleMsg.parts] : [];
-                    bubbleParts.push({seq, ts: now, text});
+
+                    // Deduplication: Check if part with same seq already exists
+                    const existingPart = bubbleParts.find(p => p.seq != null && p.seq === seq);
+                    if (!existingPart) {
+                        bubbleParts.push({seq, ts: now, text});
+                    }
+
                     bubbleParts.sort((a, b) => {
                         if (a.seq != null && b.seq != null && a.seq !== b.seq) return a.seq - b.seq;
                         return a.ts - b.ts;
@@ -250,7 +272,13 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                 const bubbleMerged = [...bubblePrev];
                 const bubbleMsg = {...bubbleLast};
                 const bubbleParts = bubbleMsg.parts ? [...bubbleMsg.parts] : [];
-                bubbleParts.push({seq, ts: now, text});
+
+                // Deduplication: Check if part with same seq already exists
+                const existingPart = bubbleParts.find(p => p.seq != null && p.seq === seq);
+                if (!existingPart) {
+                    bubbleParts.push({seq, ts: now, text});
+                }
+
                 bubbleParts.sort((a, b) => {
                     if (a.seq != null && b.seq != null && a.seq !== b.seq) return a.seq - b.seq;
                     return a.ts - b.ts;
@@ -281,6 +309,68 @@ const useChatViewStore = create<ChatViewState>((set, get) => ({
                     ...s.bubbleMessagesBySession,
                     [sessionId]: [...bubblePrev, next],
                 },
+            };
+        }),
+
+    appendReasoningChunk: (sessionId, nodeId, text, ts, seq, runId, isTeamMember) =>
+        set((s) => {
+            const now = ts ?? Date.now();
+            const prev = s.messagesBySession[sessionId] ?? [];
+            const last = prev[prev.length - 1];
+
+            // Check if last message is reasoning from same node
+            const sameReasoningThread =
+                last?.sender === "reasoning" &&
+                (last.node_id ?? null) === (nodeId ?? null) &&
+                (last.run_id ?? null) === (runId ?? null);
+
+            const withinWindow = last ? now - last.timestamp <= MERGE_WINDOW_MS : false;
+
+            if (sameReasoningThread && withinWindow) {
+                // Merge reasoning chunks
+                const merged = [...prev];
+                const msg = {...last};
+                const parts = msg.parts ? [...msg.parts] : [];
+
+                // Deduplication check
+                const existingPart = parts.find(p => p.seq != null && p.seq === seq);
+                if (!existingPart) {
+                    parts.push({seq, ts: now, text});
+                }
+
+                parts.sort((a, b) => {
+                    if (a.seq != null && b.seq != null && a.seq !== b.seq) return a.seq - b.seq;
+                    return a.ts - b.ts;
+                });
+                msg.parts = parts;
+                msg.text = parts.map((p) => p.text).join("");
+                msg.timestamp = now;
+                merged[merged.length - 1] = msg;
+
+                return {
+                    ...s,
+                    messagesBySession: {...s.messagesBySession, [sessionId]: merged}
+                };
+            }
+
+            // Create new reasoning message
+            const next: ChatViewMessage = {
+                id: `reasoning-${now}-${Math.random().toString(36).slice(2, 7)}`,
+                sender: "reasoning",
+                text,
+                timestamp: now,
+                node_id: nodeId ?? null,
+                run_id: runId ?? null,
+                parts: [{seq, ts: now, text}],
+                is_team_member: isTeamMember,
+            };
+
+            return {
+                ...s,
+                messagesBySession: {
+                    ...s.messagesBySession,
+                    [sessionId]: [...prev, next]
+                }
             };
         }),
 

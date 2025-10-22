@@ -15,7 +15,7 @@ import useInteractionStore, { InteractionEvent } from '@/stores/interactionStore
 
 type ExecutionMessage = {
     node_id?: string;
-    event: 'run_start' | 'start_node' | 'end_node' | 'run_end' | "start_tool" | "end_tool" | "RunContent" | "TeamRunContent" | "TeamToolCallCompleted" | "resume_start" | "resume_end" | "AgentPaused" | "ChatHTML";
+    event: 'run_start' | 'start_node' | 'end_node' | 'run_end' | "start_tool" | "end_tool" | "RunContent" | "TeamRunContent" | "TeamToolCallCompleted" | "resume_start" | "resume_end" | "AgentPaused" | "ChatHTML" | "ReasoningContent" | "RunReasoningContent" | "TeamRunReasoningContent";
     status?: 'success' | 'killed' | 'error';
     order?: number;
     run_id?: string;

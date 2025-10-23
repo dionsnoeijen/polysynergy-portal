@@ -690,15 +690,26 @@ function getOrCreateMessageHandler() {
                     }
                 }
 
-                // Clear ALL executed status classes when run ends
-                const elementsToClean = document.querySelectorAll('.executed-success, .executed-error, .executed-killed, .executing');
-                console.log(`🧹 [WebSocket] Found ${elementsToClean.length} elements with execution status to clear`);
-                elementsToClean.forEach(el => {
-                    const nodeId = el.getAttribute('data-node-id');
-                    console.log(`  - Clearing execution classes from node: ${nodeId}`);
-                    el.classList.remove('executed-success', 'executed-error', 'executed-killed', 'executing');
-                });
-                console.log('✅ [WebSocket] Cleared all execution status classes at run_end');
+                // IMPROVED FIX: Wait for all pending animations to complete before clearing classes
+                // This ensures the last node gets its completion status
+                const pendingAnimations = message.run_id ? pendingAnimationsByRun.get(message.run_id) : null;
+                const maxAnimationDelay = pendingAnimations && pendingAnimations.size > 0 ? 600 : 0;
+
+                if (maxAnimationDelay > 0) {
+                    console.log(`⏳ [WebSocket] Waiting ${maxAnimationDelay}ms for ${pendingAnimations!.size} pending animations to complete`);
+                }
+
+                setTimeout(() => {
+                    // Clear ALL executed status classes when run ends (after animations complete)
+                    const elementsToClean = document.querySelectorAll('.executed-success, .executed-error, .executed-killed, .executing');
+                    console.log(`🧹 [WebSocket] Found ${elementsToClean.length} elements with execution status to clear`);
+                    elementsToClean.forEach(el => {
+                        const nodeId = el.getAttribute('data-node-id');
+                        console.log(`  - Clearing execution classes from node: ${nodeId}`);
+                        el.classList.remove('executed-success', 'executed-error', 'executed-killed', 'executing');
+                    });
+                    console.log('✅ [WebSocket] Cleared all execution status classes at run_end');
+                }, maxAnimationDelay);
 
                 // NEVER clear mock data at run_end - this removes run output from NodeOutput panel
                 // The purple glow issue will need to be fixed elsewhere

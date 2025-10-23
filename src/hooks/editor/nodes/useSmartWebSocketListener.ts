@@ -973,12 +973,8 @@ function getOrCreateMessageHandler() {
 
                         // Schedule end animation with minimum display time
                         const animationTimeout = setTimeout(() => {
-                            // Skip execution classes if run has already ended
-                            if (message.run_id && completedRunIds.has(message.run_id)) {
-                                console.log(`⏰ [WebSocket] Skipping delayed execution classes for node ${node_id} - run ${message.run_id} already completed`);
-                                pendingAnimations.delete(node_id);
-                                return;
-                            }
+                            // REMOVED: completedRunIds check here allows already-scheduled animations to complete
+                            // The check at line 958 ensures no NEW animations are scheduled after run_end
 
                             const currentEl = document.querySelector(`[data-node-id="${node_id}"]`) as HTMLElement;
                             const nodeGroupId = nodesStore.isNodeInGroup(node_id);

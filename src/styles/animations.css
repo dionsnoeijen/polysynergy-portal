@@ -1,0 +1,132 @@
+/* Global animations - MUST be loaded in layout.tsx to prevent purging */
+
+/* Node execution pulse animation - Blue glow */
+@keyframes node-executing-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(0, 191, 255, 0);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(0, 191, 255, 0.8);
+    }
+}
+
+/* Tool execution pulse animation - Yellow glow */
+@keyframes tool-executing-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(255, 193, 7, 0);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(255, 193, 7, 0.8);
+    }
+}
+
+/* Tool executing yellow border animation */
+@keyframes tool-executing-yellow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0), inset 0 0 0 4px rgba(255, 193, 7, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(255, 193, 7, 0.8), inset 0 0 0 4px rgba(255, 193, 7, 1);
+    }
+}
+
+/* Draft execution glow - Green */
+@keyframes draft-glow {
+    0% {
+        box-shadow: inset 0 0 10px 3px rgba(34, 197, 94, 0.2);
+    }
+    50% {
+        box-shadow: inset 0 0 15px 5px rgba(34, 197, 94, 0.5);
+    }
+    100% {
+        box-shadow: inset 0 0 10px 3px rgba(34, 197, 94, 0.2);
+    }
+}
+
+/* Execution state pseudo-elements - shared structure */
+.executing::after,
+.executing-tool::after,
+.executed-success::after,
+.executed-killed::after,
+.executed-error::after,
+.executed-provided::after {
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: inherit !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+}
+
+/* Executing state - Blue glow animation */
+.executing::after {
+    animation: node-executing-pulse 1.2s infinite ease-in-out !important;
+}
+
+/* Executing tool state - Yellow glow */
+.executing-tool {
+    animation: tool-executing-yellow 1s infinite ease-in-out !important;
+}
+
+.executing-tool::after {
+    animation: tool-executing-pulse 1s infinite ease-in-out !important;
+}
+
+/* Draft executing - Green glow */
+.draft-executing {
+    animation: draft-glow 2s infinite ease-in-out !important;
+}
+
+/* Chat mode - Static sky glow */
+.chat-mode {
+    box-shadow: inset 0 0 12px 4px rgba(14, 165, 233, 0.35) !important;
+}
+
+/* Executed states - Completion borders with glow */
+.executed-success,
+.executed-killed,
+.executed-error,
+.executed-provided {
+    transition: box-shadow 0.3s ease-in !important;
+}
+
+.executed-success {
+    box-shadow: 0 0 0 2px oklch(72.3% 0.219 149.579) !important;
+}
+
+.executed-killed {
+    box-shadow: 0 0 0 2px oklch(63.7% 0.237 25.331) !important;
+}
+
+.executed-error {
+    box-shadow: 0 0 0 2px oklch(65.8% 0.296 29.234) !important;
+}
+
+.executed-provided {
+    box-shadow: 0 0 0 2px oklch(69.71% 0.329 310) !important;
+}
+
+/* Executed state glows */
+.executed-success::after {
+    animation: none !important;
+    transition: box-shadow 0.4s ease-in-out, background 0.4s ease-in-out !important;
+    box-shadow: 0 0 15px oklch(72.3% 0.219 149.579) !important;
+}
+
+.executed-killed::after {
+    animation: none !important;
+    transition: box-shadow 0.4s ease-in-out, background 0.4s ease-in-out !important;
+    box-shadow: 0 0 15px oklch(63.7% 0.237 25.331) !important;
+}
+
+.executed-error::after {
+    animation: none !important;
+    transition: box-shadow 0.4s ease-in-out, background 0.4s ease-in-out !important;
+    box-shadow: 0 0 15px oklch(65.8% 0.296 29.234) !important;
+}
+
+.executed-provided::after {
+    animation: none !important;
+    transition: box-shadow 0.4s ease-in-out, background 0.4s ease-in-out !important;
+    box-shadow: 0 0 15px oklch(69.71% 0.329 310) !important;
+}

@@ -1,3 +1,4 @@
+import '@/styles/animations.css';  // MUST be imported FIRST - global animations for executing states
 import '@/styles/tailwind.css';
 import Script from 'next/script'
 import {ThemeProvider} from '@/contexts/theme-context'

@@ -427,6 +427,35 @@ function getOrCreateMessageHandler() {
             if (eventType === 'run_start') {
                 console.log('🚀 [WebSocket] Received run_start event for run_id:', message.run_id);
 
+                // CRITICAL FIX: Clear processedEvents at the START of each new run
+                // This prevents the "stream stops after first run" bug
+                const eventsBefore = processedEvents.size;
+                processedEvents.clear();
+                console.log(`🧹 [WebSocket] Cleared ${eventsBefore} processed events for new run: ${message.run_id}`);
+
+                // Remove run from completedRunIds if it was marked completed before (re-run scenario)
+                if (message.run_id && completedRunIds.has(message.run_id)) {
+                    completedRunIds.delete(message.run_id);
+                    console.log(`🔓 [WebSocket] Removed run ${message.run_id} from completedRunIds - allowing re-execution`);
+                }
+
+                // MEMORY LEAK FIX: Clear tool trackers for stale runs
+                // Keep only tools from the last 10 runs
+                if (toolExecutionTracker.size > 100) {
+                    toolExecutionTracker.clear();
+                    console.log('🧹 [WebSocket] Cleared tool execution tracker (>100 entries)');
+                }
+                if (toolVisualizationTracker.size > 100) {
+                    // Clear timeouts first
+                    for (const tracker of toolVisualizationTracker.values()) {
+                        if (tracker.timeoutId) {
+                            clearTimeout(tracker.timeoutId);
+                        }
+                    }
+                    toolVisualizationTracker.clear();
+                    console.log('🧹 [WebSocket] Cleared tool visualization tracker (>100 entries)');
+                }
+
                 // Update runs store - this might be from a different source than useHandlePlay
                 const runsStore = useRunsStore.getState();
                 const existingRun = runsStore.runs.find(r => r.run_id === message.run_id);
@@ -650,6 +679,15 @@ function getOrCreateMessageHandler() {
                 if (message.run_id) {
                     completedRunIds.add(message.run_id);
                     console.log(`🔒 [WebSocket] Marked run ${message.run_id} as completed - no more execution classes will be added`);
+
+                    // MEMORY LEAK FIX: Limit completedRunIds size to prevent unbounded growth
+                    // Keep only the last 50 run IDs
+                    if (completedRunIds.size > 50) {
+                        const runIdsArray = Array.from(completedRunIds);
+                        const toRemove = runIdsArray.slice(0, runIdsArray.length - 50);
+                        toRemove.forEach(id => completedRunIds.delete(id));
+                        console.log(`🧹 [WebSocket] Trimmed completedRunIds from ${runIdsArray.length} to 50 entries`);
+                    }
                 }
 
                 // Clear ALL executed status classes when run ends

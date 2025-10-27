@@ -224,6 +224,11 @@ function getOrCreateMessageHandler() {
     handlerRefCount = 1;
 
     globalMessageHandler = async (event: MessageEvent) => {
+        try {
+            // CRITICAL: Entire handler wrapped in try-catch to prevent silent crashes
+            // If ANY error occurs (store update, API call, DOM query), we log it but keep the handler alive
+            // Without this, the handler crashes silently and ALL future events are ignored (portal hangs)
+
             const data = typeof event.data === 'string' ? event.data.trim() : '';
             if (!data || (data[0] !== '{' && data[0] !== '[')) return;
 
@@ -1075,7 +1080,29 @@ function getOrCreateMessageHandler() {
                     }
                 }
             }
-        };
+        } catch (error) {
+            // CRITICAL ERROR RECOVERY: Handler crashed but we keep it alive
+            console.error('🚨🚨🚨 [WebSocket] CRITICAL: Message handler error - THIS IS WHY PORTAL HANGS! 🚨🚨🚨');
+            console.error('🚨 [WebSocket] Error:', error);
+            console.error('🚨 [WebSocket] Event data:', event.data);
+            console.error('🚨 [WebSocket] Stack:', error instanceof Error ? error.stack : 'No stack available');
+
+            // Attempt recovery: unlock editor if it's stuck
+            try {
+                const editorStore = useEditorStore.getState();
+                const runsStore = useRunsStore.getState();
+                if (editorStore.isExecuting) {
+                    console.error('🚨 [WebSocket] Attempting recovery: unlocking stuck editor');
+                    editorStore.setIsExecuting(null);
+                    runsStore.setActiveRunId(null);
+                }
+            } catch (recoveryError) {
+                console.error('🚨 [WebSocket] Recovery attempt also failed:', recoveryError);
+            }
+
+            // DON'T rethrow - keep handler alive for next event!
+        }
+    };
 
     return globalMessageHandler;
 }

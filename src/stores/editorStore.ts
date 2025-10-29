@@ -5,6 +5,7 @@ import useConnectionsStore from "@/stores/connectionsStore";
 import {gatherAllIds, replaceIdsInJsonString, unpackNode} from "@/utils/packageGroupNode";
 import { getConnectionExecutionDetails } from "@/api/executionApi";
 import useMockStore from "@/stores/mockStore";
+import { copyToClipboard, pasteFromClipboard } from "@/utils/clipboardUtils";
 // import usePendingChangesStore from "@/stores/pendingChangesStore";
 
 export enum BottomBarView {
@@ -167,12 +168,12 @@ export type EditorState = {
 
     copiedPackage: Package | null;
     setCopiedPackage: (pkg: Package | null) => void;
-    copySelectedNodes: () => void;
+    copySelectedNodes: () => Promise<void>;
     isPasting: boolean;
     setIsPasting: (isPasting: boolean) => void;
     pastedNodeIds: string[];
     setPastedNodeIds: (nodeIds: string[]) => void;
-    pasteNodes: () => string[];
+    pasteNodes: () => Promise<string[]>;
 
     nodeToMoveToGroupId: string | null,
     setNodeToMoveToGroupId: (id: string | null) => void;
@@ -477,7 +478,7 @@ const useEditorStore = create<EditorState>((set, get) => ({
     copiedPackage: null,
     setCopiedPackage: (pkg) => set({copiedPackage: pkg}),
 
-    copySelectedNodes: () => {
+    copySelectedNodes: async () => {
         const selectedNodeIds = get().selectedNodes;
         if (selectedNodeIds.length === 0) return;
 
@@ -531,6 +532,16 @@ const useEditorStore = create<EditorState>((set, get) => ({
 
         const packagedData = replaceIdsInJsonString(packageData, idMap);
 
+        // Copy to system clipboard for cross-tab/cross-application paste
+        const clipboardSuccess = await copyToClipboard(packagedData);
+
+        if (clipboardSuccess) {
+            console.log(`✅ Copied ${nestedNodes.length} nodes to clipboard`);
+        } else {
+            console.warn('⚠️ Failed to copy to system clipboard, will only work in same tab');
+        }
+
+        // ALWAYS store in Zustand as well (faster for same-tab paste)
         set({copiedPackage: packagedData});
     },
 
@@ -554,9 +565,20 @@ const useEditorStore = create<EditorState>((set, get) => ({
     pastedNodeIds: [],
     setPastedNodeIds: (nodeIds) => set({pastedNodeIds: nodeIds}),
 
-    pasteNodes: (): string[] => {
+    pasteNodes: async (): Promise<string[]> => {
+        // Try Zustand first (same-tab paste, instant)
         let copiedPackage = get().copiedPackage;
-        if (!copiedPackage) return [];
+
+        // If not in Zustand, try system clipboard (cross-tab/cross-application paste)
+        if (!copiedPackage) {
+            console.log('ℹ️ No package in Zustand, trying system clipboard...');
+            copiedPackage = await pasteFromClipboard();
+        }
+
+        if (!copiedPackage) {
+            console.log('ℹ️ Nothing to paste (clipboard empty or not a PolySynergy package)');
+            return [];
+        }
 
         copiedPackage = unpackNode(copiedPackage);
 
@@ -573,6 +595,9 @@ const useEditorStore = create<EditorState>((set, get) => ({
         }
 
         const pastedNodeIds = copiedPackage.nodes.map((node) => node.id);
+
+        console.log(`✅ Pasted ${pastedNodeIds.length} nodes`);
+
         set({
             selectedNodes: pastedNodeIds,
             pastedNodeIds,

@@ -69,12 +69,12 @@ export const useEditorKeyBindings = () => {
             condition: () => selectedNodes.length > 0
         },
         'ctrl+c': {
-            handler: () => copySelectedNodes(),
+            handler: async () => await copySelectedNodes(),
             condition: () => selectedNodes.length > 0
         },
         'ctrl+v': {
-            handler: () => {
-                const pastedNodeIds = pasteNodes();
+            handler: async () => {
+                const pastedNodeIds = await pasteNodes();
                 startDraggingAfterPaste(pastedNodeIds);
             },
             condition: () => true

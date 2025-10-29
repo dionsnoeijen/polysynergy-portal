@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import useNodesStore from '@/stores/nodesStore';
 import useConnectionsStore from '@/stores/connectionsStore';
+import useEditorStore from '@/stores/editorStore';
 import { NodeType, Connection } from '@/types/types';
 
 const VISUAL_CONNECTION_PREFIX = 'warp-visual-source-';
@@ -14,6 +15,12 @@ export const useSourceNodeWarpGateHighlight = (
     isSelected: boolean
 ) => {
     useEffect(() => {
+        // Don't show visual connections during paste operations
+        const isPasting = useEditorStore.getState().isPasting;
+        if (isPasting) {
+            return;
+        }
+
         if (!isSelected) {
             // Remove all visual connections for this source node
             const allConnections = useConnectionsStore.getState().connections;

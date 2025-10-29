@@ -507,6 +507,11 @@ const useEditorStore = create<EditorState>((set, get) => ({
                 .findOutConnectionsByNodeId(node.id);
 
             [...inConnections, ...outConnections].forEach((connection) => {
+                // Skip visual connections (temporary UI elements, not real data)
+                if (connection.id.startsWith('warp-visual-')) {
+                    return;
+                }
+
                 const hasValidSource = nestedNodeIds.has(connection.sourceNodeId);
                 const hasValidTarget = connection.targetNodeId ? nestedNodeIds.has(connection.targetNodeId) : true;
 

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import useConnectionsStore from '@/stores/connectionsStore';
+import useEditorStore from '@/stores/editorStore';
 import { Connection } from '@/types/types';
 
 const VISUAL_CONNECTION_ID = 'warp-visual-';
@@ -11,6 +12,12 @@ export const useWarpGateVisualConnection = (
     sourceHandle: string | undefined
 ) => {
     useEffect(() => {
+        // Don't show visual connections during paste operations
+        const isPasting = useEditorStore.getState().isPasting;
+        if (isPasting) {
+            return;
+        }
+
         if (!isActive || !sourceNodeId || !sourceHandle) {
             // Remove visual connection from store if it exists
             const visualConnectionId = `${VISUAL_CONNECTION_ID}${gateNodeId}`;

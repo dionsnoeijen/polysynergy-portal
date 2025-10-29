@@ -106,12 +106,25 @@ const useConnectionsStore = create<ConnectionsStore>((set, get) => ({
             useNodesStore.getState().driveNode(connection.targetNodeId);
         }
 
-        set((state) => ({
-            connections: [
-                ...state.connections,
-                {...connection, hidden: connection.hidden ?? false},
-            ],
-        }));
+        set((state) => {
+            // Check if connection with this ID already exists
+            const existingIndex = state.connections.findIndex(c => c.id === connection.id);
+
+            if (existingIndex !== -1) {
+                // Update existing connection instead of creating duplicate
+                const newConnections = [...state.connections];
+                newConnections[existingIndex] = {...connection, hidden: connection.hidden ?? false};
+                return { connections: newConnections };
+            }
+
+            // Add new connection
+            return {
+                connections: [
+                    ...state.connections,
+                    {...connection, hidden: connection.hidden ?? false},
+                ]
+            };
+        });
 
         // useHistoryStore.getState().save();
 

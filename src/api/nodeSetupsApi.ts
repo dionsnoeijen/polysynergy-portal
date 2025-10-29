@@ -182,6 +182,44 @@ export const updateNodeSetupScheduleVersionAPI = (
     );
 };
 
+export const publishNodeSetupChatWindowVersionAPI = (
+    chatWindowId: string,
+    projectId: string
+): Promise<Response> => {
+    const idToken = getIdToken();
+    return fetch(
+        `${config.LOCAL_API_URL}/chat-windows/${chatWindowId}/publish/?project_id=${projectId}`,
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({}),
+        }
+    );
+};
+
+export const unpublishNodeSetupChatWindowVersionAPI = (
+    chatWindowId: string,
+    projectId: string
+): Promise<Response> => {
+    const idToken = getIdToken();
+    return fetch(
+        `${config.LOCAL_API_URL}/chat-windows/${chatWindowId}/unpublish/?project_id=${projectId}`,
+        {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({}),
+        }
+    );
+}
+
 export const createNodeSetupVersionDraftAPI = async (
     setupId: string,
     versionId: string,

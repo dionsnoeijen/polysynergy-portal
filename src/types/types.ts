@@ -637,10 +637,19 @@ export interface PublishMatrixSchedule {
     versions: PublishMatrixVersion[];
 }
 
+export interface PublishMatrixChatWindow {
+    id: string;
+    name: string;
+    description?: string;
+    published_stages: string[];
+    stages_can_update?: string[];
+}
+
 export interface PublishMatrixResponse {
     stages: Stage[];
     schedules: PublishMatrixSchedule[];
     routes: PublishMatrixRoute[];
+    chat_windows: PublishMatrixChatWindow[];
 }
 
 export type EnvVar = {

@@ -22,8 +22,10 @@ import {
     publishNodeSetupScheduleVersionAPI,
     unpublishNodeSetupScheduleVersionAPI,
     updateNodeSetupScheduleVersionAPI,
+    publishNodeSetupChatWindowVersionAPI,
+    unpublishNodeSetupChatWindowVersionAPI,
 } from "@/api/nodeSetupsApi";
-import {Stage, PublishMatrixRoute, PublishMatrixSchedule} from "@/types/types";
+import {Stage, PublishMatrixRoute, PublishMatrixSchedule, PublishMatrixChatWindow} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import {formatSegments} from "@/utils/formatters";
 import {Divider} from "@/components/divider";
@@ -34,14 +36,16 @@ const PublishMatrix: React.FC = () => {
 
     const [routes, setRoutes] = useState<PublishMatrixRoute[]>([]);
     const [schedules, setSchedules] = useState<PublishMatrixSchedule[]>([]);
+    const [chatWindows, setChatWindows] = useState<PublishMatrixChatWindow[]>([]);
     const [stages, setStages] = useState<Stage[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = useCallback(async () => {
         try {
-            const {routes, schedules, stages} = await fetchPublishMatrixAPI(activeProjectId);
+            const {routes, schedules, chat_windows, stages} = await fetchPublishMatrixAPI(activeProjectId);
             setRoutes(routes);
             setSchedules(schedules);
+            setChatWindows(chat_windows || []);
             setStages([
                 ...stages.filter(s => s.name === 'mock'),
                 ...stages.filter(s => s.name !== 'mock'),
@@ -80,6 +84,16 @@ const PublishMatrix: React.FC = () => {
 
     const handleScheduleUpdate = async (scheduleId: string, stage: string) => {
         await updateNodeSetupScheduleVersionAPI(scheduleId, stage, activeProjectId);
+        await fetchData();
+    };
+
+    const handleChatWindowPublish = async (chatWindowId: string) => {
+        await publishNodeSetupChatWindowVersionAPI(chatWindowId, activeProjectId);
+        await fetchData();
+    };
+
+    const handleChatWindowUnpublish = async (chatWindowId: string) => {
+        await unpublishNodeSetupChatWindowVersionAPI(chatWindowId, activeProjectId);
         await fetchData();
     };
 
@@ -229,6 +243,59 @@ const PublishMatrix: React.FC = () => {
                             })}
                         </TableRow>
                     ))}
+                </TableBody>
+            </Table>
+
+            <Divider bleed className={'mt-10'}/>
+
+            <Info title={'Chat Windows'}>
+                Chat Windows provide conversational interfaces for your flows.<br/>
+                They must be <b>published to the mock stage</b> to be accessible and executable.<br/>
+                Publishing creates the necessary Lambda function for the chat window to run.
+            </Info>
+
+            <Table className="mt-6" dense bleed grid>
+                <TableHead>
+                    <TableRow>
+                        <TableHeader>Chat Windows</TableHeader>
+                        <TableHeader className="text-center w-2">mock</TableHeader>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {chatWindows.map((chatWindow) => {
+                        const isPublished = chatWindow.published_stages.includes('mock');
+                        return (
+                            <TableRow key={`chat-window-${chatWindow.id}`}>
+                                <TableCell className="font-semibold text-sky-500 dark:text-white">
+                                    {chatWindow.name}
+                                    {chatWindow.description && (
+                                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                                            ({chatWindow.description})
+                                        </span>
+                                    )}
+                                </TableCell>
+                                <TableCell className="text-center space-x-1">
+                                    {isPublished ? (
+                                        <Button
+                                            color="yellow"
+                                            onClick={() => handleChatWindowUnpublish(chatWindow.id)}
+                                            title="Unpublish this chat window"
+                                        >
+                                            <ArrowUturnLeftIcon className="w-3.5 h-3.5"/>
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            color={'green'}
+                                            onClick={() => handleChatWindowPublish(chatWindow.id)}
+                                            title="Publish this chat window"
+                                        >
+                                            <ArrowRightCircleIcon className="w-3.5 h-3.5"/>
+                                        </Button>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        );
+                    })}
                 </TableBody>
             </Table>
 

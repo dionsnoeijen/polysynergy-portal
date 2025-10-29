@@ -157,5 +157,8 @@ function copyToClipboardLegacy(text: string): boolean {
  * @returns boolean - true if Clipboard API is supported
  */
 export function isClipboardAPIAvailable(): boolean {
-  return !!(navigator.clipboard && navigator.clipboard.writeText && navigator.clipboard.readText);
+  return typeof navigator !== 'undefined' &&
+         !!navigator.clipboard &&
+         typeof navigator.clipboard.writeText === 'function' &&
+         typeof navigator.clipboard.readText === 'function';
 }

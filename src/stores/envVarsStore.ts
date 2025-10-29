@@ -147,8 +147,17 @@ const useEnvVarsStore = create<EnvVarsStore>((set, get) => ({
 
     deleteEnvVar: async (id: string, stage: string) => {
         const {activeProjectId} = useEditorStore.getState();
+
+        // Find the envVar that has this id in the given stage, to get the key
+        const envVar = get().envVars.find((e) => e.values[stage]?.id === id);
+        if (!envVar) {
+            console.error("Failed to delete env var: EnvVar not found for id", id);
+            return;
+        }
+
         try {
-            await deleteProjectEnvVarAPI(activeProjectId, id, stage);
+            // API expects (projectId, key, stage) - not (projectId, id, stage)
+            await deleteProjectEnvVarAPI(activeProjectId, envVar.key, stage);
 
             set((state) => ({
                 envVars: state.envVars

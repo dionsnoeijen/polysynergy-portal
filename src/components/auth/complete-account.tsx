@@ -77,8 +77,19 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
 
     return (
         <div className="max-w-lg mx-auto p-10">
-            <h1 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">Almost there!</h1>
-            <h3 className="text-lg font-medium mb-6 text-gray-900 dark:text-white">Complete your account</h3>
+            <div className="flex justify-between items-start mb-6">
+                <div>
+                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Almost there!</h1>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Complete your account</h3>
+                </div>
+                <Button
+                    type="button"
+                    onClick={() => auth.signoutRedirect()}
+                    outline
+                >
+                    Logout
+                </Button>
+            </div>
 
             {error && <p className="text-red-600 mb-4">{error}</p>}
 

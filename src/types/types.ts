@@ -85,6 +85,10 @@ export enum FormType {
     ExportSharing = 'exportSharing',
     ImportPackage = 'importPackage',
     PlayButtonsForm = 'playButtonsForm',
+    AddSectionField = 'addSectionField',
+    EditSectionField = 'editSectionField',
+    AddSection = 'addSection',
+    EditSection = 'editSection',
 }
 
 export enum InOut {
@@ -192,6 +196,7 @@ export type Dock = {
     template_editor?: boolean;
     image?: boolean;
     metadata?: Record<string, unknown>;
+    placeholder?: string;
 };
 
 export type NodeVariable = {
@@ -502,6 +507,154 @@ export type MyChatWindowPermissions = {
     can_view_flow: boolean;
     can_view_output: boolean;
     show_response_transparency: boolean;
+};
+
+export interface JSONSchemaProperty {
+    type: 'string' | 'integer' | 'number' | 'boolean';
+    title?: string;
+    description?: string;
+    format?: string;
+    minimum?: number;
+    maximum?: number;
+    default?: unknown;
+    enum?: string[];
+}
+
+export interface JSONSchema {
+    type: 'object';
+    properties?: Record<string, JSONSchemaProperty>;
+}
+
+export type FieldType = {
+    handle: string;
+    label: string;
+    postgres_type: string;
+    ui_component: string;
+    category: string;
+    icon?: string;
+    settings_schema?: JSONSchema;
+    version?: string;
+};
+
+export type SectionField = {
+    id: string;
+    handle: string;
+    label: string;
+    field_type_handle: string;
+    field_settings?: object;
+    is_required?: boolean;
+    is_unique?: boolean;
+    related_section_id?: string;
+};
+
+export type DatabaseConnection = {
+    id: string;
+    handle: string;
+    label: string;
+    description?: string;
+    database_type: 'postgresql' | 'mysql' | 'sqlite';
+    host?: string;
+    port?: number;
+    username?: string;
+    password?: string;
+    file_path?: string;
+    database_name: string;
+    use_ssl?: boolean;
+};
+
+export type DatabaseConnectionTestResult = {
+    success: boolean;
+    message: string;
+};
+
+export type GridCell = {
+    id: string;  // Unique cell identifier
+    type: 'field' | 'info_text' | 'divider' | 'heading' | 'empty';
+    col_start: number;  // 1-12 (inclusive)
+    col_end: number;    // 2-13 (exclusive, so max is 13 for full width)
+    row_start: number;  // 0-based row index (inclusive)
+    row_end: number;    // 0-based row index (exclusive)
+
+    // For field type
+    fieldAssignmentId?: string;
+
+    // For info_text type
+    content?: string;  // Markdown content
+    style?: 'info' | 'warning' | 'success' | 'default';
+};
+
+export type GridRow = {
+    id: string;
+    cells: GridCell[];
+    height?: number;  // Row height in pixels (optional, defaults to auto)
+};
+
+export type TabLayout = {
+    rows: GridRow[];
+};
+
+export type SectionLayoutConfig = {
+    tabs?: Record<string, TabLayout>;
+    table_columns?: {
+        order: string[];
+        hidden: string[];
+        widths?: Record<string, number>;
+    };
+};
+
+export type VectorizationConfig = {
+    enabled: boolean;
+    provider: 'openai' | 'mistral';
+    api_key_secret_id: string;  // UUID of secret
+    model: string;
+    dimensions: number;
+    source_fields: string[];     // Field handles to embed
+    metadata_fields: string[];   // Field handles for metadata
+    search_type: 'vector' | 'keyword' | 'hybrid';
+    distance: 'cosine' | 'l2' | 'max_inner_product';
+};
+
+export type VectorizationStats = {
+    enabled: boolean;
+    provider?: string;
+    model?: string;
+    total_records: number;
+    vectorized_records?: number;
+    vectorization_percentage?: number;
+};
+
+export type Section = {
+    id: string;
+    handle: string;
+    label: string;
+    description?: string;
+    database_connection_id?: string;
+    layout_config: SectionLayoutConfig;
+    field_assignments?: FieldAssignment[];
+    icon?: string;
+    migration_status?: string;
+    vectorization_config?: VectorizationConfig | null;
+    vectorization_stats?: VectorizationStats;
+};
+
+export type FieldAssignment = {
+    id: string;
+    field_id: string;
+    section_id: string;
+    tab_name: string;
+    sort_order: number;
+    is_visible: boolean;
+    is_required_override: boolean;
+    field?: SectionField;
+    // Flat field data from API
+    field_handle?: string;
+    field_label?: string;
+    field_type_handle?: string;
+    field_settings?: object;
+    is_required?: boolean;
+    is_unique?: boolean;
+    help_text?: string | null;
+    placeholder?: string | null;
 };
 
 export type MyChatWindow = {

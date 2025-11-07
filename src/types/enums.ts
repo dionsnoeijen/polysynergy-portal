@@ -20,6 +20,8 @@ export enum Fundamental {
     Variable = 'variable',
     EnvVar = 'envVar',
     ChatWindow = 'chatWindow',
+    Section = 'section',
+    SectionField = 'sectionField',
 }
 
 export enum ChatWindowViewMode {

@@ -13,6 +13,7 @@ export enum BottomBarView {
     Debug = 'Debug',
     Info = 'Info',
     Files = 'Files',
+    Sections = 'Sections',
 }
 
 export type ContextMenu = {

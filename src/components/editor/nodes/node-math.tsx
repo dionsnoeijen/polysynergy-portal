@@ -79,6 +79,7 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
                     in
                     nodeId={node.id}
                     handle={variable.handle}
+                    nodeVariableType={variable.in_type_override || String(variable.type)}
                     iconClassName="text-white dark:text-white"
                     className={`${getInputConnectorPosition(index, inputVariables.length)} ring-blue-200/50 bg-blue-400 dark:bg-blue-400 ${node.view.disabled && 'select-none opacity-0'}`}
                     disabled={node.view.disabled}
@@ -100,6 +101,7 @@ const NodeMath: React.FC<NodeProps> = ({ node }) => {
                     out
                     nodeId={node.id}
                     handle={variable.handle}
+                    nodeVariableType={variable.out_type_override || String(variable.type)}
                     iconClassName="text-white dark:text-white"
                     className={`right-0 top-1/2 -translate-y-1/2 translate-x-1/2 ring-blue-200/50 bg-green-400 dark:bg-green-400 ${node.view.disabled && 'select-none opacity-0'}`}
                     disabled={node.view.disabled}

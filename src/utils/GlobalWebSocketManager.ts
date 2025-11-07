@@ -14,11 +14,9 @@ class GlobalWebSocketSingleton {
 
     getOrCreateConnection(flowId: string): GlobalWebSocketConnection {
         if (this.connections.has(flowId)) {
-            console.log('🔌 GLOBAL SINGLETON: Reusing existing connection for', flowId);
             return this.connections.get(flowId)!;
         }
 
-        console.log('🔌 GLOBAL SINGLETON: Creating NEW connection for', flowId);
         const websocketUrl = `${config.WEBSOCKET_URL}/execution/${flowId}`;
 
         const manager = new WebSocketManager(websocketUrl, {
@@ -41,8 +39,6 @@ class GlobalWebSocketSingleton {
         manager.onStatusChange((status: ConnectionStatus) => {
             connection.connectionStatus = status;
             connection.isConnected = status === 'connected';
-            console.log('🔌 GLOBAL SINGLETON: Status changed for', flowId, status);
-
             connection.subscribers.forEach(callback => {
                 callback(status, connection.isConnected);
             });
@@ -68,12 +64,8 @@ class GlobalWebSocketSingleton {
         // Only add message handler if it's not already in the set
         // This prevents duplicate processing when the same singleton handler is passed multiple times
         if (messageHandler && !connection.messageHandlers.has(messageHandler)) {
-            console.log('🔌 GLOBAL SINGLETON: Adding message handler for', flowId, 'Total handlers:', connection.messageHandlers.size + 1);
             connection.messageHandlers.add(messageHandler);
-        } else if (messageHandler) {
-            console.log('🔌 GLOBAL SINGLETON: Message handler already exists for', flowId, '- skipping duplicate');
         }
-
         // Immediately call with current status
         statusCallback(connection.connectionStatus, connection.isConnected);
 
@@ -85,7 +77,6 @@ class GlobalWebSocketSingleton {
 
             // If no more status subscribers, we can consider cleaning up
             if (connection.subscribers.size === 0) {
-                console.log('🔌 GLOBAL SINGLETON: No more status subscribers, closing connection for', flowId);
                 connection.messageHandlers.clear(); // Clear all message handlers
                 connection.manager.disconnect();
                 this.connections.delete(flowId);
@@ -94,9 +85,7 @@ class GlobalWebSocketSingleton {
     }
 
     forceCloseAll() {
-        console.log('🔌 GLOBAL SINGLETON: Force closing all connections:', this.connections.size);
-        this.connections.forEach((connection, flowId) => {
-            console.log('🔌 GLOBAL SINGLETON: Closing', flowId);
+        this.connections.forEach((connection) => {
             connection.manager.disconnect();
         });
         this.connections.clear();

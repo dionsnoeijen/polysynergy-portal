@@ -22,6 +22,8 @@ import PublishedVariableSettingsForm from "@/components/editor/forms/published-v
 import ExportSharingForm from "@/components/editor/forms/export-sharing-form";
 import ImportPackageForm from "@/components/editor/forms/import-package-form";
 import PlayButtonsForm from "@/components/editor/forms/play-buttons-form";
+import SectionForm from "@/components/editor/forms/section-form";
+import SectionFieldForm from "@/components/editor/forms/section-field-form";
 
 const Form: React.FC = () => {
     const formType = useEditorStore((state) => state.formType);
@@ -134,6 +136,18 @@ const Form: React.FC = () => {
                 formType === FormType.PlayButtonsForm
             ) && (
                 <PlayButtonsForm />
+            )}
+            {(
+                formType === FormType.AddSection ||
+                formType === FormType.EditSection
+            ) && (
+                <SectionForm />
+            )}
+            {(
+                formType === FormType.AddSectionField ||
+                formType === FormType.EditSectionField
+            ) && (
+                <SectionFieldForm />
             )}
         </div>
     );

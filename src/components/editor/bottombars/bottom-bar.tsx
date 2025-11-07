@@ -5,6 +5,7 @@ import Debug from "@/components/editor/bottombars/debug";
 import Output from "@/components/editor/bottombars/output";
 import Info from "@/components/editor/bottombars/Info";
 import Files from "@/components/editor/bottombars/files";
+import SectionDataTables from "@/components/sections/section-data-tables";
 
 const BottomBar: React.FC = (): React.ReactElement => {
     const bottomBarView = useEditorStore((state) => state.bottomBarView);
@@ -18,6 +19,7 @@ const BottomBar: React.FC = (): React.ReactElement => {
                 {bottomBarView === BottomBarView.Output && <Output />}
                 {bottomBarView === BottomBarView.Info && <Info />}
                 {bottomBarView === BottomBarView.Files && <Files />}
+                {bottomBarView === BottomBarView.Sections && <SectionDataTables />}
             </div>
         </>
     );

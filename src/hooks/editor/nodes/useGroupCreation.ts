@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import useEditorStore from "@/stores/editorStore";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
-import { Connection } from "@/types/types";
+import { Connection, NodeType } from "@/types/types";
 import { getNodeBoundsFromState } from "@/utils/positionUtils";
 import { v4 as uuidv4 } from "uuid";
 
@@ -25,17 +25,31 @@ const useGroupCreation = () => {
         const findOutConnectionsByNodeId = useConnectionsStore.getState().findOutConnectionsByNodeId;
         const removeConnections = useConnectionsStore.getState().removeConnections;
         const updateConnection = useConnectionsStore.getState().updateConnection;
+        const getAllNodes = useNodesStore.getState().getNodes;
 
         if (selectedNodes.length < 2) return null;
 
+        // Find all warp gates that belong to the selected nodes and add them to the selection
+        const allNodes = getAllNodes();
+        const warpGatesToInclude = allNodes
+            .filter(node =>
+                node.type === NodeType.WarpGate &&
+                node.warpGate?.sourceNodeId &&
+                selectedNodes.includes(node.warpGate.sourceNodeId)
+            )
+            .map(node => node.id);
+
+        // Combine selected nodes with their warp gates
+        const nodesToGroup = [...selectedNodes, ...warpGatesToInclude];
+
         const parentGroupId = currentOpenGroup;
         if (parentGroupId) {
-            selectedNodes.forEach((nodeId) => {
+            nodesToGroup.forEach((nodeId) => {
                 removeNodeFromGroupStore(parentGroupId, nodeId);
             });
         }
 
-        const bounds = getNodeBoundsFromState(selectedNodes);
+        const bounds = getNodeBoundsFromState(nodesToGroup);
 
         const width = bounds.maxX - bounds.minX;
         const height = bounds.maxY - bounds.minY;
@@ -47,33 +61,26 @@ const useGroupCreation = () => {
         const connectionsToRemove: Connection[] = [];
         const connectionsToAssignToGroup: Connection[] = [];
 
-        selectedNodes.forEach((nodeId) => {
+        nodesToGroup.forEach((nodeId) => {
             const inCon = findInConnectionsByNodeId(nodeId, true, false);
             const outCon = findOutConnectionsByNodeId(nodeId, true, false);
             connectionsToAssignToGroup.push(...inCon, ...outCon);
 
             const filterOutside = (connection: Connection) => {
                 const sourceInside =
-                    selectedNodes.includes(connection.sourceNodeId ?? '') ||
-                    selectedNodes.includes(connection.sourceGroupId ?? '') ||
+                    nodesToGroup.includes(connection.sourceNodeId ?? '') ||
+                    nodesToGroup.includes(connection.sourceGroupId ?? '') ||
                     connection.sourceGroupId === groupId;
 
                 const targetInside =
-                    selectedNodes.includes(connection.targetNodeId ?? '') ||
-                    selectedNodes.includes(connection.targetGroupId ?? '') ||
+                    nodesToGroup.includes(connection.targetNodeId ?? '') ||
+                    nodesToGroup.includes(connection.targetGroupId ?? '') ||
                     connection.targetGroupId === groupId;
 
-                const isGroupToNodeOrGroup =
-                    (connection.sourceGroupId && selectedNodes.includes(connection.targetNodeId ?? '')) ||
-                    (connection.targetGroupId && selectedNodes.includes(connection.sourceNodeId));
+                // Keep only connections where BOTH endpoints are inside the new group
+                const keep = sourceInside && targetInside;
 
-                const isGroupToNewGroup =
-                    connection.sourceGroupId &&
-                    selectedNodes.includes(connection.targetNodeId ?? '');
-
-                const keep = (sourceInside && targetInside) || isGroupToNodeOrGroup;
-
-                return !keep || isGroupToNewGroup;
+                return !keep;
             };
 
             connectionsToRemove.push(
@@ -99,7 +106,7 @@ const useGroupCreation = () => {
             group: {
                 isOpen: true,
                 isHidden: false,
-                nodes: selectedNodes
+                nodes: nodesToGroup
             },
             view: {
                 x: nodesCenterX - 100,
@@ -129,7 +136,7 @@ const useGroupCreation = () => {
         setSelectedNodes([]);
         openGroupStore(groupId);
         showGroup(groupId);
-        disableAllNodesViewExceptByIds([...selectedNodes]);
+        disableAllNodesViewExceptByIds([...nodesToGroup]);
 
         return groupId;
     }, []);

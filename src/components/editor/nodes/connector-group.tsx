@@ -72,14 +72,14 @@ const ConnectorGroup: React.FC<ConnectorGroupProps> = ({
                             }`}
                         >
                             <ChevronRightIcon
-                                className="w-5 h-5 absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 text-sky-600 dark:text-slate-400"
+                                className="w-5 h-5 absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 text-sky-600 dark:text-slate-400 pointer-events-none"
                             />
                         </div>
                     )}
                     <EllipsisHorizontalIcon
                         className={`w-4 h-4 absolute ${
                             isIn ? "left-0" : "right-0"
-                        } top-1/2 transform -translate-y-1/2 cursor-pointer`}
+                        } top-1/2 transform -translate-y-1/2 cursor-pointer pointer-events-none`}
                     />
                 </div>
             ))}

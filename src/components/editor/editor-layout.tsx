@@ -694,7 +694,7 @@ const EditorLayout = ({
                     <button
                         type="button"
                         onClick={toggleCloseOutput}
-                        className={`absolute z-10 top-1 left-0.5 p-3 radius-bl-0 bg-white dark:bg-zinc-800 shadow-sm`}
+                        className={`absolute z-10 top-1 left-0.5 p-3`}
                     ><ArrowLeftEndOnRectangleIcon className="w-4 h-4 text-zinc-700 dark:text-white"/></button>
                     <button
                         onMouseDown={() => startResizing(ResizeWhat.Output)}

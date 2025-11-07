@@ -7,6 +7,7 @@ import LabelPublish from "@/components/editor/sidebars/dock/label-publish";
 import useConnectionsStore from "@/stores/connectionsStore";
 import { nodeHistoryActions } from "@/stores/history";
 import ValueConnected from "./value-connected";
+import useSectionsStore from "@/stores/sectionsStore";
 
 const VariableTypeString: React.FC<VariableTypeProps> = ({
     nodeId,
@@ -56,6 +57,15 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
         [nodeId, variable.handle]
     );
 
+    // Check if this field should show portal sections dropdown
+    const isPortalSectionsField = variable.dock?.metadata &&
+        typeof variable.dock.metadata === 'object' &&
+        'source' in variable.dock.metadata &&
+        variable.dock.metadata.source === 'portal_sections';
+
+    // Get sections from store if needed
+    const sections = useSectionsStore((state) => state.sections);
+
     return (
         <>
         {
@@ -66,7 +76,21 @@ const VariableTypeString: React.FC<VariableTypeProps> = ({
                     {publishedButton && (<LabelPublish nodeId={nodeId} variable={variable} />)}
                     <Field>
                         <FieldGroup>
-                        {variable.dock && variable.dock.select_values ? (
+                        {isPortalSectionsField ? (
+                            <Select
+                                disabled={variable?.dock?.enabled === false}
+                                onChange={handleChange}
+                                value={variable.value as string || ""}
+                                className={`dark:text-white ${variable.published && inDock ? 'shadow-[0_0_0_2px_rgb(59_130_246)] dark:shadow-[0_0_0_2px_rgb(96_165_250)]' : ''}`}
+                            >
+                                <option value="">{variable.dock?.placeholder || "Select a section..."}</option>
+                                {sections.map((section) => (
+                                    <option key={section.id} value={section.id}>
+                                        {section.label} ({section.handle})
+                                    </option>
+                                ))}
+                            </Select>
+                        ) : variable.dock && variable.dock.select_values ? (
                             <Select
                                 disabled={variable?.dock?.enabled === false}
                                 onChange={handleChange}

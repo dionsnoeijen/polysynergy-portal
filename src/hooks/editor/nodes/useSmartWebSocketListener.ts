@@ -30,6 +30,9 @@ type ExecutionMessage = {
     member_index?: number;
     // Rich content
     html_content?: string;
+    // Stage information
+    stage?: string;
+    sub_stage?: string;
 };
 
 const processedEvents = new Set<string>();
@@ -465,7 +468,9 @@ function getOrCreateMessageHandler() {
                         timestamp: new Date().toISOString(),
                         status: 'running',
                         startTime: Date.now(),
-                        lastEventTime: Date.now()
+                        lastEventTime: Date.now(),
+                        stage: message.stage,
+                        subStage: message.sub_stage
                     });
                 }
 
@@ -632,13 +637,19 @@ function getOrCreateMessageHandler() {
                             const originalNodeId = lastNode.id.replace(/-\d+$/, '');
 
                             try {
+                                // Get stage from message or run store
+                                const runsStore = useRunsStore.getState();
+                                const run = runsStore.runs.find(r => r.run_id === message.run_id);
+                                const stage = message.stage || run?.stage || 'mock';
+                                const subStage = message.sub_stage || run?.subStage || 'mock';
+
                                 const executeResult = await getNodeExecutionDetails(
                                     activeVersionId,
                                     message.run_id!,
                                     originalNodeId,
                                     lastNode.order,
-                                    'mock',
-                                    'mock'
+                                    stage,
+                                    subStage
                                 );
 
                                 // Update mock result for the node
@@ -810,13 +821,19 @@ function getOrCreateMessageHandler() {
                         const originalNodeId = lastNode.id.replace(/-\d+$/, '');
 
                         try {
+                            // Get stage from message or run store
+                            const runsStore = useRunsStore.getState();
+                            const run = runsStore.runs.find(r => r.run_id === message.run_id);
+                            const stage = message.stage || run?.stage || 'mock';
+                            const subStage = message.sub_stage || run?.subStage || 'mock';
+
                             const executeResult = await getNodeExecutionDetails(
                                 activeVersionId,
                                 message.run_id!,
                                 originalNodeId,
                                 lastNode.order,
-                                'mock',
-                                'mock' // Default to mock substage, could be enhanced
+                                stage,
+                                subStage
                             );
 
                             // Store the result for the last executed node

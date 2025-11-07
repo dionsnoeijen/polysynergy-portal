@@ -7,9 +7,10 @@ import StageEditor from "@/components/editor/forms/environments/stage-editor";
 import PublishMatrix from "@/components/editor/forms/environments/publish-matrix";
 import useEditorStore from "@/stores/editorStore";
 import ApiKeyEditor from "@/components/editor/forms/environments/api-key-editor";
+import DatabaseEditor from "@/components/editor/forms/database/database-editor";
 
 const ProjectPublishForm: React.FC = (): React.ReactElement => {
-    const [activeTab, setActiveTab] = useState<'environments' | 'publish' | 'apikeys'>('environments');
+    const [activeTab, setActiveTab] = useState<'environments' | 'publish' | 'apikeys' | 'database'>('environments');
     const closeForm = useEditorStore((state) => state.closeForm);
 
     return (
@@ -56,6 +57,17 @@ const ProjectPublishForm: React.FC = (): React.ReactElement => {
                 >
                     API Keys
                 </button>
+                <button
+                    type="button"
+                    className={`px-4 py-2 text-sm font-medium transition ${
+                        activeTab === 'database'
+                            ? 'border-b-2 border-sky-500 dark:border-white text-sky-500 dark:text-white'
+                            : 'text-sky-500/60 hover:text-sky-500 dark:text-white/60 dark:hover:text-white'
+                    }`}
+                    onClick={() => setActiveTab('database')}
+                >
+                    Database
+                </button>
             </div>
 
             {activeTab === 'environments' && <StageEditor />}
@@ -63,6 +75,8 @@ const ProjectPublishForm: React.FC = (): React.ReactElement => {
             {activeTab === 'publish' && <PublishMatrix />}
 
             {activeTab === 'apikeys' && <ApiKeyEditor />}
+
+            {activeTab === 'database' && <DatabaseEditor />}
         </section>
     );
 };

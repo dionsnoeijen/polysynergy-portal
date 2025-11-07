@@ -3,7 +3,8 @@ import {
     CodeBracketIcon,
     CodeBracketSquareIcon,
     InformationCircleIcon,
-    FolderIcon
+    FolderIcon,
+    TableCellsIcon
 } from "@heroicons/react/24/outline";
 import useEditorStore, { BottomBarView } from "@/stores/editorStore";
 
@@ -43,6 +44,14 @@ const BottomBarMenu: React.FC = (): React.ReactElement => {
                     title="File Manager"
                 >
                     <FolderIcon className={'w-4 h-4'} />
+                </button>
+                <button
+                    type={"button"}
+                    className={`w-full text-lg font-semibold text-white rounded-sm p-1 mt-1 ${bottomBarView === BottomBarView.Sections ? 'bg-sky-500' : 'bg-sky-300 dark:bg-zinc-500'}`}
+                    onMouseDown={() => setBottomBarView(BottomBarView.Sections)}
+                    title="Sections"
+                >
+                    <TableCellsIcon className={'w-4 h-4'} />
                 </button>
             </div>
         </div>

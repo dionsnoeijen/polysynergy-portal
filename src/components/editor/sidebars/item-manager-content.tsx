@@ -7,6 +7,8 @@ import ServiceTree from "@/components/editor/sidebars/trees/service-tree";
 import BlueprintTree from "@/components/editor/sidebars/trees/blueprint-tree";
 import SecretTree from "@/components/editor/sidebars/trees/secret-tree";
 import ProjectEnvVarTree from "@/components/editor/sidebars/trees/project-env-var-tree";
+import SectionTree from "@/components/editor/sidebars/trees/section-tree";
+import SectionFieldTree from "@/components/editor/sidebars/trees/section-field-tree";
 
 export default function ItemManagerContent({
     className,
@@ -22,6 +24,8 @@ export default function ItemManagerContent({
             <ServiceTree />
             <SecretTree />
             <ProjectEnvVarTree />
+            <SectionTree />
+            <SectionFieldTree />
             {/* Disabled for now: <ProjectVariableTree />*/}
         </div>
     );

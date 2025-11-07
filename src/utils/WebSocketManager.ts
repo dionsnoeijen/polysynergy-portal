@@ -242,9 +242,10 @@ export class WebSocketManager {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private log(...args: unknown[]): void {
     if (this.config.debug) {
-      console.log('[WebSocketManager]', ...args);
+      // console.log('[WebSocketManager]', ...args);
     }
   }
 

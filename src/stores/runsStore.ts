@@ -10,6 +10,8 @@ export interface Run {
     startTime?: number;
     lastEventTime?: number;
     duration?: number;
+    stage?: string;
+    subStage?: string;
 }
 
 export interface RunsStore {

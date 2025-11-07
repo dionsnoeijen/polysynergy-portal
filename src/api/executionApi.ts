@@ -109,11 +109,17 @@ export const clearAllRuns = async (
     return response.json();
 }
 
+export interface MockNodesResponse {
+    mock_nodes: Array<Record<string, unknown>>;
+    stage: string;
+    sub_stage: string;
+}
+
 export const getMockNodesForRun = async (
     flowId: string,
     runId: string,
     projectId: string,
-) => {
+): Promise<MockNodesResponse> => {
     const idToken = getIdToken();
     const response = await fetch(`${config.LOCAL_API_URL}/execution/${flowId}/${runId}/mock-nodes/?project_id=${projectId}`, {
         headers: {

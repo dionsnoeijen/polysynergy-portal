@@ -49,6 +49,8 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     const [historicalNodes, setHistoricalNodes] = useState<Record<string, MockNode[]>>({});
     const [isExecuting, setIsExecuting] = useState(false);
     const [showClearModal, setShowClearModal] = useState(false);
+    // Cache stage info per run for immediate access
+    const [runStageCache, setRunStageCache] = useState<Record<string, { stage: string; subStage: string }>>({});
     
     
     // Fetch available runs
@@ -199,9 +201,14 @@ const NodeOutput: React.FC = (): React.ReactElement => {
     // Fetch historical nodes for a run
     const fetchHistoricalNodes = async (runId: string) => {
         if (!activeVersionId || !activeProjectId) return;
-        
+
         try {
-            const response = await getAllNodesForRun(activeVersionId, runId, activeProjectId);
+            // Get stage information from the run
+            const run = runsStoreRuns.find(r => r.run_id === runId);
+            const stage = run?.stage || 'mock';
+            const subStage = run?.subStage || 'mock';
+
+            const response = await getAllNodesForRun(activeVersionId, runId, activeProjectId, stage, subStage);
             const nodes = response.nodes || [];
             
             // Get node metadata from the nodes store
@@ -284,16 +291,36 @@ const NodeOutput: React.FC = (): React.ReactElement => {
                     if (!activeVersionId || !activeProjectId) return;
                     const mockNodesResponse = await getMockNodesForRun(activeVersionId, runId, activeProjectId);
                     const storedMockNodes = mockNodesResponse.mock_nodes;
-                    
+
+                    // Update run with stage information from the response
+                    if (mockNodesResponse.stage && mockNodesResponse.sub_stage) {
+                        // Update local cache immediately for synchronous access
+                        setRunStageCache(prev => ({
+                            ...prev,
+                            [runId]: {
+                                stage: mockNodesResponse.stage,
+                                subStage: mockNodesResponse.sub_stage
+                            }
+                        }));
+
+                        // Also update the runs store
+                        const runsStore = useRunsStore.getState();
+                        runsStore.updateRunFromWebSocket(runId, {
+                            stage: mockNodesResponse.stage,
+                            subStage: mockNodesResponse.sub_stage
+                        });
+                    }
+
                     if (storedMockNodes && storedMockNodes.length > 0) {
                         console.log("Using stored mock nodes for perfect recreation:", storedMockNodes.length);
-                        
+
                         // Apply stored mock nodes directly
-                        storedMockNodes.forEach((node: MockNode) => {
+                        const mockNodes = storedMockNodes as MockNode[];
+                        mockNodes.forEach((node: MockNode) => {
                             useMockStore.getState().addOrUpdateMockNode(node);
                         });
                         useMockStore.getState().setHasMockData(true);
-                        setHistoricalNodes(prev => ({ ...prev, [runId]: storedMockNodes }));
+                        setHistoricalNodes(prev => ({ ...prev, [runId]: mockNodes }));
                         
                         // Set as selected and load connection visual state
                         setSelectedRunId(runId);
@@ -384,14 +411,20 @@ const NodeOutput: React.FC = (): React.ReactElement => {
         try {
             // Parse the node ID to get the base node ID (remove the order suffix)
             const baseNodeId = node.id.replace(/-\d+$/, '');
-            
+
+            // Get stage information from cache first, then run store, then default to mock
+            const cachedStage = runStageCache[runId];
+            const run = runsStoreRuns.find(r => r.run_id === runId);
+            const stage = cachedStage?.stage || run?.stage || 'mock';
+            const subStage = cachedStage?.subStage || run?.subStage || 'mock';
+
             const data = await getNodeExecutionDetails(
                 activeVersionId as string,
                 runId,
                 baseNodeId,
                 node.order,
-                'mock',
-                'mock'
+                stage,
+                subStage
             );
 
             // Cache the fetched data

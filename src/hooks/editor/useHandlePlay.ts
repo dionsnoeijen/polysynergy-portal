@@ -32,7 +32,7 @@ export const useHandlePlay = () => {
     // const setBottomBarView = useEditorStore((state) => state.setBottomBarView);
     // const updateNodeVariable = useNodesStore((state) => state.updateNodeVariable);
 
-    return async (e: React.MouseEvent, nodeId: string, subStage: string = 'mock') => {
+    return async (e: React.MouseEvent, nodeId: string, subStage: string = 'mock', stage: string = 'mock') => {
         e.preventDefault();
         e.stopPropagation();
         window.dispatchEvent(new CustomEvent('switch-to-output-tab'));
@@ -93,10 +93,10 @@ export const useHandlePlay = () => {
                     activeProjectId,
                     activeVersionId,
                     nodeId,
-                    'mock',
+                    stage,
                     subStage
                 );
-                
+
                 // Store the run_id to track this specific execution
                 const runId = executionResult.run_id;
 
@@ -110,7 +110,9 @@ export const useHandlePlay = () => {
                         timestamp: new Date().toISOString(),
                         status: 'running' as const,
                         startTime: Date.now(),
-                        lastEventTime: Date.now()
+                        lastEventTime: Date.now(),
+                        stage: stage,
+                        subStage: subStage
                     };
                     useRunsStore.getState().addNewRun(newRun);
                 }
@@ -149,7 +151,7 @@ export const useHandlePlay = () => {
                     result.run_id,
                     lastNode.id,
                     lastNode.order,
-                    'mock',
+                    stage,
                     subStage
                 );
 

@@ -1,5 +1,6 @@
 import { WebSocketManager, ConnectionStatus } from './WebSocketManager';
 import config from '@/config';
+import { getIdToken } from '@/api/auth/authToken';
 
 interface GlobalWebSocketConnection {
     manager: WebSocketManager;
@@ -17,7 +18,8 @@ class GlobalWebSocketSingleton {
             return this.connections.get(flowId)!;
         }
 
-        const websocketUrl = `${config.WEBSOCKET_URL}/execution/${flowId}`;
+        const token = getIdToken();
+        const websocketUrl = `${config.WEBSOCKET_URL}/execution/${flowId}?token=${token}`;
 
         const manager = new WebSocketManager(websocketUrl, {
             debug: true,

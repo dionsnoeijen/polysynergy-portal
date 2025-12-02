@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useMemo, useState} from "react";
 import useNodesStore from "@/stores/nodesStore";
 import useChatViewStore from "@/stores/chatViewStore";
 import useEditorStore from "@/stores/editorStore";
-import useConnectionsStore from "@/stores/connectionsStore";
 
 import PromptField from "@/components/editor/chat/components/prompt-field";
 import ChatTabs from "@/components/editor/chat/components/chat-tabs";
@@ -31,7 +30,6 @@ const Chat: React.FC<ChatProps> = ({ showBackButton = false, onBackClick, isEndU
 
     // Select stable primitive data from stores
     const nodes = useNodesStore(s => s.nodes);
-    const connections = useConnectionsStore(s => s.connections);
     const activeTeamMembers = useChatViewStore(s => s.activeTeamMembers);
     const updateNodeVariable = useNodesStore((s) => s.updateNodeVariable);
     const setWaitingForResponse = useChatViewStore((s) => s.setWaitingForResponse);
@@ -119,12 +117,11 @@ const Chat: React.FC<ChatProps> = ({ showBackButton = false, onBackClick, isEndU
         });
     }, [connectionStatus, isConnected, activeVersionId, activeProjectId]);
 
-    // Check for storage configuration - reactive to both nodes AND connections
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- connections is needed for traceStorageConfiguration to detect storage node connections
+    // Check for storage configuration
     const hasStorage = useMemo(() => {
         if (!selectedPromptNodeId) return false;
         return !!traceStorageConfiguration(selectedPromptNodeId);
-    }, [selectedPromptNodeId, connections]);
+    }, [selectedPromptNodeId]);
     
     // Get active session from prompt node
     const activeSession = useMemo(() => {

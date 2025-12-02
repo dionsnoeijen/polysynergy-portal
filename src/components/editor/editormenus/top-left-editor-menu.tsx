@@ -27,11 +27,9 @@ const MenuButton: React.FC<{
     disabled?: boolean;
     active?: boolean;
     accentColor: string;
-    lightBg: string;
-    lightBgHover: string;
     mediumBg: string;
     'data-tour-id'?: string;
-}> = ({ onClick, onMouseDown, title, icon, disabled, active, accentColor, lightBg, lightBgHover, mediumBg, 'data-tour-id': tourId }) => {
+}> = ({ onClick, onMouseDown, title, icon, disabled, active, accentColor, mediumBg, 'data-tour-id': tourId }) => {
     const [isHovered, setIsHovered] = React.useState(false);
 
     return (
@@ -58,17 +56,6 @@ const MenuButton: React.FC<{
 const TopLeftEditorMenu: React.FC = () => {
     const { logo_url, accent_color } = useBranding();
 
-    // Helper function to determine if color is light or dark
-    const isLightColor = (hexColor: string): boolean => {
-        const hex = hexColor.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
-        // Calculate relative luminance
-        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        return luminance > 0.5;
-    };
-
     // Helper to convert hex to rgba
     const hexToRgba = (hex: string, opacity: number) => {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -79,7 +66,6 @@ const TopLeftEditorMenu: React.FC = () => {
         return `rgba(${r}, ${g}, ${b}, ${opacity})`;
     };
 
-    const isLight = isLightColor(accent_color);
     const lightBg = hexToRgba(accent_color, 0.1);  // 10% for light background
     const lightBgHover = hexToRgba(accent_color, 0.2);  // 20% for hover
     const mediumBg = hexToRgba(accent_color, 0.5);  // 50% for medium background
@@ -196,8 +182,6 @@ const TopLeftEditorMenu: React.FC = () => {
                         onClick={() => canUndo && undo()}
                         icon={<ArrowUturnLeftIcon className="w-4 h-4"/>}
                         accentColor={accent_color}
-                        lightBg={lightBg}
-                        lightBgHover={lightBgHover}
                         mediumBg={mediumBg}
                         data-tour-id="undo-button"
                     />
@@ -207,8 +191,6 @@ const TopLeftEditorMenu: React.FC = () => {
                         onClick={() => canRedo && redo()}
                         icon={<ArrowUturnRightIcon className="w-4 h-4"/>}
                         accentColor={accent_color}
-                        lightBg={lightBg}
-                        lightBgHover={lightBgHover}
                         mediumBg={mediumBg}
                         data-tour-id="redo-button"
                     />
@@ -233,8 +215,6 @@ const TopLeftEditorMenu: React.FC = () => {
                         title={'Draw (D)'}
                         icon={<PaintBrushIcon className="w-4 h-4"/>}
                         accentColor={accent_color}
-                        lightBg={lightBg}
-                        lightBgHover={lightBgHover}
                         mediumBg={mediumBg}
                         data-tour-id="draw-button"
                     />
@@ -249,8 +229,6 @@ const TopLeftEditorMenu: React.FC = () => {
                         title={'Pan mode - Click and drag to pan canvas (Space)'}
                         icon={<HandRaisedIcon className="w-4 h-4"/>}
                         accentColor={accent_color}
-                        lightBg={lightBg}
-                        lightBgHover={lightBgHover}
                         mediumBg={mediumBg}
                         data-tour-id="pan-button"
                     />
@@ -260,8 +238,6 @@ const TopLeftEditorMenu: React.FC = () => {
                         title={'Box select (B)'}
                         icon={<StopIcon className="w-4 h-4"/>}
                         accentColor={accent_color}
-                        lightBg={lightBg}
-                        lightBgHover={lightBgHover}
                         mediumBg={mediumBg}
                         data-tour-id="box-select-button"
                     />
@@ -271,8 +247,6 @@ const TopLeftEditorMenu: React.FC = () => {
                         title={'Select mode - Click nodes to select'}
                         icon={<CursorArrowRaysIcon className="w-4 h-4"/>}
                         accentColor={accent_color}
-                        lightBg={lightBg}
-                        lightBgHover={lightBgHover}
                         mediumBg={mediumBg}
                         data-tour-id="pointer-select-button"
                     />

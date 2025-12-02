@@ -44,7 +44,7 @@ export default function RunHistorySelector() {
         if (isOpen) {
             fetchRuns();
         }
-    }, [isOpen, activeVersionId]);
+    }, [isOpen, activeVersionId, activeProjectId]);
 
     const handleRunSelect = async (runId: string) => {
         if (runId === 'live') {

@@ -62,6 +62,7 @@ const CollapsibleTeamResponse: React.FC<CollapsibleTeamResponseProps> = ({
                     {/* Avatar */}
                     {memberAvatar && (
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-zinc-700 flex items-center justify-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={memberAvatar}
                                 alt={memberName}

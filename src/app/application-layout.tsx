@@ -37,6 +37,7 @@ export function ApplicationLayout({
             sidebar={
                 <Sidebar>
                     <div className="flex items-center p-4 border-b border-zinc-200 dark:border-zinc-700">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={logo_url || "/logo-with-text.svg"}
                             alt="Logo"

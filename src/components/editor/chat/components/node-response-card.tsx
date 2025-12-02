@@ -28,6 +28,7 @@ const NodeResponseCard: React.FC<{
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {agentAvatar ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={agentAvatar}
                 alt={nodeName}

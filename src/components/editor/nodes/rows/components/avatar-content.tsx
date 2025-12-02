@@ -33,6 +33,7 @@ const AvatarContent: React.FC<AvatarContentProps> = ({ logic }) => {
             case 'hasImage':
                 return (
                     <div className="w-full flex justify-center items-center bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={logic.value as unknown as string}
                             alt="Avatar"

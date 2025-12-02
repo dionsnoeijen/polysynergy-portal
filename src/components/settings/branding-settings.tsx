@@ -7,12 +7,10 @@ import { Subheading } from '@/components/heading';
 import { Text } from '@/components/text';
 import { useBranding } from '@/contexts/branding-context';
 import { updateBrandingSettings, uploadLogo } from '@/api/brandingApi';
-import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import useAccountsStore from '@/stores/accountsStore';
 import config from '@/config';
 
 export default function BrandingSettings() {
-    const auth = useUnifiedAuth();
     const { logo_url, accent_color, reload } = useBranding();
     const loggedInAccount = useAccountsStore((state) => state.loggedInAccount);
 
@@ -138,7 +136,8 @@ export default function BrandingSettings() {
                     <div className="flex items-center gap-4">
                         {logoPreview && (
                             <div className="flex items-center justify-center w-16 h-16 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-800">
-                                <img
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
                                     src={logoPreview}
                                     alt="Logo"
                                     className="max-w-full max-h-full object-contain"

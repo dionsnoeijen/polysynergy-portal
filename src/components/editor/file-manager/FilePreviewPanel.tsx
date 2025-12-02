@@ -100,6 +100,7 @@ const FilePreview: React.FC<{ file: FileInfo }> = memo(({ file }) => {
                             <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
                         </div>
                     )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src={imageUrl}
                         alt={file.name}

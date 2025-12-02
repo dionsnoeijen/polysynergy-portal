@@ -161,6 +161,7 @@ const GridItem: React.FC<GridItemProps> = memo(({
                                             <div className="w-4 h-4 border-2 border-sky-600 dark:border-white border-t-transparent rounded-full animate-spin" />
                                         </div>
                                     )}
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={imageUrl}
                                         alt={fileInfo.name}

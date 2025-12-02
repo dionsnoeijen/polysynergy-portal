@@ -170,6 +170,7 @@ const VariableTypeImage: React.FC<VariableTypeProps> = ({
                                 {/* Image preview */}
                                 {previewUrl && (
                                     <div className="space-y-2">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             src={previewUrl}
                                             alt="Preview"

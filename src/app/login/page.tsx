@@ -99,6 +99,7 @@ export default function LoginPage() {
                 <div className="text-center mb-8">
                     {/* Logo */}
                     <div className="flex justify-center mb-6">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={logo_url || "/ps-logo-simple-color.svg"}
                             alt="Logo"

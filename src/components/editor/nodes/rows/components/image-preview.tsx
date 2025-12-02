@@ -121,6 +121,7 @@ const ImagePreview: React.FC<Props> = ({ logic }) => {
                             <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
                         </div>
                     )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src={imageData}
                         alt="Image preview"

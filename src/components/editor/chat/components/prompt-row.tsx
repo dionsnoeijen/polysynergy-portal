@@ -48,6 +48,7 @@ export default function PromptRow({ message }: Props) {
                 className="relative w-24 h-24 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setLightboxImage(getImageUrl(imagePath))}
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getImageUrl(imagePath)}
                   alt={imagePath.split('/').pop() || 'Uploaded image'}
@@ -78,6 +79,7 @@ export default function PromptRow({ message }: Props) {
           className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4"
           onClick={() => setLightboxImage(null)}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={lightboxImage}
             alt="Full size"

@@ -1,21 +1,15 @@
+'use client';
+
 import {Divider} from '@/components/divider'
 import {Heading, Subheading} from '@/components/heading'
 import {Text} from '@/components/text'
-import type {Metadata} from 'next'
 import ThemeToggle from "@/components/theme-toggle";
 import {ApplicationLayout} from "@/app/application-layout";
-
-export const metadata: Metadata = {
-    title: 'Settings',
-}
+import BrandingSettings from "@/components/settings/branding-settings";
 
 export default function Settings() {
     return (
         <ApplicationLayout>
-            <Heading className="mx-auto max-w-4xl">Good afternoon</Heading>
-
-            <Divider className="my-10" soft/>
-
             <form method="post" className="mx-auto max-w-4xl">
                 <Heading>Settings</Heading>
                 <Divider className="my-10 mt-6"/>
@@ -28,6 +22,10 @@ export default function Settings() {
                         <ThemeToggle/>
                     </div>
                 </section>
+
+                <Divider className="my-10" soft/>
+
+                <BrandingSettings />
 
                 <Divider className="my-10" soft/>
 

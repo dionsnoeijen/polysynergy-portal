@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from "react-oidc-context";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import React, { useState } from "react";
 import { Input } from "@/components/input";
 import { Button } from "@/components/button";
@@ -10,7 +10,7 @@ import {activateClientAccount, createClientAccount} from "@/api/clientAccountsAp
 import Modal from "@/components/modal";
 
 export default function CompleteAccount({isAccountSynced, isAccountActive}: {isAccountSynced: boolean, isAccountActive: boolean}) {
-    const auth = useAuth();
+    const auth = useUnifiedAuth();
     const [tenantName, setTenantName] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');

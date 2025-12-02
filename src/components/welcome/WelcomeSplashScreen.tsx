@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import { useBranding } from '@/contexts/branding-context';
 
 const Brain3D = dynamic(() => import('./Brain3D'), {
   ssr: false,
@@ -18,6 +19,7 @@ interface WelcomeSplashScreenProps {
 }
 
 export default function WelcomeSplashScreen({ onClose }: WelcomeSplashScreenProps) {
+  const { logo_url } = useBranding();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -54,8 +56,8 @@ export default function WelcomeSplashScreen({ onClose }: WelcomeSplashScreenProp
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <Image
-              src="/logo-with-text.svg"
-              alt="PolySynergy"
+              src={logo_url || "/logo-with-text.svg"}
+              alt="Logo"
               width={300}
               height={75}
               className="brightness-0 invert"

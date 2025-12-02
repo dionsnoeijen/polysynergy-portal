@@ -28,6 +28,10 @@ const ConnectionComponent: React.FC<Props> = ({ connection }) => {
 
     // Need chatMode for rendering - subscribe
     const chatMode = useEditorStore((state) => state.chatMode);
+    const isDrawingConnection = useEditorStore((state) => state.isDrawingConnection);
+
+    // Check if this is the connection being drawn
+    const isBeingDrawn = connection.id === isDrawingConnection;
 
     // PERFORMANCE: Check service status on-demand instead of subscribing
     const isConnectionInService = React.useMemo(() => {
@@ -164,7 +168,7 @@ const ConnectionComponent: React.FC<Props> = ({ connection }) => {
             <svg
                 style={{
                     position: "absolute",
-                    pointerEvents: "auto",
+                    pointerEvents: isBeingDrawn ? "none" : "auto",
                     overflow: "visible",
                     zIndex: 10,
                     opacity: isReady ? 1 : 0,

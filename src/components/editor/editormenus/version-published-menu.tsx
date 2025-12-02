@@ -15,6 +15,7 @@ import {
     AdjustmentsHorizontalIcon,
     RocketLaunchIcon
 } from '@heroicons/react/24/outline';
+import { useBranding } from '@/contexts/branding-context';
 
 export default function VersionPublishedMenu() {
 
@@ -24,61 +25,113 @@ export default function VersionPublishedMenu() {
     const hasMockData = useMockStore((state) => state.hasMockData);
     const clearMockStore = useMockStore((state) => state.clearMockStore);
 
+    const { accent_color } = useBranding();
+
+    // Helper to convert hex to rgba
+    const hexToRgba = (hex: string, opacity: number) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!result) return `rgba(14, 165, 233, ${opacity})`;
+        const r = parseInt(result[1], 16);
+        const g = parseInt(result[2], 16);
+        const b = parseInt(result[3], 16);
+        return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    };
+
+    const lightBg = hexToRgba(accent_color, 0.1);
+    const lightBgHover = hexToRgba(accent_color, 0.2);
+    const borderColor = hexToRgba(accent_color, 0.6);
+    const dividerColor = hexToRgba(accent_color, 0.3);
+
     return (
         <div
-            className="absolute bottom-2 right-12 flex items-center gap-2 p-2 bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-lg z-20">
-            
+            className="absolute bottom-2 right-12 flex items-center gap-2 p-2 dark:bg-zinc-800/80 dark:border-white/25 rounded-lg z-20"
+            style={{
+                backgroundColor: lightBg,
+                borderWidth: '1px',
+                borderStyle: 'solid',
+                borderColor: borderColor
+            }}
+        >
+
             {/* Clear Mock Data Button */}
-            <button 
+            <button
                 disabled={!hasMockData}
-                className={`p-1 rounded-md disabled:cursor-not-allowed ${
-                    hasMockData 
-                        ? 'hover:bg-sky-200 dark:hover:bg-zinc-400 bg-sky-200 dark:bg-zinc-600' 
-                        : 'opacity-50'
-                }`}
-                title="Clear mock data" 
+                className={`p-1 rounded-md disabled:cursor-not-allowed ${!hasMockData ? 'opacity-50' : 'dark:hover:bg-zinc-400 dark:bg-zinc-600'}`}
+                style={{
+                    backgroundColor: hasMockData ? lightBgHover : 'transparent'
+                }}
+                onMouseEnter={(e) => hasMockData && (e.currentTarget.style.backgroundColor = lightBgHover)}
+                onMouseLeave={(e) => hasMockData && (e.currentTarget.style.backgroundColor = lightBgHover)}
+                title="Clear mock data"
                 onClick={clearMockStore}
                 data-tour-id="clear-mock-data-button"
             >
-                <ArrowUturnUpIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+                <ArrowUturnUpIcon className="h-5 w-5 dark:text-white/70" style={{ color: accent_color }}/>
             </button>
-            
+
             {/* Published Variables Button */}
-            <button 
-                className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" 
-                title="Published variables" 
+            <button
+                className="p-1 rounded-md dark:hover:bg-zinc-400"
+                style={{ backgroundColor: 'transparent' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = lightBgHover}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                title="Published variables"
                 onClick={() => openForm(FormType.PublishedVariableForm)}
                 data-tour-id="published-variable-button"
             >
-                <AdjustmentsHorizontalIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+                <AdjustmentsHorizontalIcon className="h-5 w-5 dark:text-white/70" style={{ color: accent_color }}/>
             </button>
-            
+
             {/* Play Buttons Button */}
             <button
-                className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400"
+                className="p-1 rounded-md dark:hover:bg-zinc-400"
+                style={{ backgroundColor: 'transparent' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = lightBgHover}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 title="Play buttons"
                 onClick={() => openForm(FormType.PlayButtonsForm)}
                 data-tour-id="play-buttons-button"
             >
-                <Squares2X2Icon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+                <Squares2X2Icon className="h-5 w-5 dark:text-white/70" style={{ color: accent_color }}/>
             </button>
 
             {/* Divider */}
-            <div className="w-px h-6 bg-sky-300 dark:bg-zinc-600 mx-1"></div>
+            <div className="w-px h-6 dark:bg-zinc-600 mx-1" style={{ backgroundColor: dividerColor }}></div>
 
             {/* Export Button */}
-            <button className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" title="Export sharing package" onClick={() => openForm(FormType.ExportSharing)}>
-                <ArrowDownTrayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+            <button
+                className="p-1 rounded-md dark:hover:bg-zinc-400"
+                style={{ backgroundColor: 'transparent' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = lightBgHover}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                title="Export sharing package"
+                onClick={() => openForm(FormType.ExportSharing)}
+            >
+                <ArrowDownTrayIcon className="h-5 w-5 dark:text-white/70" style={{ color: accent_color }}/>
             </button>
 
             {/* Import Button */}
-            <button className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" title="Import package" onClick={() => openForm(FormType.ImportPackage)}>
-                <ArrowUpTrayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+            <button
+                className="p-1 rounded-md dark:hover:bg-zinc-400"
+                style={{ backgroundColor: 'transparent' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = lightBgHover}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                title="Import package"
+                onClick={() => openForm(FormType.ImportPackage)}
+            >
+                <ArrowUpTrayIcon className="h-5 w-5 dark:text-white/70" style={{ color: accent_color }}/>
             </button>
 
             {/* Publish Button */}
-            <button className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400" title="Publish" onClick={() => openForm(FormType.ProjectPublish)}>
-                <RocketLaunchIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+            <button
+                className="p-1 rounded-md dark:hover:bg-zinc-400"
+                style={{ backgroundColor: 'transparent' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = lightBgHover}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                title="Publish"
+                onClick={() => openForm(FormType.ProjectPublish)}
+            >
+                <RocketLaunchIcon className="h-5 w-5 dark:text-white/70" style={{ color: accent_color }}/>
             </button>
             
         </div>

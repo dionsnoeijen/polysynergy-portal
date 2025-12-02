@@ -2,7 +2,8 @@ import '@/styles/animations.css';  // MUST be imported FIRST - global animations
 import '@/styles/tailwind.css';
 import Script from 'next/script'
 import {ThemeProvider} from '@/contexts/theme-context'
-import {AuthContextProvider} from '@/contexts/auth-context'
+import {BrandingProvider} from '@/contexts/branding-context'
+import {UnifiedAuthProvider} from '@/contexts/unified-auth-context'
 import AuthHandler from '@/components/auth/auth-handler'
 import AuthWrapper from '@/components/auth/auth-wrapper'
 import type {ReactNode} from 'react'
@@ -46,10 +47,12 @@ export default function RootLayout({children}: { children: ReactNode }) {
         </head>
             <body>
                 <ThemeProvider>
-                    <AuthContextProvider>
-                        <AuthHandler/>
-                        <AuthWrapper><Global401Handler>{children}</Global401Handler></AuthWrapper>
-                    </AuthContextProvider>
+                    <BrandingProvider>
+                        <UnifiedAuthProvider>
+                            <AuthHandler/>
+                            <AuthWrapper><Global401Handler>{children}</Global401Handler></AuthWrapper>
+                        </UnifiedAuthProvider>
+                    </BrandingProvider>
                 </ThemeProvider>
             </body>
         </html>

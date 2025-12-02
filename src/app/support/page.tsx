@@ -9,11 +9,11 @@ import { Button } from "@/components/button";
 import { Text } from "@/components/text";
 import { Divider } from "@/components/divider";
 import { useState } from "react";
-import { useAuth } from "react-oidc-context";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import { sendFeedback } from '@/api/feedbackApi';
 
 export default function SupportPage() {
-  const auth = useAuth();
+  const auth = useUnifiedAuth();
   const [email, setEmail] = useState(auth.user?.profile.email as string || '');
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

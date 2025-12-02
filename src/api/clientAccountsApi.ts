@@ -29,7 +29,8 @@ export const fetchClientAccounts = async (): Promise<Account[]> => {
 
 export const createClientAccount = async (
     clientAccountData: {
-        cognito_id: string,
+        cognito_id?: string,
+        external_user_id?: string,
         tenant_name: string,
         first_name: string,
         last_name: string,
@@ -38,6 +39,14 @@ export const createClientAccount = async (
     }
 ): Promise<Response> => {
     const idToken = getIdToken();
+
+    // Map cognito_id to external_user_id for standalone mode
+    const requestData = { ...clientAccountData };
+    if (config.AUTH_MODE === 'standalone' && requestData.cognito_id) {
+        requestData.external_user_id = requestData.cognito_id;
+        delete requestData.cognito_id;
+    }
+
     return await fetch(`${config.LOCAL_API_URL}/accounts/`,
         {
             method: 'POST',
@@ -46,7 +55,7 @@ export const createClientAccount = async (
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
             },
-            body: JSON.stringify(clientAccountData)
+            body: JSON.stringify(requestData)
         }
     );
 }

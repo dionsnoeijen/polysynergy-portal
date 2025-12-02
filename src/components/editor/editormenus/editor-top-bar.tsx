@@ -11,7 +11,7 @@ import {
     BookOpenIcon,
     ChatBubbleBottomCenterTextIcon
 } from '@heroicons/react/24/outline';
-import { useAuth } from 'react-oidc-context';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { sendFeedback } from '@/api/feedbackApi';
 import Modal from '@/components/modal';
 import { Input } from '@/components/input';
@@ -21,6 +21,8 @@ import useEditorStore from '@/stores/editorStore';
 import useDocumentationStore from '@/stores/documentationStore';
 import useEditorTabsStore, { EditorTab } from '@/stores/editorTabsStore';
 import TabCreateDropdown from '@/components/editor/editormenus/tab-create-dropdown';
+import { useBranding } from '@/contexts/branding-context';
+import { hexToRgba } from '@/utils/colorUtils';
 
 type EditorTopBarProps = {
     projectId?: string;
@@ -30,8 +32,9 @@ type EditorTopBarProps = {
 
 const EditorTopBar: React.FC<EditorTopBarProps> = ({ projectId, onTabChange, onTabClose }) => {
     const router = useRouter();
-    const auth = useAuth();
+    const auth = useUnifiedAuth();
     const tabsContainerRef = useRef<HTMLDivElement>(null);
+    const { accent_color } = useBranding();
 
     // State
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
@@ -258,7 +261,10 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({ projectId, onTabChange, onT
     return (
         <>
             {/* Bar - same height as item-manager and dock tabs */}
-            <div className="flex items-center gap-2 p-1 border-b border-sky-500/50 dark:border-white/20 bg-white dark:bg-zinc-800">
+            <div
+                className="flex items-center gap-2 p-1 border-b dark:border-white/20 bg-white dark:bg-zinc-800"
+                style={{ borderBottomColor: hexToRgba(accent_color, 0.5) }}
+            >
                 {/* Left side - Tabs */}
                 <div className="flex flex-1 items-center gap-1 overflow-x-auto overflow-y-hidden scrollbar-thin min-w-0" ref={tabsContainerRef}>
                     {tabs.map((tab) => {
@@ -269,14 +275,23 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({ projectId, onTabChange, onT
                             <div
                                 key={tab.id}
                                 data-tab-id={tab.id}
-                                className={`
-                                    flex items-center gap-1.5 px-2 py-1 rounded text-xs whitespace-nowrap transition-colors flex-shrink-0 cursor-pointer
-                                    ${isActive
-                                        ? 'bg-sky-100 dark:bg-zinc-700 text-sky-700 dark:text-white'
-                                        : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/50'
+                                className="flex items-center gap-1.5 px-2 py-1 rounded text-xs whitespace-nowrap transition-colors flex-shrink-0 cursor-pointer text-zinc-600 dark:text-zinc-400"
+                                style={{
+                                    minWidth: '100px',
+                                    maxWidth: '200px',
+                                    backgroundColor: isActive ? hexToRgba(accent_color, 0.2) : 'transparent',
+                                    color: isActive ? accent_color : undefined
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.backgroundColor = hexToRgba(accent_color, 0.1);
                                     }
-                                `}
-                                style={{ minWidth: '100px', maxWidth: '200px' }}
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!isActive) {
+                                        e.currentTarget.style.backgroundColor = 'transparent';
+                                    }
+                                }}
                                 title={tab.method ? `${tab.method} /${tab.name}` : tab.name}
                             >
                                 <div
@@ -322,7 +337,10 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({ projectId, onTabChange, onT
 
                 <button
                     onClick={handleFeedbackOpen}
-                    className="flex items-center gap-1.5 p-1 px-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-sky-500 dark:text-zinc-400 hover:text-sky-600 dark:hover:text-zinc-200 transition-colors text-sm flex-shrink-0"
+                    className="flex items-center gap-1.5 p-1 px-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors text-sm flex-shrink-0"
+                    style={{ color: accent_color }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = hexToRgba(accent_color, 0.8)}
+                    onMouseLeave={(e) => e.currentTarget.style.color = accent_color}
                     title="Send feedback"
                 >
                     <ChatBubbleBottomCenterTextIcon className="w-4 h-4" />

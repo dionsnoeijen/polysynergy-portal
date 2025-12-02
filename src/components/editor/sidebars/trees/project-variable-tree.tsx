@@ -4,8 +4,10 @@ import TreeList from "@/components/editor/sidebars/elements/tree-list";
 import {FormType, Fundamental, NodeVariableWithId} from "@/types/types";
 import {PencilIcon} from "@heroicons/react/24/outline";
 import useProjectVariablesStore from "@/stores/projectVariablesStore";
+import { useBranding } from "@/contexts/branding-context";
 
 export default function ProjectVariableTree(): ReactElement {
+    const { accent_color } = useBranding();
     const projectVariables = useProjectVariablesStore((state) => state.projectVariables);
     const openForm = useEditorStore((state) => state.openForm);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
@@ -30,7 +32,7 @@ export default function ProjectVariableTree(): ReactElement {
             dataTourId={"add-environment-variable-button"}
             renderItem={(variable: NodeVariableWithId) => (
                 <div className="flex justify-between items-center w-full">
-                    <span className="select-none dark:text-gray-200/80">
+                    <span className="select-none dark:text-gray-200/80" style={{ color: (activeProjectVariableId === variable.id || formEditRecordId === variable.id) ? 'white' : accent_color }}>
                         {variable.name || variable.handle || variable.id}
                     </span>
                     <div className="flex gap-2 mr-2">
@@ -43,7 +45,7 @@ export default function ProjectVariableTree(): ReactElement {
                                     : "text-zinc-500"
                             }`}
                         >
-                            <PencilIcon className="w-4 h-4 transition-colors duration-200" />
+                            <PencilIcon className="w-4 h-4 transition-colors duration-200 dark:text-white/70" style={{ color: (activeProjectVariableId === variable.id || formEditRecordId === variable.id) ? 'white' : accent_color }} />
                         </button>
                     </div>
                 </div>

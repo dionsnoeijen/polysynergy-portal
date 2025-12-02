@@ -21,6 +21,7 @@ import ItemManagerIntroTour from "@/components/guidedtour/item-manager-intro-tou
 import AutosaveIndicator from "@/components/AutosaveIndicator";
 import Chat from "@/components/editor/chat/chat";
 import EmptyStatePanel from "@/components/editor/empty-state-panel";
+import { useBranding } from '@/contexts/branding-context';
 
 import { useLayoutPanels } from "@/hooks/editor/useLayoutPanels";
 import { useLayoutResizing } from "@/hooks/editor/useLayoutResizing";
@@ -70,6 +71,9 @@ const EditorLayout = ({
     const isChatWindow = isEndUserChatMode;
     // Performance HUD toggle state
     const [showPerformanceHUD, setShowPerformanceHUD] = useState(false);
+
+    // Get branding colors
+    const { accent_color } = useBranding();
 
     // Set read-only mode for end-user chat windows
     const setIsReadOnly = useEditorStore((state) => state.setIsReadOnly);
@@ -478,7 +482,10 @@ const EditorLayout = ({
                         : ((dockClosed || chatWindowPermissions?.can_view_flow === false) ? 0 : width.dock)
                 }}>
                     <div
-                        className={`absolute top-0 left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border-l border-r ${(!isChatWindow && !chatMode && !isFullscreen) ? '' : 'border-t'} border-sky-500/50 dark:border-white/10 ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
+                        className={`absolute top-0 left-0 right-0 bottom-0 ${isFormOpen() || showDocs ? 'overflow-scroll' : 'overflow-hidden'} border-l border-r ${(!isChatWindow && !chatMode && !isFullscreen) ? '' : 'border-t'} dark:border-white/10 ${showForm ? 'bg-white dark:bg-zinc-800' : 'bg-white dark:bg-zinc-700'}`}
+                        style={{
+                            borderColor: `${accent_color}80` // 50% opacity
+                        }}
                     >
                         {isChatWindow && chatWindowPermissions?.can_view_flow === false ? (
                             // Chat window with no flow view permission - show nothing (chat is on the left)
@@ -605,10 +612,18 @@ const EditorLayout = ({
                     
                     {/* Loading Overlay for Flow Switching */}
                     {isLoadingFlow && (
-                        <div className="absolute inset-0 bg-sky-50/30 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div
+                            className="absolute inset-0 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+                            style={{
+                                backgroundColor: `${accent_color}4D` // 30% opacity
+                            }}
+                        >
                             <div className="flex items-center gap-4">
-                                <div className="animate-spin h-6 w-6 border-2 border-sky-500 border-t-transparent rounded-full"></div>
-                                <span className="text-sky-700 dark:text-white font-medium">Loading flow...</span>
+                                <div
+                                    className="animate-spin h-6 w-6 border-2 border-t-transparent rounded-full"
+                                    style={{ borderColor: accent_color, borderTopColor: 'transparent' }}
+                                ></div>
+                                <span className="dark:text-white font-medium" style={{ color: accent_color }}>Loading flow...</span>
                             </div>
                         </div>
                     )}

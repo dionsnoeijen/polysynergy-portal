@@ -9,8 +9,10 @@ import {globalToLocal} from "@/utils/positionUtils";
 import useNodesStore from "@/stores/nodesStore";
 import {Node} from "@/types/types";
 import {v4 as uuidv4} from "uuid";
+import { useBranding } from "@/contexts/branding-context";
 
 export default function ProjectEnvVarTree(): ReactElement {
+    const { accent_color } = useBranding();
     const envVars = useEnvVarsStore((state) => state.envVars);
     const openForm = useEditorStore((state) => state.openForm);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
@@ -57,7 +59,7 @@ export default function ProjectEnvVarTree(): ReactElement {
             dataTourId={"add-environment-variable-button"}
             renderItem={(envVar: EnvVar) => (
                 <div className="flex justify-between items-center w-full">
-                    <span className="select-none text-sky-500 dark:text-gray-200/80">{envVar.key}</span>
+                    <span className="select-none dark:text-gray-200/80" style={{ color: (activeProjectVariableId === envVar.key || formEditRecordId === envVar.key) ? 'white' : accent_color }}>{envVar.key}</span>
                     <div className="flex gap-2 mr-2">
                         <button
                             onClick={() => handleEditVariable(envVar.key)}
@@ -68,14 +70,14 @@ export default function ProjectEnvVarTree(): ReactElement {
                                     : "text-zinc-500"
                             }`}
                         >
-                            <PencilIcon className="w-4 h-4 transition-colors duration-200 text-sky-500 dark:text-white/70"/>
+                            <PencilIcon className="w-4 h-4 transition-colors duration-200 dark:text-white/70" style={{ color: (activeProjectVariableId === envVar.key || formEditRecordId === envVar.key) ? 'white' : accent_color }}/>
                         </button>
                         <button
                             onClick={(e: React.MouseEvent) => handleAddEnvVarNode(e.clientX, e.clientY, envVar.key)}
                             type="button"
                             className="pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group"
                         >
-                            <PlusIcon className="w-4 h-4 transition-colors duration-200 text-sky-500 dark:text-white/70"/>
+                            <PlusIcon className="w-4 h-4 transition-colors duration-200 dark:text-white/70" style={{ color: (activeProjectVariableId === envVar.key || formEditRecordId === envVar.key) ? 'white' : accent_color }}/>
                         </button>
                     </div>
                 </div>

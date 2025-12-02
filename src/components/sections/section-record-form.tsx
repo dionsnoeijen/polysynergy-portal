@@ -23,6 +23,7 @@ import DateTimeInput from '@/components/sections/form-inputs/datetime-input';
 import CheckboxInput from '@/components/sections/form-inputs/checkbox-input';
 import RelationInput from '@/components/sections/form-inputs/relation-input';
 import JsonInput from '@/components/sections/form-inputs/json-input';
+import HtmlInput from '@/components/sections/form-inputs/html-input';
 
 const SectionRecordForm: React.FC = () => {
     const isFormOpen = useSectionDataStore((state) => state.isFormOpen);
@@ -207,6 +208,16 @@ const SectionRecordForm: React.FC = () => {
                         onChange={onChange}
                         required={required}
                         config={fieldSettings}
+                    />
+                );
+            case 'html':
+            case 'html-editor':
+                return (
+                    <HtmlInput
+                        value={value as string}
+                        onChange={onChange}
+                        required={required}
+                        config={fieldSettings as { defaultMode?: 'edit' | 'preview'; theme?: 'vs-dark' | 'vs-light'; maxLength?: number }}
                     />
                 );
             default:

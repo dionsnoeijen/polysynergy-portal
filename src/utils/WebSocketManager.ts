@@ -4,14 +4,24 @@ export interface WebSocketManagerConfig {
   maxReconnectAttempts?: number;
   maxBackoffDelay?: number;
   debug?: boolean;
+  getUrl?: () => string; // Dynamic URL callback for token refresh
 }
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'failed';
 
+interface WebSocketManagerInternalConfig {
+  heartbeatInterval: number;
+  pingTimeout: number;
+  maxReconnectAttempts: number;
+  maxBackoffDelay: number;
+  debug: boolean;
+  getUrl?: () => string;
+}
+
 export class WebSocketManager {
   private ws: WebSocket | null = null;
   private url: string;
-  private config: Required<WebSocketManagerConfig>;
+  private config: WebSocketManagerInternalConfig;
   private pingInterval: NodeJS.Timeout | null = null;
   private pingTimeout: NodeJS.Timeout | null = null;
   private reconnectTimeout: NodeJS.Timeout | null = null;
@@ -29,7 +39,8 @@ export class WebSocketManager {
       pingTimeout: config.pingTimeout ?? 5000, // 5 seconds
       maxReconnectAttempts: config.maxReconnectAttempts ?? 10,
       maxBackoffDelay: config.maxBackoffDelay ?? 30000, // 30 seconds
-      debug: config.debug ?? false
+      debug: config.debug ?? false,
+      getUrl: config.getUrl
     };
 
     // Listen for page visibility changes
@@ -42,6 +53,12 @@ export class WebSocketManager {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.log('WebSocket already connected');
       return;
+    }
+
+    // Update URL with fresh token if callback is provided
+    if (this.config.getUrl) {
+      this.url = this.config.getUrl();
+      this.log('🔄 Refreshed WebSocket URL with new token');
     }
 
     this.isManualClose = false;

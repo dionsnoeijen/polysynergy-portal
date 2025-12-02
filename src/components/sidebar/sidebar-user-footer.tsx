@@ -3,13 +3,13 @@ import {SidebarFooter, SidebarItem} from "@/components/sidebar";
 import {ChevronUpIcon} from "@heroicons/react/24/outline";
 import AccountDropdownMenu from "@/components/sidebar/account-dropdown-menu";
 
-import { useAuth } from "react-oidc-context";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import useAccountsStore from "@/stores/accountsStore";
 
 
 export default function SidebarUserFooter()
 {
-    const auth = useAuth();
+    const auth = useUnifiedAuth();
     const loggedInAccount = useAccountsStore(state => state.loggedInAccount);
 
     return (

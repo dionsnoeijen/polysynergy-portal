@@ -27,6 +27,7 @@ export function useAutoUpdateRouteNodes() {
                 routeVariables.push({
                     handle: segment.name,
                     value: segment.default_value,
+                    has_out: true,
                     type: segment.variable_type as NodeVariableType,
                     published: false
                 });
@@ -42,7 +43,29 @@ export function useAutoUpdateRouteNodes() {
         mockRouteNodes.forEach((node) => {
             if (node.view.isDeletable !== false) return;
 
-            updateNodeVariable(node.id, 'route_variables', routeVariables);
+            // For mock nodes, preserve existing mock values
+            const existingRouteVariables = node.variables.find(v => v.handle === 'route_variables');
+            const existingValues = Array.isArray(existingRouteVariables?.value)
+                ? existingRouteVariables.value as NodeVariable[]
+                : [];
+
+            // Merge new route structure with existing mock values
+            const mergedRouteVariables = routeVariables.map((newVar) => {
+                const existingVar = existingValues.find(v => v.handle === newVar.handle);
+
+                // If variable exists and has a non-null value, preserve it
+                if (existingVar && existingVar.value !== null && existingVar.value !== undefined) {
+                    return {
+                        ...newVar,
+                        value: existingVar.value, // Keep existing mock value
+                    };
+                }
+
+                // Otherwise use the default value from route
+                return newVar;
+            });
+
+            updateNodeVariable(node.id, 'route_variables', mergedRouteVariables);
             updateNodeVariable(node.id, 'method', route.method);
         });
 

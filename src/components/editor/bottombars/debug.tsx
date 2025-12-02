@@ -7,6 +7,8 @@ import {useTheme} from 'next-themes';
 import dynamic from "next/dynamic";
 import useEditorStore from "@/stores/editorStore";
 import {Divider} from "@/components/divider";
+import { useBranding } from "@/contexts/branding-context";
+import { hexToRgba } from "@/utils/colorUtils";
 
 const ReactJson = dynamic(() => import('react-json-view'), {ssr: false});
 
@@ -19,6 +21,7 @@ const Debug: React.FC = (): React.ReactElement => {
     const editor = useEditorStore();
 
     const {theme} = useTheme();
+    const { accent_color } = useBranding();
 
     const [nodesSnapshot, setNodesSnapshot] = useState(nodes);
     const [connectionsSnapshot, setConnectionsSnapshot] = useState(connections);
@@ -44,9 +47,15 @@ const Debug: React.FC = (): React.ReactElement => {
 
     return (
         <div className="flex h-full">
-            <div className="w-1/3 min-w-[300px] border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col">
-                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
-                    <h3 className="text-sky-500 dark:text-white/70">Nodes</h3>
+            <div
+                className="w-1/3 min-w-[300px] border-r dark:border-white/10 h-full flex flex-col"
+                style={{ borderRightColor: hexToRgba(accent_color, 0.5) }}
+            >
+                <div
+                    className="border-b dark:border-white/10 p-2"
+                    style={{ borderBottomColor: hexToRgba(accent_color, 0.5) }}
+                >
+                    <h3 className="dark:text-white/70" style={{ color: accent_color }}>Nodes</h3>
                 </div>
                 <div className="flex-1 overflow-auto">
                     <ReactJson
@@ -58,9 +67,15 @@ const Debug: React.FC = (): React.ReactElement => {
                     />
                 </div>
             </div>
-            <div className="w-1/3 min-w-[300px] border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col">
-                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
-                    <h3 className="text-sky-500 dark:text-white/70">Connections</h3>
+            <div
+                className="w-1/3 min-w-[300px] border-r dark:border-white/10 h-full flex flex-col"
+                style={{ borderRightColor: hexToRgba(accent_color, 0.5) }}
+            >
+                <div
+                    className="border-b dark:border-white/10 p-2"
+                    style={{ borderBottomColor: hexToRgba(accent_color, 0.5) }}
+                >
+                    <h3 className="dark:text-white/70" style={{ color: accent_color }}>Connections</h3>
                 </div>
                 <div className="flex-1 overflow-auto">
                     <ReactJson
@@ -72,9 +87,15 @@ const Debug: React.FC = (): React.ReactElement => {
                     />
                 </div>
             </div>
-            <div className="w-1/3 min-w-[300px] border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col">
-                <div className="border-b border-sky-500/50 dark:border-white/10 p-2">
-                    <h3 className="text-sky-500 dark:text-white/70">Editor</h3>
+            <div
+                className="w-1/3 min-w-[300px] border-r dark:border-white/10 h-full flex flex-col"
+                style={{ borderRightColor: hexToRgba(accent_color, 0.5) }}
+            >
+                <div
+                    className="border-b dark:border-white/10 p-2"
+                    style={{ borderBottomColor: hexToRgba(accent_color, 0.5) }}
+                >
+                    <h3 className="dark:text-white/70" style={{ color: accent_color }}>Editor</h3>
                 </div>
                 <div className="flex-1 overflow-auto">
                     <ReactJson

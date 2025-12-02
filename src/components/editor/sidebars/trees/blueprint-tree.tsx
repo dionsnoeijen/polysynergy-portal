@@ -12,8 +12,10 @@ import {unpackNode} from "@/utils/packageGroupNode";
 import useDraggable from "@/hooks/editor/nodes/useDraggable";
 import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
+import { useBranding } from "@/contexts/branding-context";
 
 export default function BlueprintTree(): ReactElement {
+    const { accent_color } = useBranding();
     const closeForm = useEditorStore((state) => state.closeForm);
     const openedGroup = useNodesStore((state) => state.openedGroup);
     const blueprints = useBlueprintsStore((state) => state.blueprints);
@@ -106,7 +108,10 @@ export default function BlueprintTree(): ReactElement {
                             useEditorStore.getState().setIsLoadingFlow(true);
                             console.log('🔒 Blueprint clicked - autosave disabled for switching');
                         }}
-                        className={`block flex-1 truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'text-white' : 'dark:text-zinc-500'}`}
+                        className={`block flex-1 truncate dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'text-white' : 'dark:text-zinc-500'}`}
+                        style={{
+                            color: (activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'white' : accent_color
+                        }}
                     >
                         {blueprint.name}
                     </Link>
@@ -117,7 +122,9 @@ export default function BlueprintTree(): ReactElement {
                             className={`p-2 rounded focus:outline-none active:text-zinc-200 group`}
                         >
                             <PencilIcon
-                                className={`w-4 h-4 transition-colors duration-200 ${activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id ? 'text-white' : 'text-sky-500 dark:text-white/70'}`}/>
+                                className={`w-4 h-4 transition-colors duration-200 dark:text-white/70`}
+                                style={{ color: (activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'white' : accent_color }}
+                            />
                         </button>
                         <button
                             onClick={handleAdd(blueprint.id as string)}
@@ -125,7 +132,9 @@ export default function BlueprintTree(): ReactElement {
                             className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group`}
                         >
                             <PlusIcon
-                                className={`w-4 h-4 transition-colors duration-200 ${activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id ? 'text-white' : 'text-sky-500 dark:text-white/70'}`}/>
+                                className={`w-4 h-4 transition-colors duration-200 dark:text-white/70`}
+                                style={{ color: (activeBlueprintId === blueprint.id || formEditRecordId === blueprint.id) ? 'white' : accent_color }}
+                            />
                         </button>
                     </div>
                 </>

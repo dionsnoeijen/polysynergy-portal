@@ -4,6 +4,7 @@ import {Fundamental, ListItemWithId} from "@/types/types";
 import useEditorStore from "@/stores/editorStore";
 import useTreeStateStore from "@/stores/treeStateStore";
 import clsx from "clsx";
+import { useBranding } from "@/contexts/branding-context";
 
 type ListProps<T extends ListItemWithId> = {
     items: T[];
@@ -38,6 +39,18 @@ export default function TreeList<T extends ListItemWithId>({
     const isOpen = useTreeStateStore((state) => state.isTreeOpenForProject(activeProjectId, fundamental));
     const toggleTreeForProject = useTreeStateStore((state) => state.toggleTreeForProject);
 
+    const { accent_color } = useBranding();
+
+    // Helper to convert hex to rgba
+    const hexToRgba = (hex: string, opacity: number) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!result) return `rgba(14, 165, 233, ${opacity})`;
+        const r = parseInt(result[1], 16);
+        const g = parseInt(result[2], 16);
+        const b = parseInt(result[3], 16);
+        return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    };
+
     const handleTreeToggle = () => {
         // Disable tree interactions during execution
         if (isExecuting) return;
@@ -46,39 +59,48 @@ export default function TreeList<T extends ListItemWithId>({
         toggleOpen(!isOpen);
     }
 
-    const getItemClassName = (item: T) => {
-        const baseClasses =
-            "flex items-center justify-between pl-2 transition-colors duration-200 group dark:hover:bg-sky-500 dark:hover:text-white";
-
+    const getItemStyle = (item: T, isOdd: boolean) => {
         const isActive = activeItem === item.id;
         const isEditing = formEditingItem === item.id;
 
-        const bgClass = isEditing
-            ? "bg-sky-200 dark:bg-sky-200"
-            : isActive
-                ? "bg-sky-500 dark:bg-sky-500"
-                : "odd:bg-sky-300/10 even:bg-white/90 dark:odd:bg-zinc-800 dark:even:bg-zinc-800/50";
-
-        return `${baseClasses} ${bgClass}`;
+        if (isEditing) {
+            return { backgroundColor: hexToRgba(accent_color, 0.3) };
+        }
+        if (isActive) {
+            return { backgroundColor: accent_color };
+        }
+        if (isOdd) {
+            return { backgroundColor: hexToRgba(accent_color, 0.05) };
+        }
+        return { backgroundColor: 'rgba(255, 255, 255, 0.9)' };
     };
 
     return items.length > 0 ? (
         <div className="relative">
             {(isFormOpen || isLoadingFlow) && (
-                <div className="absolute inset-0 z-10 bg-sky-50/80 dark:bg-black/40 cursor-not-allowed"/>
+                <div
+                    className="absolute inset-0 z-10 dark:bg-black/40 cursor-not-allowed"
+                    style={{ backgroundColor: hexToRgba(accent_color, 0.15) }}
+                />
             )}
             <div className="mt-[10px]">
                 <button
                     type="button"
                     onClick={handleTreeToggle}
-                    className="w-full flex items-center shadow-sm justify-between border-t border-b border-sky-500/50 bg-white/90 p-1 pl-2 pr-2 dark:border-white/10 dark:bg-zinc-800 hover:bg-sky-50 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                    className="w-full flex items-center shadow-sm justify-between border-t border-b bg-white/90 p-1 pl-2 pr-2 dark:border-white/10 dark:bg-zinc-800 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                    style={{
+                        borderTopColor: hexToRgba(accent_color, 0.5),
+                        borderBottomColor: hexToRgba(accent_color, 0.5),
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hexToRgba(accent_color, 0.1)}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'}
                     data-tour-id={dataTourId ?? null}
                 >
-                    <h4 className="text-sky-500 dark:text-white/70">{title}</h4>
+                    <h4 className="dark:text-white/70" style={{ color: accent_color }}>{title}</h4>
                     {isOpen ? (
-                        <ChevronDownIcon className="w-5 h-5 text-sky-500 dark:text-white/70"/>
+                        <ChevronDownIcon className="w-5 h-5 dark:text-white/70" style={{ color: accent_color }}/>
                     ) : (
-                        <ChevronLeftIcon className="w-5 h-5 text-sky-500 dark:text-white/70"/>
+                        <ChevronLeftIcon className="w-5 h-5 dark:text-white/70" style={{ color: accent_color }}/>
                     )}
                 </button>
 
@@ -89,7 +111,16 @@ export default function TreeList<T extends ListItemWithId>({
                         }`}
                     >
                         {items.map((item, index) => (
-                            <li className={getItemClassName(item)} key={`tree-${index}-${item.id}`}>
+                            <li
+                                className="flex items-center justify-between pl-2 transition-colors duration-200 group dark:hover:text-white"
+                                style={getItemStyle(item, index % 2 === 1)}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hexToRgba(accent_color, 0.5)}
+                                onMouseLeave={(e) => {
+                                    const style = getItemStyle(item, index % 2 === 1);
+                                    e.currentTarget.style.backgroundColor = style.backgroundColor || '';
+                                }}
+                                key={`tree-${index}-${item.id}`}
+                            >
                                 {renderItem(item)}
                             </li>
                         ))}
@@ -104,15 +135,19 @@ export default function TreeList<T extends ListItemWithId>({
                         )}
                     >
                         <div
-                            className="border-t border-b border-sky-500/50 bg-white dark:bg-zinc-800 dark:border-white/10">
+                            className="border-t border-b bg-white dark:bg-zinc-800 dark:border-white/10"
+                            style={{
+                                borderTopColor: hexToRgba(accent_color, 0.5),
+                                borderBottomColor: hexToRgba(accent_color, 0.5)
+                            }}
+                        >
                             <button
                                 disabled={addDisabled || Boolean(isExecuting) || isLoadingFlow}
                                 onClick={(isExecuting || isLoadingFlow) ? () => {} : addButtonClick}
-                                className={clsx(
-                                    "w-full flex items-center justify-center p-1",
-                                    "text-sky-500 dark:text-white/70",
-                                    "hover:bg-sky-100/50 dark:hover:bg-white/10"
-                                )}
+                                className="w-full flex items-center justify-center p-1 dark:text-white/70 dark:hover:bg-white/10"
+                                style={{ color: accent_color }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hexToRgba(accent_color, 0.1)}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
                                 <PlusIcon className="w-5 h-5"/>
                             </button>
@@ -124,7 +159,10 @@ export default function TreeList<T extends ListItemWithId>({
     ) : (
         <div className="relative">
             {(isFormOpen || isLoadingFlow) && (
-                <div className="absolute inset-0 z-10  bg-sky-50/80 dark:bg-black/40 cursor-not-allowed"/>
+                <div
+                    className="absolute inset-0 z-10 dark:bg-black/40 cursor-not-allowed"
+                    style={{ backgroundColor: hexToRgba(accent_color, 0.15) }}
+                />
             )}
             <div className="mt-[10px]">
                 {addButtonClick && (
@@ -137,21 +175,42 @@ export default function TreeList<T extends ListItemWithId>({
                             "border-t border-b border-dotted",
                             "transition-all duration-200",
                             addDisabled || isExecuting || isLoadingFlow
-                                ? "opacity-40 cursor-not-allowed border-sky-500/30 dark:border-white/20 bg-white/30 dark:bg-black/30"
-                                : "border-sky-500 dark:border-white/50 bg-white/60 dark:bg-black/60 hover:bg-sky-100 dark:hover:bg-white/10 cursor-pointer"
+                                ? "opacity-40 cursor-not-allowed dark:border-white/20 bg-white/30 dark:bg-black/30"
+                                : "dark:border-white/50 bg-white/60 dark:bg-black/60 dark:hover:bg-white/10 cursor-pointer"
                         )}
+                        style={{
+                            borderColor: addDisabled || isExecuting || isLoadingFlow
+                                ? hexToRgba(accent_color, 0.3)
+                                : accent_color,
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!addDisabled && !isExecuting && !isLoadingFlow) {
+                                e.currentTarget.style.backgroundColor = hexToRgba(accent_color, 0.1);
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+                        }}
                     >
-                        <span className={clsx(
-                            addDisabled || isExecuting || isLoadingFlow
-                                ? "text-sky-500/50 dark:text-white/30"
-                                : "text-sky-500 dark:text-white"
-                        )}>{title}</span>
-                        <PlusIcon className={clsx(
-                            "w-4 h-4",
-                            addDisabled || isExecuting || isLoadingFlow
-                                ? "text-sky-500/50 dark:text-white/30"
-                                : "text-sky-500 dark:text-white/70"
-                        )}/>
+                        <span
+                            className={addDisabled || isExecuting || isLoadingFlow ? "dark:text-white/30" : "dark:text-white"}
+                            style={{
+                                color: addDisabled || isExecuting || isLoadingFlow
+                                    ? hexToRgba(accent_color, 0.5)
+                                    : accent_color
+                            }}
+                        >{title}</span>
+                        <PlusIcon
+                            className={clsx(
+                                "w-4 h-4",
+                                addDisabled || isExecuting || isLoadingFlow ? "dark:text-white/30" : "dark:text-white/70"
+                            )}
+                            style={{
+                                color: addDisabled || isExecuting || isLoadingFlow
+                                    ? hexToRgba(accent_color, 0.5)
+                                    : accent_color
+                            }}
+                        />
                     </button>
                 )}
             </div>

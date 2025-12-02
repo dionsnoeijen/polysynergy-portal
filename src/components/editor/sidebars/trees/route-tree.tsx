@@ -6,8 +6,10 @@ import {FormType, Fundamental} from "@/types/types";
 import useDynamicRoutesStore from "@/stores/dynamicRoutesStore";
 import useEditorStore from "@/stores/editorStore";
 import Link from "next/link";
+import { useBranding } from "@/contexts/branding-context";
 
 export default function RouteTree(): ReactElement {
+    const { accent_color } = useBranding();
     const routes = useDynamicRoutesStore((state) => state.routes);
     const openForm = useEditorStore((state) => state.openForm);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
@@ -34,7 +36,10 @@ export default function RouteTree(): ReactElement {
                             console.log('🔒 Route clicked - autosave disabled for switching');
                         }}
                         title={`${route.method}: /${formatSegments(route.segments)} - ${route.id}`}
-                        className={`block flex-1 truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'text-white' : 'dark:text-zinc-500'}`}
+                        className={`block flex-1 truncate dark:text-gray-200/80 dark:hover:text-white pt-1 pb-1 ${(activeRouteId === route.id || formEditRecordId === route.id) ? 'text-white' : 'dark:text-zinc-500'}`}
+                        style={{
+                            color: (activeRouteId === route.id || formEditRecordId === route.id) ? 'white' : accent_color
+                        }}
                     >
                         <b className={`${(activeRouteId === route.id || formEditRecordId === route.id) ? 'text-white' : 'dark:text-gray-200/80'}`}>{route.method}</b>:
                         /{formatSegments(route.segments)}
@@ -45,7 +50,12 @@ export default function RouteTree(): ReactElement {
                         className={`p-2 rounded focus:outline-none active:text-zinc-200 group`}
                         data-tour-id="add-route-button"
                     >
-                        <PencilIcon className={`w-4 h-4 transition-colors duration-200 ${activeRouteId === route.id || formEditRecordId === route.id ? 'text-white' : 'text-sky-500 dark:text-white/70 '}`}/>
+                        <PencilIcon
+                            className={`w-4 h-4 transition-colors duration-200 ${activeRouteId === route.id || formEditRecordId === route.id ? 'text-white' : 'dark:text-white/70'}`}
+                            style={{
+                                color: (activeRouteId === route.id || formEditRecordId === route.id) ? 'white' : accent_color
+                            }}
+                        />
                     </button>
                 </>
             )}

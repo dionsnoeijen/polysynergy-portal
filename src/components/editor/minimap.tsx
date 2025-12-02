@@ -5,6 +5,7 @@ import useEditorStore from '@/stores/editorStore';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { Node as ProjectNode } from '@/types/types';
 import {useCallback, useEffect, useRef, useState} from "react";
+import { useBranding } from '@/contexts/branding-context';
 
 const MINIMAP_WIDTH = 200;
 const MINIMAP_HEIGHT = 150;
@@ -12,6 +13,21 @@ const MINIMAP_HEIGHT = 150;
 // const NODE_SIZE = 20; // Size of nodes on minimap (made bigger for testing)
 
 const Minimap: React.FC = () => {
+    const { accent_color } = useBranding();
+
+    // Helper to convert hex to rgba
+    const hexToRgba = (hex: string, opacity: number) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!result) return `rgba(14, 165, 233, ${opacity})`;
+        const r = parseInt(result[1], 16);
+        const g = parseInt(result[2], 16);
+        const b = parseInt(result[3], 16);
+        return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    };
+
+    const lightBg = hexToRgba(accent_color, 0.1);
+    const borderColor = hexToRgba(accent_color, 0.6);
+    const borderColorLight = hexToRgba(accent_color, 0.3);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isCollapsed, setIsCollapsed] = useState(true);
     
@@ -209,7 +225,7 @@ const Minimap: React.FC = () => {
             } else if (nodeData?.path?.includes('play') || nodeData?.path?.includes('flow')) {
                 ctx.fillStyle = 'rgba(217, 70, 239, 1)'; // Fuchsia for flow/play nodes
             } else {
-                ctx.fillStyle = 'rgba(14, 165, 233, 1)'; // Sky blue for regular nodes
+                ctx.fillStyle = hexToRgba(accent_color, 1); // Dynamic accent color for regular nodes
             }
             
             // Draw node rectangle with actual size
@@ -238,18 +254,18 @@ const Minimap: React.FC = () => {
         const viewportH = viewportWorldHeight * scale;
         
         // Viewport border
-        ctx.strokeStyle = 'rgba(14, 165, 233, 0.8)'; // Sky blue
+        ctx.strokeStyle = hexToRgba(accent_color, 0.8); // Dynamic accent color
         ctx.lineWidth = 2;
         ctx.strokeRect(viewportX, viewportY, viewportW, viewportH);
-        
+
         // Semi-transparent viewport fill
-        ctx.fillStyle = 'rgba(14, 165, 233, 0.1)';
+        ctx.fillStyle = hexToRgba(accent_color, 0.1);
         ctx.fillRect(viewportX, viewportY, viewportW, viewportH);
         
         }, isCollapsed ? 100 : 16); // Immediate draw when expanded, throttle when collapsed
-        
+
         return () => clearTimeout(timeoutId);
-    }, [nodesLength, connectionsLength, panPositionsByVersion, zoomFactorByVersion, activeVersionId, isCollapsed, updateTrigger]);
+    }, [nodesLength, connectionsLength, panPositionsByVersion, zoomFactorByVersion, activeVersionId, isCollapsed, updateTrigger, accent_color, hexToRgba]);
     
     // Handle click on minimap to navigate
     const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -293,10 +309,23 @@ const Minimap: React.FC = () => {
     
     return (
         <div className="absolute top-2 right-2 z-30">
-            <div className="bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-lg overflow-hidden">
+            <div
+                className="dark:bg-zinc-800/80 dark:border-white/25 rounded-lg overflow-hidden"
+                style={{
+                    backgroundColor: lightBg,
+                    borderWidth: '1px',
+                    borderStyle: 'solid',
+                    borderColor: borderColor
+                }}
+            >
                 {/* Header */}
-                <div 
-                    className="flex items-center justify-between px-2 py-1 border-b border-sky-200/30 dark:border-zinc-700/30 cursor-pointer hover:bg-sky-50/50 dark:hover:bg-zinc-800/50"
+                <div
+                    className="flex items-center justify-between px-2 py-1 dark:border-zinc-700/30 cursor-pointer dark:hover:bg-zinc-800/50"
+                    style={{
+                        borderBottomWidth: '1px',
+                        borderBottomStyle: 'solid',
+                        borderBottomColor: borderColorLight
+                    }}
                     onClick={() => setIsCollapsed(!isCollapsed)}
                 >
                     <span className="text-xs text-zinc-600 dark:text-zinc-400">Minimap</span>

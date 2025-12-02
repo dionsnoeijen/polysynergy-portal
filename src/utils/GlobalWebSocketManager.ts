@@ -8,25 +8,31 @@ interface GlobalWebSocketConnection {
     isConnected: boolean;
     subscribers: Set<(status: ConnectionStatus, isConnected: boolean) => void>;
     messageHandlers: Set<(event: MessageEvent) => void>;
+    flowId: string;
 }
 
 class GlobalWebSocketSingleton {
     private connections = new Map<string, GlobalWebSocketConnection>();
+
+    private buildWebSocketUrl(flowId: string): string {
+        const token = getIdToken();
+        return `${config.WEBSOCKET_URL}/execution/${flowId}?token=${token}`;
+    }
 
     getOrCreateConnection(flowId: string): GlobalWebSocketConnection {
         if (this.connections.has(flowId)) {
             return this.connections.get(flowId)!;
         }
 
-        const token = getIdToken();
-        const websocketUrl = `${config.WEBSOCKET_URL}/execution/${flowId}?token=${token}`;
+        const websocketUrl = this.buildWebSocketUrl(flowId);
 
         const manager = new WebSocketManager(websocketUrl, {
             debug: true,
             heartbeatInterval: 30000,
             pingTimeout: 5000,
             maxReconnectAttempts: 10,
-            maxBackoffDelay: 30000
+            maxBackoffDelay: 30000,
+            getUrl: () => this.buildWebSocketUrl(flowId) // Dynamic URL callback
         });
 
         const connection: GlobalWebSocketConnection = {
@@ -34,7 +40,8 @@ class GlobalWebSocketSingleton {
             connectionStatus: 'disconnected' as ConnectionStatus,
             isConnected: false,
             subscribers: new Set(),
-            messageHandlers: new Set()
+            messageHandlers: new Set(),
+            flowId
         };
 
         // Subscribe to status changes and notify all subscribers

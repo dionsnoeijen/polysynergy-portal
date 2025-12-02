@@ -21,12 +21,14 @@ import {
 import { usePathname } from 'next/navigation'
 import SidebarUserFooter from "@/components/sidebar/sidebar-user-footer";
 import React from "react";
+import { useBranding } from "@/contexts/branding-context";
 
 export function ApplicationLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    const { logo_url } = useBranding();
     const pathname = usePathname()
 
     return (
@@ -36,8 +38,8 @@ export function ApplicationLayout({
                 <Sidebar>
                     <div className="flex items-center p-4 border-b border-zinc-200 dark:border-zinc-700">
                         <img
-                            src="/logo-with-text.svg"
-                            alt="PolySynergy Logo"
+                            src={logo_url || "/logo-with-text.svg"}
+                            alt="Logo"
                             className="h-8 w-auto"
                         />
                     </div>

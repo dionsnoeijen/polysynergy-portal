@@ -5,10 +5,10 @@ import {Input} from '@/components/input';
 import {Textarea} from '@/components/textarea';
 import {Button} from '@/components/button';
 import {sendFeedback} from '@/api/feedbackApi';
-import {useAuth} from 'react-oidc-context';
+import {useUnifiedAuth} from '@/hooks/useUnifiedAuth';
 
 const FeedbackButton: React.FC = () => {
-    const auth = useAuth();
+    const auth = useUnifiedAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [email, setEmail] = useState(auth.user?.profile.email as string || '');
     const [message, setMessage] = useState('');

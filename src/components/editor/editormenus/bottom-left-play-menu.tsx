@@ -6,8 +6,24 @@ import useNodesStore from '@/stores/nodesStore';
 import {useHandlePlay} from '@/hooks/editor/useHandlePlay';
 import {PlayIcon, ChevronDownIcon, Squares2X2Icon} from '@heroicons/react/24/outline';
 import type { Node } from '@/types/types';
+import { useBranding } from '@/contexts/branding-context';
 
 export default function BottomLeftPlayMenu() {
+    const { accent_color } = useBranding();
+
+    // Helper to convert hex to rgba
+    const hexToRgba = (hex: string, opacity: number) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!result) return `rgba(14, 165, 233, ${opacity})`;
+        const r = parseInt(result[1], 16);
+        const g = parseInt(result[2], 16);
+        const b = parseInt(result[3], 16);
+        return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    };
+
+    const lightBg = hexToRgba(accent_color, 0.1);
+    const lightBgHover = hexToRgba(accent_color, 0.2);
+    const borderColor = hexToRgba(accent_color, 0.6);
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -87,42 +103,69 @@ export default function BottomLeftPlayMenu() {
     // Always render the menu, but disable the play button if no nodes available
     return (
         <div className="absolute bottom-2 left-2 z-20">
-            <div className="bg-sky-50 dark:bg-zinc-800/80 border border-sky-500/60 dark:border-white/25 rounded-lg p-2 flex items-center gap-2">
+            <div
+                className="dark:bg-zinc-800/80 dark:border-white/25 rounded-lg p-2 flex items-center gap-2"
+                style={{
+                    backgroundColor: lightBg,
+                    borderWidth: '1px',
+                    borderStyle: 'solid',
+                    borderColor: borderColor
+                }}
+            >
                 {hasMultiplePlayButtons ? (
                     <div className="flex items-center">
                         {/* Play Button */}
                         <button
                             disabled={allPlayableNodes.length === 0}
-                            className="hover:bg-sky-200 p-1 rounded-l-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-1 rounded-l-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ backgroundColor: 'transparent' }}
+                            onMouseEnter={(e) => !allPlayableNodes.length && (e.currentTarget.style.backgroundColor = lightBgHover)}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             title={allPlayableNodes.length > 0 ? `Play ${getNodeDisplayName(selectedPlayNode || allPlayableNodes[0])}` : 'No playable nodes'}
                             onClick={handlePlayClick}
                         >
-                            <PlayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+                            <PlayIcon className="h-5 w-5 dark:text-white/70" style={{ color: accent_color }}/>
                         </button>
-                        
+
                         {/* Dropdown Button */}
                         <div className="relative" ref={dropdownRef}>
-                            <button 
-                                className="hover:bg-sky-200 p-1 rounded-r-md dark:hover:bg-zinc-400 border-l border-sky-300 dark:border-zinc-600" 
+                            <button
+                                className="p-1 rounded-r-md dark:hover:bg-zinc-400 border-l dark:border-zinc-600"
+                                style={{
+                                    backgroundColor: 'transparent',
+                                    borderLeftColor: hexToRgba(accent_color, 0.3)
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = lightBgHover}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                 title="Select play button"
                                 onClick={() => setShowDropdown(!showDropdown)}
                             >
-                                <ChevronDownIcon className="h-4 w-4 text-sky-500 dark:text-white/70"/>
+                                <ChevronDownIcon className="h-4 w-4 dark:text-white/70" style={{ color: accent_color }}/>
                             </button>
                             
                             {/* Dropdown Menu */}
                             {showDropdown && (
-                                <div className="absolute bottom-full mb-2 left-0 bg-white dark:bg-zinc-800 border border-sky-500/60 dark:border-white/25 rounded-md shadow-lg min-w-48 py-1 z-[60]">
+                                <div
+                                    className="absolute bottom-full mb-2 left-0 bg-white dark:bg-zinc-800 dark:border-white/25 rounded-md shadow-lg min-w-48 py-1 z-[60]"
+                                    style={{
+                                        borderWidth: '1px',
+                                        borderStyle: 'solid',
+                                        borderColor: borderColor
+                                    }}
+                                >
                                     {allPlayableNodes.map((node) => (
                                         <button
                                             key={node.id}
-                                            className="w-full text-left px-3 py-2 hover:bg-sky-50 dark:hover:bg-zinc-700 flex items-center gap-2"
+                                            className="w-full text-left px-3 py-2 dark:hover:bg-zinc-700 flex items-center gap-2"
+                                            style={{ backgroundColor: 'transparent' }}
+                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = lightBg}
+                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                             onClick={() => {
                                                 setSelectedPlayNode(node);
                                                 setShowDropdown(false);
                                             }}
                                         >
-                                            <Squares2X2Icon className="h-4 w-4 text-sky-500 dark:text-white/70 flex-shrink-0"/>
+                                            <Squares2X2Icon className="h-4 w-4 dark:text-white/70 flex-shrink-0" style={{ color: accent_color }}/>
                                             <div>
                                                 <div className="text-sm font-medium text-gray-900 dark:text-white">
                                                     {getNodeDisplayName(node)}
@@ -132,7 +175,7 @@ export default function BottomLeftPlayMenu() {
                                                 </div>
                                             </div>
                                             {(selectedPlayNode?.id === node.id) && (
-                                                <div className="ml-auto w-2 h-2 bg-sky-500 rounded-full"></div>
+                                                <div className="ml-auto w-2 h-2 rounded-full" style={{ backgroundColor: accent_color }}></div>
                                             )}
                                         </button>
                                     ))}
@@ -144,11 +187,14 @@ export default function BottomLeftPlayMenu() {
                     // Single Play Button
                     <button
                         disabled={allPlayableNodes.length === 0}
-                        className="hover:bg-sky-200 p-1 rounded-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-1 rounded-md dark:hover:bg-zinc-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: 'transparent' }}
+                        onMouseEnter={(e) => !allPlayableNodes.length && (e.currentTarget.style.backgroundColor = lightBgHover)}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                         title={allPlayableNodes.length > 0 ? `Play ${getNodeDisplayName(allPlayableNodes[0])}` : 'No playable nodes'}
                         onClick={handlePlayClick}
                     >
-                        <PlayIcon className="h-5 w-5 text-sky-500 dark:text-white/70"/>
+                        <PlayIcon className="h-5 w-5 dark:text-white/70" style={{ color: accent_color }}/>
                     </button>
                 )}
             </div>

@@ -11,24 +11,18 @@ import {
 } from "@heroicons/react/24/outline";
 import React, { useState } from "react";
 import Modal from "@/components/modal";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 
 export default function AccountDropdownMenu({ anchor }: { anchor: 'top start' | 'bottom end' }) {
+    const auth = useUnifiedAuth();
     const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+
     const signOutRedirect = async (event: React.MouseEvent<HTMLAnchorElement>) => {
         event.preventDefault();
 
         try {
-            // const userManager = auth.userManager;
-            // await userManager.removeUser();
-            //
-            // console.log("User removed, redirecting manually...");
-            const clientId = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID;
-            const logoutUri = process.env.NEXT_PUBLIC_AWS_COGNITO_LOGOUT_URL;
-            const cognitoDomain = process.env.NEXT_PUBLIC_AWS_COGNITO_DOMAIN;
-
-            if (clientId && logoutUri && cognitoDomain) {
-                window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
-            }
+            // Use unified auth signout (works for both Cognito and Standalone)
+            await auth.signoutRedirect();
         } catch (error) {
             console.error("Error during sign out:", error);
         }

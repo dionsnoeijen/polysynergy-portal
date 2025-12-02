@@ -9,8 +9,10 @@ import useNodesStore from "@/stores/nodesStore";
 import useConnectionsStore from "@/stores/connectionsStore";
 import placeService from "@/utils/placeService";
 import { fetchServiceById } from "@/api/servicesApi";
+import { useBranding } from "@/contexts/branding-context";
 
 export default function ServiceTree(): ReactElement {
+    const { accent_color } = useBranding();
     const services = useServicesStore((state) => state.services);
     const openForm = useEditorStore((state) => state.openForm);
     const formEditRecordId = useEditorStore((state) => state.formEditRecordId);
@@ -114,21 +116,23 @@ export default function ServiceTree(): ReactElement {
             renderItem={(service: Service) => (
                 <div className="flex justify-between items-center w-full">
                     <span
-                        className={`select-none truncate text-sky-500 dark:text-gray-200/80 dark:hover:text-white`}>{service.name}</span>
+                        className={`select-none truncate dark:text-gray-200/80 dark:hover:text-white`}
+                        style={{ color: (activeServiceId === service.id || formEditRecordId === service.id) ? 'white' : accent_color }}
+                    >{service.name}</span>
                     <div className="flex gap-2 mr-2">
                         <button
                             onClick={() => handleEditService(service)}
                             type="button"
-                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : 'text-sky-500 dark:text-white/70'}`}
+                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : ''}`}
                         >
-                            <PencilIcon className="w-4 h-4 transition-colors duration-200"/>
+                            <PencilIcon className="w-4 h-4 transition-colors duration-200 dark:text-white/70" style={{ color: (activeServiceId === service.id || formEditRecordId === service.id) ? 'white' : accent_color }}/>
                         </button>
                         <button
                             onClick={() => placeServiceHandler(service.id as string)}
                             type="button"
-                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : 'text-sky-500 dark:text-white/70'}`}
+                            className={`pt-2 pb-2 rounded focus:outline-none active:text-zinc-200 group ${activeServiceId === service.id || formEditRecordId === service.id ? 'text-white' : ''}`}
                         >
-                            <PlusIcon className="w-4 h-4 transition-colors duration-200"/>
+                            <PlusIcon className="w-4 h-4 transition-colors duration-200 dark:text-white/70" style={{ color: (activeServiceId === service.id || formEditRecordId === service.id) ? 'white' : accent_color }}/>
                         </button>
                     </div>
                 </div>

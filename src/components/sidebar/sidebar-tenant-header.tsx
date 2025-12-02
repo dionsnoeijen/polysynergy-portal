@@ -13,8 +13,10 @@ import useProjectsStore from "@/stores/projectsStore";
 import useEditorStore from "@/stores/editorStore";
 import {useEffect, useState} from "react";
 import {Project} from "@/types/types";
+import {useBranding} from "@/contexts/branding-context";
 
 export default function SidebarTenantHeader() {
+    const { logo_url } = useBranding();
     const fetchProject = useProjectsStore((state) => state.fetchProject);
     const activeProjectId = useEditorStore((state) => state.activeProjectId);
 
@@ -40,7 +42,7 @@ export default function SidebarTenantHeader() {
                     <DropdownItem
                         onClick={() => window.location.assign('/')}
                     >
-                        <Avatar src="/ps-logo-simple-color.svg" slot="icon"/>
+                        <Avatar src={logo_url || "/ps-logo-simple-color.svg"} slot="icon"/>
                         <DropdownLabel>Projects</DropdownLabel>
                     </DropdownItem>
                     <DropdownDivider/>

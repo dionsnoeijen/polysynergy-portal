@@ -3,6 +3,8 @@ import Logs from "@/components/editor/bottombars/logs";
 import Chat from "@/components/editor/chat/chat";
 import {ChevronLeftIcon, ChevronRightIcon} from "@heroicons/react/24/outline";
 import useEditorStore from "@/stores/editorStore";
+import { useBranding } from "@/contexts/branding-context";
+import { hexToRgba } from "@/utils/colorUtils";
 
 type Mode = "split" | "logs" | "chat";
 
@@ -13,7 +15,8 @@ const clamp = (val: number, min: number, max: number) => Math.min(max, Math.max(
 
 const Output: React.FC = (): React.ReactElement => {
     const chatMode = useEditorStore(s => s.chatMode);
-    
+    const { accent_color } = useBranding();
+
     // restore persisted state
     const [logsRatio, setLogsRatio] = useState<number>(() => {
         const v = Number(localStorage.getItem(LS_KEY_RATIO));
@@ -87,13 +90,21 @@ const Output: React.FC = (): React.ReactElement => {
                 style={{width: `${logsWidthPct}%`}}
             >
                 <div
-                    className="border-b border-sky-500/50 dark:border-white/10 px-2 py-1 flex items-center justify-between">
-                    <h3 className="text-sky-500 dark:text-white/80 text-sm">Logs</h3>
+                    className="border-b dark:border-white/10 px-2 py-1 flex items-center justify-between"
+                    style={{ borderBottomColor: hexToRgba(accent_color, 0.5) }}
+                >
+                    <h3 className="dark:text-white/80 text-sm" style={{ color: accent_color }}>Logs</h3>
                     {!chatMode && (
                         <div className="flex items-center gap-1">
                             {mode !== "logs" && (
                                 <button
-                                    className="text-xs px-2 py-1 rounded border border-sky-500/40 text-sky-600 dark:text-sky-300 hover:bg-sky-500/10"
+                                    className="text-xs px-2 py-1 rounded border dark:text-white/70"
+                                    style={{
+                                        borderColor: hexToRgba(accent_color, 0.4),
+                                        color: accent_color
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hexToRgba(accent_color, 0.1)}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                     onClick={() => setMode("logs")}
                                     title="Expand logs"
                                 >
@@ -120,9 +131,13 @@ const Output: React.FC = (): React.ReactElement => {
             {/* Splitter */}
             {mode === "split" && (
                 <div
-                    className={`w-1 bg-sky-500/50 dark:bg-white/20 cursor-col-resize hover:bg-sky-500 dark:hover:bg-white/40 transition-colors ${
-                        isDragging ? "opacity-100" : ""
-                    }`}
+                    className="w-1 dark:bg-white/20 cursor-col-resize dark:hover:bg-white/40 transition-colors"
+                    style={{
+                        backgroundColor: hexToRgba(accent_color, 0.5),
+                        ...(isDragging && { opacity: 1 })
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = accent_color}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = hexToRgba(accent_color, 0.5)}
                     onMouseDown={beginDrag}
                     onDoubleClick={resetSplit}
                     title="Drag to resize • Double-click to reset"
@@ -137,13 +152,21 @@ const Output: React.FC = (): React.ReactElement => {
                 style={{width: `${chatWidthPct}%`}}
             >
                 <div
-                    className="border-b border-sky-500/50 dark:border-white/10 px-2 py-1 flex items-center justify-between">
-                    <h3 className="text-sky-500 dark:text-white/80 text-sm">Chat</h3>
+                    className="border-b dark:border-white/10 px-2 py-1 flex items-center justify-between"
+                    style={{ borderBottomColor: hexToRgba(accent_color, 0.5) }}
+                >
+                    <h3 className="dark:text-white/80 text-sm" style={{ color: accent_color }}>Chat</h3>
                     {!chatMode && (
                         <div className="flex items-center gap-1">
                             {mode !== "chat" && (
                                 <button
-                                    className="text-xs px-2 py-1 rounded border border-sky-500/40 text-sky-600 dark:text-sky-300 hover:bg-sky-500/10"
+                                    className="text-xs px-2 py-1 rounded border dark:text-white/70"
+                                    style={{
+                                        borderColor: hexToRgba(accent_color, 0.4),
+                                        color: accent_color
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hexToRgba(accent_color, 0.1)}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                     onClick={() => setMode("chat")}
                                     title="Expand chat (C)"
                                 >

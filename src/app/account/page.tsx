@@ -8,12 +8,12 @@ import { Heading, Subheading } from '@/components/heading';
 import { Input } from '@/components/input';
 import { Text } from '@/components/text';
 import { ApplicationLayout } from "@/app/application-layout";
-import { useAuth } from "react-oidc-context";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import { fetchClientAccount, updateClientAccount } from '@/api/clientAccountsApi';
 import { Account } from '@/types/types';
 
 export default function Page() {
-    const auth = useAuth();
+    const auth = useUnifiedAuth();
 
     // State
     const [account, setAccount] = useState<Account | null>(null);

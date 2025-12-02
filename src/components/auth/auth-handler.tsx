@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect } from "react";
-import { useAuth } from "react-oidc-context";
+import { useUnifiedAuth } from "@/hooks/useUnifiedAuth";
 import { setIdToken } from "@/api/auth/authToken";
 
 const AuthHandler = () => {
-    const auth = useAuth();
+    const auth = useUnifiedAuth();
 
     useEffect(() => {
         if (auth?.user?.id_token) {

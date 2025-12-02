@@ -6,8 +6,10 @@ import {FormType, Fundamental, SectionField} from "@/types/types";
 import {PencilIcon} from "@heroicons/react/24/outline";
 import useSectionFieldsStore from "@/stores/sectionFieldsStore";
 import useEditorStore from "@/stores/editorStore";
+import { useBranding } from "@/contexts/branding-context";
 
 export default function SectionFieldTree(): ReactElement {
+    const { accent_color } = useBranding();
     const fields = useSectionFieldsStore((state) => state.fields);
     const fieldTypes = useSectionFieldsStore((state) => state.fieldTypes);
     const fetchSectionFields = useSectionFieldsStore((state) => state.fetchSectionFields);
@@ -40,7 +42,7 @@ export default function SectionFieldTree(): ReactElement {
                     <>
                         <div className="flex-1 flex flex-col py-1 truncate">
                             <div className="flex items-center gap-2">
-                                <span className={`text-sm truncate ${formEditRecordId === field.id ? 'text-white' : 'text-sky-500 dark:text-gray-200/80'}`}>
+                                <span className={`text-sm truncate dark:text-gray-200/80`} style={{ color: formEditRecordId === field.id ? 'white' : accent_color }}>
                                     {field.label}
                                 </span>
                                 {field.is_required && (
@@ -66,7 +68,8 @@ export default function SectionFieldTree(): ReactElement {
                                 title="Edit field"
                             >
                                 <PencilIcon
-                                    className={`w-4 h-4 transition-colors duration-200 ${formEditRecordId === field.id ? 'text-white' : 'text-sky-500 dark:text-white/70'}`}
+                                    className={`w-4 h-4 transition-colors duration-200 dark:text-white/70`}
+                                    style={{ color: formEditRecordId === field.id ? 'white' : accent_color }}
                                 />
                             </button>
                         </div>

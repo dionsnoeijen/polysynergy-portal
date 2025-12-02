@@ -3,6 +3,7 @@ import useEditorStore from "@/stores/editorStore";
 import apiConfig from "@/config";
 import {getIdToken} from "@/api/auth/authToken";
 import {ArrowPathIcon} from "@heroicons/react/24/outline";
+import { useBranding } from "@/contexts/branding-context";
 
 interface LogEntry {
     function: string;
@@ -20,6 +21,17 @@ export default function Logs() {
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const activeVersionId = useEditorStore((state) => state.activeVersionId);
+    const { accent_color } = useBranding();
+
+    // Helper to convert hex to rgba
+    const hexToRgba = (hex: string, opacity: number) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!result) return `rgba(14, 165, 233, ${opacity})`;
+        const r = parseInt(result[1], 16);
+        const g = parseInt(result[2], 16);
+        const b = parseInt(result[3], 16);
+        return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    };
 
     const fetchLogs = async () => {
         if (paused || !activeVersionId) return;
@@ -99,9 +111,14 @@ export default function Logs() {
 
     return (
         <div className="flex h-full">
-            <div className="flex-1 border-r border-sky-500/50 dark:border-white/10 h-full flex flex-col">
+            <div
+                className="flex-1 border-r dark:border-white/10 h-full flex flex-col"
+                style={{ borderRightColor: hexToRgba(accent_color, 0.5) }}
+            >
                 <div
-                    className="flex-1 overflow-auto text-sm font-mono bg-transparent dark:bg-black text-sky-500 dark:text-white relative max-w-full break-words">
+                    className="flex-1 overflow-auto text-sm font-mono bg-transparent dark:bg-black dark:text-white relative max-w-full break-words"
+                    style={{ color: accent_color }}
+                >
                     {!activeVersionId ? (
                         <div className="p-4 text-center text-zinc-500">
                             <div className="mb-2">📋 No active node setup</div>
@@ -110,7 +127,9 @@ export default function Logs() {
                     ) : loading ? (
                         <div className="absolute inset-0 bg-black flex items-center justify-center">
                             <div
-                                className="animate-spin h-5 w-5 border-2 border-sky-500 border-t-transparent rounded-full"></div>
+                                className="animate-spin h-5 w-5 border-2 border-t-transparent rounded-full"
+                                style={{ borderColor: accent_color, borderTopColor: 'transparent' }}
+                            ></div>
                         </div>
                     ) : logs.length === 0 ? (
                         <div className="p-2 text-zinc-500">No logs available.</div>
@@ -131,8 +150,13 @@ export default function Logs() {
                                     if (isError) return "text-red-400";
                                     if (isWarning) return "text-yellow-400";
                                     if (isInfo) return "text-green-400";
-                                    if (isNewRun) return "text-sky-300 font-medium";
+                                    if (isNewRun) return "font-medium";
                                     return "";
+                                };
+
+                                const getInlineStyle = () => {
+                                    if (isNewRun) return { color: hexToRgba(accent_color, 0.7) };
+                                    return {};
                                 };
 
                                 return (
@@ -144,17 +168,27 @@ export default function Logs() {
                                             <span className="mr-2 px-1 rounded text-xs bg-zinc-700">
                                                 {log.variant}
                                             </span>
-                                            <span className={getTextColor()}>
+                                            <span className={getTextColor()} style={getInlineStyle()}>
                                                 {log.message}
                                             </span>
                                         </div>
                                         {shouldShowSeparator && (
                                             <div className="my-4 flex items-center">
-                                                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
-                                                <div className="px-4 text-xs text-sky-400 font-medium">
+                                                <div
+                                                    className="flex-1 h-px"
+                                                    style={{
+                                                        background: `linear-gradient(to right, transparent, ${hexToRgba(accent_color, 0.5)}, transparent)`
+                                                    }}
+                                                ></div>
+                                                <div className="px-4 text-xs font-medium" style={{ color: hexToRgba(accent_color, 0.8) }}>
                                                     NEW RUN
                                                 </div>
-                                                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
+                                                <div
+                                                    className="flex-1 h-px"
+                                                    style={{
+                                                        background: `linear-gradient(to right, transparent, ${hexToRgba(accent_color, 0.5)}, transparent)`
+                                                    }}
+                                                ></div>
                                             </div>
                                         )}
                                     </React.Fragment>
@@ -165,12 +199,21 @@ export default function Logs() {
                 </div>
             </div>
 
-            <div className="w-12 flex items-center rounded rounded-l-none rounded-r-md justify-center border-l border-sky-500/50 dark:border-white/10 bg-sky-100 dark:bg-zinc-900">
+            <div
+                className="w-12 flex items-center rounded rounded-l-none rounded-r-md justify-center border-l dark:border-white/10 dark:bg-zinc-900"
+                style={{
+                    borderLeftColor: hexToRgba(accent_color, 0.5),
+                    backgroundColor: hexToRgba(accent_color, 0.1)
+                }}
+            >
                 {paused && (
                     <button
                         onClick={handleResume}
                         title="Resume logs"
-                        className="bg-sky-400 hover:bg-sky-500 dark:bg-zinc-400 dark:hover:bg-zinc-600 p-2 rounded-md"
+                        className="dark:bg-zinc-400 dark:hover:bg-zinc-600 p-2 rounded-md"
+                        style={{ backgroundColor: accent_color }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = hexToRgba(accent_color, 0.8)}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = accent_color}
                     >
                         <ArrowPathIcon className="w-4 h-4 text-white"/>
                     </button>

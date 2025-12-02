@@ -4,6 +4,7 @@ import {InOut, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
 import {useConnectorHandlers} from "@/hooks/editor/nodes/useConnectorHandlers";
 import {useConnectorContextMenu} from "@/hooks/editor/nodes/useConnectorContextMenu";
 import clsx from "clsx";
+import { useBranding } from "@/contexts/branding-context";
 
 type ConnectorProps = {
     nodeId: string;
@@ -50,6 +51,7 @@ const Connector: React.FC<ConnectorProps> = ({
                                                  groupId,
                                                  nodeVariableType
                                              }): React.ReactElement => {
+    const { accent_color } = useBranding();
     const {handleMouseDown} = useConnectorHandlers(isIn, isOut, nodeId, false, disabled);
     const {handleConnectorContextMenu} = useConnectorContextMenu(
         nodeId,
@@ -67,29 +69,33 @@ const Connector: React.FC<ConnectorProps> = ({
         [nodeVariableType]
     );
 
-    const { backgroundClasses, iconColorClasses } = useMemo(() => {
+    const { backgroundClasses, iconColorClasses, ringColor } = useMemo(() => {
         if (types.includes(NodeVariableType.TruePath)) {
             return {
-                backgroundClasses: "ring-sky-500 dark:ring-white bg-green-400 dark:bg-green-400",
-                iconColorClasses: "text-zinc-800 dark:text-zinc-800"
+                backgroundClasses: "dark:ring-white bg-green-400 dark:bg-green-400",
+                iconColorClasses: "text-zinc-800 dark:text-zinc-800",
+                ringColor: accent_color
             };
         } else if (types.includes(NodeVariableType.FalsePath)) {
             return {
-                backgroundClasses: "ring-sky-500 dark:ring-white bg-red-400 dark:bg-red-400",
-                iconColorClasses: "text-zinc-800 dark:text-zinc-800"
+                backgroundClasses: "dark:ring-white bg-red-400 dark:bg-red-400",
+                iconColorClasses: "text-zinc-800 dark:text-zinc-800",
+                ringColor: accent_color
             };
         } else if (types.includes(NodeVariableType.Dependency)) {
             return {
-                backgroundClasses: "ring-sky-500 dark:ring-white bg-fuchsia-400 dark:bg-fuchsia-400",
-                iconColorClasses: "text-zinc-800 dark:text-zinc-800"
+                backgroundClasses: "dark:ring-white bg-fuchsia-400 dark:bg-fuchsia-400",
+                iconColorClasses: "text-zinc-800 dark:text-zinc-800",
+                ringColor: accent_color
             };
         } else {
             return {
-                backgroundClasses: "ring-sky-500 dark:ring-white bg-white dark:bg-zinc-800",
-                iconColorClasses: "text-sky-600 dark:text-white"
+                backgroundClasses: "dark:ring-white bg-white dark:bg-zinc-800",
+                iconColorClasses: "dark:text-white",
+                ringColor: accent_color
             };
         }
-    }, [types]);
+    }, [types, accent_color]);
 
     const positionClasses = useMemo(() =>
         isIn ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2",
@@ -131,6 +137,7 @@ const Connector: React.FC<ConnectorProps> = ({
                     backgroundClasses,
                     "connector-animatable" // om te targeten
                 )}
+                style={{ borderColor: ringColor }}
             >
                 {isInteractive && (
                     <ChevronRightIcon
@@ -139,6 +146,7 @@ const Connector: React.FC<ConnectorProps> = ({
                             iconColorClasses,
                             iconClassName
                         )}
+                        style={{ color: iconColorClasses.includes('text-zinc-800') ? undefined : ringColor }}
                     />
                 )}
                 

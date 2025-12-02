@@ -1,9 +1,9 @@
 'use client';
 
-import {useAuth} from "react-oidc-context";
+import {useUnifiedAuth} from "@/hooks/useUnifiedAuth";
 
 function SignIn() {
-    const auth = useAuth();
+    const auth = useUnifiedAuth();
 
     const signOutRedirect = () => {
         const clientId = "<client id>";

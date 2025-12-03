@@ -47,7 +47,7 @@ export default function CompleteAccount({isAccountSynced, isAccountActive}: {isA
 
             if (!isAccountSynced && isAccountActive) {
                 response = await createClientAccount({
-                    cognito_id: auth.user.profile.sub,
+                    external_user_id: auth.user.profile.sub,
                     tenant_name: accountType === 'tenant' ? tenantName : auth.user?.profile.email,
                     first_name: firstName,
                     last_name: lastName,

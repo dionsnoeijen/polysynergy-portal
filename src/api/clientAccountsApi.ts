@@ -40,12 +40,12 @@ export const createClientAccount = async (
 ): Promise<Response> => {
     const idToken = getIdToken();
 
-    // Map cognito_id to external_user_id for standalone mode
-    const requestData = { ...clientAccountData };
-    if (config.AUTH_MODE === 'standalone' && requestData.cognito_id) {
-        requestData.external_user_id = requestData.cognito_id;
-        delete requestData.cognito_id;
-    }
+    // Ensure external_user_id is always set (required by backend)
+    // Use cognito_id as external_user_id if not explicitly provided
+    const requestData = {
+        ...clientAccountData,
+        external_user_id: clientAccountData.external_user_id || clientAccountData.cognito_id,
+    };
 
     return await fetch(`${config.LOCAL_API_URL}/accounts/`,
         {

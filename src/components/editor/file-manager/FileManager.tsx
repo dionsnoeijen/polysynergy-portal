@@ -43,20 +43,41 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
     // Get the nodes array to detect any changes
     const nodes = useNodesStore(state => state.nodes);
     
-    // Check if a file_selection node is selected
+    // Supported node paths for file assignment
+    const SUPPORTED_FILE_NODES = [
+        'polysynergy_nodes.file.file_selection.FileSelection',
+        'polysynergy_nodes.image.image.ImageNode'
+    ];
+
+    // Check if a file_selection or image node is selected
     const selectedFileSelectionNode = React.useMemo(() => {
         const selectedNode = selectedNodes.length === 1 ? getNode(selectedNodes[0]) : null;
-        return selectedNode?.path === 'polysynergy_nodes.file.file_selection.FileSelection' ? selectedNode : null;
+        return selectedNode && SUPPORTED_FILE_NODES.includes(selectedNode.path) ? selectedNode : null;
     }, [selectedNodes, getNode, nodes]);
+
+    // Check if this is a single-file node (like Image)
+    const isSingleFileNode = selectedFileSelectionNode?.path === 'polysynergy_nodes.image.image.ImageNode';
 
     // Get assigned files for visual indication - will update when nodes array changes
     const assignedFiles = React.useMemo(() => {
         if (!selectedFileSelectionNode) return [];
-        const selectedFilesVar = selectedFileSelectionNode.variables.find(v => v.handle === 'selected_files');
-        return Array.isArray(selectedFilesVar?.value) ? selectedFilesVar.value as string[] : [];
-    }, [selectedFileSelectionNode, nodes]);
-    
-    // Show assignment panel when file_selection node is selected
+
+        if (isSingleFileNode) {
+            // Image node: selected_image is a dict with url property
+            const selectedImageVar = selectedFileSelectionNode.variables.find(v => v.handle === 'selected_image');
+            if (selectedImageVar?.value && typeof selectedImageVar.value === 'object') {
+                const imageObj = selectedImageVar.value as { url?: string };
+                return imageObj.url ? [imageObj.url] : [];
+            }
+            return [];
+        } else {
+            // FileSelection node: selected_files is a list of paths
+            const selectedFilesVar = selectedFileSelectionNode.variables.find(v => v.handle === 'selected_files');
+            return Array.isArray(selectedFilesVar?.value) ? selectedFilesVar.value as string[] : [];
+        }
+    }, [selectedFileSelectionNode, nodes, isSingleFileNode]);
+
+    // Show assignment panel when file_selection or image node is selected
     const showAssignmentPanel = !!selectedFileSelectionNode;
 
     const {
@@ -144,28 +165,41 @@ const FileManager: React.FC<FileManagerProps> = ({ className = "" }) => {
         await createDirectory(folderName);
     }, [createDirectory]);
 
-    // Handle assigning selected files to the file_selection node
+    // Handle assigning selected files to the file_selection or image node
     const handleAssignSelectedFiles = useCallback(() => {
         if (!selectedFileSelectionNode || state.selectedFiles.length === 0) return;
-        
+
         // Get fresh data from the store to avoid stale closure
         const currentNode = getNode(selectedFileSelectionNode.id);
         if (!currentNode) return;
-        
-        const selectedFilesVar = currentNode.variables.find(v => v.handle === 'selected_files');
-        const currentFiles = Array.isArray(selectedFilesVar?.value) ? selectedFilesVar.value as string[] : [];
-        
+
         // Use file paths directly (S3 keys) instead of URLs
         const selectedFilePaths = state.selectedFiles;
-        
-        // Add new file paths to existing ones (avoid duplicates)
-        const uniqueFiles = [...new Set([...currentFiles, ...selectedFilePaths])];
-        
-        updateNodeVariable(selectedFileSelectionNode.id, 'selected_files', uniqueFiles);
-        
+
+        if (isSingleFileNode) {
+            // Image node: only take the first file, get URL from directoryContents
+            const firstPath = selectedFilePaths[0];
+            const fileInfo = directoryContents.files.find(f => f.path === firstPath);
+            const imageUrl = fileInfo?.url || firstPath;
+
+            updateNodeVariable(selectedFileSelectionNode.id, 'selected_image', {
+                url: imageUrl,
+                path: firstPath
+            });
+        } else {
+            // FileSelection node: add all files
+            const selectedFilesVar = currentNode.variables.find(v => v.handle === 'selected_files');
+            const currentFiles = Array.isArray(selectedFilesVar?.value) ? selectedFilesVar.value as string[] : [];
+
+            // Add new file paths to existing ones (avoid duplicates)
+            const uniqueFiles = [...new Set([...currentFiles, ...selectedFilePaths])];
+
+            updateNodeVariable(selectedFileSelectionNode.id, 'selected_files', uniqueFiles);
+        }
+
         // Clear file selection after assignment
         clearSelection();
-    }, [selectedFileSelectionNode?.id, state.selectedFiles, getNode, updateNodeVariable, clearSelection, directoryContents.files]);
+    }, [selectedFileSelectionNode?.id, state.selectedFiles, getNode, updateNodeVariable, clearSelection, directoryContents.files, isSingleFileNode]);
 
     // Upload handler
     const handleUpload = useCallback((files: File[]) => {

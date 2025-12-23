@@ -5,10 +5,12 @@ import FakeConnector from '@/components/editor/nodes/fake-connector';
 
 interface InterpretedVariableContainerProps extends InterpretedVariableLogicProps {
     children: (logic: ReturnType<typeof useInterpretedVariableLogic>) => ReactNode;
+    fullWidth?: boolean;
 }
 
 const InterpretedVariableContainer: React.FC<InterpretedVariableContainerProps> = ({
     children,
+    fullWidth = false,
     ...interpretedProps
 }) => {
     const logic = useInterpretedVariableLogic(interpretedProps);
@@ -20,12 +22,12 @@ const InterpretedVariableContainer: React.FC<InterpretedVariableContainerProps> 
             {logic.showInConnector && !logic.isMirror && (
                 <Connector in {...logic.inConnectorProps} />
             )}
-            
+
             {/* Variable Content */}
-            <div className="flex items-center truncate">
+            <div className={fullWidth ? "w-full" : "flex items-center truncate"}>
                 {children(logic)}
             </div>
-            
+
             {/* Output Connectors */}
             {logic.showOutConnector && !logic.isMirror && (
                 <Connector out {...logic.outConnectorProps} />

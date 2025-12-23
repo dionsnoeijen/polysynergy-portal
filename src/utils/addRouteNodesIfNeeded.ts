@@ -75,6 +75,7 @@ const addRouteNodes = (route: Route) => {
             handle: segment.name,
             value: segment.default_value,
             type: segment.variable_type as NodeVariableType,
+            has_out: true,
             published: false,
         }));
 

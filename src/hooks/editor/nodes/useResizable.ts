@@ -38,18 +38,18 @@ const useResizable = (node: Node) => {
         const handleMouseMove = (moveEvent: MouseEvent) => {
             const deltaX = moveEvent.movementX / zoomFactor;
             const newWidth = Math.max(100, sizeRef.current.width + deltaX);
-            
+
             // Direct DOM manipulation for immediate visual feedback
             const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`) as HTMLElement;
             if (nodeEl) {
                 nodeEl.style.width = `${newWidth}px`;
             }
-            
+
             // Update React state for consistency
             flushSync(() => {
                 setSize((prevSize) => ({ ...prevSize, width: newWidth }));
             });
-            
+
             // Update connections to follow the resizing node
             requestAnimationFrame(() => {
                 updateConnectionsDirectly(connections);
@@ -75,10 +75,63 @@ const useResizable = (node: Node) => {
         window.addEventListener("mouseup", handleMouseUp);
     }, [node.id]);
 
+    // Handle both width and height resize (for iframe nodes)
+    const handleCornerResizeMouseDown = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsResizing(true);
+
+        const zoomFactor = useEditorStore.getState().zoomFactor;
+        const connections = useConnectionsStore.getState().connections;
+
+        const handleMouseMove = (moveEvent: MouseEvent) => {
+            const deltaX = moveEvent.movementX / zoomFactor;
+            const deltaY = moveEvent.movementY / zoomFactor;
+            const newWidth = Math.max(100, sizeRef.current.width + deltaX);
+            const newHeight = Math.max(100, sizeRef.current.height + deltaY);
+
+            const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`) as HTMLElement;
+            if (nodeEl) {
+                nodeEl.style.width = `${newWidth}px`;
+                nodeEl.style.height = `${newHeight}px`;
+            }
+
+            flushSync(() => {
+                setSize({ width: newWidth, height: newHeight });
+            });
+
+            requestAnimationFrame(() => {
+                updateConnectionsDirectly(connections);
+            });
+        };
+
+        const handleMouseUp = () => {
+            setIsResizing(false);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+
+            const finalWidth = snapToGrid(sizeRef.current.width);
+            const finalHeight = snapToGrid(sizeRef.current.height);
+
+            useNodesStore.getState().updateNodeWidth(node.id, finalWidth);
+            useNodesStore.getState().updateNodeHeight(node.id, finalHeight);
+
+            const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`) as HTMLElement;
+            if (nodeEl) {
+                nodeEl.style.width = `${finalWidth}px`;
+                nodeEl.style.height = `${finalHeight}px`;
+            }
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+    }, [node.id]);
+
     return {
         size,
         isResizing,
         handleResizeMouseDown,
+        handleCornerResizeMouseDown,
     };
 };
 

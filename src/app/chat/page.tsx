@@ -4,17 +4,22 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MyChatWindow } from '@/types/types';
 import { fetchMyChatWindowsAPI } from '@/api/chatWindowsApi';
+import { useUnifiedAuth } from '@/hooks/useUnifiedAuth';
 import { Heading } from '@/components/heading';
 import { Text } from '@/components/text';
 import { Badge } from '@/components/badge';
 
 export default function ChatWindowsPage() {
     const router = useRouter();
+    const auth = useUnifiedAuth();
     const [chatWindows, setChatWindows] = useState<MyChatWindow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // Wait for auth to complete before fetching chat windows
+        if (auth.isLoading || !auth.isAuthenticated) return;
+
         fetchMyChatWindowsAPI()
             .then((data) => {
                 setChatWindows(data);
@@ -25,9 +30,9 @@ export default function ChatWindowsPage() {
                 setError('Failed to load chat windows');
                 setLoading(false);
             });
-    }, []);
+    }, [auth.isLoading, auth.isAuthenticated]);
 
-    if (loading) {
+    if (loading || auth.isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <Text>Loading your chat windows...</Text>

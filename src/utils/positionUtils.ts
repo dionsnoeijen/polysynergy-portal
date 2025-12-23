@@ -5,12 +5,21 @@ import useNodesStore from "@/stores/nodesStore";
 export const calculateConnectorPosition = (
     target: HTMLElement,
 ) => {
-    const {editorPosition, getPanPositionForVersion, getZoomFactorForVersion} = useEditorStore.getState();
+    const {getPanPositionForVersion, getZoomFactorForVersion} = useEditorStore.getState();
     const panPosition = getPanPositionForVersion();
     const zoomFactor = getZoomFactorForVersion();
+
+    const editor = document.querySelector(`[data-type="editor"]`) as HTMLElement;
+
+    if (!editor) {
+        return { x: 0, y: 0 };
+    }
+
+    const editorRect = editor.getBoundingClientRect();
     const rect = target.getBoundingClientRect();
-    const x = (rect.left + rect.width / 2 - editorPosition.x - panPosition.x) / zoomFactor;
-    const y = (rect.top + rect.height / 2 - editorPosition.y - panPosition.y) / zoomFactor;
+
+    const x = (rect.left + rect.width / 2 - editorRect.left - panPosition.x) / zoomFactor;
+    const y = (rect.top + rect.height / 2 - editorRect.top - panPosition.y) / zoomFactor;
     return {x, y};
 };
 
@@ -104,9 +113,12 @@ export const getNodeBoundsFromState = (nodeIds: string[]) => {
 };
 
 export const getNodeBoundsFromDOM = (nodeIds: string[]) => {
-    const {editorPosition, getPanPositionForVersion, getZoomFactorForVersion} = useEditorStore.getState();
+    const {getPanPositionForVersion, getZoomFactorForVersion} = useEditorStore.getState();
     const panPosition = getPanPositionForVersion();
     const zoomFactor = getZoomFactorForVersion();
+
+    const editor = document.querySelector(`[data-type="editor"]`) as HTMLElement;
+    const editorRect = editor?.getBoundingClientRect() ?? { left: 0, top: 0 };
 
     let minX = Infinity,
         minY = Infinity,
@@ -120,8 +132,8 @@ export const getNodeBoundsFromDOM = (nodeIds: string[]) => {
         foundAny = true;
 
         const rect = el.getBoundingClientRect();
-        const x = (rect.left - editorPosition.x - panPosition.x) / zoomFactor;
-        const y = (rect.top - editorPosition.y - panPosition.y) / zoomFactor;
+        const x = (rect.left - editorRect.left - panPosition.x) / zoomFactor;
+        const y = (rect.top - editorRect.top - panPosition.y) / zoomFactor;
         const right = x + (rect.width / zoomFactor);
         const bottom = y + (rect.height / zoomFactor);
 

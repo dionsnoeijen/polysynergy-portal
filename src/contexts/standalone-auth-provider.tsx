@@ -273,7 +273,7 @@ export function StandaloneAuthProvider({ children }: { children: React.ReactNode
                     console.error('[Auth] ❌ Token refresh failed');
                 }
             } else if (timeUntilExpiry <= 0) {
-                console.error('[Auth] ⚠️ Token expired (' + Math.abs(timeInSeconds) + 's ago), logging out');
+                console.warn('[Auth] ⚠️ Token expired (' + Math.abs(timeInSeconds) + 's ago), logging out');
                 clearTokens();
                 setUser(null);
                 setIsAuthenticated(false);

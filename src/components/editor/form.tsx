@@ -24,6 +24,9 @@ import ImportPackageForm from "@/components/editor/forms/import-package-form";
 import PlayButtonsForm from "@/components/editor/forms/play-buttons-form";
 import SectionForm from "@/components/editor/forms/section-form";
 import SectionFieldForm from "@/components/editor/forms/section-field-form";
+import LayoutEditorForm from "@/components/editor/forms/layout-editor-form";
+import TableEditorForm from "@/components/editor/forms/table-editor-form";
+import SPAEditorForm from "@/components/editor/forms/spa-editor-form";
 
 const Form: React.FC = () => {
     const formType = useEditorStore((state) => state.formType);
@@ -148,6 +151,15 @@ const Form: React.FC = () => {
                 formType === FormType.EditSectionField
             ) && (
                 <SectionFieldForm />
+            )}
+            {(formType === FormType.EditLayout) && (
+                <LayoutEditorForm />
+            )}
+            {(formType === FormType.EditTable) && (
+                <TableEditorForm />
+            )}
+            {(formType === FormType.EditSPA) && (
+                <SPAEditorForm />
             )}
         </div>
     );

@@ -25,6 +25,14 @@ import {
     updateChatWindowUserPermissionsAPI,
     removeUserFromChatWindowAPI
 } from "@/api/chatWindowsApi";
+import {
+    listEmbedTokensAPI,
+    createEmbedTokenAPI,
+    updateEmbedTokenAPI,
+    deleteEmbedTokenAPI,
+    EmbedToken
+} from "@/api/embedTokensApi";
+import {ClipboardIcon, CheckIcon, PlusIcon, KeyIcon} from "@heroicons/react/24/outline";
 
 const ChatWindowForm: React.FC = () => {
     const closeForm = useEditorStore((state) => state.closeForm);
@@ -66,6 +74,11 @@ const ChatWindowForm: React.FC = () => {
         show_response_transparency: boolean;
     }>>([]);
 
+    // Embed tokens state
+    const [embedTokens, setEmbedTokens] = useState<EmbedToken[]>([]);
+    const [copiedTokenId, setCopiedTokenId] = useState<string | null>(null);
+    const [isCreatingToken, setIsCreatingToken] = useState(false);
+
     useEffect(() => {
         // Fetch accounts for user assignment
         if (accounts.length === 0) {
@@ -85,6 +98,11 @@ const ChatWindowForm: React.FC = () => {
             fetchChatWindowUsersAPI(formEditRecordId as string, activeProjectId)
                 .then(setAssignedUsers)
                 .catch(error => console.error("Failed to fetch assigned users:", error));
+
+            // Fetch embed tokens
+            listEmbedTokensAPI(activeProjectId, formEditRecordId as string)
+                .then(setEmbedTokens)
+                .catch(error => console.error("Failed to fetch embed tokens:", error));
         }
     }, [formEditRecordId, formType, getChatWindow, activeProjectId, accounts.length, fetchAccounts]);
 
@@ -250,6 +268,48 @@ const ChatWindowForm: React.FC = () => {
         setPendingUserAssignments(pendingUserAssignments.map(u =>
             u.account_id === accountId ? { ...u, [permission]: value } : u
         ));
+    };
+
+    // Embed token handlers
+    const handleCreateEmbedToken = async () => {
+        if (!formEditRecordId) return;
+        setIsCreatingToken(true);
+        try {
+            const newToken = await createEmbedTokenAPI(activeProjectId, {
+                chat_window_id: formEditRecordId as string,
+                sessions_enabled: true,
+                sidebar_visible: true,
+            });
+            setEmbedTokens([...embedTokens, newToken]);
+        } catch (error) {
+            console.error("Failed to create embed token:", error);
+        } finally {
+            setIsCreatingToken(false);
+        }
+    };
+
+    const handleToggleEmbedToken = async (tokenId: string, isActive: boolean) => {
+        try {
+            const updated = await updateEmbedTokenAPI(activeProjectId, tokenId, { is_active: isActive });
+            setEmbedTokens(embedTokens.map(t => t.id === tokenId ? updated : t));
+        } catch (error) {
+            console.error("Failed to update embed token:", error);
+        }
+    };
+
+    const handleDeleteEmbedToken = async (tokenId: string) => {
+        try {
+            await deleteEmbedTokenAPI(activeProjectId, tokenId);
+            setEmbedTokens(embedTokens.filter(t => t.id !== tokenId));
+        } catch (error) {
+            console.error("Failed to delete embed token:", error);
+        }
+    };
+
+    const handleCopyToken = (token: string, tokenId: string) => {
+        navigator.clipboard.writeText(token);
+        setCopiedTokenId(tokenId);
+        setTimeout(() => setCopiedTokenId(null), 2000);
     };
 
     return (
@@ -513,6 +573,123 @@ const ChatWindowForm: React.FC = () => {
                     </section>
 
                     <Divider className="my-10" soft bleed />
+
+            {/* Embed Tokens Section - Only in Edit mode */}
+            {formType === FormType.EditChatWindow && (
+                <>
+                    <section className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                        <div className="space-y-1">
+                            <Subheading>Embed Tokens</Subheading>
+                            <Text>
+                                Create tokens to embed this chat window in external applications.
+                                Use the <code className="text-xs bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">ChatWindow</code> component in your SPA with an embed token.
+                            </Text>
+                        </div>
+                        <div className="space-y-4">
+                            {/* Create new token button */}
+                            <Button
+                                type="button"
+                                onClick={handleCreateEmbedToken}
+                                disabled={isCreatingToken}
+                                className="w-full"
+                            >
+                                <PlusIcon className="w-4 h-4 mr-2" />
+                                {isCreatingToken ? "Creating..." : "Create Embed Token"}
+                            </Button>
+
+                            {/* Token list */}
+                            {embedTokens.length > 0 ? (
+                                <div className="space-y-3">
+                                    {embedTokens.map((token) => (
+                                        <div
+                                            key={token.id}
+                                            className={`border rounded-lg p-4 space-y-3 ${
+                                                token.is_active
+                                                    ? "border-zinc-300 dark:border-zinc-700"
+                                                    : "border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20"
+                                            }`}
+                                        >
+                                            {/* Token header */}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <KeyIcon className={`w-4 h-4 ${token.is_active ? "text-green-600" : "text-red-500"}`} />
+                                                    <span className={`text-xs font-medium ${token.is_active ? "text-green-600" : "text-red-500"}`}>
+                                                        {token.is_active ? "Active" : "Inactive"}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        color={token.is_active ? "amber" : "green"}
+                                                        onClick={() => handleToggleEmbedToken(token.id, !token.is_active)}
+                                                    >
+                                                        {token.is_active ? "Deactivate" : "Activate"}
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        color="red"
+                                                        onClick={() => handleDeleteEmbedToken(token.id)}
+                                                    >
+                                                        <TrashIcon className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            {/* Token value */}
+                                            <div className="flex items-center gap-2">
+                                                <code className="flex-1 text-xs bg-zinc-100 dark:bg-zinc-800 px-3 py-2 rounded font-mono truncate">
+                                                    {token.token}
+                                                </code>
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => handleCopyToken(token.token, token.id)}
+                                                    color="zinc"
+                                                    title="Copy token"
+                                                >
+                                                    {copiedTokenId === token.id ? (
+                                                        <CheckIcon className="w-4 h-4 text-green-500" />
+                                                    ) : (
+                                                        <ClipboardIcon className="w-4 h-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
+
+                                            {/* Token stats */}
+                                            <div className="flex gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+                                                <span>Created: {new Date(token.created_at).toLocaleDateString()}</span>
+                                                <span>Used: {token.usage_count} times</span>
+                                                {token.last_used_at && (
+                                                    <span>Last used: {new Date(token.last_used_at).toLocaleDateString()}</span>
+                                                )}
+                                            </div>
+
+                                            {/* Usage example */}
+                                            <details className="text-xs">
+                                                <summary className="cursor-pointer text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
+                                                    Show usage example
+                                                </summary>
+                                                <pre className="mt-2 bg-zinc-100 dark:bg-zinc-800 p-3 rounded overflow-x-auto">
+{`<ChatWindow
+  embedToken="${token.token}"
+  theme="light"
+/>`}
+                                                </pre>
+                                            </details>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-6 text-zinc-500 dark:text-zinc-400 border border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg">
+                                    <KeyIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                    <p className="text-sm">No embed tokens yet</p>
+                                    <p className="text-xs">Create a token to embed this chat window</p>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                    <Divider className="my-10" soft bleed />
+                </>
+            )}
 
             {formType === FormType.EditChatWindow && (
                 <>

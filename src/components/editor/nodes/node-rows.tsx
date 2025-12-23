@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useMemo} from "react";
 import {NodeProps} from "@/types/types";
 import {useNodeCommonLogic} from "@/hooks/editor/nodes/useNodeCommonLogic";
 import {useNodeStyling} from "@/hooks/editor/nodes/useNodeStyling";
@@ -15,7 +15,15 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
     const commonLogic = useNodeCommonLogic(node, preview);
     const styles = useNodeStyling(node, commonLogic);
     const interactions = useNodeInteractions(node, commonLogic.isNodeInService, preview);
-    const {handleResizeMouseDown} = useResizable(node);
+    const {handleResizeMouseDown, handleCornerResizeMouseDown} = useResizable(node);
+
+    // Check if this node has an iframe viewer (supports height resize)
+    const hasIframeViewer = useMemo(() => {
+        return node.variables.some(v => v.dock?.iframe_viewer === true);
+    }, [node.variables]);
+
+    // Use corner resize for iframe nodes, width-only resize for others
+    const resizeHandler = hasIframeViewer ? handleCornerResizeMouseDown : handleResizeMouseDown;
 
     // Highlight warp gates when this node is selected
     const selectedNodes = useEditorStore((state) => state.selectedNodes);
@@ -51,7 +59,7 @@ const NodeRows: React.FC<NodeProps> = ({node, preview = false}) => {
                     styles={styles}
                     isCollapsable={commonLogic.isCollapsable}
                     onCollapse={interactions.onCollapse}
-                    onResizeMouseDown={handleResizeMouseDown}
+                    onResizeMouseDown={resizeHandler}
                 />
             )}
         </NodeContainer>

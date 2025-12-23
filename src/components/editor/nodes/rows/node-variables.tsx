@@ -22,6 +22,9 @@ import AvatarVariable from "@/components/editor/nodes/rows/avatar-variable";
 import ImageVariable from "@/components/editor/nodes/rows/image-variable";
 import OAuthVariable from "@/components/editor/nodes/rows/oauth-variable";
 import CodeVariable from "@/components/editor/nodes/rows/code-variable";
+import TableVariable from "@/components/editor/nodes/rows/table-variable";
+import SPAVariable from "@/components/editor/nodes/rows/spa-variable";
+import IframeVariable from "@/components/editor/nodes/rows/iframe-variable";
 
 type Props = {
     node: Node;
@@ -180,6 +183,12 @@ const getVariableComponent = (
             return <OAuthVariable key={key} {...commonProps} />;
         case NodeVariableType.Code:
             return <CodeVariable key={key} {...commonProps} />;
+        case NodeVariableType.Table:
+            return <TableVariable key={key} {...commonProps} />;
+        case NodeVariableType.SPA:
+            return <SPAVariable key={key} {...commonProps} />;
+        case NodeVariableType.Iframe:
+            return <IframeVariable key={key} {...commonProps} />;
         case NodeVariableType.Boolean:
         case NodeVariableType.TruePath:
         case NodeVariableType.FalsePath:
@@ -193,6 +202,7 @@ const getVariableComponent = (
 export default React.memo(NodeVariables, (prevProps, nextProps) => {
     return (
         prevProps.node.id === nextProps.node.id &&
+        prevProps.node.variables === nextProps.node.variables &&
         prevProps.node.view.disabled === nextProps.node.view.disabled &&
         prevProps.node.view.isOpenMap === nextProps.node.view.isOpenMap &&
         prevProps.variables === nextProps.variables &&

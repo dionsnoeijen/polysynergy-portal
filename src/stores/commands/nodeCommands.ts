@@ -124,15 +124,15 @@ export class UpdateNodeCommand implements Command {
 export class UpdateNodeVariableCommand implements Command {
     private nodeId: string;
     private variableHandle: string;
-    private oldValue: null | string | number | boolean | string[] | NodeVariable[];
-    private newValue: null | string | number | boolean | string[] | NodeVariable[];
+    private oldValue: null | string | number | boolean | string[] | NodeVariable[] | Record<string, unknown>;
+    private newValue: null | string | number | boolean | string[] | NodeVariable[] | Record<string, unknown>;
 
-    constructor(nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) {
+    constructor(nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[] | Record<string, unknown>) {
         const currentVariable = useNodesStore.getState().getNodeVariable(nodeId, variableHandle);
-        
+
         this.nodeId = nodeId;
         this.variableHandle = variableHandle;
-        this.oldValue = currentVariable?.value || null;
+        this.oldValue = currentVariable?.value ?? null;
         this.newValue = newValue;
     }
 

@@ -530,7 +530,8 @@ const SectionDataTables: React.FC = () => {
     }, [resizingColumn, resizeStartX, resizeStartWidth, activeSectionId, activeProjectId, columnOrder, columnWidths, fetchSections]);
 
     // Sort columns based on columnOrder and filter out hidden columns (before early returns)
-    const columns = tableConfig?.columns || [];
+    // Also filter out "actions" column - it's rendered separately as a hardcoded column
+    const columns = (tableConfig?.columns || []).filter(col => col.field_handle !== 'actions');
 
     // Build sorted columns: use saved order + append any new columns not in the order
     const sortedColumns = columnOrder.length > 0

@@ -6,7 +6,7 @@ import { NodeVariable, NodeVariableType } from "@/types/types";
  */
 export const sanitizeExecutionValue = (
     value: unknown
-): null | string | number | boolean | string[] | NodeVariable[] => {
+): null | string | number | boolean | string[] | NodeVariable[] | Record<string, unknown> => {
     // Handle null/undefined
     if (value === null || value === undefined) {
         return null;
@@ -35,9 +35,9 @@ export const sanitizeExecutionValue = (
 
     // Handle objects
     if (typeof value === 'object' && value !== null) {
-        // Handle Image objects (common in execution results)
+        // Handle Image objects - keep as object, don't convert to string
         if (isImageObject(value)) {
-            return sanitizeImageObject(value);
+            return sanitizeImageObjectAsObject(value);
         }
 
         // Handle NodeVariable objects
@@ -45,12 +45,12 @@ export const sanitizeExecutionValue = (
             return [sanitizeNodeVariable(value)];
         }
 
-        // Handle plain objects by converting to JSON string
+        // Handle plain objects - keep as object for dict types
         try {
-            return JSON.stringify(sanitizeObjectForJson(value));
+            return sanitizeObjectForJson(value);
         } catch (error) {
             console.warn('Failed to sanitize object value, converting to string:', error);
-            return String(value);
+            return { error: String(value) };
         }
     }
 
@@ -113,35 +113,52 @@ const isImageObject = (obj: unknown): boolean => {
 
 /**
  * Sanitizes Image objects by extracting only the serializable properties
- * For Image type variables, we preserve the object structure as a JSON string
- * so the ImageVariable component can properly parse and display it
+ * Returns the object as-is (not as a string) for proper object handling
  */
-const sanitizeImageObject = (obj: unknown): string => {
+const sanitizeImageObjectAsObject = (obj: unknown): Record<string, unknown> => {
     const record = obj as Record<string, unknown>;
-    
+
     const sanitizedImage: Record<string, unknown> = {};
-    
+
     // Extract only serializable image properties
     const safeProperties = [
-        'url', 'src', 'data', 'base64', 'path', 'filename', 'mimetype', 'size', 
-        'width', 'height', 'alt', 'title', 'format', 'bytes', 'content'
+        'url', 'src', 'data', 'base64', 'path', 'filename', 'mimetype', 'size',
+        'width', 'height', 'alt', 'title', 'format', 'bytes', 'content', 'mime_type'
     ];
-    
+
     for (const prop of safeProperties) {
         if (prop in record && isPrimitive(record[prop])) {
             sanitizedImage[prop] = record[prop];
         }
     }
-    
+
     // Ensure we have at least some image data
     if (Object.keys(sanitizedImage).length === 0) {
+        return { error: 'Invalid Image Object' };
+    }
+
+    return sanitizedImage;
+};
+
+/**
+ * Sanitizes Image objects by extracting only the serializable properties
+ * For Image type variables, we preserve the object structure as a JSON string
+ * so the ImageVariable component can properly parse and display it
+ * @deprecated Use sanitizeImageObjectAsObject instead for proper object handling
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const sanitizeImageObject = (obj: unknown): string => {
+    const sanitized = sanitizeImageObjectAsObject(obj);
+
+    if ('error' in sanitized) {
         return '[Invalid Image Object]';
     }
-    
+
     try {
-        return JSON.stringify(sanitizedImage);
+        return JSON.stringify(sanitized);
     } catch {
         // Fallback if JSON.stringify fails
+        const record = obj as Record<string, unknown>;
         return record.url ? String(record.url) : record.src ? String(record.src) : '[Image Object]';
     }
 };

@@ -1,0 +1,59 @@
+# Production Dockerfile for PolySynergy Portal
+# Multi-stage build for optimized image size
+
+# Stage 1: Dependencies
+FROM node:18-alpine AS deps
+WORKDIR /app
+RUN npm install -g pnpm
+
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+# Stage 2: Builder
+FROM node:18-alpine AS builder
+WORKDIR /app
+RUN npm install -g pnpm
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build arguments for Next.js public env vars (baked into build)
+ARG NEXT_PUBLIC_POLYSYNERGY_API
+ARG NEXT_PUBLIC_POLYSYNERGY_WEBSOCKET_URL
+ARG NEXT_PUBLIC_AWS_COGNITO_AUTHORITY
+ARG NEXT_PUBLIC_AWS_COGNITO_DOMAIN
+ARG NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID
+ARG NEXT_PUBLIC_AWS_COGNITO_LOGOUT_URL
+ARG NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL
+
+ENV NEXT_PUBLIC_POLYSYNERGY_API=$NEXT_PUBLIC_POLYSYNERGY_API
+ENV NEXT_PUBLIC_POLYSYNERGY_WEBSOCKET_URL=$NEXT_PUBLIC_POLYSYNERGY_WEBSOCKET_URL
+ENV NEXT_PUBLIC_AWS_COGNITO_AUTHORITY=$NEXT_PUBLIC_AWS_COGNITO_AUTHORITY
+ENV NEXT_PUBLIC_AWS_COGNITO_DOMAIN=$NEXT_PUBLIC_AWS_COGNITO_DOMAIN
+ENV NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID=$NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID
+ENV NEXT_PUBLIC_AWS_COGNITO_LOGOUT_URL=$NEXT_PUBLIC_AWS_COGNITO_LOGOUT_URL
+ENV NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL=$NEXT_PUBLIC_AWS_COGNITO_REDIRECT_URL
+
+RUN pnpm build
+
+# Stage 3: Runner
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=4000
+
+# Don't run as root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy standalone build
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+
+USER nextjs
+
+EXPOSE 4000
+
+CMD ["node", "server.js"]

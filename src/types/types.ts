@@ -15,6 +15,10 @@ import VariableTypeAvatar from "@/components/editor/sidebars/dock/variable-type-
 import VariableTypeImage from "@/components/editor/sidebars/dock/variable-type-image";
 import VariableTypeOAuth from "@/components/editor/sidebars/dock/variable-type-oauth";
 import VariableTypeAny from "@/components/editor/sidebars/dock/variable-type-any";
+import VariableTypeLayout from "@/components/editor/sidebars/dock/variable-type-layout";
+import VariableTypeTable from "@/components/editor/sidebars/dock/variable-type-table";
+import VariableTypeSPA from "@/components/editor/sidebars/dock/variable-type-spa";
+import VariableTypeIframe from "@/components/editor/sidebars/dock/variable-type-iframe";
 import {AccessLevel} from "@/types/enums";
 
 declare global {
@@ -89,6 +93,9 @@ export enum FormType {
     EditSectionField = 'editSectionField',
     AddSection = 'addSection',
     EditSection = 'editSection',
+    EditLayout = 'editLayout',
+    EditTable = 'editTable',
+    EditSPA = 'editSPA',
 }
 
 export enum InOut {
@@ -133,6 +140,10 @@ export enum NodeVariableType {
     Image = 'image',
     OAuth = 'oauth',
     Any = 'any',
+    Layout = 'layout',
+    Table = 'table',
+    SPA = 'spa',
+    Iframe = 'iframe',
 }
 
 export enum NodeType {
@@ -174,6 +185,7 @@ export type Dock = {
     rich_text_area?: boolean;
     code_editor?: boolean;
     json_editor?: boolean;
+    layout_editor?: boolean;
     files_editor?: boolean;
     select_values?: Record<string, string>;
     switch?: boolean;
@@ -194,6 +206,9 @@ export type Dock = {
     key_field?: boolean;
     value_field?: boolean;
     template_editor?: boolean;
+    table_editor?: boolean;
+    spa_editor?: boolean;
+    iframe_viewer?: boolean;
     image?: boolean;
     metadata?: Record<string, unknown>;
     placeholder?: string;
@@ -203,7 +218,7 @@ export type NodeVariable = {
     name?: string;
     handle: string;
     parentHandle?: string;
-    value: null | undefined | string | number | boolean | string[] | NodeVariable[];
+    value: null | undefined | string | number | boolean | string[] | NodeVariable[] | Record<string, unknown>;
     published: boolean;
     published_title?: string;
     published_description?: string;
@@ -311,6 +326,8 @@ export type Node = {
         sourceHandle: string;      // Specific output connector handle
         variableType: string;      // Type of the connector (for styling)
     };
+    // Layout editor component slots - keys defined by user, values are connected component node IDs
+    components?: Record<string, string>;
 };
 
 export interface NodeProps {
@@ -896,5 +913,9 @@ export const VariableTypeComponents = {
     [NodeVariableType.Image]: VariableTypeImage,
     [NodeVariableType.OAuth]: VariableTypeOAuth,
     [NodeVariableType.Any]: VariableTypeAny,
+    [NodeVariableType.Layout]: VariableTypeLayout,
+    [NodeVariableType.Table]: VariableTypeTable,
+    [NodeVariableType.SPA]: VariableTypeSPA,
+    [NodeVariableType.Iframe]: VariableTypeIframe,
     [NodeVariableType.Node]: null,
 };

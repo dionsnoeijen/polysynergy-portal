@@ -9,9 +9,10 @@ interface AvatarContentProps {
         value: unknown;
         avatarState: 'generating' | 'hasImage' | 'placeholder';
     };
+    onImageLoad?: () => void;
 }
 
-const AvatarContent: React.FC<AvatarContentProps> = ({ logic }) => {
+const AvatarContent: React.FC<AvatarContentProps> = ({ logic, onImageLoad }) => {
     if (!logic) return null;
 
     const renderAvatar = () => {
@@ -38,6 +39,7 @@ const AvatarContent: React.FC<AvatarContentProps> = ({ logic }) => {
                             src={logic.value as unknown as string}
                             alt="Avatar"
                             className="max-h-48 w-auto object-contain"
+                            onLoad={onImageLoad}
                             onError={(e) => {
                                 (e.target as HTMLImageElement).style.display = 'none';
                             }}

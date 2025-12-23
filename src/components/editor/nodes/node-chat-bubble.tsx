@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useCallback, useMemo} from "react";
 import useChatViewStore, {ChatViewMessage} from "@/stores/chatViewStore";
+import MarkdownContent from "@/components/editor/chat/components/markdown-content";
 
 type Props = { nodeId: string };
 
@@ -69,7 +70,7 @@ const NodeChatBubble: React.FC<Props> = ({nodeId}) => {
                 >
                     <div
                         ref={scrollContainerRef}
-                        className="overflow-y-scroll max-h-[200px] pr-1 space-y-2"
+                        className="overflow-y-scroll max-h-[200px] pr-1"
                         style={{ scrollbarWidth: 'thin' }}
                         onWheel={(e) => {
                             // Stop propagation to prevent editor zoom
@@ -77,7 +78,7 @@ const NodeChatBubble: React.FC<Props> = ({nodeId}) => {
                         }}
                     >
                         <div className="text-zinc-800 dark:text-gray-100 text-xs">
-                            {aggregateText}
+                            <MarkdownContent text={aggregateText} enableMarkdown />
                         </div>
                     </div>
                 </div>

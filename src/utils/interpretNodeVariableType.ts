@@ -31,6 +31,9 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         return { baseType: NodeVariableType.OAuth, validationType: NodeVariableType.OAuth, containsNone };
     }
 
+    // Get the first (primary) type for union types like "list | str"
+    const primaryType = types[0]?.toLowerCase();
+
     if (types.includes('any')) {
         return { baseType: NodeVariableType.Any, validationType: types.join(','), containsNone };
     } else if (types.includes('true_path')) {
@@ -39,6 +42,21 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
         return { baseType: NodeVariableType.FalsePath, validationType: types.join(','), containsNone };
     } else if (types.includes('node')) {
         return { baseType: NodeVariableType.Node, validationType: [...types, NodeVariableType.TruePath].join(','), containsNone };
+    } else if (primaryType === 'list' || (types.includes('list') && !['str', 'string'].includes(primaryType))) {
+        // Check list BEFORE str to handle "list | str" correctly
+        if (variable?.dock && variable?.dock?.files_editor) {
+            return { baseType: NodeVariableType.Files, validationType: [...types, NodeVariableType.Files].join(','), containsNone }
+        }
+        return { baseType: NodeVariableType.List, validationType: types.join(','), containsNone };
+    } else if (primaryType === 'dict' || (types.includes('dict') && !['str', 'string'].includes(primaryType))) {
+        // Check dict BEFORE str to handle "dict | str" correctly
+        if (variable?.dock && variable?.dock?.image) {
+            return { baseType: NodeVariableType.Image, validationType: [...types, NodeVariableType.Image].join(','), containsNone }
+        }
+        if (variable?.dock && variable?.dock?.layout_editor) {
+            return { baseType: NodeVariableType.Layout, validationType: [...types, NodeVariableType.Layout].join(','), containsNone }
+        }
+        return { baseType: NodeVariableType.Dict, validationType: types.join(','), containsNone };
     } else if (types.includes('str') || types.includes('string')) {
         if (variable.dock) {
             if (variable?.dock.secret) {
@@ -59,24 +77,26 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
             if (variable?.dock.json_editor) {
                 return { baseType: NodeVariableType.Json, validationType: [...types, NodeVariableType.Json].join(','), containsNone};
             }
+            if (variable?.dock.layout_editor) {
+                return { baseType: NodeVariableType.Layout, validationType: [...types, NodeVariableType.Layout].join(','), containsNone};
+            }
+            if (variable?.dock.table_editor) {
+                return { baseType: NodeVariableType.Table, validationType: [...types, NodeVariableType.Table].join(','), containsNone};
+            }
+            if (variable?.dock.spa_editor) {
+                return { baseType: NodeVariableType.SPA, validationType: [...types, NodeVariableType.SPA].join(','), containsNone};
+            }
+            if (variable?.dock.iframe_viewer) {
+                return { baseType: NodeVariableType.Iframe, validationType: [...types, NodeVariableType.Iframe].join(','), containsNone};
+            }
         }
         return { baseType: NodeVariableType.String, validationType: types.join(','), containsNone};
     } else if (types.includes('int') || types.includes('float') || types.includes('number')) {
         return { baseType: NodeVariableType.Number, validationType: types.join(','), containsNone };
     } else if (types.includes('bytes')) {
         return { baseType: NodeVariableType.Bytes, validationType: types.join(','), containsNone };
-    } else if (types.some(type => type.toLowerCase() === 'image')) {
+    } else if (types.some(type => type.toLowerCase() === 'image' || type.toLowerCase().endsWith('.image'))) {
         return { baseType: NodeVariableType.Image, validationType: types.join(','), containsNone };
-    } else if (types.includes('dict')) {
-        if (variable?.dock && variable?.dock?.image) {
-            return { baseType: NodeVariableType.Image, validationType: [...types, NodeVariableType.Image].join(','), containsNone }
-        }
-        return { baseType: NodeVariableType.Dict, validationType: types.join(','), containsNone };
-    } else if (types.includes('list')) {
-        if (variable?.dock && variable?.dock?.files_editor) {
-            return { baseType: NodeVariableType.Files, validationType: [...types, NodeVariableType.Files].join(','), containsNone }
-        }
-        return { baseType: NodeVariableType.List, validationType: types.join(','), containsNone };
     } else if (types.includes('datetime')) {
         return { baseType: NodeVariableType.DateTime, validationType: types.join(','), containsNone };
     } else if (types.includes('bool')) {

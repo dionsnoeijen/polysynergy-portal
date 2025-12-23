@@ -75,9 +75,15 @@ export const useEditorState = (isMouseDown?: boolean) => {
     }, [isExecuting, selectedNodes.length, setSelectedNodes]);
 
     // Update connections when nodes change
+    // Triple RAF: Gives browser time to fully settle composite layers after re-renders
+    // This fixes iframe nodes causing connection positions to jump when selecting nodes
     useEffect(() => {
         const frame = requestAnimationFrame(() => {
-            updateConnectionsDirectly(connections);
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    updateConnectionsDirectly(connections);
+                });
+            });
         });
         return () => cancelAnimationFrame(frame);
     }, [nodesToRender, connections]);

@@ -16,6 +16,11 @@ const normalizeType = (type: string): string => {
         return 'number';
     }
 
+    // Image aliases: polysynergy_nodes.image.types.Image, Image -> image
+    if (normalized === 'image' || normalized.endsWith('.image')) {
+        return 'image';
+    }
+
     return normalized;
 };
 

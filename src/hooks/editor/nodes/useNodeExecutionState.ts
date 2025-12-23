@@ -36,32 +36,24 @@ export function useNodeExecutionState(nodeId: string) {
 
 /**
  * Hook that provides CSS classes for node execution visualization
- * Shows ONLY live execution classes for active run (glows), NOT completion borders
+ * FIX: Onafhankelijk van activeRunId om race conditions te voorkomen
+ *
+ * Het probleem was dat activeRunId pas wordt gezet NA de API response,
+ * terwijl WebSocket events al eerder kunnen binnenkomen. Dit veroorzaakte
+ * dat de glow niet verscheen in productie waar de timing anders is.
  */
 export function useNodeExecutionClasses(nodeId: string) {
-    const activeRunId = useRunsStore((state) => state.activeRunId);
-
-    // PERFORMANCE: Use getActiveMockNode selector instead of subscribing to entire mockNodes array
-    // This prevents ALL nodes from re-rendering on every execution state change
-    const getActiveMockNode = useMockStore((state) => state.getActiveMockNode);
+    // Subscribe directly to mockNodes array - onafhankelijk van activeRunId
+    const mockNodes = useMockStore((state) => state.mockNodes);
 
     const classes = useMemo(() => {
-        const classNames = [];
+        // Zoek naar ELKE run waar deze node executing is
+        const isExecuting = mockNodes.some(
+            m => m.id.replace(/-\d+$/, '') === nodeId && m.status === 'executing'
+        );
 
-        // Only for active run: show live execution states (glows)
-        if (activeRunId) {
-            const activeMockNode = getActiveMockNode(nodeId, activeRunId);
-
-            if (activeMockNode) {
-                if (activeMockNode.status === 'executing') {
-                    classNames.push('executing');
-                }
-                // Note: completion states (executed-*) are handled elsewhere, NOT here
-            }
-        }
-
-        return classNames.join(' ');
-    }, [nodeId, activeRunId, getActiveMockNode]);
+        return isExecuting ? 'executing' : '';
+    }, [nodeId, mockNodes]);
 
     return classes;
 }

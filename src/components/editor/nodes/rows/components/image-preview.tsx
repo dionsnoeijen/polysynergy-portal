@@ -5,6 +5,7 @@ import useEditorStore from '@/stores/editorStore';
 type Logic = {
     getImageData: () => string | null;
     isValidImage: () => boolean;
+    isValueConnected: boolean;
     getImageMetadata: () => {
         width?: number;
         height?: number;
@@ -15,30 +16,39 @@ type Logic = {
 
 type Props = {
     logic: Logic;
+    onImageLoad?: () => void;
 };
 
-const ImagePreview: React.FC<Props> = ({ logic }) => {
+const ImagePreview: React.FC<Props> = ({ logic, onImageLoad }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [refreshedUrl, setRefreshedUrl] = useState<string | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const { activeProjectId } = useEditorStore();
     const projectId = activeProjectId;
     
-    const { getImageData, isValidImage, getImageMetadata } = logic;
+    const { getImageData, isValidImage, isValueConnected, getImageMetadata } = logic;
     
     const originalImageData = getImageData();
     const imageData = refreshedUrl || originalImageData;
     const hasValidImage = isValidImage();
     const metadata = getImageMetadata();
 
-    // Extract S3 path from URL
+    // Extract S3 path from URL (without bucket name)
     const extractS3Path = useCallback((url: string): string | null => {
         try {
             // Parse URL to get the path
             const urlObj = new URL(url);
             const pathMatch = urlObj.pathname.match(/^\/([^?]+)/);
             if (pathMatch) {
-                return decodeURIComponent(pathMatch[1]);
+                const fullPath = decodeURIComponent(pathMatch[1]);
+                // The URL format is: /bucket-name/path/to/file
+                // We need to strip the bucket name (first segment) to get just the file path
+                const segments = fullPath.split('/');
+                if (segments.length > 1) {
+                    // Remove bucket name (first segment) and return the rest
+                    return segments.slice(1).join('/');
+                }
+                return fullPath;
             }
         } catch (e) {
             console.error('Failed to parse URL:', e);
@@ -77,6 +87,19 @@ const ImagePreview: React.FC<Props> = ({ logic }) => {
     }, [originalImageData]);
 
     if (!hasValidImage || !imageData) {
+        // If connected, show a connected indicator instead of "no data"
+        if (isValueConnected) {
+            return (
+                <div className="mt-2 p-4 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-200 dark:border-orange-700/50">
+                    <div className="flex items-center text-orange-600 dark:text-yellow-400">
+                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                        </svg>
+                        <span>Image via connection</span>
+                    </div>
+                </div>
+            );
+        }
         return (
             <div className="mt-2 p-4 bg-zinc-50 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700">
                 <div className="flex items-center text-zinc-500 dark:text-zinc-400">
@@ -131,6 +154,7 @@ const ImagePreview: React.FC<Props> = ({ logic }) => {
                         `}
                         crossOrigin="anonymous"
                         onClick={() => setIsExpanded(!isExpanded)}
+                        onLoad={onImageLoad}
                         onError={(e) => {
                             // If we haven't tried refreshing yet, try to refresh the URL
                             if (!refreshedUrl && !isRefreshing) {

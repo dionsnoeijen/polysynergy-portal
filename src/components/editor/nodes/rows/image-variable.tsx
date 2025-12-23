@@ -78,7 +78,20 @@ const ImageVariable: React.FC<Props> = (props) => {
                     />
                 )}
             </InterpretedVariableContainer>
-            {shouldShowPreview && <ImagePreview logic={logic} />}
+            {shouldShowPreview && (
+                <ImagePreview
+                    logic={logic}
+                    onImageLoad={() => {
+                        // Trigger connection update when image is actually loaded
+                        // This ensures connections are positioned correctly after image renders
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                triggerConnectionUpdate();
+                            });
+                        });
+                    }}
+                />
+            )}
         </>
     );
 };

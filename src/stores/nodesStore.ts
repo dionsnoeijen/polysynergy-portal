@@ -41,7 +41,7 @@ export type NodesStore = {
     updateNodeVariablePublishedTitle: (nodeId: string, variableHandle: string, title: string) => void;
     updateNodeVariablePublishedDescription: (nodeId: string, variableHandle: string, description: string) => void;
     getNodesToRender: () => Node[];
-    updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[]) => void;
+    updateNodeVariable: (nodeId: string, variableHandle: string, newValue: null | string | number | boolean | string[] | NodeVariable[] | Record<string, unknown>) => void;
     toggleNodeVariablePublished: (nodeId: string, variableHandle: string) => void;
     toggleVariableExposedToGroup: (nodeId: string, variableHandle: string) => void;
     updateNodeHandle: (nodeId: string, handle: string) => void;
@@ -660,7 +660,7 @@ const useNodesStore = create<NodesStore>((set, get) => ({
     updateNodeVariable: (
         nodeId: string,
         variableHandle: string,
-        newValue: null | string | number | boolean | string[] | NodeVariable[]
+        newValue: null | string | number | boolean | string[] | NodeVariable[] | Record<string, unknown>
     ) => {
         nodesByIdsCache.clear();
 

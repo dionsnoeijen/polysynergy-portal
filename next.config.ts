@@ -6,9 +6,6 @@ const nextConfig: NextConfig = {
     typescript: {
         ignoreBuildErrors: false,
     },
-    eslint: {
-        ignoreDuringBuilds: false,
-    },
     env: {
         NEXT_PUBLIC_AWS_COGNITO_AUTHORITY: process.env.NEXT_PUBLIC_AWS_COGNITO_AUTHORITY,
         NEXT_PUBLIC_AWS_COGNITO_DOMAIN: process.env.NEXT_PUBLIC_AWS_COGNITO_DOMAIN,
@@ -24,6 +21,11 @@ const nextConfig: NextConfig = {
             canvas: false,
         };
         return config;
+    },
+    turbopack: {
+        resolveAlias: {
+            canvas: './src/utils/canvas-shim.js',
+        },
     },
 };
 

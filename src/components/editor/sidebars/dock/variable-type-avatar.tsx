@@ -53,8 +53,12 @@ const VariableTypeAvatar: React.FC<Props> = ({
                 const result = await fetchGenerateAvatar(nodeId, name, instructions);
 
                 // Update with cache-busting timestamp for immediate visual refresh
-                updateNodeVariable(nodeId, variable.handle, `${result}?v=${Date.now()}`);
-                console.log('✅ [Avatar] Avatar generation completed for node:', nodeId);
+                if (result) {
+                    updateNodeVariable(nodeId, variable.handle, `${result}?v=${Date.now()}`);
+                    console.log('✅ [Avatar] Avatar generation completed for node:', nodeId);
+                } else {
+                    console.error('❌ [Avatar] Avatar generation returned null for node:', nodeId);
+                }
             } catch (e) {
                 console.error('❌ [Avatar] Generation failed for node:', nodeId, e);
                 // Could add user notification here

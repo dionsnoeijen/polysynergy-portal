@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/button';
@@ -11,6 +11,11 @@ import { useBranding } from '@/contexts/branding-context';
 
 export default function RegisterPage() {
     const router = useRouter();
+
+    useEffect(() => {
+        router.replace('/login');
+    }, [router]);
+
     const { logo_url, accent_color } = useBranding();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

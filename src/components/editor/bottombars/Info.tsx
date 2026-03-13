@@ -63,7 +63,7 @@ const Info: React.FC = (): React.ReactElement => {
                                 const basePath = `https://${activeProjectId}{{stage}}`;
                                 const isProd = stage.is_production;
                                 const stagePrefix = isProd ? '' : `-${stage.name}`;
-                                const fullUrl = `${basePath.replace('{{stage}}', stagePrefix)}.polysynergy.com/${formatSegments((activeItem as Route)?.segments)}`;
+                                const fullUrl = `${basePath.replace('{{stage}}', stagePrefix)}.${process.env.NEXT_PUBLIC_ROUTE_DOMAIN || 'polysynergy.com'}/${formatSegments((activeItem as Route)?.segments)}`;
                                 return (
                                     <div key={stage.name} className="flex items-start gap-2">
                                         <span className="w-24 shrink-0 font-semibold dark:text-white" style={{ color: accent_color }}>

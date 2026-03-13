@@ -5,6 +5,7 @@ interface UseEmbeddedWebSocketProps {
     versionId: string | null;
     embedToken: string;
     websocketUrl: string;
+    sessionId?: string;
     onMessage?: (data: unknown) => void;
 }
 
@@ -12,6 +13,7 @@ export function useEmbeddedWebSocket({
     versionId,
     embedToken,
     websocketUrl,
+    sessionId,
     onMessage,
 }: UseEmbeddedWebSocketProps) {
     const wsRef = useRef<WebSocket | null>(null);
@@ -31,7 +33,10 @@ export function useEmbeddedWebSocket({
 
         setConnecting(true);
 
-        const wsUrl = `${websocketUrl}/execution/${versionId}?embed_token=${embedToken}`;
+        let wsUrl = `${websocketUrl}/execution/${versionId}?embed_token=${embedToken}`;
+        if (sessionId) {
+            wsUrl += `&session_id=${sessionId}`;
+        }
         console.log('[EmbeddedChat] Connecting to WebSocket:', wsUrl);
 
         const ws = new WebSocket(wsUrl);
@@ -128,7 +133,7 @@ export function useEmbeddedWebSocket({
                 }, 3000);
             }
         };
-    }, [versionId, embedToken, websocketUrl, setConnected, setConnecting, setConnectionError, updateStreamingMessage, finalizeStreamingMessage, setWaitingForResponse, addMessage, onMessage]);
+    }, [versionId, embedToken, websocketUrl, sessionId, setConnected, setConnecting, setConnectionError, updateStreamingMessage, finalizeStreamingMessage, setWaitingForResponse, addMessage, onMessage]);
 
     const disconnect = useCallback(() => {
         if (reconnectTimeoutRef.current) {

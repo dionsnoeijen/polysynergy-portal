@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useRef } from 'react';
 import { useEmbeddedChatStore } from './stores/embeddedChatStore';
 import { useEmbeddedWebSocket } from './hooks/useEmbeddedWebSocket';
 import EmbeddedMessages from './components/EmbeddedMessages';
@@ -17,6 +17,12 @@ export interface ChatWindowProps {
 
     /** Optional user ID for tracking */
     userId?: string;
+
+    /** Optional session ID for channel isolation (auto-generated if not provided) */
+    sessionId?: string;
+
+    /** Optional arbitrary data to pass to the flow */
+    data?: Record<string, unknown>;
 
     /** Additional CSS class names */
     className?: string;
@@ -41,8 +47,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     embedToken,
     apiUrl,
     websocketUrl,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     userId,
+    sessionId: sessionIdProp,
+    data,
     className = '',
     theme = 'light',
     onReady,
@@ -50,6 +57,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     onMessageSent,
     onResponseReceived,
 }) => {
+    // Generate a stable session ID if none provided
+    const sessionIdRef = useRef<string>(sessionIdProp || crypto.randomUUID());
+    const sessionId = sessionIdProp || sessionIdRef.current;
     const setConfig = useEmbeddedChatStore((s) => s.setConfig);
     const setVersionId = useEmbeddedChatStore((s) => s.setVersionId);
     const addMessage = useEmbeddedChatStore((s) => s.addMessage);
@@ -121,6 +131,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         versionId,
         embedToken,
         websocketUrl: wsUrl,
+        sessionId,
         onMessage: (data: unknown) => {
             // Handle response received callback
             if (typeof data === 'object' && data !== null) {
@@ -155,7 +166,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 },
                 body: JSON.stringify({
                     message,
-                    session_id: null, // TODO: Add session support
+                    session_id: sessionId,
+                    user_id: userId || null,
+                    data: data || {},
                 }),
             });
 
@@ -175,7 +188,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             });
             onError?.(error instanceof Error ? error : new Error(String(error)));
         }
-    }, [baseApiUrl, embedToken, addMessage, setWaitingForResponse, onMessageSent, onError]);
+    }, [baseApiUrl, embedToken, sessionId, userId, data, addMessage, setWaitingForResponse, onMessageSent, onError]);
 
     // Resume handler for HITL
     const handleResume = useCallback(async (runId: string, nodeId: string, response: string) => {
@@ -197,7 +210,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     'X-Embed-Token': embedToken,
                 },
                 body: JSON.stringify({
-                    session_id: null, // TODO: Add session support
+                    session_id: sessionId,
                     execution_id: runId,
                     response,
                 }),
@@ -220,7 +233,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             setWaitingForResponse(false);
             onError?.(error instanceof Error ? error : new Error(String(error)));
         }
-    }, [baseApiUrl, embedToken, addMessage, setWaitingForResponse, removePauseMessage, onError]);
+    }, [baseApiUrl, embedToken, sessionId, addMessage, setWaitingForResponse, removePauseMessage, onError]);
 
     const isDark = theme === 'dark';
 

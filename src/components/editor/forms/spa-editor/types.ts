@@ -58,7 +58,7 @@ export default function App() {
         "src/components/ChatWindow.jsx": `// ChatWindow Component - Embedded chat with WebSocket support
 // Usage: <ChatWindow embedToken="emb_xxx" apiUrl="https://api.example.com" theme="light" />
 
-function ChatWindow({ embedToken, apiUrl, websocketUrl, className = '', theme = 'light', onReady, onError, onMessageSent, onResponseReceived }) {
+function ChatWindow({ embedToken, apiUrl, websocketUrl, userId, sessionId: sessionIdProp, data, className = '', theme = 'light', onReady, onError, onMessageSent, onResponseReceived }) {
     const [config, setConfig] = useState(null);
     const [versionId, setVersionId] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -72,6 +72,8 @@ function ChatWindow({ embedToken, apiUrl, websocketUrl, className = '', theme = 
     const wsRef = useRef(null);
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
+    const sessionIdRef = useRef(sessionIdProp || crypto.randomUUID());
+    const sessionId = sessionIdProp || sessionIdRef.current;
 
     const baseApiUrl = apiUrl || window.location.origin;
     const wsUrl = websocketUrl || baseApiUrl.replace(/^http/, 'ws');
@@ -110,7 +112,8 @@ function ChatWindow({ embedToken, apiUrl, websocketUrl, className = '', theme = 
         if (!versionId || !embedToken) return;
 
         setIsConnecting(true);
-        const fullWsUrl = \`\${wsUrl}/execution/\${versionId}?embed_token=\${embedToken}\`;
+        let fullWsUrl = \`\${wsUrl}/execution/\${versionId}?embed_token=\${embedToken}\`;
+        if (sessionId) { fullWsUrl += \`&session_id=\${sessionId}\`; }
         const ws = new WebSocket(fullWsUrl);
         wsRef.current = ws;
 
@@ -195,7 +198,7 @@ function ChatWindow({ embedToken, apiUrl, websocketUrl, className = '', theme = 
             clearInterval(pingInterval);
             ws.close(1000);
         };
-    }, [versionId, embedToken, wsUrl]);
+    }, [versionId, embedToken, wsUrl, sessionId]);
 
     // Auto-scroll
     useEffect(() => {
@@ -228,7 +231,7 @@ function ChatWindow({ embedToken, apiUrl, websocketUrl, className = '', theme = 
             const response = await fetch(\`\${baseApiUrl}/api/v1/public/embedded/execute/\`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Embed-Token': embedToken },
-                body: JSON.stringify({ message, session_id: null })
+                body: JSON.stringify({ message, session_id: sessionId, user_id: userId || null, data: data || {} })
             });
             if (!response.ok) throw new Error(\`Execute failed: \${response.statusText}\`);
         } catch (error) {
@@ -256,7 +259,7 @@ function ChatWindow({ embedToken, apiUrl, websocketUrl, className = '', theme = 
             const resumeResponse = await fetch(\`\${baseApiUrl}/api/v1/public/embedded/resume/\`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Embed-Token': embedToken },
-                body: JSON.stringify({ session_id: null, execution_id: runId, response })
+                body: JSON.stringify({ session_id: sessionId, execution_id: runId, response })
             });
             if (!resumeResponse.ok) throw new Error(\`Resume failed: \${resumeResponse.statusText}\`);
             setMessages(msgs => msgs.filter(m => !(m.pause_data?.run_id === runId && m.pause_data?.node_id === nodeId)));

@@ -157,17 +157,7 @@ export default function LoginPage() {
                     </Button>
                 </form>
 
-                <div className="mt-6 text-center space-y-2">
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                        Don&apos;t have an account?{' '}
-                        <Link
-                            href="/register"
-                            className="hover:underline font-medium"
-                            style={{ color: accent_color }}
-                        >
-                            Sign up
-                        </Link>
-                    </p>
+                <div className="mt-6 text-center">
                     <p className="text-sm">
                         <Link
                             href="/password-reset"

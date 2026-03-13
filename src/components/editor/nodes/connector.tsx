@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback } from "react";
 import {ChevronRightIcon} from "@heroicons/react/16/solid";
-import {InOut, NodeCollapsedConnector, NodeVariableType} from "@/types/types";
+import {InOut, NodeCollapsedConnector, NodeVariableType, NodeType} from "@/types/types";
 import {useConnectorHandlers} from "@/hooks/editor/nodes/useConnectorHandlers";
 import {useConnectorContextMenu} from "@/hooks/editor/nodes/useConnectorContextMenu";
+import useNodesStore from "@/stores/nodesStore";
 import clsx from "clsx";
 import { useBranding } from "@/contexts/branding-context";
 
@@ -60,6 +61,19 @@ const Connector: React.FC<ConnectorProps> = ({
         isOut || false
     );
     const [showTooltip, setShowTooltip] = useState(false);
+
+    // Check if this output connector has any warp gates pointing to it
+    const hasWarpGate = useNodesStore(
+        useCallback((state) =>
+            isOut && handle
+                ? state.nodes.some(n =>
+                    n.type === NodeType.WarpGate &&
+                    n.warpGate?.sourceNodeId === nodeId &&
+                    n.warpGate?.sourceHandle === handle
+                )
+                : false,
+        [isOut, nodeId, handle])
+    );
 
     // PERFORMANCE: Memoize expensive computations
     const types = useMemo(() =>
@@ -137,7 +151,10 @@ const Connector: React.FC<ConnectorProps> = ({
                     backgroundClasses,
                     "connector-animatable" // om te targeten
                 )}
-                style={{ borderColor: ringColor }}
+                style={{
+                    borderColor: ringColor,
+                    ...(hasWarpGate ? { boxShadow: '0 0 6px 2px rgba(59, 130, 246, 0.7)' } : {})
+                }}
             >
                 {isInteractive && (
                     <ChevronRightIcon
@@ -149,7 +166,7 @@ const Connector: React.FC<ConnectorProps> = ({
                         style={{ color: iconColorClasses.includes('text-zinc-800') ? undefined : ringColor }}
                     />
                 )}
-                
+
                 {/* Simple tooltip positioned relative to the inner connector div */}
                 {showTooltip && types.length > 0 && (
                     <div

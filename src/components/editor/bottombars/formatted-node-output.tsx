@@ -72,8 +72,7 @@ const RenderValue = ({label, value}: { label: string; value: unknown }) => {
                     <div className="space-y-1">
                         {value.map((item, index) => (
                             <div key={index} className="text-sm text-black/70 dark:text-white bg-white/50 dark:bg-black/20 rounded p-2">
-                                <span className="text-xs text-purple-600 dark:text-purple-400 mr-2">[{index}]</span>
-                                {typeof item === 'object' ? JSON.stringify(item) : String(item)}
+                                <RenderValue label={`[${index}]`} value={item} />
                             </div>
                         ))}
                     </div>
@@ -157,15 +156,6 @@ const FormattedNodeOutput: React.FC<FormattedNodeOutputProps> = ({variables}) =>
     const specialKeys = ["true_path", "false_path"];
     const remainingEntries = Object.entries(variables).filter(([key]) => !specialKeys.includes(key));
     const {theme} = useTheme();
-    
-    // Debug logging to see what data we're receiving
-    console.log('FormattedNodeOutput DEBUG:', { 
-        variables, 
-        true_path: variables.true_path,
-        true_path_type: typeof variables.true_path,
-        remainingEntries 
-    });
-
 
     return (
         <div className="p-4 space-y-4">

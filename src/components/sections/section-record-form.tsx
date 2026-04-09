@@ -200,6 +200,24 @@ const SectionRecordForm: React.FC = () => {
                         config={fieldSettings as { relatedSection?: string; displayField?: string }}
                     />
                 );
+            case 'date':
+                return (
+                    <DateInput
+                        value={value as string}
+                        onChange={onChange}
+                        required={required}
+                        config={{}}
+                    />
+                );
+            case 'datetime':
+                return (
+                    <DateTimeInput
+                        value={value as string}
+                        onChange={onChange}
+                        required={required}
+                        config={{}}
+                    />
+                );
             case 'json':
             case 'jsonb':
                 return (

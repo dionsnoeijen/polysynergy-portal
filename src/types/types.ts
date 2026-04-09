@@ -18,6 +18,7 @@ import VariableTypeAny from "@/components/editor/sidebars/dock/variable-type-any
 import VariableTypeLayout from "@/components/editor/sidebars/dock/variable-type-layout";
 import VariableTypeTable from "@/components/editor/sidebars/dock/variable-type-table";
 import VariableTypeSPA from "@/components/editor/sidebars/dock/variable-type-spa";
+import VariableTypeJmes from "@/components/editor/sidebars/dock/variable-type-jmes";
 import VariableTypeIframe from "@/components/editor/sidebars/dock/variable-type-iframe";
 import {AccessLevel} from "@/types/enums";
 
@@ -96,6 +97,7 @@ export enum FormType {
     EditLayout = 'editLayout',
     EditTable = 'editTable',
     EditSPA = 'editSPA',
+    EditJmes = 'editJmes',
 }
 
 export enum InOut {
@@ -143,6 +145,7 @@ export enum NodeVariableType {
     Layout = 'layout',
     Table = 'table',
     SPA = 'spa',
+    Jmes = 'jmes',
     Iframe = 'iframe',
 }
 
@@ -208,6 +211,7 @@ export type Dock = {
     template_editor?: boolean;
     table_editor?: boolean;
     spa_editor?: boolean;
+    jmes_editor?: boolean;
     iframe_viewer?: boolean;
     image?: boolean;
     metadata?: Record<string, unknown>;
@@ -916,6 +920,7 @@ export const VariableTypeComponents = {
     [NodeVariableType.Layout]: VariableTypeLayout,
     [NodeVariableType.Table]: VariableTypeTable,
     [NodeVariableType.SPA]: VariableTypeSPA,
+    [NodeVariableType.Jmes]: VariableTypeJmes,
     [NodeVariableType.Iframe]: VariableTypeIframe,
     [NodeVariableType.Node]: null,
 };

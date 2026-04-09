@@ -71,6 +71,9 @@ export default function interpretNodeVariableType(variable: NodeVariable): Valid
             if (variable?.dock.template_editor) {
                 return { baseType: NodeVariableType.Template, validationType: [...types, NodeVariableType.String].join(','), containsNone};
             }
+            if (variable?.dock.jmes_editor) {
+                return { baseType: NodeVariableType.Jmes, validationType: [...types, NodeVariableType.Jmes].join(','), containsNone};
+            }
             if (variable?.dock.code_editor) {
                 return { baseType: NodeVariableType.Code, validationType: [...types, NodeVariableType.Code].join(','), containsNone};
             }

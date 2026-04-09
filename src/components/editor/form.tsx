@@ -27,6 +27,7 @@ import SectionFieldForm from "@/components/editor/forms/section-field-form";
 import LayoutEditorForm from "@/components/editor/forms/layout-editor-form";
 import TableEditorForm from "@/components/editor/forms/table-editor-form";
 import SPAEditorForm from "@/components/editor/forms/spa-editor-form";
+import JmesEditorForm from "@/components/editor/forms/jmes-editor-form";
 
 const Form: React.FC = () => {
     const formType = useEditorStore((state) => state.formType);
@@ -160,6 +161,9 @@ const Form: React.FC = () => {
             )}
             {(formType === FormType.EditSPA) && (
                 <SPAEditorForm />
+            )}
+            {(formType === FormType.EditJmes) && (
+                <JmesEditorForm />
             )}
         </div>
     );

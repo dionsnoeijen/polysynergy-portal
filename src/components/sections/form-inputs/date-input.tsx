@@ -8,11 +8,26 @@ interface DateInputProps {
     config?: Record<string, unknown>;
 }
 
+// Normalize any date string to YYYY-MM-DD
+function toDateValue(value: string): string {
+    if (!value) return '';
+    // Already in correct format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    try {
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return value;
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    } catch {
+        return value;
+    }
+}
+
 const DateInput: React.FC<DateInputProps> = ({ value, onChange, required, disabled }) => {
     return (
         <input
             type="date"
-            value={value || ''}
+            value={toDateValue(value)}
             onChange={(e) => onChange(e.target.value)}
             required={required}
             disabled={disabled}

@@ -8,11 +8,24 @@ interface DateTimeInputProps {
     config?: Record<string, unknown>;
 }
 
+// Normalize any datetime string to the format datetime-local expects: YYYY-MM-DDTHH:mm
+function toDatetimeLocalValue(value: string): string {
+    if (!value) return '';
+    try {
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return value;
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    } catch {
+        return value;
+    }
+}
+
 const DateTimeInput: React.FC<DateTimeInputProps> = ({ value, onChange, required, disabled }) => {
     return (
         <input
             type="datetime-local"
-            value={value || ''}
+            value={toDatetimeLocalValue(value)}
             onChange={(e) => onChange(e.target.value)}
             required={required}
             disabled={disabled}

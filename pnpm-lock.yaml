@@ -66,8 +66,8 @@ importers:
         specifier: ^3.1.0
         version: 3.3.0
       possession-react:
-        specifier: github:dionsnoeijen/possession-react#c257535
-        version: https://codeload.github.com/dionsnoeijen/possession-react/tar.gz/c257535d8ce16ce4925c0e9026d7c32561bd1e57(react-dom@19.2.3(react@19.2.3))(react-markdown@10.1.0(@types/react@18.3.23)(react@19.2.3))(react@19.2.3)(remark-gfm@4.0.1)
+        specifier: github:dionsnoeijen/possession-react#b28b342
+        version: https://codeload.github.com/dionsnoeijen/possession-react/tar.gz/b28b34219b5128f19cced187b3ce17eae1246f54(react-dom@19.2.3(react@19.2.3))(react-markdown@10.1.0(@types/react@18.3.23)(react@19.2.3))(react@19.2.3)(remark-gfm@4.0.1)
       postprocessing:
         specifier: ^6.36.2
         version: 6.37.8(three@0.170.0)
@@ -2275,8 +2275,8 @@ packages:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
 
-  possession-react@https://codeload.github.com/dionsnoeijen/possession-react/tar.gz/c257535d8ce16ce4925c0e9026d7c32561bd1e57:
-    resolution: {tarball: https://codeload.github.com/dionsnoeijen/possession-react/tar.gz/c257535d8ce16ce4925c0e9026d7c32561bd1e57}
+  possession-react@https://codeload.github.com/dionsnoeijen/possession-react/tar.gz/b28b34219b5128f19cced187b3ce17eae1246f54:
+    resolution: {tarball: https://codeload.github.com/dionsnoeijen/possession-react/tar.gz/b28b34219b5128f19cced187b3ce17eae1246f54}
     version: 0.1.0
     peerDependencies:
       react: '>=18'
@@ -5402,7 +5402,7 @@ snapshots:
 
   pirates@4.0.7: {}
 
-  possession-react@https://codeload.github.com/dionsnoeijen/possession-react/tar.gz/c257535d8ce16ce4925c0e9026d7c32561bd1e57(react-dom@19.2.3(react@19.2.3))(react-markdown@10.1.0(@types/react@18.3.23)(react@19.2.3))(react@19.2.3)(remark-gfm@4.0.1):
+  possession-react@https://codeload.github.com/dionsnoeijen/possession-react/tar.gz/b28b34219b5128f19cced187b3ce17eae1246f54(react-dom@19.2.3(react@19.2.3))(react-markdown@10.1.0(@types/react@18.3.23)(react@19.2.3))(react@19.2.3)(remark-gfm@4.0.1):
     dependencies:
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)

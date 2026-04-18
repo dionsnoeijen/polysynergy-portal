@@ -22,6 +22,8 @@ import AutosaveIndicator from "@/components/AutosaveIndicator";
 import Chat from "@/components/editor/chat/chat";
 import EmptyStatePanel from "@/components/editor/empty-state-panel";
 import { useBranding } from '@/contexts/branding-context';
+import { PossessionPanel } from '@/components/possession/PossessionPanel';
+import usePossessionPanelStore from '@/stores/possessionPanelStore';
 
 import { useLayoutPanels } from "@/hooks/editor/useLayoutPanels";
 import { useLayoutResizing } from "@/hooks/editor/useLayoutResizing";
@@ -400,8 +402,19 @@ const EditorLayout = ({
         }, 200);
     };
 
+    const possessionEnabled = process.env.NEXT_PUBLIC_POSSESSION_ENABLED === 'true';
+    const possessionPanelOpen = usePossessionPanelStore((s) => s.isOpen);
+    const possessionPanelWidth = usePossessionPanelStore((s) => s.width);
+    const possessionOffset = possessionEnabled && possessionPanelOpen ? possessionPanelWidth : 0;
+
+    useEffect(() => {
+        const id = requestAnimationFrame(() => updateEditorPosition());
+        return () => cancelAnimationFrame(id);
+    }, [possessionPanelOpen, possessionPanelWidth, updateEditorPosition]);
+
     return (
-        <div className="absolute top-0 right-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900">
+        <div className="absolute top-0 bottom-0 left-0 bg-zinc-100 dark:bg-zinc-900" style={{ right: possessionOffset }}>
+            {possessionEnabled && <PossessionPanel />}
             {showPerformanceHUD && <PerformanceHUD />}
             <ItemManagerIntroTour/>
             {closeFormMessage && (

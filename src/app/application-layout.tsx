@@ -18,7 +18,6 @@ import {
     QuestionMarkCircleIcon,
     SparklesIcon
 } from '@heroicons/react/20/solid'
-import { PossessionToggle } from '@/components/possession/PossessionToggle'
 import { usePathname } from 'next/navigation'
 import SidebarUserFooter from "@/components/sidebar/sidebar-user-footer";
 import React from "react";
@@ -80,7 +79,6 @@ export function ApplicationLayout({
             }
         >
             {children}
-            <PossessionToggle />
         </SidebarLayout>
     )
 }

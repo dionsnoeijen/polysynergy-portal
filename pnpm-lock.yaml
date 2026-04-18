@@ -65,6 +65,9 @@ importers:
       oidc-client-ts:
         specifier: ^3.1.0
         version: 3.3.0
+      possession-react:
+        specifier: file:../../possession-react
+        version: file:../possession-react(react-dom@19.2.3(react@19.2.3))(react-markdown@10.1.0(@types/react@18.3.23)(react@19.2.3))(react@19.2.3)(remark-gfm@4.0.1)
       postprocessing:
         specifier: ^6.36.2
         version: 6.37.8(three@0.170.0)
@@ -2243,6 +2246,14 @@ packages:
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
+
+  possession-react@file:../possession-react:
+    resolution: {directory: ../possession-react, type: directory}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+      react-markdown: '>=9'
+      remark-gfm: '>=4'
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -5361,6 +5372,13 @@ snapshots:
   pify@2.3.0: {}
 
   pirates@4.0.7: {}
+
+  possession-react@file:../possession-react(react-dom@19.2.3(react@19.2.3))(react-markdown@10.1.0(@types/react@18.3.23)(react@19.2.3))(react@19.2.3)(remark-gfm@4.0.1):
+    dependencies:
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+      react-markdown: 10.1.0(@types/react@18.3.23)(react@19.2.3)
+      remark-gfm: 4.0.1
 
   possible-typed-array-names@1.1.0: {}
 

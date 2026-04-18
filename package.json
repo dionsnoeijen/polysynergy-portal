@@ -38,7 +38,7 @@
     "react-oidc-context": "^3.2.0",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
-    "possession-react": "file:../../possession-react",
+    "possession-react": "github:dionsnoeijen/possession-react#522666f",
     "three": "^0.170.0",
     "unique-names-generator": "^4.7.1",
     "uuid": "^11.0.2",
